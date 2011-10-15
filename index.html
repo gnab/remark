@@ -62,7 +62,7 @@ A simple HTML container for hosting the styles, markdown and the slides themselv
         &lt;pre id="source"&gt;
           <!-- Slideshow markdown -->
         &lt;/pre&gt;
-        &lt;div id="presentation"&gt;<!-- Generated slides -->&lt;div&gt;
+        &lt;div id="slideshow"&gt;<!-- Generated slides -->&lt;div&gt;
       &lt;/body&gt;
     &lt;/html&gt;
 
@@ -115,7 +115,7 @@ A line containing one or more dotted CSS class names is extracted, and the speci
 
 Resulting HTML extract:
 
-    &lt;div id="presentation"&gt;
+    &lt;div id="slideshow"&gt;
       &lt;div class="slide"&gt;
         &lt;div class="content center middle"&gt;
           &lt;h1&gt;Slide with content centered in both dimensions&lt;/h1&gt;
@@ -158,6 +158,6 @@ If the language detected is incorrect, you may specify the language to use by ad
 To disable syntax highlighting, use the class `.no-highlight no-highlight`.
 
     </pre>
-    <div id="presentation"></div>
+    <div id="slideshow"></div>
   </body>
 </html>
