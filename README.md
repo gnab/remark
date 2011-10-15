@@ -16,7 +16,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 
         <html>
           <head>
-            <script src="remark-x.y.min.js" type="text/javascript"></script>
+            <script src="https://github.com/downloads/gnab/remark/remark-0.1.min.js" type="text/javascript"></script>
             <style type="text/css">
               /* Slideshow styles */
             </style>
@@ -29,11 +29,9 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
           </body>
         </html>
 
-2. Replace `remark-x.y.min.js` with the URL to the latest version available from the [downloads page](https://github.com/gnab/remark/downloads).
+2. Enter you Markdown-formatted slideshow and any styles needed in the assigned areas.
 
-3. Enter you Markdown-formatted slideshow in the assigned area.
-
-4. Launch the HTML file in a decent browser and enjoy!
+3. Launch the HTML file in a decent browser and enjoy!
 
 ### License 
 
