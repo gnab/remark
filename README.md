@@ -25,7 +25,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
             <pre id="source">
               <!-- Slideshow markdown -->
             </pre>
-            <div id="presentation"><div>
+            <div id="slideshow"><div>
           </body>
         </html>
 

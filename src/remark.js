@@ -3,7 +3,7 @@
   /* bundle "vendor/highlight.min.js" */
   /* bundle "vendor/showdown.js" */
 
-  var presentation
+  var slideshow
     , slides
     , converter
     , currentSlideIndex = -1
@@ -13,7 +13,7 @@
 
   window.onload = function () {
     hideSource();
-    createPresentation();
+    createSlideshow();
     mapKeys();
     navigate();
 
@@ -26,13 +26,13 @@
     sourceElement.style.display = 'none';
   };
 
-  var createPresentation = function () {
-    presentation = document.getElementById('presentation');
+  var createSlideshow = function () {
+    slideshow = document.getElementById('slideshow');
     converter = new Showdown.converter();
 
     styleDocument();
     createSlides();
-    stylePresentation();
+    styleSlideshow();
   };
 
   var styleDocument = function () {
@@ -58,14 +58,14 @@
       content = document.createElement('div');
       content.className = 'content';
       slide.appendChild(content);
-      presentation.appendChild(slide);
+      slideshow.appendChild(slide);
     }
   };
 
-  var stylePresentation = function () {
+  var styleSlideshow = function () {
     var sizeFactor = 227
-      , presentationWidth = sizeFactor * widthFactor
-      , presentationHeight = sizeFactor * heightFactor
+      , slideshowWidth = sizeFactor * widthFactor
+      , slideshowHeight = sizeFactor * heightFactor
       ;
 
     var resize = function () {
@@ -81,14 +81,14 @@
         scale = width / (sizeFactor * widthFactor);
       }
     
-      presentation.style['-webkit-transform'] = 'scale(' + scale + ')';
-      presentation.style.MozTransform = 'scale(' + scale + ')';
-      presentation.style.left = (width - presentationWidth * scale) / 2 + 'px';
-      presentation.style.top = (height - presentationHeight * scale) / 2 + 'px';
+      slideshow.style['-webkit-transform'] = 'scale(' + scale + ')';
+      slideshow.style.MozTransform = 'scale(' + scale + ')';
+      slideshow.style.left = (width - slideshowWidth * scale) / 2 + 'px';
+      slideshow.style.top = (height - slideshowHeight * scale) / 2 + 'px';
     };
 
-    presentation.style.width = sizeFactor * widthFactor + 'px';
-    presentation.style.height = sizeFactor * heightFactor + 'px';
+    slideshow.style.width = sizeFactor * widthFactor + 'px';
+    slideshow.style.height = sizeFactor * heightFactor + 'px';
 
     window.onresize = resize;
     window.onresize();
@@ -118,7 +118,7 @@
 
   var gotoSlide = function (slideIndex) {
     var alreadyOnSlide = slideIndex === currentSlideIndex
-      , lastSlideIndex = presentation.children.length - 1
+      , lastSlideIndex = slideshow.children.length - 1
       , slideOutOfRange = slideIndex < 0 || slideIndex > lastSlideIndex
       ;
 
@@ -136,12 +136,12 @@
 
   var hideCurrentSlide = function () {
     if (currentSlideIndex !== -1) {
-      presentation.children[currentSlideIndex].style.display = 'none';
+      slideshow.children[currentSlideIndex].style.display = 'none';
     }
   };
 
   var prepareSlideIfNeeded = function (slideIndex) {
-    var content = presentation.children[slideIndex].children[0];
+    var content = slideshow.children[slideIndex].children[0];
 
     if (content.innerHTML === '') {
       content.innerHTML = slides[slideIndex];
@@ -154,7 +154,7 @@
       , content
       ;
 
-    slide = presentation.children[slideIndex];
+    slide = slideshow.children[slideIndex];
     content = slide.children[0];
 
     slide.style.display = 'table';

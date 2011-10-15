@@ -4,24 +4,24 @@ html, body {
   font-size: 20px;
   overflow: hidden;
 }
-#presentation {
+#slideshow {
   background: #fff;
   position: absolute;
   -webkit-transform-origin: top left;
   -moz-transform-origin: top left;
   transform-origin: top-left;
 }
-#presentation .slide > .center {
+#slideshow .slide > .center {
   text-align: center;
 }
-#presentation .slide .content .center {
+#slideshow .slide .content .center {
   display: block;
   text-align: center;
 }
-#presentation .slide > .middle {
+#slideshow .slide > .middle {
   vertical-align: middle;
 }
-#presentation .slide {
+#slideshow .slide {
   display: none;
   float: left;
   height: 100%;
@@ -31,23 +31,23 @@ html, body {
   -webkit-box-shadow: 0 0 30px #888;
   box-shadow: 0 0 30px #888;
 }
-#presentation .slide .content {
+#slideshow .slide .content {
   padding: 1em 4em 1em 4em;
 }
-#presentation .slide .content pre {
+#slideshow .slide .content pre {
   border-left: 0.4em solid #d7d7d7;
   font-family: Monaco, monospace;
   font-size: 16px;
   padding: 1em !important;
 }
-#presentation .slide .content pre code {
+#slideshow .slide .content pre code {
   background: transparent !important;
 }
-#presentation .slide .content code {
+#slideshow .slide .content code {
   font-family: Monaco, monospace;
   font-size: 16px;
 }
-#presentation .slide .content h1 code {
+#slideshow .slide .content h1 code {
   font-size: 0.8em;
 }
 
