@@ -29,7 +29,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
           </body>
         </html>
 
-2. Replace the `remark-x.y.min.js` with the latest version available from the [downloads page](https://github.com/gnab/remark/downloads).
+2. Replace `remark-x.y.min.js` with the latest version available from the [downloads page](https://github.com/gnab/remark/downloads).
 
 3. Enter you Markdown-formatted slideshow in the assigned area.
 
