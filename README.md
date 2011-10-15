@@ -8,9 +8,9 @@ A simplistic, in-browser, markdown-driven slideshow tool targeted at people who 
 
 - Slide scaling, thus similar appearance on all devices / resolutions
 
-Visit [gnab.github.org/remark](http://gnab.github.org/remark) to see remark in action.
-
 ### Usage
+
+Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introduction.
 
 1. Create at boilerplate HTML container:
 
