@@ -1,0 +1,54 @@
+html, body {
+  background: #d7d7d7;
+  font-family: Georgia;
+  font-size: 20px;
+  overflow: hidden;
+}
+#presentation {
+  background: #fff;
+  position: absolute;
+  -webkit-transform-origin: top left;
+  -moz-transform-origin: top left;
+  transform-origin: top-left;
+}
+#presentation .slide > .center {
+  text-align: center;
+}
+#presentation .slide .content .center {
+  display: block;
+  text-align: center;
+}
+#presentation .slide > .middle {
+  vertical-align: middle;
+}
+#presentation .slide {
+  display: none;
+  float: left;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+  -moz-box-shadow: 0 0 30px #888;
+  -webkit-box-shadow: 0 0 30px #888;
+  box-shadow: 0 0 30px #888;
+}
+#presentation .slide .content {
+  padding: 1em 4em 1em 4em;
+}
+#presentation .slide .content pre {
+  border-left: 0.4em solid #d7d7d7;
+  font-family: Monaco, monospace;
+  font-size: 16px;
+  padding: 1em !important;
+}
+#presentation .slide .content pre code {
+  background: transparent !important;
+}
+#presentation .slide .content code {
+  font-family: Monaco, monospace;
+  font-size: 16px;
+}
+#presentation .slide .content h1 code {
+  font-size: 0.8em;
+}
+
+/* bundle "vendor/highlight.min.css" */

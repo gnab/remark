@@ -1,0 +1,10 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    yuicompressor (1.2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  yuicompressor
