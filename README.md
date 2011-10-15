@@ -14,22 +14,22 @@ Visit [gnab.github.org/remark](http://gnab.github.org/remark) to see remark in a
 
 1. Create at boilerplate HTML container:
 
-        &lt;html&gt;
-          &lt;head&gt;
-            &lt;script src="remark-x.y.min.js" type="text/javascript"&gt;&lt;/script&gt;
-            &lt;style type="text/css"&gt;
+        <html>
+          <head>
+            <script src="remark-x.y.min.js" type="text/javascript"></script>
+            <style type="text/css">
               /* Slideshow styles */
-            &lt;/style&gt;
-          &lt;/head&gt;
-          &lt;body&gt;
-            &lt;pre id="source"&gt;
+            </style>
+          </head>
+          <body>
+            <pre id="source">
               <!-- Slideshow markdown -->
-            &lt;/pre&gt;
-            &lt;div id="presentation"&gt;&lt;div&gt;
-          &lt;/body&gt;
-        &lt;/html&gt;
+            </pre>
+            <div id="presentation"><div>
+          </body>
+        </html>
 
-2. Replace the `remark-x.y-min.js` with the latest version available from the [downloads page](https://github.com/gnab/remark/downloads)
+2. Replace the `remark-x.y-min.js` with the latest version available from the [downloads page](https://github.com/gnab/remark/downloads).
 
 3. Enter you Markdown-formatted slideshow in the assigned area.
 
