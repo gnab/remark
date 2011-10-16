@@ -5,9 +5,8 @@
 
   /* bundle "src/remark/converter.js" */
 
-  var remark = context.remark = context.remark || {};
-
-  var slideshow
+  var remark = context.remark = context.remark || {}
+    , slideshow
     , slides
     , converter
     , currentSlideIndex = -1
@@ -166,7 +165,7 @@
   };
 
   var formatContent = function (content) {
-    remark.converter.convertInlineClasses(content);
+    remark.converter.convertContentClasses(content);
     remark.converter.convertSlideClasses(content);
 
     content.innerHTML = converter.makeHtml(content.innerHTML.trim(' '));

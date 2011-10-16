@@ -15,6 +15,14 @@ describe('converter', function () {
       expect(convert(' .class').innerHTML).toBe(' .class');
     });
 
+    it('should unescape escaped test', function () {
+      expect(convert('\\.class').innerHTML).toBe('.class');
+    });
+
+    it('should ignore content class with square brackets', function () {
+      expect(convert('.class[text]').innerHTML).toBe('.class[text]');
+    });
+
     it('should extract single class', function () {
       expect(convert('.class').innerHTML).toBe('');
     });
@@ -32,10 +40,10 @@ describe('converter', function () {
     });
   });
 
-  describe('inline classes', function () {
+  describe('content classes', function () {
     var convert = function(text) {
       var content = {innerHTML: text};
-      remark.converter.convertInlineClasses(content);
+      remark.converter.convertContentClasses(content);
       return content.innerHTML;
     };
 
@@ -45,6 +53,10 @@ describe('converter', function () {
 
     it('should ignore class without belonging square brackets', function () {
       expect(convert('.class')).toBe('.class');
+    });
+
+    it('should unescape escaped test', function () {
+      expect(convert('\\.class[text]')).toBe('.class[text]');
     });
 
     it('should convert single class', function () {
@@ -60,6 +72,11 @@ describe('converter', function () {
     it('should convert recursive classes', function () {
       expect(convert('.a[.b[text]]')).toBe(
         '<span class="a"><span class="b">text</span></span>');
+    });
+
+    it('should convert class containing fancy markdown', function () {
+      expect(convert('.right[![title](image.png)]')).
+        toBe('<span class="right">![title](image.png)</span>')
     });
   });
 

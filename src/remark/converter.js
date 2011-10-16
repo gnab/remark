@@ -4,7 +4,7 @@
     , converter = remark.converter = {};
 
   converter.convertSlideClasses = function (content) {
-    var classFinder = /(^|\n)(\\)?((\.([a-z_-]+))+)/ig
+    var classFinder = /(^|\n)(\\)?((\.([a-z_-]+))+\s*($|\n))/ig
       , classes
       , replacement
       , contentClasses = [content.className]
@@ -34,8 +34,8 @@
     }
   };
 
-  converter.convertInlineClasses = function (content) {
-    var classFinder = /(\\)?(((\.([a-z_-]+))+)\[(.+?)\])/ig
+  converter.convertContentClasses = function (content) {
+    var classFinder = /(\\)?(((\.([a-z_-]+))+)\[(.+)\])/ig
       , match
       , classes
       , replacement
