@@ -24,19 +24,19 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
           <body>
             <pre id="source">
         .center.middle
-        # slideshow title
+        # Title
 
         ---
 
-        # agenda
+        # Agenda
 
-        1. introduction
-        2. deep-dive
+        1. Introduction
+        2. Deep-dive
         3. ...
 
         ---
 
-        # first slide
+        # Introduction
 
         ...
             </pre>
