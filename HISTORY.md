@@ -1,6 +1,6 @@
 ### 0.1.2
 
-* Prepending instead of appending default styles to <head> ([kjbekkelund](https://github.com/kjbekkelund))
+* Prepending instead of appending default styles to &lt;head&gt; ([kjbekkelund](https://github.com/kjbekkelund))
 
 ### 0.1.1
 
