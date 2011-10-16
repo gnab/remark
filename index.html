@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Remark</title>
-    <script src="https://github.com/downloads/gnab/remark/remark-0.1.min.js" type="text/javascript"></script>
+    <script src="https://github.com/downloads/gnab/remark/remark-0.1.1.min.js" type="text/javascript"></script>
     <style type="text/css" media="screen">
       @import url(http://fonts.googleapis.com/css?family=Lobster);
 
@@ -16,9 +16,12 @@
         color: #000;
         text-decoration: none;
       }
+      .center {
+        margin: 0 auto;
+      }
       .footnote {
         position: absolute;
-        bottom: 4em;
+        bottom: 3em;
       }
       .red {
         color: #fa0000;
@@ -47,10 +50,41 @@ A simplistic, in-browser, markdown-driven slideshow tool targeted at people who 
 
 ---
 
-# HTML Container
+# Why use remark?
 
-A simple HTML container for hosting the styles, markdown and the slides themselves is needed:
+Since the slideshow is expressed using Markdown, you may:
 
+- Focus on the content, expressing yourself in next to plain text not worrying what flashy graphics and disturbing effects to put where
+
+Since the slideshow is actually an HTML document, you may:
+
+- Display it in any decent browser
+
+- Style it using regular CSS, just like any other HTML content
+
+Since the slideshow is contained in a file, you may:
+
+- Store it wherever you like; on your computer, hosted from your Dropbox, hosted on Github Pages alongside the stuff you're presenting...
+
+- Keep track of changes using your favourite SCM tool, like Git or Mercurial
+
+---
+
+# How does it work?
+
+A Markdown-formatted chunk of text contained in an HTML document is processed and separated into individual slides - all handled by JavaScript running in the browser.
+
+&nbsp;
+
+.center[![Process](process.svg)]
+
+---
+
+# HTML Document
+
+A simple HTML document is needed for hosting the styles, markdown and the generated slides themselves:
+
+    &lt;!DOCTYPE html&gt;
     &lt;html&gt;
       &lt;head&gt;
         &lt;script src="remark.js" type="text/javascript"&gt;&lt;/script&gt;
@@ -62,7 +96,7 @@ A simple HTML container for hosting the styles, markdown and the slides themselv
         &lt;pre id="source"&gt;
           <!-- Slideshow markdown -->
         &lt;/pre&gt;
-        &lt;div id="slideshow"&gt;<!-- Generated slides -->&lt;div&gt;
+        &lt;div id="slideshow"&gt;&lt;div&gt;
       &lt;/body&gt;
     &lt;/html&gt;
 
@@ -72,7 +106,7 @@ You may [download `remark.js`](https://github.com/gnab/remark/downloads) to have
 
 # Slideshow Markdown
 
-The slideshow itself is represented by a Markdown-formatted chunk of text:
+The slideshow itself is expressed by a Markdown-formatted chunk of text:
 
     .no-highlight
     # Slide 1
@@ -157,6 +191,24 @@ If the language detected is incorrect, you may specify the language to use by ad
 
 To disable syntax highlighting, use the class `.no-highlight no-highlight`.
 
+---
+
+# Getting started
+
+Getting up and running is done in only a few steps:
+
+1. Visit the [project site](http://github.com/gnab/remark)
+
+2. Follow the steps in the Usage section
+
+
+This slideshow is of course created using remark, and may be inspected for 
+
+---
+.center.middle
+# That's all folks (for now)!
+
+Slideshow created using [remark](http://github.com/gnab/remark).
     </pre>
     <div id="slideshow"></div>
   </body>
