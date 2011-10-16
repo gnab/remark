@@ -43,8 +43,13 @@
     style.type = 'text/css';
     style.innerHTML = '/* bundle "src/remark.css" */';
 
-    document.getElementsByTagName('head')[0].appendChild(style);
+    addElementToHead(style);
   };
+
+  var addElementToHead = function (element) {
+    var head = document.getElementsByTagName('head')[0];
+    head.insertBefore(element, head.firstChild);
+  }
 
   var createSlides = function () {
     var source = document.getElementById('source').innerHTML
