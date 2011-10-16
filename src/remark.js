@@ -110,6 +110,7 @@
         case 75:
           gotoSlide(currentSlideIndex - 1);
           break;
+        case 32:
         case 39:
         case 40:
         case 74:
