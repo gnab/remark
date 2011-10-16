@@ -14,16 +14,17 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 
 1. Create a boilerplate HTML container:
 
+        <!DOCTYPE html>
         <html>
           <head>
+            <title>Title</title>
             <script src="https://github.com/downloads/gnab/remark/remark-0.1.min.js" type="text/javascript"></script>
-            <style type="text/css">
+            <style type="text/css" media="screen">
               /* Slideshow styles */
             </style>
           </head>
           <body>
             <pre id="source">
-
         .center.middle
         # Title
 
@@ -39,10 +40,8 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 
         # Introduction
 
-        ...
-
             </pre>
-            <div id="slideshow"><div>
+            <div id="slideshow"></div>
           </body>
         </html>
 
