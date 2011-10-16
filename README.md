@@ -23,7 +23,22 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
           </head>
           <body>
             <pre id="source">
-              <!-- Slideshow markdown -->
+        .center.middle
+        # slideshow title
+
+        ---
+
+        # agenda
+
+        1. introduction
+        2. deep-dive
+        3. ...
+
+        ---
+
+        # first slide
+
+        ...
             </pre>
             <div id="slideshow"><div>
           </body>
