@@ -59,12 +59,14 @@
   var mapKeys = function (controller) {
     window.onkeydown = function (event) {
       switch (event.keyCode) {
+        case 33:
         case 37:
         case 38:
         case 75:
           controller.gotoPreviousSlide();
           break;
         case 32:
+        case 34:
         case 39:
         case 40:
         case 74:
