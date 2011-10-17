@@ -74,4 +74,25 @@
     };
   };
 
+  var mapTouches = function (controller) {
+    var width = window.innerWidth
+      , touch
+      ;
+
+    document.addEventListener('touchend', function (event) {
+      touch = event.changedTouches[0];
+
+      if (touch.clientX < width / 2) {
+        controller.gotoPreviousSlide();
+      }
+      else {
+        controller.gotoNextSlide();
+      }
+    });
+
+    document.addEventListener('touchmove', function (event) {
+      event.preventDefault();
+    });
+  };
+
 }(this);
