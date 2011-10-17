@@ -36,6 +36,8 @@
     slideshow = remark.slideshow.create(source, slideshowElement);
     controller = remark.controller.create(slideshow);
     mapKeys(controller);
+    mapTouches(controller);
+    mapWheel(controller);
   };
 
   var styleDocument = function () {
@@ -94,6 +96,17 @@
 
     document.addEventListener('touchmove', function (event) {
       event.preventDefault();
+    });
+  };
+
+  var mapWheel = function (controller) {
+    document.addEventListener('mousewheel', function (event) {
+      if (event.wheelDeltaY > 0) {
+        controller.gotoPreviousSlide();
+      }
+      else if (event.wheelDeltaY < 0) {
+        controller.gotoNextSlide();
+      };
     });
   };
 
