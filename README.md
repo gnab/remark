@@ -50,6 +50,10 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 
 3. Launch the HTML file in a decent browser and enjoy!
 
+### Slideshows created with remark
+
+- [http://gnab.github.com/editorjs/](http://gnab.github.com/editorjs/#1)
+
 ### License 
 
 remark is licensed under the MIT license. See LICENCE for further 
