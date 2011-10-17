@@ -18,6 +18,7 @@
     hideSource();
     createSlideshow();
     mapKeys();
+    mapTouches();
     navigate();
 
     window.onhashchange = navigate;
@@ -124,6 +125,27 @@
       }
     };
   };
+
+  var mapTouches = function () {
+    var width = window.innerWidth
+      , touch
+      ;
+
+    document.addEventListener('touchend', function (event) {
+      touch = event.changedTouches[0];
+
+      if (touch.clientX < width / 2) {
+        gotoSlide(currentSlideIndex - 1);
+      }
+      else {
+        gotoSlide(currentSlideIndex + 1);
+      }
+    });
+
+    document.addEventListener('touchmove', function (event) {
+      event.preventDefault();
+    });
+  }
 
   var gotoSlide = function (slideIndex) {
     var alreadyOnSlide = slideIndex === currentSlideIndex
