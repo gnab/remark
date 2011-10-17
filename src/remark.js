@@ -49,7 +49,7 @@
   var addElementToHead = function (element) {
     var head = document.getElementsByTagName('head')[0];
     head.insertBefore(element, head.firstChild);
-  }
+  };
 
   var createSlides = function () {
     var source = document.getElementById('source').innerHTML
@@ -88,7 +88,7 @@
       else {
         scale = width / (sizeFactor * widthFactor);
       }
-    
+
       slideshow.style['-webkit-transform'] = 'scale(' + scale + ')';
       slideshow.style.MozTransform = 'scale(' + scale + ')';
       slideshow.style.left = (width - slideshowWidth * scale) / 2 + 'px';
@@ -100,7 +100,7 @@
 
     window.onresize = resize;
     window.onresize();
-  }
+  };
 
   var navigate = function () {
     slideNo = parseInt((location.hash || '').substr(1), 10) || 1;
