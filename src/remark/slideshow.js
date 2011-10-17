@@ -49,14 +49,15 @@
   };
 
   var styleElement = function (element) {
-    var containerHeight = window.innerHeight
-      , containerWidth = window.innerWidth
-      , elementWidth = scaleFactor * widthFactor
+    var elementWidth = scaleFactor * widthFactor
       , elementHeight = scaleFactor * heightFactor
       ;
 
     var resize = function () {
-      var scale;
+      var containerHeight = window.innerHeight
+        , containerWidth = window.innerWidth
+        , scale
+        ;
 
       if (containerWidth / widthFactor > containerHeight / heightFactor) {
         scale = containerHeight / (scaleFactor * heightFactor);
