@@ -1,7 +1,11 @@
 !function (context) {
 
+  /* bundle "vendor/highlight.min.js" */
+  /* bundle "vendor/showdown.js" */
+
   var remark = context.remark = context.remark || {}
-    , converter = remark.converter = {};
+    , converter = remark.converter = {}
+    ;
 
   converter.convertSlideClasses = function (content) {
     var classFinder = /(^|\n)(\\)?((\.([a-z_-]+))+\s*($|\n))/ig
@@ -62,6 +66,40 @@
 
       content.innerHTML = content.innerHTML.substr(0, match.index) +
         replacement + content.innerHTML.substr(match.index + match[0].length);
+    }
+  };
+
+  converter.convertMarkdown = function (content) {
+    var converter = new Showdown.converter();
+
+    content.innerHTML = converter.makeHtml(content.innerHTML.trim(' '));
+    content.innerHTML = content.innerHTML.replace(/&amp;/g, '&');
+  };
+
+  converter.convertCodeBlocks = function (content) {
+    var codeBlocks = content.getElementsByTagName('code')
+      , block
+      , i
+      ;
+
+    for (i = 0; i < codeBlocks.length; i++) {
+      block = codeBlocks[i];
+
+      convertCodeClass(block);
+      hljs.highlightBlock(block, '  ');
+    }
+  };
+
+  var convertCodeClass = function (block) {
+    var classFinder = /^(\\)?\.([a-z_-]+)\n?/i
+      , match
+      ;
+
+    if (match = classFinder.exec(block.innerHTML)) {
+      if (!match[1]) {
+        block.innerHTML = block.innerHTML.substr(match[0].length);
+        block.className = match[2];
+      }
     }
   };
 

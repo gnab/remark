@@ -32,6 +32,7 @@ html, body {
   box-shadow: 0 0 30px #888;
 }
 #slideshow .slide .content {
+  display: table-cell;
   padding: 1em 4em 1em 4em;
 }
 #slideshow .slide .content pre {
