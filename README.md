@@ -53,7 +53,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 ### Slideshows created with remark
 
 - [http://gnab.github.com/remark](http://gnab.github.com/remark)
-- [http://gnab.github.com/editorjs/](http://gnab.github.com/editorjs/#1)
+- [http://gnab.github.com/editorjs](http://gnab.github.com/editorjs)
 
 ### License 
 
