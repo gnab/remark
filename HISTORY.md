@@ -1,3 +1,8 @@
+### 0.2.1
+
+* Fixed non-working links via touch events
+* Fixed non-working resize ([kjbekkelund](https://github.com/kjbekkelund)).
+
 ### 0.2.0
 
 * Added slide navigation using page up/down keys and mouse wheel.
