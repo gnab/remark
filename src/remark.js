@@ -84,6 +84,10 @@
       ;
 
     document.addEventListener('touchend', function (event) {
+      if (event.target.nodeName.toUpperCase() === 'A') {
+        return;
+      }
+
       touch = event.changedTouches[0];
 
       if (touch.clientX < width / 2) {
