@@ -1,6 +1,10 @@
+### 0.2.2
+
+* Simple handling of swiping, e.g. for iPhones ([kjbekkelund](https://github.com/kjbekkelund)).
+
 ### 0.2.1
 
-* Fixed non-working links via touch events
+* Fixed non-working links via touch events.
 * Fixed non-working resize ([kjbekkelund](https://github.com/kjbekkelund)).
 
 ### 0.2.0
@@ -19,4 +23,4 @@
 
 ### 0.1.0
 
-Initial version.
+* Initial version.

@@ -18,7 +18,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
         <html>
           <head>
             <title>Title</title>
-            <script src="https://github.com/downloads/gnab/remark/remark-0.2.1.min.js" type="text/javascript"></script>
+            <script src="https://github.com/downloads/gnab/remark/remark-0.2.2.min.js" type="text/javascript"></script>
             <style type="text/css" media="screen">
               /* Slideshow styles */
             </style>
