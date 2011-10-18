@@ -20,7 +20,7 @@
       alert('remark error: slideshow element not present.')
       return;
     }
-       
+
     sourceElement.style.display = 'none';
 
     styleDocument();
@@ -81,7 +81,36 @@
   var mapTouches = function (controller) {
     var width = window.innerWidth
       , touch
+      , startX
+      , endX
       ;
+
+    var isTap = function () {
+      return Math.abs(startX - endX) < 10;
+    };
+
+    var handleTap = function () {
+      if (endX < width / 2) {
+        controller.gotoPreviousSlide();
+      }
+      else {
+        controller.gotoNextSlide();
+      }
+    }
+
+    var handleSwipe = function () {
+      if (startX > endX) {
+        controller.gotoNextSlide();
+      }
+      else {
+        controller.gotoPreviousSlide();
+      }
+    }
+
+    document.addEventListener('touchstart', function (event) {
+      touch = event.touches[0];
+      startX = touch.clientX;
+    });
 
     document.addEventListener('touchend', function (event) {
       if (event.target.nodeName.toUpperCase() === 'A') {
@@ -89,12 +118,13 @@
       }
 
       touch = event.changedTouches[0];
+      endX = touch.clientX;
 
-      if (touch.clientX < width / 2) {
-        controller.gotoPreviousSlide();
+      if (isTap()) {
+        handleTap();
       }
       else {
-        controller.gotoNextSlide();
+        handleSwipe();
       }
     });
 
