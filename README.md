@@ -8,6 +8,8 @@ A simplistic, in-browser, markdown-driven slideshow tool targeted at people who 
 
 - Slide scaling, thus similar appearance on all devices / resolutions
 
+- Touch support for smart phones and pads, i.e. swipe to navigate slides
+
 ### Usage
 
 Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introduction.
