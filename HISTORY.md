@@ -1,3 +1,7 @@
+### 0.2.3
+
+* Added full highlight.js supporting a whole bunch of languages.
+
 ### 0.2.2
 
 * Simple handling of swiping, e.g. for iPhones ([kjbekkelund](https://github.com/kjbekkelund)).
