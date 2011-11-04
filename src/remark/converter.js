@@ -80,18 +80,24 @@
     var codeBlocks = content.getElementsByTagName('code')
       , block
       , i
+      , foundClass
+      , isInlineCode
       ;
 
     for (i = 0; i < codeBlocks.length; i++) {
       block = codeBlocks[i];
 
-      convertCodeClass(block);
-      hljs.highlightBlock(block, '  ');
+      foundClass = convertCodeClass(block);
+      isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE';
+
+      if (!foundClass && isInlineCode) {
+        block.className = 'no-highlight';
+      }
     }
   };
 
   var convertCodeClass = function (block) {
-    var classFinder = /^(\\)?\.([a-z_-]+)\n?/i
+    var classFinder = /^(\\)?\.([a-z_-]+)(\n|\ )/i
       , match
       ;
 
@@ -99,7 +105,23 @@
       if (!match[1]) {
         block.innerHTML = block.innerHTML.substr(match[0].length);
         block.className = match[2];
+        return true;
       }
+    }
+
+    return false;
+  };
+
+  converter.highlightCodeBlocks = function (content) {
+    var codeBlocks = content.getElementsByTagName('code')
+      , block
+      , i
+      ;
+
+    for (i = 0; i < codeBlocks.length; i++) {
+      block = codeBlocks[i];
+
+      hljs.highlightBlock(block, '  ');
     }
   };
 

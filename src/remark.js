@@ -96,7 +96,7 @@
       else {
         controller.gotoNextSlide();
       }
-    }
+    };
 
     var handleSwipe = function () {
       if (startX > endX) {
@@ -105,7 +105,7 @@
       else {
         controller.gotoPreviousSlide();
       }
-    }
+    };
 
     document.addEventListener('touchstart', function (event) {
       touch = event.touches[0];

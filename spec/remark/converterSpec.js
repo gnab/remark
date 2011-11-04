@@ -80,4 +80,36 @@ describe('converter', function () {
     });
   });
 
+  describe('code classes', function () {
+    var convert = function(code, parentTagName) {
+      var i
+        , content = document.createElement(parentTagName || 'div')
+        , node = document.createElement('code')
+        ;
+
+      node.innerHTML = code;
+      content.appendChild(node);
+
+      remark.converter.convertCodeBlocks(content);
+
+      return node;
+    };
+
+    it('should disable highlighting for inline code by default', function () {
+      expect(convert('var a = 5;').className).toBe('no-highlight');
+    });
+
+    it('should not disable highlighting for code by default', function () {
+      expect(convert('var a = 5;', 'pre').className).toBe('');
+    });
+
+    it('should extract inline code class', function () {
+      expect(convert('.ruby a = 5;').innerHTML).toBe('a = 5;');
+    });
+
+    it('should convert inline code class', function () {
+      expect(convert('.ruby a = 5;').className).toBe('ruby');
+    });
+  });
+
 });

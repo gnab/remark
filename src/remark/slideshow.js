@@ -93,6 +93,7 @@
     remark.converter.convertSlideClasses(content);
     remark.converter.convertMarkdown(content);
     remark.converter.convertCodeBlocks(content);
+    remark.converter.highlightCodeBlocks(content);
   };
 
 }(this);
