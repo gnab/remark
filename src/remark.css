@@ -51,5 +51,11 @@ html, body {
 #slideshow .slide .content h1 code {
   font-size: 0.8em;
 }
+#slideshow .slide .content .position {
+  bottom: 12px;
+  color: #888;
+  position: absolute;
+  right: 20px;
+}
 
 /* bundle "vendor/highlight.min.css" */

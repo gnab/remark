@@ -85,6 +85,7 @@
     if (content.innerHTML === '') {
       content.innerHTML = slides[slideIndex];
       formatContent(content);
+      appendPositionElement(content, slideIndex + 1, slides.length);
     }
   };
 
@@ -94,6 +95,14 @@
     remark.converter.convertMarkdown(content);
     remark.converter.convertCodeClasses(content);
     remark.converter.highlightCodeBlocks(content);
+  };
+
+  var appendPositionElement = function (content, slideNo, slideCount) {
+    var positionElement = document.createElement('div');
+
+    positionElement.className = 'position';
+    positionElement.innerHTML = slideNo + ' / ' + slideCount;
+    content.appendChild(positionElement);
   };
 
 }(this);
