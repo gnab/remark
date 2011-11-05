@@ -64,23 +64,23 @@ describe('converter', function () {
     });
 
     it('should convert single class', function () {
-      expect(convert('.class[text]')).toBe(
-        '<span class="class">text</span>')
+      expect(convert('.class[text]'))
+        .toBe('<span class="class">text</span>')
     });
 
     it('should convert multiple classes', function () {
-      expect(convert('.a.b.c[text]')).toBe(
-        '<span class="a b c">text</span>');
+      expect(convert('.a.b.c[text]'))
+        .toBe('<span class="a b c">text</span>');
     });
 
     it('should convert recursive classes', function () {
-      expect(convert('.a[.b[text]]')).toBe(
-        '<span class="a"><span class="b">text</span></span>');
+      expect(convert('.a[.b[text]]'))
+        .toBe('<span class="a"><span class="b">text</span></span>');
     });
 
     it('should convert class containing fancy markdown', function () {
-      expect(convert('.right[![title](image.png)]')).
-        toBe('<span class="right">![title](image.png)</span>')
+      expect(convert('.right[![title](image.png)]'))
+        .toBe('<span class="right">![title](image.png)</span>')
     });
   });
 
