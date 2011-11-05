@@ -1,8 +1,8 @@
 describe('converter', function () {
 
   describe('convertSlideClasses', function () {
-    var convert = function(text, className) {
-      var content = {innerHTML: text, className: className || ''};
+    var convert = function(text) {
+      var content = {innerHTML: text};
       remark.converter.convertSlideClasses(content);
       return content;
     };
@@ -27,7 +27,7 @@ describe('converter', function () {
       expect(convert('.class').innerHTML).toBe('');
     });
 
-    it('should convert single class', function () {
+    it('should apply single class', function () {
       expect(convert('.class').className).toBe(' class');
     });
 
@@ -35,7 +35,7 @@ describe('converter', function () {
       expect(convert('.a.b.c').innerHTML).toBe('');
     });
 
-    it('should convert multiple classes', function () {
+    it('should apply multiple classes', function () {
       expect(convert('.a.b.c').className).toBe(' a b c');
     });
   });
@@ -84,6 +84,41 @@ describe('converter', function () {
     });
   });
 
+  describe('convertMarkdown', function () {
+    var convert = function (text) {
+      var content = {innerHTML: text}
+      remark.converter.convertMarkdown(content) 
+      return content.innerHTML;
+    };
+
+    it('should convert simple markdown to HTML', function () {
+      expect(convert('#title')).toBe('<h1>title</h1>');
+    });
+
+    it('should convert inline code', function () {
+      expect(convert('`a = 5`')).toBe('<p><code>a = 5</code></p>');
+    });
+
+    it('should convert code block', function () {
+      expect(convert('Code:\n\n    a = 5'))
+        .toBe('<p>Code:</p>\n\n<pre><code>a = 5\n</code></pre>');
+    });
+
+    it('should leave HTML as is', function () {
+      expect(convert('<p>a</p>')).toBe('<p>a</p>');
+    });
+
+    it('should escape HTML in inline code', function () {
+      expect(convert('`<p>a</p>`'))
+        .toBe('<p><code>&lt;p&gt;a&lt;/p&gt;</code></p>');
+    });
+
+    it('should escape HTML in code block', function () {
+      expect(convert('Code:\n\n    <p>a</p>'))
+        .toBe('<p>Code:</p>\n\n<pre><code>&lt;p&gt;a&lt;/p&gt;\n</code></pre>');
+    });
+  });
+
   describe('convertCodeClasses', function () {
     var convert = function(code, parentTagName) {
       var i
@@ -111,7 +146,7 @@ describe('converter', function () {
       expect(convert('.ruby a = 5').innerHTML).toBe('a = 5');
     });
 
-    it('should convert inline code class', function () {
+    it('should apply inline code class', function () {
       expect(convert('.ruby a = 5').className).toBe('ruby');
     });
 
@@ -119,7 +154,7 @@ describe('converter', function () {
       expect(convert('.ruby\na = 5').innerHTML).toBe('a = 5');
     });
 
-    it('should convert code class', function () {
+    it('should apply code class', function () {
       expect(convert('.ruby\na = 5').className).toBe('ruby');
     });
 
