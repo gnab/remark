@@ -76,7 +76,7 @@
     content.innerHTML = content.innerHTML.replace(/&amp;/g, '&');
   };
 
-  converter.convertCodeBlocks = function (content) {
+  converter.convertCodeClasses = function (content) {
     var codeBlocks = content.getElementsByTagName('code')
       , block
       , i
@@ -102,7 +102,10 @@
       ;
 
     if (match = classFinder.exec(block.innerHTML)) {
-      if (!match[1]) {
+      if (match[1]) {
+        block.innerHTML = block.innerHTML.substr(match[1].length);
+      }
+      else {
         block.innerHTML = block.innerHTML.substr(match[0].length);
         block.className = match[2];
         return true;

@@ -1,6 +1,6 @@
 describe('converter', function () {
 
-  describe('slide classes', function () {
+  describe('convertSlideClasses', function () {
     var convert = function(text, className) {
       var content = {innerHTML: text, className: className || ''};
       remark.converter.convertSlideClasses(content);
@@ -40,7 +40,7 @@ describe('converter', function () {
     });
   });
 
-  describe('content classes', function () {
+  describe('convertContentClasses', function () {
     var convert = function(text) {
       var content = {innerHTML: text};
       remark.converter.convertContentClasses(content);
@@ -51,11 +51,15 @@ describe('converter', function () {
       expect(convert('some text')).toBe('some text');
     });
 
-    it('should ignore class without belonging square brackets', function () {
+    it('should ignore class without square brackets', function () {
       expect(convert('.class')).toBe('.class');
     });
 
-    it('should unescape escaped test', function () {
+    it('should ignore escaped class without square brackets', function () {
+      expect(convert('\\.class')).toBe('\\.class');
+    });
+
+    it('should unescape escaped class', function () {
       expect(convert('\\.class[text]')).toBe('.class[text]');
     });
 
@@ -80,7 +84,7 @@ describe('converter', function () {
     });
   });
 
-  describe('code classes', function () {
+  describe('convertCodeClasses', function () {
     var convert = function(code, parentTagName) {
       var i
         , content = document.createElement(parentTagName || 'div')
@@ -90,7 +94,7 @@ describe('converter', function () {
       node.innerHTML = code;
       content.appendChild(node);
 
-      remark.converter.convertCodeBlocks(content);
+      remark.converter.convertCodeClasses(content);
 
       return node;
     };
@@ -104,11 +108,27 @@ describe('converter', function () {
     });
 
     it('should extract inline code class', function () {
-      expect(convert('.ruby a = 5;').innerHTML).toBe('a = 5;');
+      expect(convert('.ruby a = 5').innerHTML).toBe('a = 5');
     });
 
     it('should convert inline code class', function () {
-      expect(convert('.ruby a = 5;').className).toBe('ruby');
+      expect(convert('.ruby a = 5').className).toBe('ruby');
+    });
+
+    it('should extract code class', function () {
+      expect(convert('.ruby\na = 5').innerHTML).toBe('a = 5');
+    });
+
+    it('should convert code class', function () {
+      expect(convert('.ruby\na = 5').className).toBe('ruby');
+    });
+
+    it('should unescape escaped inline code class', function () {
+      expect(convert('\\.ruby a = 5').innerHTML).toBe('.ruby a = 5');
+    });
+
+    it('should unescape escaped code class', function () {
+      expect(convert('\\.ruby\na = 5', 'pre').innerHTML).toBe('.ruby\na = 5');
     });
   });
 
