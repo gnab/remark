@@ -1,151 +1,158 @@
 /*
 Date: 17.V.2011
 Author: pumbur <pumbur@pumbur.net>
+
+Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+as well as code blocks (pre => code).
 */
 
 pre code
 {
   display: block; padding: 0.5em;
+}
+
+code 
+{
   background: #222;
 }
 
-pre .header,
-pre .profile .header *,
-pre .ini .title
+code .header,
+code .profile .header *,
+code .ini .title
 {
   color: #fff;
 }
 
-pre .comment,
-pre .javadoc,
-pre .preprocessor,
-pre .shebang,
-pre .profile .summary,
-pre .diff,
-pre .pi,
-pre .doctype,
-pre .xml .tag,
-pre .template_comment,
-pre .css .rules,
-pre .tex .special
+code .comment,
+code .javadoc,
+code .preprocessor,
+code .shebang,
+code .profile .summary,
+code .diff,
+code .pi,
+code .doctype,
+code .xml .tag,
+code .template_comment,
+code .css .rules,
+code .tex .special
 {
   color: #444;
 }
 
-pre .string,
-pre .symbol,
-pre .diff .change,
-pre .regexp,
-pre .xml .attribute,
-pre .xml .value,
-pre .smalltalk .char,
-pre .ini .value
+code .string,
+code .symbol,
+code .diff .change,
+code .regexp,
+code .xml .attribute,
+code .xml .value,
+code .smalltalk .char,
+code .ini .value
 {
   color: #ffcc33;
 }
 
-pre .number,
-pre .addition
+code .number,
+code .addition
 {
   color: #00cc66;
 }
 
-pre .built_in,
-pre .literal,
-pre .vhdl .type,
-pre .go .constant,
-pre .go .typename,
-pre .ini .keyword,
-pre .lua .title,
-pre .perl .variable,
-pre .php .variable,
-pre .mel .variable,
-pre .django .variable,
-pre .css .funtion,
-pre .smalltalk .method,
-pre .hexcolor,
-pre .important,
-pre .flow,
-pre .inheritance,
-pre .parser3 .variable
+code .built_in,
+code .literal,
+code .vhdl .type,
+code .go .constant,
+code .go .typename,
+code .ini .keyword,
+code .lua .title,
+code .perl .variable,
+code .php .variable,
+code .mel .variable,
+code .django .variable,
+code .css .funtion,
+code .smalltalk .method,
+code .hexcolor,
+code .important,
+code .flow,
+code .inheritance,
+code .parser3 .variable
 {
   color: #32AAEE;
 }
 
-pre .keyword,
-pre .xml .tag .title,
-pre .css .tag,
-pre .css .class,
-pre .css .id,
-pre .css .pseudo,
-pre .css .attr_selector,
-pre .lisp .title,
-pre .winutils,
-pre .tex .command
+code .keyword,
+code .xml .tag .title,
+code .css .tag,
+code .css .class,
+code .css .id,
+code .css .pseudo,
+code .css .attr_selector,
+code .lisp .title,
+code .winutils,
+code .tex .command
 {
   color: #6644aa;
 }
 
-pre .class .title,
-pre .ruby .constant,
-pre .vala .constant,
-pre .parent,
-pre .deletion,
-pre .template_tag,
-pre .css .keyword,
-pre .javascript .title,
-pre .objectivec .class .id,
-pre .smalltalk .class,
-pre .lisp .keyword,
-pre .apache .tag,
-pre .nginx .variable,
-pre .envvar,
-pre .bash .variable,
-pre .go .built_in,
-pre .vbscript .built_in,
-pre .lua .built_in,
-pre .rsl .built_in,
-pre .tail,
-pre .avrasm .label,
-pre .parser3 .title,
-pre .tex .formula,
-pre .tex .formula *
+code .class .title,
+code .ruby .constant,
+code .vala .constant,
+code .parent,
+code .deletion,
+code .template_tag,
+code .css .keyword,
+code .javascript .title,
+code .objectivec .class .id,
+code .smalltalk .class,
+code .lisp .keyword,
+code .apache .tag,
+code .nginx .variable,
+code .envvar,
+code .bash .variable,
+code .go .built_in,
+code .vbscript .built_in,
+code .lua .built_in,
+code .rsl .built_in,
+code .tail,
+code .avrasm .label,
+code .parser3 .title,
+code .tex .formula,
+code .tex .formula *
 {
   color: #bb1166;
 }
 
-pre .yardoctag,
-pre .phpdoc,
-pre .profile .header,
-pre .ini .title,
-pre .apache .tag,
-pre .parser3 .title
+code .yardoctag,
+code .phpdoc,
+code .profile .header,
+code .ini .title,
+code .apache .tag,
+code .parser3 .title
 {
   font-weight: bold;
 }
 
-pre .xml .javascript,
-pre .xml .css,
-pre .xml .cdata
+code .xml .javascript,
+code .xml .css,
+code .xml .cdata
 {
   opacity: 0.6;
 }
 
-pre code,
-pre .javascript,
-pre .css,
-pre .xml,
-pre .subst,
-pre .diff .chunk,
-pre .css .value,
-pre .css .attribute,
-pre .lisp .string,
-pre .lisp .number,
-pre .tail .params,
-pre .container,
-pre .haskell *,
-pre .erlang *,
-pre .erlang_repl *
+code,
+code .javascript,
+code .css,
+code .xml,
+code .subst,
+code .diff .chunk,
+code .css .value,
+code .css .attribute,
+code .lisp .string,
+code .lisp .number,
+code .tail .params,
+code .container,
+code .haskell *,
+code .erlang *,
+code .erlang_repl *
 {
   color: #aaa;
 }

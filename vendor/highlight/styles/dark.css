@@ -2,102 +2,108 @@
 
 Dark style from softwaremaniacs.org (c) Ivan Sagalaev <Maniac@SoftwareManiacs.Org>
 
+Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+as well as code blocks (pre => code).
+
 */
 
 pre code {
   display: block; padding: 0.5em;
+}
+
+code {
   background: #444;
 }
 
-pre .keyword,
-pre .literal,
-pre .change,
-pre .winutils,
-pre .flow,
-pre .lisp .title,
-pre .tex .special {
+code .keyword,
+code .literal,
+code .change,
+code .winutils,
+code .flow,
+code .lisp .title,
+code .tex .special {
   color: white;
 }
 
-pre code,
-pre .ruby .subst {
+code,
+code .ruby .subst {
   color: #DDD;
 }
 
-pre .string,
-pre .function .title,
-pre .class .title,
-pre .haskell .label,
-pre .ini .title,
-pre .tag .value,
-pre .css .rules .value,
-pre .preprocessor,
-pre .ruby .symbol,
-pre .ruby .symbol .string,
-pre .ruby .symbol .keyword,
-pre .ruby .symbol .keymethods,
-pre .ruby .instancevar,
-pre .ruby .class .parent,
-pre .built_in,
-pre .sql .aggregate,
-pre .django .template_tag,
-pre .django .variable,
-pre .smalltalk .class,
-pre .javadoc,
-pre .ruby .string,
-pre .django .filter .argument,
-pre .smalltalk .localvars,
-pre .smalltalk .array,
-pre .attr_selector,
-pre .pseudo,
-pre .addition,
-pre .stream,
-pre .envvar,
-pre .apache .tag,
-pre .apache .cbracket,
-pre .tex .command,
-pre .input_number {
+code .string,
+code .function .title,
+code .class .title,
+code .haskell .label,
+code .ini .title,
+code .tag .value,
+code .css .rules .value,
+code .preprocessor,
+code .ruby .symbol,
+code .ruby .symbol .string,
+code .ruby .symbol .keyword,
+code .ruby .symbol .keymethods,
+code .ruby .instancevar,
+code .ruby .class .parent,
+code .built_in,
+code .sql .aggregate,
+code .django .template_tag,
+code .django .variable,
+code .smalltalk .class,
+code .javadoc,
+code .ruby .string,
+code .django .filter .argument,
+code .smalltalk .localvars,
+code .smalltalk .array,
+code .attr_selector,
+code .pseudo,
+code .addition,
+code .stream,
+code .envvar,
+code .apache .tag,
+code .apache .cbracket,
+code .tex .command,
+code .input_number {
   color: #D88;
 }
 
-pre .comment,
-pre .java .annotation,
-pre .python .decorator,
-pre .template_comment,
-pre .pi,
-pre .doctype,
-pre .deletion,
-pre .shebang,
-pre .apache .sqbracket,
-pre .tex .formula {
+code .comment,
+code .java .annotation,
+code .python .decorator,
+code .template_comment,
+code .pi,
+code .doctype,
+code .deletion,
+code .shebang,
+code .apache .sqbracket,
+code .tex .formula {
   color: #777;
 }
 
-pre .keyword,
-pre .literal,
-pre .css .id,
-pre .phpdoc,
-pre .function .title,
-pre .class .title,
-pre .haskell .label,
-pre .vbscript .built_in,
-pre .sql .aggregate,
-pre .rsl .built_in,
-pre .smalltalk .class,
-pre .xml .tag .title,
-pre .diff .header,
-pre .chunk,
-pre .winutils,
-pre .bash .variable,
-pre .lisp .title,
-pre .apache .tag,
-pre .tex .special {
+code .keyword,
+code .literal,
+code .css .id,
+code .phpdoc,
+code .function .title,
+code .class .title,
+code .haskell .label,
+code .vbscript .built_in,
+code .sql .aggregate,
+code .rsl .built_in,
+code .smalltalk .class,
+code .xml .tag .title,
+code .diff .header,
+code .chunk,
+code .winutils,
+code .bash .variable,
+code .lisp .title,
+code .apache .tag,
+code .tex .special {
   font-weight: bold;
 }
 
-pre .xml .css,
-pre .xml .javascript,
-pre .xml .vbscript,
-pre .tex .formula {
+code .xml .css,
+code .xml .javascript,
+code .xml .vbscript,
+code .tex .formula {
   opacity: 0.5;
 }

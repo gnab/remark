@@ -2,117 +2,123 @@
 
 Intellij Idea-like styling (c) Vasily Polovnyov <vast@whiteants.net>
 
+Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+as well as code blocks (pre => code).
+
 */
 
 pre code {
   display: block; padding: 0.5em;
+}
+
+code {
   color: #000;
   background: #fff;
 }
 
-pre .subst,
-pre .title {
+code .subst,
+code .title {
   font-weight: normal;
   color: #000;
 }
 
-pre .comment,
-pre .template_comment,
-pre .javadoc,
-pre .diff .header {
+code .comment,
+code .template_comment,
+code .javadoc,
+code .diff .header {
   color: #808080;
   font-style: italic;
 }
 
-pre .annotation,
-pre .decorator,
-pre .preprocessor,
-pre .doctype,
-pre .pi,
-pre .chunk,
-pre .shebang,
-pre .apache .cbracket,
-pre .input_number {
+code .annotation,
+code .decorator,
+code .preprocessor,
+code .doctype,
+code .pi,
+code .chunk,
+code .shebang,
+code .apache .cbracket,
+code .input_number {
   color: #808000;
 }
 
-pre .tag,
-pre .pi {
+code .tag,
+code .pi {
   background: #efefef;
 }
 
-pre .tag .title,
-pre .id,
-pre .attr_selector,
-pre .pseudo,
-pre .literal,
-pre .keyword,
-pre .hexcolor,
-pre .css .function,
-pre .ini .title,
-pre .css .class,
-pre .list .title,
-pre .tex .command {
+code .tag .title,
+code .id,
+code .attr_selector,
+code .pseudo,
+code .literal,
+code .keyword,
+code .hexcolor,
+code .css .function,
+code .ini .title,
+code .css .class,
+code .list .title,
+code .tex .command {
   font-weight: bold;
   color: #000080;
 }
 
-pre .attribute,
-pre .rules .keyword,
-pre .number,
-pre .date,
-pre .regexp,
-pre .tex .special {
+code .attribute,
+code .rules .keyword,
+code .number,
+code .date,
+code .regexp,
+code .tex .special {
   font-weight: bold;
   color: #0000ff;
 }
 
-pre .number,
-pre .regexp {
+code .number,
+code .regexp {
   font-weight: normal;
 }
 
-pre .string,
-pre .value,
-pre .filter .argument,
-pre .css .function .params,
-pre .apache .tag {
+code .string,
+code .value,
+code .filter .argument,
+code .css .function .params,
+code .apache .tag {
   color: #008000;
   font-weight: bold;
 }
 
-pre .symbol,
-pre .ruby .symbol .string,
-pre .ruby .symbol .keyword,
-pre .ruby .symbol .keymethods,
-pre .char,
-pre .tex .formula {
+code .symbol,
+code .ruby .symbol .string,
+code .ruby .symbol .keyword,
+code .ruby .symbol .keymethods,
+code .char,
+code .tex .formula {
   color: #000;
   background: #d0eded;
   font-style: italic;
 }
 
-pre .phpdoc,
-pre .yardoctag,
-pre .javadoctag {
+code .phpdoc,
+code .yardoctag,
+code .javadoctag {
   text-decoration: underline;
 }
 
-pre .variable,
-pre .envvar,
-pre .apache .sqbracket,
-pre .nginx .built_in {
+code .variable,
+code .envvar,
+code .apache .sqbracket,
+code .nginx .built_in {
   color: #660e7a;
 }
 
-pre .addition {
+code .addition {
   background: #baeeba;
 }
 
-pre .deletion {
+code .deletion {
   background: #ffc8bd;
 }
 
-pre .diff .change {
+code .diff .change {
   background: #bccff9;
 }

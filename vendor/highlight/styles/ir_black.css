@@ -1,103 +1,109 @@
 /*
   IR_Black style (c) Vasily Mikhailitchenko <vaskas@programica.ru>
+
+  Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+  as well as code blocks (pre => code).
 */
 
 pre code {
   display: block; padding: 0.5em;
+}
+
+code {
   background: #000; color: #f8f8f8;
 }
 
-pre .shebang,
-pre .comment,
-pre .template_comment,
-pre .javadoc {
+code .shebang,
+code .comment,
+code .template_comment,
+code .javadoc {
   color: #7c7c7c;
 }
 
-pre .keyword,
-pre .tag,
-pre .ruby .function .keyword,
-pre .tex .command {
+code .keyword,
+code .tag,
+code .ruby .function .keyword,
+code .tex .command {
   color: #96CBFE;
 }
 
-pre .function .keyword,
-pre .sub .keyword,
-pre .method,
-pre .list .title {
+code .function .keyword,
+code .sub .keyword,
+code .method,
+code .list .title {
   color: #FFFFB6;
 }
 
-pre .string,
-pre .tag .value,
-pre .cdata,
-pre .filter .argument,
-pre .attr_selector,
-pre .apache .cbracket,
-pre .date {
+code .string,
+code .tag .value,
+code .cdata,
+code .filter .argument,
+code .attr_selector,
+code .apache .cbracket,
+code .date {
   color: #A8FF60;
 }
 
-pre .subst {
+code .subst {
   color: #DAEFA3;
 }
 
-pre .regexp {
+code .regexp {
   color: #E9C062;
 }
 
-pre .function .title,
-pre .sub .identifier,
-pre .pi,
-pre .decorator,
-pre .ini .title,
-pre .tex .special {
+code .function .title,
+code .sub .identifier,
+code .pi,
+code .decorator,
+code .ini .title,
+code .tex .special {
   color: #FFFFB6;
 }
 
-pre .class .title,
-pre .haskell .label,
-pre .constant,
-pre .smalltalk .class,
-pre .javadoctag,
-pre .yardoctag,
-pre .phpdoc,
-pre .nginx .built_in {
+code .class .title,
+code .haskell .label,
+code .constant,
+code .smalltalk .class,
+code .javadoctag,
+code .yardoctag,
+code .phpdoc,
+code .nginx .built_in {
   color: #FFFFB6;
 }
 
-pre .symbol,
-pre .ruby .symbol .string,
-pre .ruby .symbol .keyword,
-pre .ruby .symbol .keymethods,
-pre .number,
-pre .variable,
-pre .vbscript,
-pre .literal {
+code .symbol,
+code .ruby .symbol .string,
+code .ruby .symbol .keyword,
+code .ruby .symbol .keymethods,
+code .number,
+code .variable,
+code .vbscript,
+code .literal {
   color: #C6C5FE;
 }
 
-pre .css .tag {
+code .css .tag {
   color: #96CBFE;
 }
 
-pre .css .rules .property,
-pre .css .id {
+code .css .rules .property,
+code .css .id {
   color: #FFFFB6;
 }
 
-pre .css .class {
+code .css .class {
   color: #FFF;
 }
 
-pre .hexcolor {
+code .hexcolor {
   color: #C6C5FE;
 }
 
-pre .number {
+code .number {
   color:#FF73FD;
 }
 
-pre .tex .formula {
+code .tex .formula {
   opacity: 0.7;
 }

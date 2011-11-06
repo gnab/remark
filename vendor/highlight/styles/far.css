@@ -2,117 +2,123 @@
 
 FAR Style (c) MajestiC <majestic2k@gmail.com>
 
+Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+as well as code blocks (pre => code).
+
 */
 
 pre code {
   display: block; padding: 0.5em;
+}
+
+code {
   background: #000080;
 }
 
-pre code,
+code,
 .ruby .subst {
   color: #0FF;
 }
 
-pre .string,
-pre .ruby .string,
-pre .function .title,
-pre .class .title,
-pre .haskell .label,
-pre .ini .title,
-pre .tag .value,
-pre .css .rules .value,
-pre .css .rules .value .number,
-pre .preprocessor,
-pre .ruby .symbol,
-pre .ruby .symbol .string,
-pre .ruby .symbol .keyword,
-pre .ruby .symbol .keymethods,
-pre .built_in,
-pre .sql .aggregate,
-pre .django .template_tag,
-pre .django .variable,
-pre .smalltalk .class,
-pre .addition,
-pre .apache .tag,
-pre .apache .cbracket,
-pre .tex .command {
+code .string,
+code .ruby .string,
+code .function .title,
+code .class .title,
+code .haskell .label,
+code .ini .title,
+code .tag .value,
+code .css .rules .value,
+code .css .rules .value .number,
+code .preprocessor,
+code .ruby .symbol,
+code .ruby .symbol .string,
+code .ruby .symbol .keyword,
+code .ruby .symbol .keymethods,
+code .built_in,
+code .sql .aggregate,
+code .django .template_tag,
+code .django .variable,
+code .smalltalk .class,
+code .addition,
+code .apache .tag,
+code .apache .cbracket,
+code .tex .command {
   color: #FF0;
 }
 
-pre .keyword,
-pre .css .id,
-pre .function .title,
-pre .class .title,
-pre .haskell .label,
-pre .ini .title,
-pre .vbscript .built_in,
-pre .sql .aggregate,
-pre .rsl .built_in,
-pre .smalltalk .class,
-pre .xml .tag .title,
-pre .winutils,
-pre .flow,
-pre .lisp .title,
-pre .change,
-pre .envvar,
-pre .bash .variable,
-pre .tex .special {
+code .keyword,
+code .css .id,
+code .function .title,
+code .class .title,
+code .haskell .label,
+code .ini .title,
+code .vbscript .built_in,
+code .sql .aggregate,
+code .rsl .built_in,
+code .smalltalk .class,
+code .xml .tag .title,
+code .winutils,
+code .flow,
+code .lisp .title,
+code .change,
+code .envvar,
+code .bash .variable,
+code .tex .special {
   color: #FFF;
 }
 
-pre .comment,
-pre .phpdoc,
-pre .javadoc,
-pre .java .annotation,
-pre .template_comment,
-pre .deletion,
-pre .apache .sqbracket,
-pre .tex .formula {
+code .comment,
+code .phpdoc,
+code .javadoc,
+code .java .annotation,
+code .template_comment,
+code .deletion,
+code .apache .sqbracket,
+code .tex .formula {
   color: #888;
 }
 
-pre .number,
-pre .date,
-pre .regexp,
-pre .literal,
-pre .smalltalk .symbol,
-pre .smalltalk .char {
+code .number,
+code .date,
+code .regexp,
+code .literal,
+code .smalltalk .symbol,
+code .smalltalk .char {
   color: #0F0;
 }
 
-pre .python .decorator,
-pre .django .filter .argument,
-pre .smalltalk .localvars,
-pre .smalltalk .array,
-pre .attr_selector,
-pre .pseudo,
-pre .xml .pi,
-pre .diff .header,
-pre .chunk,
-pre .shebang,
-pre .nginx .built_in,
-pre .input_number {
+code .python .decorator,
+code .django .filter .argument,
+code .smalltalk .localvars,
+code .smalltalk .array,
+code .attr_selector,
+code .pseudo,
+code .xml .pi,
+code .diff .header,
+code .chunk,
+code .shebang,
+code .nginx .built_in,
+code .input_number {
   color: #008080;
 }
 
-pre .keyword,
-pre .css .id,
-pre .function .title,
-pre .class .title,
-pre .haskell .label,
-pre .ini .title,
-pre .vbscript .built_in,
-pre .sql .aggregate,
-pre .rsl .built_in,
-pre .smalltalk .class,
-pre .xml .tag .title,
-pre .winutils,
-pre .flow,
-pre .lisp .title,
-pre .apache .tag,
-pre .nginx .built_in,
-pre .tex .command,
-pre .tex .special {
+code .keyword,
+code .css .id,
+code .function .title,
+code .class .title,
+code .haskell .label,
+code .ini .title,
+code .vbscript .built_in,
+code .sql .aggregate,
+code .rsl .built_in,
+code .smalltalk .class,
+code .xml .tag .title,
+code .winutils,
+code .flow,
+code .lisp .title,
+code .apache .tag,
+code .nginx .built_in,
+code .tex .command,
+code .tex .special {
   font-weight: bold;
 }

@@ -52,3 +52,6 @@ html, body {
   position: absolute;
   right: 20px;
 }
+p > code {
+  padding: 1px 4px;
+}

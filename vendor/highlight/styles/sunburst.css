@@ -2,146 +2,152 @@
 
 Sunburst-like style (c) Vasily Polovnyov <vast@whiteants.net>
 
+Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+as well as code blocks (pre => code).
+
 */
 
 pre code {
   display: block; padding: 0.5em;
+}
+
+code {
   background: #000; color: #f8f8f8;
 }
 
-pre .comment,
-pre .template_comment,
-pre .javadoc {
+code .comment,
+code .template_comment,
+code .javadoc {
   color: #aeaeae;
   font-style: italic;
 }
 
-pre .keyword,
-pre .ruby .function .keyword {
+code .keyword,
+code .ruby .function .keyword {
   color: #E28964;
 }
 
-pre .function .keyword,
-pre .sub .keyword,
-pre .method,
-pre .list .title {
+code .function .keyword,
+code .sub .keyword,
+code .method,
+code .list .title {
   color: #99CF50;
 }
 
-pre .string,
-pre .tag .value,
-pre .cdata,
-pre .filter .argument,
-pre .attr_selector,
-pre .apache .cbracket,
-pre .date,
-pre .tex .command {
+code .string,
+code .tag .value,
+code .cdata,
+code .filter .argument,
+code .attr_selector,
+code .apache .cbracket,
+code .date,
+code .tex .command {
   color: #65B042;
 }
 
-pre .subst {
+code .subst {
   color: #DAEFA3;
 }
 
-pre .regexp {
+code .regexp {
   color: #E9C062;
 }
 
-pre .function .title,
-pre .sub .identifier,
-pre .pi,
-pre .tag,
-pre .tag .keyword,
-pre .decorator,
-pre .ini .title,
-pre .shebang,
-pre .input_number {
+code .function .title,
+code .sub .identifier,
+code .pi,
+code .tag,
+code .tag .keyword,
+code .decorator,
+code .ini .title,
+code .shebang,
+code .input_number {
   color: #89BDFF;
 }
 
-pre .class .title,
-pre .haskell .label,
-pre .smalltalk .class,
-pre .javadoctag,
-pre .yardoctag,
-pre .phpdoc {
+code .class .title,
+code .haskell .label,
+code .smalltalk .class,
+code .javadoctag,
+code .yardoctag,
+code .phpdoc {
   text-decoration: underline;
 }
 
-pre .symbol,
-pre .ruby .symbol .string,
-pre .ruby .symbol .keyword,
-pre .ruby .symbol .keymethods,
-pre .number {
+code .symbol,
+code .ruby .symbol .string,
+code .ruby .symbol .keyword,
+code .ruby .symbol .keymethods,
+code .number {
   color: #3387CC;
 }
 
-pre .params,
-pre .variable {
+code .params,
+code .variable {
   color: #3E87E3;
 }
 
-pre .css .tag,
-pre .rules .property,
-pre .pseudo,
-pre .tex .special {
+code .css .tag,
+code .rules .property,
+code .pseudo,
+code .tex .special {
   color: #CDA869;
 }
 
-pre .css .class {
+code .css .class {
   color: #9B703F;
 }
 
-pre .rules .keyword {
+code .rules .keyword {
   color: #C5AF75;
 }
 
-pre .rules .value {
+code .rules .value {
   color: #CF6A4C;
 }
 
-pre .css .id {
+code .css .id {
   color: #8B98AB;
 }
 
-pre .annotation,
-pre .apache .sqbracket,
-pre .nginx .built_in {
+code .annotation,
+code .apache .sqbracket,
+code .nginx .built_in {
   color: #9B859D;
 }
 
-pre .preprocessor {
+code .preprocessor {
   color: #8996A8;
 }
 
-pre .hexcolor,
-pre .css .value .number {
+code .hexcolor,
+code .css .value .number {
   color: #DD7B3B;
 }
 
-pre .css .function {
+code .css .function {
   color: #DAD085;
 }
 
-pre .diff .header,
-pre .chunk,
-pre .tex .formula {
+code .diff .header,
+code .chunk,
+code .tex .formula {
   background-color: #0E2231;
   color: #F8F8F8;
   font-style: italic;
 }
 
-pre .diff .change {
+code .diff .change {
   background-color: #4A410D;
   color: #F8F8F8;
 }
 
-pre .addition {
+code .addition {
   background-color: #253B22;
   color: #F8F8F8;
 }
 
-pre .deletion {
+code .deletion {
   background-color: #420E09;
   color: #F8F8F8;
 }

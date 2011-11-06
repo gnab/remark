@@ -5,113 +5,119 @@ Website: http://rukeba.com/
 Version: 1.0
 Date: 2009-01-03
 Music: Aphex Twin / Xtal
+
+Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+as well as code blocks (pre => code).
 */
 
 pre code {
   display: block; padding: 0.5em;
+}
+
+code {
   background-color: #f4f4f4;
 }
 
-pre code,
-pre .ruby .subst,
-pre .lisp .title {
+code,
+code .ruby .subst,
+code .lisp .title {
   color: black;
 }
 
-pre .string,
-pre .title,
-pre .parent,
-pre .tag .value,
-pre .rules .value,
-pre .rules .value .number,
-pre .preprocessor,
-pre .ruby .symbol,
-pre .ruby .symbol .string,
-pre .ruby .symbol .keyword,
-pre .ruby .symbol .keymethods,
-pre .instancevar,
-pre .aggregate,
-pre .template_tag,
-pre .django .variable,
-pre .smalltalk .class,
-pre .addition,
-pre .flow,
-pre .stream,
-pre .bash .variable,
-pre .apache .cbracket {
+code .string,
+code .title,
+code .parent,
+code .tag .value,
+code .rules .value,
+code .rules .value .number,
+code .preprocessor,
+code .ruby .symbol,
+code .ruby .symbol .string,
+code .ruby .symbol .keyword,
+code .ruby .symbol .keymethods,
+code .instancevar,
+code .aggregate,
+code .template_tag,
+code .django .variable,
+code .smalltalk .class,
+code .addition,
+code .flow,
+code .stream,
+code .bash .variable,
+code .apache .cbracket {
   color: #050;
 }
 
-pre .comment,
-pre .annotation,
-pre .template_comment,
-pre .diff .header,
-pre .chunk {
+code .comment,
+code .annotation,
+code .template_comment,
+code .diff .header,
+code .chunk {
   color: #777;
 }
 
-pre .number,
-pre .date,
-pre .regexp,
-pre .literal,
-pre .smalltalk .symbol,
-pre .smalltalk .char,
-pre .change,
-pre .tex .special {
+code .number,
+code .date,
+code .regexp,
+code .literal,
+code .smalltalk .symbol,
+code .smalltalk .char,
+code .change,
+code .tex .special {
   color: #800;
 }
 
-pre .label,
-pre .javadoc,
-pre .ruby .string,
-pre .decorator,
-pre .filter .argument,
-pre .localvars,
-pre .array,
-pre .attr_selector,
-pre .pseudo,
-pre .pi,
-pre .doctype,
-pre .deletion,
-pre .envvar,
-pre .shebang,
-pre .apache .sqbracket,
-pre .nginx .built_in,
-pre .tex .formula,
-pre .input_number {
+code .label,
+code .javadoc,
+code .ruby .string,
+code .decorator,
+code .filter .argument,
+code .localvars,
+code .array,
+code .attr_selector,
+code .pseudo,
+code .pi,
+code .doctype,
+code .deletion,
+code .envvar,
+code .shebang,
+code .apache .sqbracket,
+code .nginx .built_in,
+code .tex .formula,
+code .input_number {
   color: #00e;
 }
 
-pre .keyword,
-pre .id,
-pre .phpdoc,
-pre .title,
-pre .built_in,
-pre .aggregate,
-pre .smalltalk .class,
-pre .winutils,
-pre .bash .variable,
-pre .apache .tag,
-pre .xml .tag,
-pre .xml .title,
-pre .tex .command {
+code .keyword,
+code .id,
+code .phpdoc,
+code .title,
+code .built_in,
+code .aggregate,
+code .smalltalk .class,
+code .winutils,
+code .bash .variable,
+code .apache .tag,
+code .xml .tag,
+code .xml .title,
+code .tex .command {
   font-weight: bold;
   color: navy;
 }
 
-pre .nginx .built_in {
+code .nginx .built_in {
   font-weight: normal;
 }
 
-pre .xml .css,
-pre .xml .javascript,
-pre .xml .vbscript,
-pre .tex .formula {
+code .xml .css,
+code .xml .javascript,
+code .xml .vbscript,
+code .tex .formula {
   opacity: 0.5;
 }
 
 /* --- */
-pre .apache .tag {
+code .apache .tag {
   font-weight: bold;
   color: blue;
 }

@@ -2,83 +2,86 @@
 
 Visual Studio-like style based on original C# coloring by Jason Diamond <jason@diamond.name>
 
+Altered by Ole Petter Bang <olepbang@gmail.com> to highlight inline code
+as well as code blocks (pre => code).
+
 */
 pre code {
   display: block; padding: 0.5em;
 }
 
-pre .comment,
-pre .annotation,
-pre .template_comment,
-pre .diff .header,
-pre .chunk,
-pre .apache .cbracket {
+code .comment,
+code .annotation,
+code .template_comment,
+code .diff .header,
+code .chunk,
+code .apache .cbracket {
   color: rgb(0, 128, 0);
 }
 
-pre .keyword,
-pre .id,
-pre .title,
-pre .built_in,
-pre .aggregate,
-pre .smalltalk .class,
-pre .winutils,
-pre .bash .variable,
-pre .tex .command {
+code .keyword,
+code .id,
+code .title,
+code .built_in,
+code .aggregate,
+code .smalltalk .class,
+code .winutils,
+code .bash .variable,
+code .tex .command {
   color: rgb(0, 0, 255);
 }
 
-pre .string,
-pre .title,
-pre .parent,
-pre .tag .value,
-pre .rules .value,
-pre .rules .value .number,
-pre .ruby .symbol,
-pre .ruby .symbol .string,
-pre .ruby .symbol .keyword,
-pre .ruby .symbol .keymethods,
-pre .instancevar,
-pre .aggregate,
-pre .template_tag,
-pre .django .variable,
-pre .addition,
-pre .flow,
-pre .stream,
-pre .apache .tag,
-pre .date,
-pre .tex .formula {
+code .string,
+code .title,
+code .parent,
+code .tag .value,
+code .rules .value,
+code .rules .value .number,
+code .ruby .symbol,
+code .ruby .symbol .string,
+code .ruby .symbol .keyword,
+code .ruby .symbol .keymethods,
+code .instancevar,
+code .aggregate,
+code .template_tag,
+code .django .variable,
+code .addition,
+code .flow,
+code .stream,
+code .apache .tag,
+code .date,
+code .tex .formula {
   color: rgb(163, 21, 21);
 }
 
-pre .ruby .string,
-pre .decorator,
-pre .filter .argument,
-pre .localvars,
-pre .array,
-pre .attr_selector,
-pre .pseudo,
-pre .pi,
-pre .doctype,
-pre .deletion,
-pre .envvar,
-pre .shebang,
-pre .preprocessor,
-pre .userType,
-pre .apache .sqbracket,
-pre .nginx .built_in,
-pre .tex .special,
-pre .input_number {
+code .ruby .string,
+code .decorator,
+code .filter .argument,
+code .localvars,
+code .array,
+code .attr_selector,
+code .pseudo,
+code .pi,
+code .doctype,
+code .deletion,
+code .envvar,
+code .shebang,
+code .preprocessor,
+code .userType,
+code .apache .sqbracket,
+code .nginx .built_in,
+code .tex .special,
+code .input_number {
   color: rgb(43, 145, 175);
 }
 
-pre .phpdoc,
-pre .javadoc,
-pre .xmlDocTag {
+code .phpdoc,
+code .javadoc,
+code .xmlDocTag {
   color: rgb(128, 128, 128);
 }
 
-pre .vhdl .type { font-weight: bold; }
-pre .vhdl .string { color: #666666; }
-pre .vhdl .literal { color: rgb(163, 21, 21); }
+code .vhdl .type { font-weight: bold; }
+code .vhdl .string { color: #666666; }
+code .vhdl .literal { color: rgb(163, 21, 21); }
 

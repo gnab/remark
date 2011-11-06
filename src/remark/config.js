@@ -21,7 +21,7 @@
   };
 
   var loadConfigJson = function (jsonStr) {
-    var json
+    var json = {}
       , property;
 
     if (jsonStr === '') {
@@ -33,10 +33,10 @@
     }
     catch (err) {
       alert('Parsing of remark config failed! Be sure to use valid JSON.') 
-      return;
     }
 
     config.highlightStyle = json.highlightStyle;
+    config.highlightInline = json.highlightInline || false
   };
 
   load();
