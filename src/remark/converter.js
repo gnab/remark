@@ -72,6 +72,10 @@
     var converter = new Showdown.converter();
 
     content.innerHTML = converter.makeHtml(content.innerHTML.trim(' '));
+    
+    content.innerHTML = content.innerHTML
+      .replace(/&lt;(\/)?([a-z0-9]+)&gt;/ig, '<$1$2>');
+
     content.innerHTML = content.innerHTML.replace(/&amp;/g, '&');
   };
 
