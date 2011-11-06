@@ -1,3 +1,9 @@
+### 0.2.4
+
+* Made highlight style configurable through `highlightStyle` option.
+* Added current slide number to slides.
+* Disabled highlighting of inline code without language hinting.
+
 ### 0.2.3
 
 * Added full highlight.js supporting a whole bunch of languages.
