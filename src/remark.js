@@ -1,8 +1,10 @@
 !function (context) {
 
+  /* bundle "src/remark/config.js" */
   /* bundle "src/remark/controller.js" */
   /* bundle "src/remark/converter.js" */
   /* bundle "src/remark/dispatcher.js" */
+  /* bundle "src/remark/highlighter.js" */
   /* bundle "src/remark/slideshow.js" */
 
   var remark = context.remark = context.remark || {};
@@ -43,6 +45,7 @@
 
     styleElement.type = 'text/css';
     styleElement.innerHTML = '/* bundle "src/remark.css" */';
+    styleElement.innerHTML += remark.highlighter.cssForStyle();
 
     headElement.insertBefore(styleElement, headElement.firstChild);
   };

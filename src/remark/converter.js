@@ -1,6 +1,6 @@
 !function (context) {
 
-  /* bundle "vendor/highlight.min.js" */
+  /* bundle "vendor/highlight/highlight.min.js" */
   /* bundle "vendor/showdown.js" */
 
   var remark = context.remark = context.remark || {}

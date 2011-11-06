@@ -36,13 +36,8 @@ html, body {
   padding: 1em 4em 1em 4em;
 }
 #slideshow .slide .content pre {
-  border-left: 0.4em solid #d7d7d7;
   font-family: Monaco, monospace;
   font-size: 16px;
-  padding: 1em !important;
-}
-#slideshow .slide .content pre code {
-  background: transparent !important;
 }
 #slideshow .slide .content code {
   font-family: Monaco, monospace;
@@ -57,5 +52,3 @@ html, body {
   position: absolute;
   right: 20px;
 }
-
-/* bundle "vendor/highlight.min.css" */
