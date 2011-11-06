@@ -86,7 +86,12 @@ describe('converter', function () {
 
   describe('convertMarkdown', function () {
     var convert = function (text) {
-      var content = {innerHTML: text}
+      var source = document.createElement('textarea')
+        , content = document.createElement('div')
+        ;
+
+      source.innerHTML = text;
+      content.innerHTML = source.innerHTML;
       remark.converter.convertMarkdown(content) 
       return content.innerHTML;
     };
@@ -104,10 +109,6 @@ describe('converter', function () {
         .toBe('<p>Code:</p>\n\n<pre><code>a = 5\n</code></pre>');
     });
 
-    it('should leave HTML as is', function () {
-      expect(convert('<p>a</p>')).toBe('<p>a</p>');
-    });
-
     it('should escape HTML in inline code', function () {
       expect(convert('`<p>a</p>`'))
         .toBe('<p><code>&lt;p&gt;a&lt;/p&gt;</code></p>');
@@ -116,6 +117,10 @@ describe('converter', function () {
     it('should escape HTML in code block', function () {
       expect(convert('Code:\n\n    <p>a</p>'))
         .toBe('<p>Code:</p>\n\n<pre><code>&lt;p&gt;a&lt;/p&gt;\n</code></pre>');
+    });
+
+    it('should not escape HTML outside inline code / code block', function () {
+      expect(convert('<b>a</b>')).toBe('<p><b>a</b></p>');
     });
   });
 

@@ -1,3 +1,9 @@
+### 0.3.0
+
+* Input Markdown source element should now be of type TEXTAREA instead of PRE.
+* Added proper escaping of in-code HTML.
+* Made highlight.js styles work on inline code as well as block code.
+
 ### 0.2.4
 
 * Made highlight style configurable through `highlightStyle` option.

@@ -20,13 +20,13 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
         <html>
           <head>
             <title>Title</title>
-            <script src="https://github.com/downloads/gnab/remark/remark-0.2.4.min.js" type="text/javascript"></script>
+            <script src="https://github.com/downloads/gnab/remark/remark-0.3.0.min.js" type="text/javascript"></script>
             <style type="text/css" media="screen">
               /* Slideshow styles */
             </style>
           </head>
           <body>
-            <pre id="source">
+            <textarea id="source">
 
         .center.middle
         # Title
@@ -43,7 +43,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 
         # Introduction
 
-            </pre>
+            </textarea>
             <div id="slideshow"></div>
           </body>
         </html>
