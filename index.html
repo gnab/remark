@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Remark</title>
-    <script src="https://github.com/downloads/gnab/remark/remark-0.2.3.min.js" type="text/javascript"></script>
+    <script src="https://github.com/downloads/gnab/remark/remark-0.2.4.min.js" type="text/javascript"></script>
     <style type="text/css" media="screen">
       @import url(http://fonts.googleapis.com/css?family=Lobster);
 
@@ -25,6 +25,13 @@
       }
       .red {
         color: #fa0000;
+      }
+      pre {
+        border-left: 0.4em solid #d7d7d7;
+        padding: 0.5em 0 0.5em 1em !important;
+      }
+      pre code {
+        background: transparent !important;
       }
     </style>
   </head>
@@ -138,6 +145,8 @@ To help out with slide layout and formatting, a few extensions have been include
 
 - Content classes, for styling specific content
 
+- Language classes, for syntax highlighting language hinting
+
 ---
 
 # Slide Classes
@@ -177,7 +186,7 @@ Resulting HTML extract:
 
 # Automatic Syntax Highlighting
 
-Code blocks are automatically syntax highlighted, based on the number of recognized keywords from a set of supported languages.
+Code blocks are automatically syntax highlighted, based on the number of recognized keywords from a set of [supported languages](http://softwaremaniacs.org/media/soft/highlight/test.html).
 
 If the language detected is incorrect, you may specify the language to use by adding a dotted language class on the first line of code:
 
@@ -189,9 +198,29 @@ If the language detected is incorrect, you may specify the language to use by ad
           a + b
         end
 
+Inline code is not automatically highlighted, and must be supplied a language class to be highlighted:
+
+    .no-highlight
     Inline code: `.ruby a = 5`
 
 To disable syntax highlighting, use the class `.no-highlight no-highlight`.
+
+---
+
+# Syntax Highlighting Styles
+
+A number of highlighting [styles](http://softwaremaniacs.org/soft/highlight/en/) are available, including several well-known themes from different editors and IDEs.
+
+You may specify a style other than the `default` style using the configuration option `highlightStyle`, like this:
+
+    &lt;script src="remark.js" language="text/javascript"&gt;
+      { "highlightStyle": "sunburst" }
+    &lt;/script&gt;
+
+If you're using some custom style, you might want to prevent any of the bundled styles from being included. This can be done by specifying `.javascript null` as the style:
+
+    .javascript
+    { "highlightStyle": null }
 
 ---
 
