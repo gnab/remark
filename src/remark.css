@@ -48,7 +48,7 @@ html, body {
 }
 #slideshow .slide .content .position {
   bottom: 12px;
-  color: #888;
+  opacity: 0.5;
   position: absolute;
   right: 20px;
 }
