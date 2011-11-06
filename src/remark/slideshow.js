@@ -94,7 +94,7 @@
     remark.converter.convertSlideClasses(content);
     remark.converter.convertMarkdown(content);
     remark.converter.convertCodeClasses(content);
-    remark.converter.highlightCodeBlocks(content);
+    remark.highlighter.highlightCodeBlocks(content);
   };
 
   var appendPositionElement = function (content, slideNo, slideCount) {

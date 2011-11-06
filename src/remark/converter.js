@@ -1,6 +1,5 @@
 !function (context) {
 
-  /* bundle "vendor/highlight/highlight.min.js" */
   /* bundle "vendor/showdown.js" */
 
   var remark = context.remark = context.remark || {}
@@ -113,19 +112,6 @@
     }
 
     return false;
-  };
-
-  converter.highlightCodeBlocks = function (content) {
-    var codeBlocks = content.getElementsByTagName('code')
-      , block
-      , i
-      ;
-
-    for (i = 0; i < codeBlocks.length; i++) {
-      block = codeBlocks[i];
-
-      hljs.highlightBlock(block, '  ');
-    }
   };
 
 }(this);

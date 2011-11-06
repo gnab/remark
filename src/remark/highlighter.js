@@ -1,5 +1,7 @@
 !function () {
 
+  /* bundle "vendor/highlight/highlight.min.js" */
+
   var remark = context.remark = context.remark || {}
     , highlighter = remark.highlighter = {}
     ;
@@ -33,6 +35,19 @@
     }
 
     return styles[config.highlightStyle];
+  };
+
+  highlighter.highlightCodeBlocks = function (content) {
+    var codeBlocks = content.getElementsByTagName('code')
+      , block
+      , i
+      ;
+
+    for (i = 0; i < codeBlocks.length; i++) {
+      block = codeBlocks[i];
+
+      hljs.highlightBlock(block, '  ');
+    }
   };
 
 }(this);
