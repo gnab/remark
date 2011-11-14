@@ -57,6 +57,11 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 - [gnab.github.com/remark](http://gnab.github.com/remark)
 - [gnab.github.com/editorjs](http://gnab.github.com/editorjs)
 
+### Credits
+
+- [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
+- [kjbekkelund](https://github.com/kjbekkelund), for tap and swipe commits.
+
 ### License 
 
 remark is licensed under the MIT license. See LICENCE for further 
