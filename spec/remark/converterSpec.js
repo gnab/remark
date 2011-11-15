@@ -68,6 +68,11 @@ describe('converter', function () {
         .toBe('<span class="class">text</span>')
     });
 
+    it('should convert several classes', function () {
+      expect(convert('.class[text] and .class2[text]'))
+        .toBe('<span class="class">text</span> and <span class="class2">text</span>')
+    });
+
     it('should convert multiple classes', function () {
       expect(convert('.a.b.c[text]'))
         .toBe('<span class="a b c">text</span>');
@@ -92,7 +97,7 @@ describe('converter', function () {
 
       source.innerHTML = text;
       content.innerHTML = source.innerHTML;
-      remark.converter.convertMarkdown(content) 
+      remark.converter.convertMarkdown(content)
       return content.innerHTML;
     };
 
