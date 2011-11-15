@@ -20,6 +20,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
         <html>
           <head>
             <title>Title</title>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <script src="https://github.com/downloads/gnab/remark/remark-0.3.0.min.js" type="text/javascript"></script>
             <style type="text/css" media="screen">
               /* Slideshow styles */
@@ -62,7 +63,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 - [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
 - [kjbekkelund](https://github.com/kjbekkelund), for tap and swipe commits.
 
-### License 
+### License
 
-remark is licensed under the MIT license. See LICENCE for further 
+remark is licensed under the MIT license. See LICENCE for further
 details.
