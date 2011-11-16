@@ -61,7 +61,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 ### Credits
 
 - [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
-- [kjbekkelund](https://github.com/kjbekkelund), for tap and swipe commits.
+- [kjbekkelund](https://github.com/kjbekkelund), for numerous commits.
 
 ### License
 
