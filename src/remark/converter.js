@@ -38,7 +38,7 @@
   };
 
   converter.convertContentClasses = function (content) {
-    var classFinder = /(\\)?(((\.([a-z_-]+))+)\[(.+)\])/ig
+    var classFinder = /(\\)?(((?:\.(?:[a-z_-][a-z0-9_-]*))+)\[([^\[\]]*(?:(?:\!)?(?:\[(?:[^\[\]]+)\]))?[^\[\]]*)*\])/ig
       , match
       , classes
       , replacement
@@ -53,10 +53,10 @@
         classFinder.lastIndex = match.index + replacement.length;
       }
       else {
-        replacement = "<span class=\"" + 
-          classes.join(' ') + 
-          "\">" + 
-          match[6] +
+        replacement = "<span class=\"" +
+          classes.join(' ') +
+          "\">" +
+          match[4] +
           "</span>";
 
         classFinder.lastIndex = match.index + 
