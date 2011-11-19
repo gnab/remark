@@ -6,8 +6,11 @@
   /* bundle "src/remark/dispatcher.js" */
   /* bundle "src/remark/highlighter.js" */
   /* bundle "src/remark/slideshow.js" */
+  /* bundle "vendor/EventEmitter.min.js" */
 
   var remark = context.remark = context.remark || {};
+
+  remark.events = new EventEmitter();
 
   window.onload = function () {
     var sourceElement = document.getElementById('source')
