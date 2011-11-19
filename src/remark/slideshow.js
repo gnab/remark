@@ -16,6 +16,7 @@
       showSlide: function (slideIndex) {
         var slide = element.children[slideIndex];
         prepareSlideIfNeeded(slide, slides, slideIndex);
+        remark.events.emit('slidein', slide, slideIndex);
         slide.style.display = 'table';
       }
     , hideSlide: function (slideIndex) {
