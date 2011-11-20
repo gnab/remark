@@ -7,7 +7,7 @@
     ;
 
   converter.convertSlideClasses = function (content) {
-    var classFinder = /(^|\n)(\\)?((\.([a-z_-]+))+\s*($|\n))/ig
+    var classFinder = /(^|\n)(\\)?((\.([a-z_-][a-z0-9_-]*))+\s*($|\n))/ig
       , classes
       , replacement
       , contentClasses = [content.className]
@@ -100,7 +100,7 @@
   };
 
   var convertCodeClass = function (block) {
-    var classFinder = /^(\\)?\.([a-z_-]+)(\n|\ )/i
+    var classFinder = /^(\\)?\.([a-z_-][a-z0-9_-]*)(\n|\ )/i
       , match
       ;
 
