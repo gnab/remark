@@ -27,12 +27,20 @@ describe('converter', function () {
       expect(convert('.class').innerHTML).toBe('');
     });
 
+    it('should extract single class that contains a number', function () {
+      expect(convert('.class2').innerHTML).toBe('');
+    });
+
     it('should apply single class', function () {
       expect(convert('.class').className).toBe(' class');
     });
 
     it('should extract multiple classes', function () {
       expect(convert('.a.b.c').innerHTML).toBe('');
+    });
+
+    it('should extract multiple classes that contain numbers', function () {
+      expect(convert('.a.b2.c4').innerHTML).toBe('');
     });
 
     it('should apply multiple classes', function () {
@@ -66,6 +74,16 @@ describe('converter', function () {
     it('should convert single class', function () {
       expect(convert('.class[text]'))
         .toBe('<span class="class">text</span>')
+    });
+
+    it('should convert single class with a class name that includes a number', function () {
+      expect(convert('.class2[text]'))
+        .toBe('<span class="class2">text</span>')
+    });
+
+    it('should ignore class with a class name that startes with a number', function () {
+      expect(convert('.1class[text]'))
+        .toBe('.1class[text]')
     });
 
     it('should convert several classes', function () {
@@ -156,12 +174,20 @@ describe('converter', function () {
       expect(convert('.ruby a = 5').innerHTML).toBe('a = 5');
     });
 
+    it('should extract inline code class that contains a number', function () {
+      expect(convert('.ruby2 a = 5').innerHTML).toBe('a = 5');
+    });
+
     it('should apply inline code class', function () {
       expect(convert('.ruby a = 5').className).toBe('ruby');
     });
 
     it('should extract code class', function () {
       expect(convert('.ruby\na = 5').innerHTML).toBe('a = 5');
+    });
+
+    it('should extract code class that contains a number', function () {
+      expect(convert('.ruby2\na = 5').innerHTML).toBe('a = 5');
     });
 
     it('should apply code class', function () {
