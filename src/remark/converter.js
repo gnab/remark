@@ -100,7 +100,7 @@
   };
 
   var convertCodeClass = function (block) {
-    var classFinder = /^(\\)?\.([a-z_-]+)(\n|\ )/i
+    var classFinder = /^(\\)?\.([a-z_-]+)(?:\n|\ )/i
       , match
       ;
 
