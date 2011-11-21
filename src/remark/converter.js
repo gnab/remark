@@ -7,7 +7,7 @@
     ;
 
   converter.convertSlideClasses = function (content) {
-    var classFinder = /(^|\n)(\\)?((\.([a-z_-]+))+\s*($|\n))/ig
+    var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-]+)+)\s*(?:$|\n)/ig
       , classes
       , replacement
       , contentClasses = [content.className]
@@ -15,11 +15,11 @@
       ;
 
     while (match = classFinder.exec(content.innerHTML)) {
-      classes = match[3].substr(1).split('.');
+      classes = match[2].substr(1).split('.');
 
-      if (match[2]) {
+      if (match[1]) {
         // Simply remove escape slash
-        replacement = match[1] + match[3];
+        replacement = match[0].replace(/\\/, '');
       }
       else {
         replacement = "";
