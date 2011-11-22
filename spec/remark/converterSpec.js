@@ -125,7 +125,8 @@ describe('converter', function () {
     });
 
     it('should not escape HTML outside inline code / code block', function () {
-      expect(convert('<b>a</b>')).toBe('<p><b>a</b></p>');
+      expect(convert('<b class="test">a</b>'))
+        .toBe('<p><b class="test">a</b></p>');
     });
   });
 
