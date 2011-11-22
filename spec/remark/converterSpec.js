@@ -91,42 +91,32 @@ describe('converter', function () {
 
   describe('convertMarkdown', function () {
     var convert = function (text) {
-      var source = document.createElement('textarea')
-        , content = document.createElement('div')
-        ;
+      var content = {innerHTML: text};
 
-      source.innerHTML = text;
-      content.innerHTML = source.innerHTML;
+      Showdown = {
+        converter: function () {
+          return {
+            makeHtml: function (text) {
+              return text; 
+            }
+          };
+        }
+      };
+
       remark.converter.convertMarkdown(content)
+
       return content.innerHTML;
     };
 
-    it('should convert simple markdown to HTML', function () {
-      expect(convert('#title')).toBe('<h1>title</h1>');
+    it('should unescape HTML', function () {
+      expect(convert('&lt;b class="test"&gt;a&lt;/b&gt;'))
+        .toBe('<b class="test">a</b>');
     });
 
-    it('should convert inline code', function () {
-      expect(convert('`a = 5`')).toBe('<p><code>a = 5</code></p>');
-    });
-
-    it('should convert code block', function () {
-      expect(convert('Code:\n\n    a = 5'))
-        .toBe('<p>Code:</p>\n\n<pre><code>a = 5\n</code></pre>');
-    });
-
-    it('should escape HTML in inline code', function () {
-      expect(convert('`<p>a</p>`'))
+    it('should unescape once HTML escaped twice in code tags', function () {
+      expect(
+        convert('<p><code>&amp;lt;p&amp;gt;a&amp;lt;/p&amp;gt;</code></p>'))
         .toBe('<p><code>&lt;p&gt;a&lt;/p&gt;</code></p>');
-    });
-
-    it('should escape HTML in code block', function () {
-      expect(convert('Code:\n\n    <p>a</p>'))
-        .toBe('<p>Code:</p>\n\n<pre><code>&lt;p&gt;a&lt;/p&gt;\n</code></pre>');
-    });
-
-    it('should not escape HTML outside inline code / code block', function () {
-      expect(convert('<b class="test">a</b>'))
-        .toBe('<p><b class="test">a</b></p>');
     });
   });
 
