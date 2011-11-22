@@ -79,8 +79,8 @@ describe('converter', function () {
     });
 
     it('should convert recursive classes', function () {
-      expect(convert('.a[.b[text]]'))
-        .toBe('<span class="a"><span class="b">text</span></span>');
+      expect(convert('.a[text.b[text]]'))
+        .toBe('<span class="a">text<span class="b">text</span></span>');
     });
 
     it('should convert class containing fancy markdown', function () {

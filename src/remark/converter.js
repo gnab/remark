@@ -7,7 +7,7 @@
     ;
 
   converter.convertSlideClasses = function (content) {
-    var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-]+)+)\s*(?:$|\n)/ig
+    var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
       , classes
       , replacement
       , contentClasses = [content.className]
@@ -15,14 +15,14 @@
       ;
 
     while (match = classFinder.exec(content.innerHTML)) {
-      classes = match[2].substr(1).split('.');
-
       if (match[1]) {
         // Simply remove escape slash
         replacement = match[0].replace(/\\/, '');
       }
       else {
         replacement = "";
+
+        classes = match[2].substr(1).split('.');
         contentClasses = contentClasses.concat(classes);
       }
 
@@ -38,34 +38,60 @@
   };
 
   converter.convertContentClasses = function (content) {
-    var classFinder = /(\\)?(((\.([a-z_-]+))+)\[(.+)\])/ig
+    var classFinder = /(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\[/ig
       , match
       , classes
+      , text
       , replacement
+      , after
       ;
 
     while (match = classFinder.exec(content.innerHTML)) {
-      classes = match[3].substr(1).split('.');
+      text = getSquareBracketedText(content.innerHTML.substr(
+            match.index + match[0].length));
+
+      if (text === null) {
+        continue;
+      }
       
       if (match[1]) {
-      // Simply remove escape slash
-        replacement = match[2];
+        // Simply remove escape slash
+        replacement = match[2] + '[' + text + ']';
         classFinder.lastIndex = match.index + replacement.length;
       }
       else {
+        classes = match[2].substr(1).split('.');
+
         replacement = "<span class=\"" + 
           classes.join(' ') + 
           "\">" + 
-          match[6] +
+          text +
           "</span>";
 
         classFinder.lastIndex = match.index + 
           ("<span class=\"" + classes.join(' ') + "\">").length;
       }
 
+      after = content.innerHTML.substr(
+          match.index + match[0].length + text.length + 1);
+
       content.innerHTML = content.innerHTML.substr(0, match.index) +
-        replacement + content.innerHTML.substr(match.index + match[0].length);
+        replacement + after;
     }
+  };
+
+  var getSquareBracketedText = function (text) {
+    var count = 1
+      , pos = 0
+      , chr
+      ;
+
+    while (count > 0 && pos < text.length) {
+      chr = text[pos++];
+      count += (chr === '[' && 1) || (chr === ']' && -1) || 0;
+    }
+
+    return count === 0 && text.substr(0, pos - 1) || null;
   };
 
   converter.convertMarkdown = function (content) {
@@ -100,7 +126,7 @@
   };
 
   var convertCodeClass = function (block) {
-    var classFinder = /^(\\)?\.([a-z_-]+)(?:\n|\ )/i
+    var classFinder = /^(\\)?\.([a-z_-][a-z-_0-9]*)(?:\n|\ )/i
       , match
       ;
 
