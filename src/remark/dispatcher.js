@@ -4,37 +4,37 @@
     , dispatcher = remark.dispatcher = {}
     ;
 
-  dispatcher.create = function (controller) {
-    mapKeys(controller);
-    mapTouches(controller);
-    mapWheel(controller);
+  dispatcher.create = function () {
+    mapKeys();
+    mapTouches();
+    mapWheel();
 
     return {
 
     };
   };
 
-  var mapKeys = function (controller) {
+  var mapKeys = function () {
     window.onkeydown = function (event) {
       switch (event.keyCode) {
         case 33:
         case 37:
         case 38:
         case 75:
-          controller.gotoPreviousSlide();
+          remark.events.emit('previousSlide');
           break;
         case 32:
         case 34:
         case 39:
         case 40:
         case 74:
-          controller.gotoNextSlide();
+          remark.events.emit('nextSlide');
           break;
       }
     };
   };
 
-  var mapTouches = function (controller) {
+  var mapTouches = function () {
     var width = window.innerWidth
       , touch
       , startX
@@ -47,19 +47,19 @@
 
     var handleTap = function () {
       if (endX < width / 2) {
-        controller.gotoPreviousSlide();
+        remark.events.emit('previousSlide');
       }
       else {
-        controller.gotoNextSlide();
+        remark.events.emit('nextSlide');
       }
     };
 
     var handleSwipe = function () {
       if (startX > endX) {
-        controller.gotoNextSlide();
+        remark.events.emit('nextSlide');
       }
       else {
-        controller.gotoPreviousSlide();
+        remark.events.emit('previousSlide');
       }
     };
 
@@ -89,13 +89,13 @@
     });
   };
 
-  var mapWheel = function (controller) {
+  var mapWheel = function () {
     document.addEventListener('mousewheel', function (event) {
       if (event.wheelDeltaY > 0) {
-        controller.gotoPreviousSlide();
+        remark.events.emit('previousSlide');
       }
       else if (event.wheelDeltaY < 0) {
-        controller.gotoNextSlide();
+        remark.events.emit('nextSlide');
       };
     });
   };

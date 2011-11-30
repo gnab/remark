@@ -56,13 +56,11 @@
   var setupSlideshow = function (sourceElement, slideshowElement) {
     var source = sourceElement.innerHTML
       , slideshow
-      , controller
-      , dispatcher
       ;
 
     slideshow = remark.slideshow.create(source, slideshowElement);
-    controller = remark.controller.create(slideshow);
-    dispatcher = remark.dispatcher.create(controller);
+    remark.controller.create(slideshow);
+    remark.dispatcher.create();
   };
 
 }(this);
