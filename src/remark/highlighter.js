@@ -37,6 +37,10 @@
     return styles[config.highlightStyle];
   };
 
+  highlighter.engine = function() {
+    return hljs;
+  };
+
   highlighter.highlightCodeBlocks = function (content) {
     var codeBlocks = content.getElementsByTagName('code')
       , block
