@@ -1,8 +1,18 @@
-!function () {
+!function (context) {
 
   var remark = context.remark = context.remark || {}
-    , config = remark.config = {}
+    , config
     ;
+
+  config = remark.config = function (properties) {
+    var property;
+
+    for (property in properties) {
+      if (properties.hasOwnProperty(property)) {
+        config[property] = properties[property];
+      }
+    }
+  };
 
   var load = function () {
     var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
