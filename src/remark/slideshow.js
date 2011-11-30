@@ -20,7 +20,9 @@
         slide.style.display = 'table';
       }
     , hideSlide: function (slideIndex) {
-        element.children[slideIndex].style.display = 'none';
+        var slide = element.children[slideIndex];
+        remark.events.emit('slideout', slide, slideIndex);
+        slide.style.display = 'none';
       }
     , getSlideCount: function () {
         return slides.length;
