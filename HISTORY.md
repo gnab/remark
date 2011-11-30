@@ -1,3 +1,8 @@
+### 0.3.1
+* Initial event support ([kjbekkelund](https://github.com/kjbekkelund)).
+* Made remark.config a function accepting configuration options.
+* Added support for multiple content classes on a single line.
+
 ### 0.3.0
 
 * Input Markdown source element should now be of type TEXTAREA instead of PRE.
