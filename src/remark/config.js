@@ -15,38 +15,16 @@
   };
 
   var load = function () {
-    var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
-      , scriptElements = document.getElementsByTagName('script')
-      , element
-      , i;
-
-    for (i = 0; i < scriptElements.length; ++i) {
-      element = scriptElements[i];
-
-      if (remarkjs.exec(element.src)) {
-        loadConfigJson(element.innerHTML.trim()); 
-        break;
-      }
+    if (typeof RemarkConfig !== "undefined") {
+      remark.config = RemarkConfig;
     }
+    setDefaults();
   };
 
-  var loadConfigJson = function (jsonStr) {
-    var json = {}
-      , property;
-
-    if (jsonStr === '') {
-      return;
+  var setDefaults = function() {
+    if (!remark.config.hasOwnProperty('highlightInline')) {
+      remark.config.highlightInline = false;
     }
-    
-    try {
-      json = JSON.parse(jsonStr);
-    }
-    catch (err) {
-      alert('Parsing of remark config failed! Be sure to use valid JSON.') 
-    }
-
-    config.highlightStyle = json.highlightStyle;
-    config.highlightInline = json.highlightInline || false
   };
 
   load();
