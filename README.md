@@ -57,6 +57,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 
 - [gnab.github.com/remark](http://gnab.github.com/remark)
 - [gnab.github.com/editorjs](http://gnab.github.com/editorjs)
+- [kjbekkelund.github.com/nith-coffeescript](http://kjbekkelund.github.com/nith-coffeescript)
 
 ### Credits
 
