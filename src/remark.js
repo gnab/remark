@@ -1,16 +1,22 @@
 !function (context) {
 
+  /* bundle "vendor/EventEmitter.min.js" */
+
+  var module = {
+    events: new EventEmitter()
+  , exports: {
+      events: new EventEmitter()
+    }
+  };
+
+  context.remark = module.exports;
+
   /* bundle "src/remark/config.js" */
   /* bundle "src/remark/controller.js" */
   /* bundle "src/remark/converter.js" */
   /* bundle "src/remark/dispatcher.js" */
   /* bundle "src/remark/highlighter.js" */
   /* bundle "src/remark/slideshow.js" */
-  /* bundle "vendor/EventEmitter.min.js" */
-
-  var remark = context.remark = context.remark || {};
-
-  remark.events = new EventEmitter();
 
   window.onload = function () {
     var sourceElement = document.getElementById('source')
@@ -48,7 +54,7 @@
 
     styleElement.type = 'text/css';
     styleElement.innerHTML = '/* bundle "src/remark.css" */';
-    styleElement.innerHTML += remark.highlighter.cssForStyle();
+    styleElement.innerHTML += module.highlighter.cssForStyle();
 
     headElement.insertBefore(styleElement, headElement.firstChild);
   };
@@ -58,9 +64,9 @@
       , slideshow
       ;
 
-    slideshow = remark.slideshow.create(source, slideshowElement);
-    remark.controller.create(slideshow);
-    remark.dispatcher.create();
+    slideshow = module.slideshow.create(source, slideshowElement);
+    module.controller.create(slideshow);
+    module.dispatcher.create();
   };
 
 }(this);

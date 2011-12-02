@@ -3,7 +3,7 @@ describe('converter', function () {
   describe('convertSlideClasses', function () {
     var convert = function(text) {
       var content = {innerHTML: text};
-      remark.converter.convertSlideClasses(content);
+      module.converter.convertSlideClasses(content);
       return content;
     };
 
@@ -43,7 +43,7 @@ describe('converter', function () {
   describe('convertContentClasses', function () {
     var convert = function(text) {
       var content = {innerHTML: text};
-      remark.converter.convertContentClasses(content);
+      module.converter.convertContentClasses(content);
       return content.innerHTML;
     };
 
@@ -103,7 +103,7 @@ describe('converter', function () {
         }
       };
 
-      remark.converter.convertMarkdown(content)
+      module.converter.convertMarkdown(content)
 
       return content.innerHTML;
     };
@@ -130,7 +130,7 @@ describe('converter', function () {
       node.innerHTML = code;
       content.appendChild(node);
 
-      remark.converter.convertCodeClasses(content);
+      module.converter.convertCodeClasses(content);
 
       return node;
     };

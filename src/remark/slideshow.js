@@ -1,7 +1,6 @@
-!function (context) {
+!function (module) {
 
-  var remark = context.remark = context.remark || {}
-    , slideshow = remark.slideshow = {}
+  var slideshow = module.slideshow = {}
     , scaleFactor = 227
     , heightFactor = 3
     , widthFactor = 4
@@ -16,12 +15,12 @@
       showSlide: function (slideIndex) {
         var slide = element.children[slideIndex];
         prepareSlideIfNeeded(slide, slides, slideIndex);
-        remark.events.emit('slidein', slide, slideIndex);
+        module.exports.events.emit('slidein', slide, slideIndex);
         slide.style.display = 'table';
       }
     , hideSlide: function (slideIndex) {
         var slide = element.children[slideIndex];
-        remark.events.emit('slideout', slide, slideIndex);
+        module.exports.events.emit('slideout', slide, slideIndex);
         slide.style.display = 'none';
       }
     , getSlideCount: function () {
@@ -93,11 +92,11 @@
   };
 
   var formatContent = function (content) {
-    remark.converter.convertContentClasses(content);
-    remark.converter.convertSlideClasses(content);
-    remark.converter.convertMarkdown(content);
-    remark.converter.convertCodeClasses(content);
-    remark.highlighter.highlightCodeBlocks(content);
+    module.converter.convertContentClasses(content);
+    module.converter.convertSlideClasses(content);
+    module.converter.convertMarkdown(content);
+    module.converter.convertCodeClasses(content);
+    module.highlighter.highlightCodeBlocks(content);
   };
 
   var appendPositionElement = function (content, slideNo, slideCount) {
@@ -108,4 +107,4 @@
     content.appendChild(positionElement);
   };
 
-}(this);
+}(module);

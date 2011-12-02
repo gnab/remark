@@ -1,7 +1,6 @@
-!function (context) {
+!function (module) {
 
-  var remark = context.remark = context.remark || {}
-    , controller = remark.controller = {}
+  var controller = module.controller = {}
     , currentSlideIndex = -1;
     ;
 
@@ -43,4 +42,4 @@
     location.hash = currentSlideIndex + 1;
   };
 
-}(this);
+}(module);

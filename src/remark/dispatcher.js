@@ -1,8 +1,6 @@
-!function (context) {
+!function (module) {
 
-  var remark = context.remark = context.remark || {}
-    , dispatcher = remark.dispatcher = {}
-    ;
+  var dispatcher = module.dispatcher = {};
 
   dispatcher.create = function () {
     mapKeys();
@@ -100,4 +98,4 @@
     });
   };
 
-}(this);
+}(module);

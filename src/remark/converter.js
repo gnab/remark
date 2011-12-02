@@ -1,10 +1,8 @@
-!function (context) {
+!function (module) {
 
   /* bundle "vendor/showdown.js" */
 
-  var remark = context.remark = context.remark || {}
-    , converter = remark.converter = {}
-    ;
+  var converter = module.converter = {};
 
   converter.convertSlideClasses = function (content) {
     var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
@@ -146,4 +144,4 @@
     return false;
   };
 
-}(this);
+}(module);

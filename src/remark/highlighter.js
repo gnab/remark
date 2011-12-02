@@ -1,10 +1,14 @@
-!function () {
+!function (module) {
 
   /* bundle "vendor/highlight/highlight.min.js" */
 
-  var remark = context.remark = context.remark || {}
-    , highlighter = remark.highlighter = {}
-    ;
+  var highlighter = module.highlighter = {};
+
+  module.exports.highlighter = {
+    engine: function() {
+      return hljs;
+    }
+  };
 
   var styles = {
     arta:           '/* bundle "vendor/highlight/styles/arta.css" */'
@@ -24,7 +28,7 @@
   };
 
   highlighter.cssForStyle = function () {
-    var config = remark.config;
+    var config = module.config;
 
     if (config.highlightStyle === undefined) {
       config.highlightStyle = 'default';
@@ -35,10 +39,6 @@
     }
 
     return styles[config.highlightStyle];
-  };
-
-  highlighter.engine = function() {
-    return hljs;
   };
 
   highlighter.highlightCodeBlocks = function (content) {
@@ -54,4 +54,4 @@
     }
   };
 
-}(this);
+}(module);
