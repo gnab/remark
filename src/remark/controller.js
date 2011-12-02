@@ -13,15 +13,14 @@
 
     window.onhashchange = navigate;
     navigate();
-    
-    return {
-      gotoPreviousSlide: function () {
-        gotoSlide(slideshow, currentSlideIndex - 1);
-      }
-    , gotoNextSlide: function () {
-        gotoSlide(slideshow, currentSlideIndex + 1);
-      }
-    };
+
+    remark.events.on('previousSlide', function() {
+      gotoSlide(slideshow, currentSlideIndex - 1);
+    });
+
+    remark.events.on('nextSlide', function() {
+      gotoSlide(slideshow, currentSlideIndex + 1);
+    });
   };
 
   var gotoSlide = function (slideshow, slideIndex) {
