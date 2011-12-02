@@ -1,5 +1,7 @@
 !function (module) {
 
+  /* bundle "src/remark/slide.js" */
+
   var slideshow = module.slideshow = {}
     , scaleFactor = 227
     , heightFactor = 3
@@ -7,21 +9,26 @@
     ;
 
   slideshow.create = function (source, element) {
-    var slides = createSlides(source, element);
+    var slides = createSlides(source, element)
+      , positionElement = document.createElement('div')
+      ;
+
+    positionElement.className = 'position';
+    element.appendChild(positionElement);
 
     styleElement(element);
 
     return {
       showSlide: function (slideIndex) {
-        var slide = element.children[slideIndex];
-        prepareSlideIfNeeded(slide, slides, slideIndex);
-        module.exports.events.emit('slidein', slide, slideIndex);
-        slide.style.display = 'table';
+        var slide = slides[slideIndex];
+        module.exports.events.emit('slidein', slide.element(), slideIndex);
+        element.appendChild(slide.element());
+        positionElement.innerHTML = slideIndex + 1 + ' / ' + slides.length;
       }
     , hideSlide: function (slideIndex) {
-        var slide = element.children[slideIndex];
-        module.exports.events.emit('slideout', slide, slideIndex);
-        slide.style.display = 'none';
+        var slide = slides[slideIndex];
+        module.exports.events.emit('slideout', slide.element(), slideIndex);
+        element.removeChild(slide.element());
       }
     , getSlideCount: function () {
         return slides.length;
@@ -30,21 +37,16 @@
   };
 
   var createSlides = function (source, element) {
-    var slides
+    var parts
+      , slides = []
       , slide
-      , content
       , i
       ;
 
-    slides = source.split(/\n\n---\n/)
+    parts = source.split(/\n\n---\n/);
 
-    for (i = 0; i < slides.length; ++i) {
-      slide = document.createElement('div');
-      slide.className = 'slide';
-      content = document.createElement('div');
-      content.className = 'content';
-      slide.appendChild(content);
-      element.appendChild(slide);
+    for (i = 0; i < parts.length; ++i) {
+      slides.push(module.slide.create(parts[i]));
     }
 
     return slides;
@@ -79,32 +81,6 @@
 
     window.onresize = resize;
     window.onresize();
-  };
-
-  var prepareSlideIfNeeded = function (slide, slides, slideIndex) {
-    var content = slide.children[0];
-
-    if (content.innerHTML === '') {
-      content.innerHTML = slides[slideIndex];
-      formatContent(content);
-      appendPositionElement(content, slideIndex + 1, slides.length);
-    }
-  };
-
-  var formatContent = function (content) {
-    module.converter.convertContentClasses(content);
-    module.converter.convertSlideClasses(content);
-    module.converter.convertMarkdown(content);
-    module.converter.convertCodeClasses(content);
-    module.highlighter.highlightCodeBlocks(content);
-  };
-
-  var appendPositionElement = function (content, slideNo, slideCount) {
-    var positionElement = document.createElement('div');
-
-    positionElement.className = 'position';
-    positionElement.innerHTML = slideNo + ' / ' + slideCount;
-    content.appendChild(positionElement);
   };
 
 }(module);

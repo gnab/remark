@@ -28,7 +28,7 @@ describe('converter', function () {
     });
 
     it('should apply single class', function () {
-      expect(convert('.class').className).toBe(' class');
+      expect(convert('.class').className).toBe('content class');
     });
 
     it('should extract multiple classes', function () {
@@ -36,7 +36,7 @@ describe('converter', function () {
     });
 
     it('should apply multiple classes', function () {
-      expect(convert('.a.b.c').className).toBe(' a b c');
+      expect(convert('.a.b.c').className).toBe('content a b c');
     });
   });
 

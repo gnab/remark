@@ -8,7 +8,7 @@
     var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
       , classes
       , replacement
-      , contentClasses = [content.className]
+      , contentClasses = ['content']
       , match
       ;
 

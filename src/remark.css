@@ -22,7 +22,7 @@ html, body {
   vertical-align: middle;
 }
 #slideshow .slide {
-  display: none;
+  display: table;
   float: left;
   height: 100%;
   overflow: hidden;
@@ -46,7 +46,7 @@ html, body {
 #slideshow .slide .content h1 code {
   font-size: 0.8em;
 }
-#slideshow .slide .content .position {
+#slideshow .position {
   bottom: 12px;
   opacity: 0.5;
   position: absolute;
