@@ -19,14 +19,14 @@
         case 37:
         case 38:
         case 75:
-          remark.events.emit('previousSlide');
+          gotoPreviousSlide();
           break;
         case 32:
         case 34:
         case 39:
         case 40:
         case 74:
-          remark.events.emit('nextSlide');
+          gotoNextSlide();
           break;
       }
     };
@@ -45,19 +45,19 @@
 
     var handleTap = function () {
       if (endX < width / 2) {
-        remark.events.emit('previousSlide');
+        gotoPreviousSlide();
       }
       else {
-        remark.events.emit('nextSlide');
+        gotoNextSlide();
       }
     };
 
     var handleSwipe = function () {
       if (startX > endX) {
-        remark.events.emit('nextSlide');
+        gotoNextSlide();
       }
       else {
-        remark.events.emit('previousSlide');
+        gotoPreviousSlide();
       }
     };
 
@@ -90,12 +90,20 @@
   var mapWheel = function () {
     document.addEventListener('mousewheel', function (event) {
       if (event.wheelDeltaY > 0) {
-        remark.events.emit('previousSlide');
+        gotoPreviousSlide();
       }
       else if (event.wheelDeltaY < 0) {
-        remark.events.emit('nextSlide');
+        gotoNextSlide();
       };
     });
+  };
+
+  var gotoNextSlide = function () {
+    module.events.emit('nextSlide');
+  };
+
+  var gotoPreviousSlide = function () {
+    module.events.emit('previousSlide');
   };
 
 }(module);

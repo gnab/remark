@@ -13,11 +13,11 @@
     window.onhashchange = navigate;
     navigate();
 
-    remark.events.on('previousSlide', function() {
+    module.events.on('previousSlide', function() {
       gotoSlide(slideshow, currentSlideIndex - 1);
     });
 
-    remark.events.on('nextSlide', function() {
+    module.events.on('nextSlide', function() {
       gotoSlide(slideshow, currentSlideIndex + 1);
     });
   };
