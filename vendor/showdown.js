@@ -676,7 +676,8 @@ var _DoHeaders = function(text) {
 
   /*
     text = text.replace(/
-      ^(\#{1,6})        // $1 = string of #'s
+      ^[ ]{0,3}
+      (\#{1,6})      // $1 = string of #'s
       [ \t]*
       (.+?)          // $2 = Header text
       [ \t]*
@@ -685,7 +686,7 @@ var _DoHeaders = function(text) {
     /gm, function() {...});
   */
 
-  text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
+  text = text.replace(/^[ ]{0,3}(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
     function(wholeMatch,m1,m2) {
       var h_level = m1.length;
       return hashBlock("<h" + h_level + ' id="' + headerId(m2) + '">' + _RunSpanGamut(m2) + "</h" + h_level + ">");
