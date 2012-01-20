@@ -1,6 +1,6 @@
-!function (module) {
+!function (remark) {
 
-  var config = module.config = function (properties) {
+  var config = remark.config = function (properties) {
     var property;
 
     for (property in properties) {
@@ -47,4 +47,4 @@
 
   load();
 
-}(module);
+}(remark);

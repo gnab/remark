@@ -1,6 +1,8 @@
-!function (module) {
+!function (remark) {
 
-  var converter = module.converter = {};
+  /* bundle "vendor/marked.js" */
+
+  var converter = remark.converter = {};
 
   converter.convertSlideClasses = function (content) {
     var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
@@ -140,4 +142,4 @@
     return false;
   };
 
-}(module);
+}(remark);
