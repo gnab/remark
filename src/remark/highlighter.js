@@ -1,10 +1,10 @@
-!function (module) {
+!function (remark) {
 
   /* bundle "vendor/highlight/highlight.min.js" */
 
-  var highlighter = module.highlighter = {};
+  var highlighter = remark.highlighter = {};
 
-  module.exports.highlighter = {
+  remark.exports.highlighter = {
     engine: function() {
       return hljs;
     }
@@ -28,7 +28,7 @@
   };
 
   highlighter.cssForStyle = function () {
-    var config = module.config;
+    var config = remark.config;
 
     if (config.highlightStyle === undefined) {
       config.highlightStyle = 'default';
@@ -54,4 +54,4 @@
     }
   };
 
-}(module);
+}(remark);

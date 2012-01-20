@@ -2,14 +2,14 @@
 
   /* bundle "vendor/EventEmitter.min.js" */
 
-  var module = {
+  var remark = {
     events: new EventEmitter()
   , exports: {
       events: new EventEmitter()
     }
   };
 
-  context.remark = module.exports;
+  context.remark = remark.exports;
 
   /* bundle "src/remark/config.js" */
   /* bundle "src/remark/controller.js" */
@@ -54,7 +54,7 @@
 
     styleElement.type = 'text/css';
     styleElement.innerHTML = '/* bundle "src/remark.css" */';
-    styleElement.innerHTML += module.highlighter.cssForStyle();
+    styleElement.innerHTML += remark.highlighter.cssForStyle();
 
     headElement.insertBefore(styleElement, headElement.firstChild);
   };
@@ -64,9 +64,9 @@
       , slideshow
       ;
 
-    slideshow = module.slideshow.create(source, slideshowElement);
-    module.controller.create(slideshow);
-    module.dispatcher.create();
+    slideshow = remark.slideshow.create(source, slideshowElement);
+    remark.controller.create(slideshow);
+    remark.dispatcher.create();
   };
 
 }(this);

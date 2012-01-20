@@ -1,8 +1,8 @@
-!function (module) {
+!function (remark) {
 
-  /* bundle "vendor/showdown.js" */
+  /* bundle "vendor/marked.js" */
 
-  var converter = module.converter = {};
+  var converter = remark.converter = {};
 
   converter.convertSlideClasses = function (content) {
     var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
@@ -93,11 +93,9 @@
   };
 
   converter.convertMarkdown = function (content) {
-    var converter = new Showdown.converter();
+    content.innerHTML = marked(content.innerHTML.trim(' '));
 
-    content.innerHTML = converter.makeHtml(content.innerHTML.trim(' '));
-    
-    content.innerHTML = content.innerHTML.replace(/&[l|g]t;/g, 
+    content.innerHTML = content.innerHTML.replace(/&[l|g]t;/g,
       function (match) {
         return match === '&lt;' ? '<' : '>';
       });
@@ -144,4 +142,4 @@
     return false;
   };
 
-}(module);
+}(remark);

@@ -1,6 +1,6 @@
-!function (module) {
+!function (remark) {
 
-  var dispatcher = module.dispatcher = {};
+  var dispatcher = remark.dispatcher = {};
 
   dispatcher.create = function () {
     mapKeys();
@@ -99,11 +99,11 @@
   };
 
   var gotoNextSlide = function () {
-    module.events.emit('nextSlide');
+    remark.events.emit('nextSlide');
   };
 
   var gotoPreviousSlide = function () {
-    module.events.emit('previousSlide');
+    remark.events.emit('previousSlide');
   };
 
-}(module);
+}(remark);

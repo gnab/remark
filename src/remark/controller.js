@@ -1,6 +1,6 @@
-!function (module) {
+!function (remark) {
 
-  var controller = module.controller = {}
+  var controller = remark.controller = {}
     , currentSlideIndex = -1;
     ;
 
@@ -13,11 +13,11 @@
     window.onhashchange = navigate;
     navigate();
 
-    module.events.on('previousSlide', function() {
+    remark.events.on('previousSlide', function() {
       gotoSlide(slideshow, currentSlideIndex - 1);
     });
 
-    module.events.on('nextSlide', function() {
+    remark.events.on('nextSlide', function() {
       gotoSlide(slideshow, currentSlideIndex + 1);
     });
   };
@@ -42,4 +42,4 @@
     location.hash = currentSlideIndex + 1;
   };
 
-}(module);
+}(remark);
