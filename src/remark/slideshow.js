@@ -18,17 +18,22 @@
 
     styleElement(element);
 
+    for (var i = 0; i < slides.length; i++) {
+      var slide = slides[i];
+      element.appendChild(slide.element());
+    }
+
     return {
       showSlide: function (slideIndex) {
         var slide = slides[slideIndex];
-        element.appendChild(slide.element());
         module.exports.events.emit('slidein', slide.element(), slideIndex);
+        slide.element().style.display = 'table';
         positionElement.innerHTML = slideIndex + 1 + ' / ' + slides.length;
       }
     , hideSlide: function (slideIndex) {
         var slide = slides[slideIndex];
         module.exports.events.emit('slideout', slide.element(), slideIndex);
-        element.removeChild(slide.element());
+        slide.element().style.display = 'none';
       }
     , getSlideCount: function () {
         return slides.length;

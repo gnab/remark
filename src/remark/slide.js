@@ -25,6 +25,7 @@
       if (_element === undefined) {
         _element = document.createElement('div');
         _element.className = 'slide';
+        _element.style.display = 'none';
         _element.appendChild(document.createElement('div'));
 
         prepareSlide(_slide);
