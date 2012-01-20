@@ -21,8 +21,8 @@
     return {
       showSlide: function (slideIndex) {
         var slide = slides[slideIndex];
-        module.exports.events.emit('slidein', slide.element(), slideIndex);
         element.appendChild(slide.element());
+        module.exports.events.emit('slidein', slide.element(), slideIndex);
         positionElement.innerHTML = slideIndex + 1 + ' / ' + slides.length;
       }
     , hideSlide: function (slideIndex) {
