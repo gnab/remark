@@ -1,6 +1,7 @@
 !function (context) {
 
   /* bundle "vendor/EventEmitter.min.js" */
+  /* bundle "vendor/marked.js" */
 
   var module = {
     events: new EventEmitter()

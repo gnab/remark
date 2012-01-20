@@ -1,7 +1,5 @@
 !function (module) {
 
-  /* bundle "vendor/showdown.js" */
-
   var converter = module.converter = {};
 
   converter.convertSlideClasses = function (content) {
@@ -93,11 +91,9 @@
   };
 
   converter.convertMarkdown = function (content) {
-    var converter = new Showdown.converter();
+    content.innerHTML = marked(content.innerHTML.trim(' '));
 
-    content.innerHTML = converter.makeHtml(content.innerHTML.trim(' '));
-    
-    content.innerHTML = content.innerHTML.replace(/&[l|g]t;/g, 
+    content.innerHTML = content.innerHTML.replace(/&[l|g]t;/g,
       function (match) {
         return match === '&lt;' ? '<' : '>';
       });
