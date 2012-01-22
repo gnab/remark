@@ -1,8 +1,8 @@
-!function (module) {
+!function (remark) {
 
   /* bundle "src/remark/slide.js" */
 
-  var slideshow = module.slideshow = {}
+  var slideshow = remark.slideshow = {}
     , scaleFactor = 227
     , heightFactor = 3
     , widthFactor = 4
@@ -18,17 +18,22 @@
 
     styleElement(element);
 
+    for (var i = 0; i < slides.length; i++) {
+      var slide = slides[i];
+      element.appendChild(slide.element());
+    }
+
     return {
       showSlide: function (slideIndex) {
         var slide = slides[slideIndex];
-        module.exports.events.emit('slidein', slide.element(), slideIndex);
-        element.appendChild(slide.element());
+        remark.exports.events.emit('slidein', slide.element(), slideIndex);
+        slide.element().style.display = 'table';
         positionElement.innerHTML = slideIndex + 1 + ' / ' + slides.length;
       }
     , hideSlide: function (slideIndex) {
         var slide = slides[slideIndex];
-        module.exports.events.emit('slideout', slide.element(), slideIndex);
-        element.removeChild(slide.element());
+        remark.exports.events.emit('slideout', slide.element(), slideIndex);
+        slide.element().style.display = 'none';
       }
     , getSlideCount: function () {
         return slides.length;
@@ -46,7 +51,7 @@
     parts = source.split(/\n\n---\n/);
 
     for (i = 0; i < parts.length; ++i) {
-      slides.push(module.slide.create(parts[i]));
+      slides.push(remark.slide.create(parts[i]));
     }
 
     return slides;
@@ -83,4 +88,4 @@
     window.onresize();
   };
 
-}(module);
+}(remark);

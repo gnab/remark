@@ -1,6 +1,6 @@
-!function (module) {
+!function (remark) {
 
-  var slide = module.slide = {};
+  var slide = remark.slide = {};
 
   slide.create = function (source) {
     var _slide = {}
@@ -25,6 +25,7 @@
       if (_element === undefined) {
         _element = document.createElement('div');
         _element.className = 'slide';
+        _element.style.display = 'none';
         _element.appendChild(document.createElement('div'));
 
         prepareSlide(_slide);
@@ -43,11 +44,11 @@
   };
 
   var formatContent = function (content) {
-    module.converter.convertContentClasses(content);
-    module.converter.convertSlideClasses(content);
-    module.converter.convertMarkdown(content);
-    module.converter.convertCodeClasses(content);
-    module.highlighter.highlightCodeBlocks(content);
+    remark.converter.convertContentClasses(content);
+    remark.converter.convertSlideClasses(content);
+    remark.converter.convertMarkdown(content);
+    remark.converter.convertCodeClasses(content);
+    remark.highlighter.highlightCodeBlocks(content);
   };
 
-}(module);
+}(remark);
