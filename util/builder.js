@@ -4,9 +4,13 @@ var fs = require('fs')
   , less = require('less')
   ;
 
-exports.build = function (filePath, target, callback) {
+exports.build = function (filePath, target, options, callback) {
+  options = options || {};
+
   bundle(filePath, function (data) {
-    data = minify(data);
+    if (!options.debug) {
+      data = minify(data);
+    }
 
     fs.writeFileSync(target, data);
 
@@ -67,6 +71,6 @@ var compress = function (css, callback) {
       less.writeError(err);
       throw err;
     }
-    callback(tree.toCSS({compress: true}));
+    callback(tree.toCSS({compress: true}).replace(/\n/g, ''));
   });
 };
