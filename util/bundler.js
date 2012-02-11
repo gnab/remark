@@ -8,7 +8,7 @@ var fs = require('fs')
   , filePathSelector = function (match) { return match[2]; }
   ;
 
-exports.bundle = function bundle(filePath, options, callback) {
+exports.bundle = function bundle(filePath, skipMinify, callback) {
   var bundleFile
     , files = []
     ;
@@ -31,7 +31,7 @@ exports.bundle = function bundle(filePath, options, callback) {
   };
 
   bundleFile(filePath, function (data) {
-    if (!options.debug) {
+    if (!skipMinify) {
       data = minify(data);
     }
      
@@ -54,6 +54,7 @@ var compress = function (css, callback) {
       less.writeError(err);
       throw err;
     }
+
     callback(tree.toCSS({compress: true}).replace(/\n/g, ''));
   });
 };
