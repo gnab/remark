@@ -1,7 +1,7 @@
 describe('config', function () {
   it('should allow configuring by calling remark.config function', function () {
-    module.config({property: 'value'});
+    remark.config({property: 'value'});
 
-    expect(module.config.property).toBe('value');
+    expect(remark.config.property).toBe('value');
   });
 });

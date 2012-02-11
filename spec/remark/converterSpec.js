@@ -3,7 +3,7 @@ describe('converter', function () {
   describe('convertSlideClasses', function () {
     var convert = function(text) {
       var content = {innerHTML: text};
-      module.converter.convertSlideClasses(content);
+      remark.converter.convertSlideClasses(content);
       return content;
     };
 
@@ -43,7 +43,7 @@ describe('converter', function () {
   describe('convertContentClasses', function () {
     var convert = function(text) {
       var content = {innerHTML: text};
-      module.converter.convertContentClasses(content);
+      remark.converter.convertContentClasses(content);
       return content.innerHTML;
     };
 
@@ -93,24 +93,14 @@ describe('converter', function () {
     var convert = function (text) {
       var content = {innerHTML: text};
 
-      Showdown = {
-        converter: function () {
-          return {
-            makeHtml: function (text) {
-              return text; 
-            }
-          };
-        }
-      };
-
-      module.converter.convertMarkdown(content)
+      remark.converter.convertMarkdown(content)
 
       return content.innerHTML;
     };
 
     it('should unescape HTML', function () {
       expect(convert('&lt;b class="test"&gt;a&lt;/b&gt;'))
-        .toBe('<b class="test">a</b>');
+        .toBe('<p><b class=&quot;test&quot;>a</b></p>');
     });
 
     it('should unescape once HTML escaped twice in code tags', function () {
@@ -130,7 +120,7 @@ describe('converter', function () {
       node.innerHTML = code;
       content.appendChild(node);
 
-      module.converter.convertCodeClasses(content);
+      remark.converter.convertCodeClasses(content);
 
       return node;
     };
