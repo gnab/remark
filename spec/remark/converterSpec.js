@@ -156,6 +156,18 @@ describe('converter', function () {
     it('should unescape escaped code class', function () {
       expect(convert('\\.ruby\na = 5', 'pre').innerHTML).toEqual('.ruby\na = 5');
     });
+
+    it('should use configured code class by default', function () {
+      remark.config({highlightLanguage: 'not-a-language'});
+
+      expect(convert('a = 5', 'pre').className).toEqual('not-a-language');
+    });
+
+    it('should ignore configured code class if class is given', function () {
+      remark.config({highlightLanguage: 'not-a-language'});
+
+      expect(convert('.ruby a = 5', 'pre').className).toEqual('ruby');
+    });
   });
 
 });

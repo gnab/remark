@@ -105,6 +105,7 @@
 
   converter.convertCodeClasses = function (content) {
     var codeBlocks = content.getElementsByTagName('code')
+      , defaultClass = remark.config.highlightLanguage
       , block
       , i
       , foundClass
@@ -119,6 +120,9 @@
 
       if (!foundClass && isInlineCode) {
         block.className = 'no-highlight';
+      }
+      else if (!foundClass && defaultClass) {
+        block.className = defaultClass;
       }
     }
   };

@@ -6,6 +6,7 @@ config["Converter"] = {
   , sources: [
       "../vendor/marked.js"
     , "../src/remark/namespace.js"
+    , "../src/remark/config.js"
     , "../src/remark/converter.js"
     ]
   , tests: [
