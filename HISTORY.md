@@ -1,3 +1,11 @@
+### 0.3.2
+* Expose highlighter engine ([kjbekkelund](https://github.com/kjbekkelund)).
+* Handle 0 to 3 spaces before # in headings ([kjbekkelund](https://github.com/kjbekkelund)).
+* Support headings inside DIVs ([kjbekkelund](https://github.com/kjbekkelund)).
+* Use marked instead of Showdown ([kjbekkelund](https://github.com/kjbekkelund)).
+* Build remark using Node.js instead of Ruby.
+* Run tests using Buster.js instead of Jasmine.
+
 ### 0.3.1
 * Initial event support ([kjbekkelund](https://github.com/kjbekkelund)).
 * Made remark.config a function accepting configuration options.
