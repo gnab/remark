@@ -1,0 +1,63 @@
+html, body {
+  background: #d7d7d7;
+  font-family: Georgia;
+  font-size: 20px;
+  overflow: hidden;
+}
+
+#slideshow {
+  background: #fff;
+  position: absolute;
+  -webkit-transform-origin: top left;
+  -moz-transform-origin: top left;
+  transform-origin: top-left;
+
+  .slide {
+    display: table;
+    float: left;
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+    -moz-box-shadow: 0 0 30px #888;
+    -webkit-box-shadow: 0 0 30px #888;
+    box-shadow: 0 0 30px #888;
+
+    > .center {
+      text-align: center;
+    }
+
+    > .middle {
+      vertical-align: middle;
+    }
+
+    .content {
+      display: table-cell;
+      padding: 1em 4em 1em 4em;
+
+      .center {
+        display: block;
+        text-align: center;
+      }
+
+      pre, code {
+        font-family: Monaco, monospace;
+        font-size: 16px;
+      }
+
+      h1 code {
+        font-size: 0.8em;
+      }
+    }
+  }
+
+  .position {
+    bottom: 12px;
+    opacity: 0.5;
+    position: absolute;
+    right: 20px;
+  }
+}
+
+p > code {
+  padding: 1px 4px;
+}

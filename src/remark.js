@@ -52,7 +52,7 @@
       ;
 
     styleElement.type = 'text/css';
-    styleElement.innerHTML = '/* bundle "src/remark.css" */';
+    styleElement.innerHTML = '/* bundle "src/remark.less" */';
     styleElement.innerHTML += remark.highlighter.cssForStyle();
 
     headElement.insertBefore(styleElement, headElement.firstChild);
