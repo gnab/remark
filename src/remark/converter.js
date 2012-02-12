@@ -105,29 +105,33 @@
 
   converter.convertCodeClasses = function (content) {
     var codeBlocks = content.getElementsByTagName('code')
-      , defaultClass = remark.config.highlightLanguage
-      , block
       , i
-      , foundClass
-      , isInlineCode
       ;
 
     for (i = 0; i < codeBlocks.length; i++) {
-      block = codeBlocks[i];
-
-      foundClass = convertCodeClass(block);
-      isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE';
-
-      if (!foundClass && isInlineCode) {
-        block.className = 'no-highlight';
-      }
-      else if (!foundClass && defaultClass) {
-        block.className = defaultClass;
-      }
+      convertCodeClass(codeBlocks[i]);
     }
   };
 
   var convertCodeClass = function (block) {
+    var defaultClass = remark.config.highlightLanguage
+      , highlightInline = remark.config.highlightInline
+      , isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE'
+      ;
+
+      if (setCodeClass(block)) {
+        return;
+      }
+
+      if (isInlineCode && !highlightInline) {
+        block.className = 'no-highlight';
+      }
+      else if (defaultClass) {
+        block.className = defaultClass;
+      }
+  };
+
+  var setCodeClass = function (block) {
     var classFinder = /^(\\)?\.([a-z_-][a-z-_0-9]*)(?:\n|\ )/i
       , match
       ;

@@ -1,13 +1,19 @@
 buster.spec.expose();
 
 describe('config', function () {
-  it('should allow configuring by calling remark.config function', function () {
-    remark.config({property: 'value'});
+  it('should allow setting predefined property', function () {
+    remark.config({highlightStyle: 'some-style'});
 
-    expect(remark.config.property).toEqual('value');
+    expect(remark.config.highlightStyle).toEqual('some-style');
   });
 
-  it('should expose config function', function () {
+  it('should disallow setting undefined properties', function () {
+    remark.config({undefinedProperty: 'some-value'});
+
+    expect(remark.config.undefinedProperty).toEqual(undefined);
+  });
+
+  it('should be exposed', function () {
     expect(remark.exports.config).toEqual(remark.config);
   });
 });

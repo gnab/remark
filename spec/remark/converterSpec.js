@@ -125,12 +125,26 @@ describe('converter', function () {
       return node;
     };
 
+    before(function resetConfiguration () {
+      remark.config({
+        highlightStyle: undefined
+      , highlightLanguage: undefined
+      , highlightInline: undefined
+      });
+    });
+
     it('should disable highlighting for inline code by default', function () {
       expect(convert('var a = 5;').className).toEqual('no-highlight');
     });
 
-    it('should not disable highlighting for code by default', function () {
+    it('should enable highlighting for code by default', function () {
       expect(convert('var a = 5;', 'pre').className).toEqual('');
+    });
+
+    it('should enable highlighting for inline code if configured to', function () {
+      remark.config({highlightInline: true});
+
+      expect(convert('var a = 5;').className).toEqual('');
     });
 
     it('should extract inline code class', function () {

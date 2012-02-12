@@ -1,13 +1,15 @@
 !function (remark) {
 
+  var VALID_PROPERTIES = [
+    'highlightInline'
+  , 'highlightLanguage'
+  , 'highlightStyle'
+  ];
+
   var config = remark.config = remark.exports.config = function (properties) {
     var property;
 
-    for (property in properties) {
-      if (properties.hasOwnProperty(property)) {
-        config[property] = properties[property];
-      }
-    }
+    setProperties(properties);
   };
 
   var load = function () {
@@ -27,22 +29,33 @@
   };
 
   var loadConfigJson = function (jsonStr) {
-    var json = {}
-      , property;
+    var properties = {};
 
     if (jsonStr === '') {
       return;
     }
     
     try {
-      json = JSON.parse(jsonStr);
+      properties = JSON.parse(jsonStr);
     }
     catch (err) {
       alert('Parsing of remark config failed! Be sure to use valid JSON.') 
     }
 
-    config.highlightStyle = json.highlightStyle;
-    config.highlightLanguage = json.highlightLanguage;
+    setProperties(properties);
+  };
+
+  var setProperties = function (properties) {
+    var i
+      , property
+      ;
+
+    for (i = 0; i < VALID_PROPERTIES.length; ++i) {
+      property = VALID_PROPERTIES[i];
+      if (properties.hasOwnProperty(property)) {
+          config[property] = properties[property];
+      }
+    }
   };
 
   load();
