@@ -4,9 +4,7 @@
   /* bundle "vendor/EventEmitter.min.js" */
 
   remark.events = new EventEmitter();
-  remark.exports = {
-    events: new EventEmitter()
-  };
+  remark.exports.events = new EventEmitter();
 
   context.remark = remark.exports;
 

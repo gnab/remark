@@ -42,7 +42,7 @@
     }
 
     config.highlightStyle = json.highlightStyle;
-    config.highlightInline = json.highlightInline || false
+    config.highlightLanguage = json.highlightLanguage;
   };
 
   load();

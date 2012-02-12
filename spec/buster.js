@@ -23,3 +23,15 @@ config["Config"] = {
       "remark/configSpec.js"
     ]
 };
+
+config["Highlighter"] = {
+    environment: "browser"
+  , sources: [
+      "../src/remark/namespace.js"
+    , "../src/remark/config.js"
+    , "../src/remark/highlighter.js"
+    ]
+  , tests: [
+      "remark/highlighterSpec.js"
+    ]
+};

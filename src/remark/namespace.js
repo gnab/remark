@@ -1,1 +1,5 @@
-var remark = {};
+var remark = {
+  exports: {
+
+  }
+};
