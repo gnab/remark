@@ -1,12 +1,11 @@
 !function (context) {
 
+  /* bundle "src/remark/namespace.js" */
   /* bundle "vendor/EventEmitter.min.js" */
 
-  var remark = {
+  remark.events = new EventEmitter();
+  remark.exports = {
     events: new EventEmitter()
-  , exports: {
-      events: new EventEmitter()
-    }
   };
 
   context.remark = remark.exports;
