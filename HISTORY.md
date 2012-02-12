@@ -1,3 +1,8 @@
+### 0.3.3
+* Expose `config` function.
+* Add support for `highlightLanguage` configuration option.
+* Add support for `highlightInline` configuration option.
+
 ### 0.3.2
 * Expose highlighter engine ([kjbekkelund](https://github.com/kjbekkelund)).
 * Handle 0 to 3 spaces before # in headings ([kjbekkelund](https://github.com/kjbekkelund)).
