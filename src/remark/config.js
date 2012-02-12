@@ -1,6 +1,6 @@
 !function (remark) {
 
-  var config = remark.config = function (properties) {
+  var config = remark.config = remark.exports.config = function (properties) {
     var property;
 
     for (property in properties) {

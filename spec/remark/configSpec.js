@@ -6,4 +6,8 @@ describe('config', function () {
 
     expect(remark.config.property).toEqual('value');
   });
+
+  it('should expose config function', function () {
+    expect(remark.exports.config).toEqual(remark.config);
+  });
 });
