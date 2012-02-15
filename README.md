@@ -57,7 +57,10 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 
 - [gnab.github.com/remark](http://gnab.github.com/remark)
 - [gnab.github.com/editorjs](http://gnab.github.com/editorjs)
+- [judoole.github.com/GroovyBDD](http://judoole.github.com/GroovyBDD)
 - [kjbekkelund.github.com/nith-coffeescript](http://kjbekkelund.github.com/nith-coffeescript)
+- [bekkopen.github.com/infrastruktur-som-kode](http://bekkopen.github.com/infrastruktur-som-kode)
+- [ivarconr.github.com/Test-Driven-Web-Development/slides](http://ivarconr.github.com/Test-Driven-Web-Development/slides)
 
 ### Credits
 
