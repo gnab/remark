@@ -4,6 +4,8 @@
 
   var converter = remark.converter = {};
 
+  marked.setOptions({gfm: false});
+
   converter.convertSlideClasses = function (content) {
     var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
       , classes
