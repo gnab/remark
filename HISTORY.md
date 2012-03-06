@@ -1,3 +1,7 @@
+### 0.3.4
+* Upgrade marked.
+* Disable Github Flavored Markdown (GFM) to prevent autolinks, i.e. src attributes for img or iframe tags turning into links.
+
 ### 0.3.3
 * Expose `config` function.
 * Add support for `highlightLanguage` configuration option.
