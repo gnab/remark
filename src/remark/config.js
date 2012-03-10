@@ -1,16 +1,20 @@
+var config = module.exports = configure;
+
 var VALID_PROPERTIES = [
   'highlightInline'
 , 'highlightLanguage'
 , 'highlightStyle'
 ];
 
-var config = module.exports = function (properties) {
-  var property;
+if (typeof document !== 'undefined') {
+  loadConfigFromScriptTag();
+}
 
+function configure (properties) {
   setProperties(properties);
-};
+}
 
-var load = function () {
+function loadConfigFromScriptTag () {
   var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
     , scriptElements = document.getElementsByTagName('script')
     , element
@@ -20,13 +24,13 @@ var load = function () {
     element = scriptElements[i];
 
     if (remarkjs.exec(element.src)) {
-      loadConfigJson(element.innerHTML.trim()); 
+      loadConfigFromJSON(element.innerHTML.trim()); 
       break;
     }
   }
-};
+}
 
-var loadConfigJson = function (jsonStr) {
+function loadConfigFromJSON (jsonStr) {
   var properties = {};
 
   if (jsonStr === '') {
@@ -37,13 +41,13 @@ var loadConfigJson = function (jsonStr) {
     properties = JSON.parse(jsonStr);
   }
   catch (err) {
-    alert('Parsing of remark config failed! Be sure to use valid JSON.') 
+    alert('Parsing remark config failed! Be sure to use valid JSON.');
   }
 
   setProperties(properties);
-};
+}
 
-var setProperties = function (properties) {
+function setProperties (properties) {
   var i
     , property
     ;
@@ -54,6 +58,4 @@ var setProperties = function (properties) {
         config[property] = properties[property];
     }
   }
-};
-
-load();
+}

@@ -3,9 +3,10 @@
 , "version" : "0.3.1"
 , "devDependencies":
   {
-    "uglify-js": "1.2.5"
+    "browserify": "1.10.4"
+  , "uglify-js": "1.2.5"
   , "less": "1.2.1"
-  , "buster": "0.3.0"
-  , "browserify": "1.10.4"
+  , "mocha": "0.14.1"
+  , "should": "0.6.0"
   }
 }

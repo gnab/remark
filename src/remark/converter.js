@@ -1,4 +1,5 @@
 var marked = require('../../vendor/marked')
+  , config = require('./config')
   , converter = module.exports = {}
   ;
 
@@ -114,8 +115,8 @@ converter.convertCodeClasses = function (content) {
 };
 
 var convertCodeClass = function (block) {
-  var defaultClass = remark.config.highlightLanguage
-    , highlightInline = remark.config.highlightInline
+  var defaultClass = config.highlightLanguage
+    , highlightInline = config.highlightInline
     , isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE'
     ;
 
