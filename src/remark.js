@@ -1,69 +1,61 @@
-!function (context) {
+var api = require('./remark/api')
+  , controller = require('./remark/controller')
+  , converter = require('./remark/converter')
+  , dispatcher = require('./remark/dispatcher')
+  , highlighter = require('./remark/highlighter')
+  , slideshow = require('./remark/slideshow')
 
-  /* bundle "src/remark/namespace.js" */
-  /* bundle "vendor/EventEmitter.min.js" */
+  , styles = require('./remark.less')
 
-  remark.events = new EventEmitter();
-  remark.exports.events = new EventEmitter();
+window.remark = api;
 
-  context.remark = remark.exports;
+window.onload = function () {
+  var sourceElement = document.getElementById('source')
+    , slideshowElement = document.getElementById('slideshow')
+    ;
 
-  /* bundle "src/remark/config.js" */
-  /* bundle "src/remark/controller.js" */
-  /* bundle "src/remark/converter.js" */
-  /* bundle "src/remark/dispatcher.js" */
-  /* bundle "src/remark/highlighter.js" */
-  /* bundle "src/remark/slideshow.js" */
+  if (!assureElementsExist(sourceElement, slideshowElement)) {
+    return;
+  }
 
-  window.onload = function () {
-    var sourceElement = document.getElementById('source')
-      , slideshowElement = document.getElementById('slideshow')
-      ;
+  sourceElement.style.display = 'none';
 
-    if (!assureElementsExist(sourceElement, slideshowElement)) {
-      return;
-    }
+  styleDocument();
+  setupSlideshow(sourceElement, slideshowElement);
+};
 
-    sourceElement.style.display = 'none';
+var assureElementsExist = function (sourceElement, slideshowElement) {
+  if (!sourceElement) {
+    alert('remark error: source element not present.')
+    return false;
+  }
 
-    styleDocument();
-    setupSlideshow(sourceElement, slideshowElement);
-  };
+  if (!slideshowElement) {
+    alert('remark error: slideshow element not present.')
+    return false;
+  }
 
-  var assureElementsExist = function (sourceElement, slideshowElement) {
-    if (!sourceElement) {
-      alert('remark error: source element not present.')
-      return false;
-    }
+  return true;
+};
 
-    if (!slideshowElement) {
-      alert('remark error: slideshow element not present.')
-      return false;
-    }
+var styleDocument = function () {
+  var styleElement = document.createElement('style')
+    , headElement = document.getElementsByTagName('head')[0]
+    ;
 
-    return true;
-  };
+  styleElement.type = 'text/css';
+  styleElement.innerHTML = styles;
+  styleElement.innerHTML += highlighter.cssForStyle();
 
-  var styleDocument = function () {
-    var styleElement = document.createElement('style')
-      , headElement = document.getElementsByTagName('head')[0]
-      ;
+  headElement.insertBefore(styleElement, headElement.firstChild);
+};
 
-    styleElement.type = 'text/css';
-    styleElement.innerHTML = '/* bundle "src/remark.less" */';
-    styleElement.innerHTML += remark.highlighter.cssForStyle();
+var setupSlideshow = function (sourceElement, slideshowElement) {
+  var source = sourceElement.innerHTML
+    , show
+    ;
 
-    headElement.insertBefore(styleElement, headElement.firstChild);
-  };
-
-  var setupSlideshow = function (sourceElement, slideshowElement) {
-    var source = sourceElement.innerHTML
-      , slideshow
-      ;
-
-    slideshow = remark.slideshow.create(source, slideshowElement);
-    remark.controller.create(slideshow);
-    remark.dispatcher.create();
-  };
-
-}(this);
+  show = slideshow.create(source, slideshowElement);
+  controller.create(show);
+  dispatcher.create();
+};
