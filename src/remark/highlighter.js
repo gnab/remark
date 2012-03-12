@@ -1,5 +1,6 @@
 var highlight = require('../../vendor/highlight/highlight.min')
   , api = require('./api')
+  , config = require('./config')
 
   , highlighter = module.exports = {}
   ;
@@ -28,8 +29,6 @@ var styles = {
 };
 
 highlighter.cssForStyle = function () {
-  var config = remark.config;
-
   if (config.highlightStyle === undefined) {
     config.highlightStyle = 'default';
   }
