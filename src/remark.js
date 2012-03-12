@@ -4,8 +4,7 @@ var api = require('./remark/api')
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
   , slideshow = require('./remark/slideshow')
-
-  , styles = require('./remark.less')
+  , resources = require('./remark/resources')
 
 window.remark = api;
 
@@ -44,7 +43,7 @@ var styleDocument = function () {
     ;
 
   styleElement.type = 'text/css';
-  styleElement.innerHTML = styles;
+  styleElement.innerHTML = resources.documentStyles;
   styleElement.innerHTML += highlighter.cssForStyle();
 
   headElement.insertBefore(styleElement, headElement.firstChild);

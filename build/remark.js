@@ -1,8 +1,9 @@
 var fs = require('fs')
-  , less = require('less')
+  , path = require('path')
   , jsp = require('uglify-js').parser
   , pro = require('uglify-js').uglify
   , browserify = require('browserify')
+  , resources = require('./resources')
   ;
 
 var options = parseOptions();
@@ -16,8 +17,8 @@ function parseOptions () {
   var options = {
       debug: false
     , watch: false
-    , source: './index.js'
-    , target: 'remark.min.js'
+    , source: path.join(__dirname, '../src/remark.js')
+    , target: path.join(__dirname, '../remark.min.js')
     };
 
   process.argv.forEach(function (val, index) {
@@ -35,12 +36,11 @@ function parseOptions () {
 function build (options, callback) {
   var bundle = browserify({watch: options.watch});
 
-  bundle.register('.less', stringify);
-  bundle.register('.css', stringify);
-
   if (!options.debug) {
     bundle.register('post', minify);
   }
+
+  resources.bundle();
 
   bundle.addEntry(options.source);
 
@@ -56,23 +56,6 @@ function build (options, callback) {
   callback(bundle.bundle());
 }
     
-function stringify(content) {
-  var parser = new less.Parser()
-    , css
-    ;
-
-  parser.parse(content, function (err, tree) {
-    if (err) {
-      less.writeError(err);
-      throw err;
-    }
-
-    css = "module.exports = '" + tree.toCSS({compress: true}).replace(/\n/g, '') + "';";
-  });
-
-  return css;
-}
-
 function minify(content) {
   var ast = jsp.parse(content)
     ;
