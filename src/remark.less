@@ -20,21 +20,47 @@ html, body {
     height: 100%;
     width: 100%;
 
+    > .left {
+      text-align: center;
+    }
+
     > .center {
       text-align: center;
+    }
+
+    > .right {
+      text-align: right;
+    }
+
+    > .top {
+      vertical-align: top;
     }
 
     > .middle {
       vertical-align: middle;
     }
 
+    > .bottom {
+      vertical-align: bottom;
+    }
+
     .content {
       display: table-cell;
       padding: 1em 4em 1em 4em;
 
+      .left {
+        display: block;
+        text-align: left;
+      }
+
       .center {
         display: block;
         text-align: center;
+      }
+
+      .right {
+        display: block;
+        text-align: right;
       }
 
       pre, code {
