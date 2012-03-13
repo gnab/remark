@@ -61,6 +61,7 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 - [kjbekkelund.github.com/nith-coffeescript](http://kjbekkelund.github.com/nith-coffeescript)
 - [bekkopen.github.com/infrastruktur-som-kode](http://bekkopen.github.com/infrastruktur-som-kode)
 - [ivarconr.github.com/Test-Driven-Web-Development/slides](http://ivarconr.github.com/Test-Driven-Web-Development/slides)
+- [havard.github.com/node.js-intro-norwegian](http://havard.github.com/node.js-intro-norwegian)
 
 ### Credits
 
