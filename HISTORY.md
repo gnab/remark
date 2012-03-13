@@ -1,3 +1,8 @@
+### 0.3.5
+* Convert slide attributes, i.e. .attribute=value.
+* Fix slide content overflow issue.
+* Embed more slide and content classes; `.left`, `.center`, `.right`, `.top`, `.middle` and `.bottom`.
+
 ### 0.3.4
 * Upgrade marked.
 * Disable Github Flavored Markdown (GFM) to prevent autolinks, i.e. src attributes for img or iframe tags turning into links.
