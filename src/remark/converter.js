@@ -5,6 +5,39 @@ var marked = require('../vendor/marked')
 
 marked.setOptions({gfm: false});
 
+converter.convertSlideAttributes = function (content) {
+  var attributeFinder =
+    /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*=\s*([^$\n]*)\s*(?:$|\n)/ig
+    , replacement
+    , attributes = {}
+    , match
+    , attribute
+    ;
+
+  while (match = attributeFinder.exec(content.innerHTML)) {
+    if (match[1]) {
+      // Simply remove escape slash
+      replacement = match[0].replace(/\\/, '');
+    }
+    else {
+      replacement = "";
+
+      attributes[match[2].substr(1)] = match[3];
+    }
+
+    content.innerHTML = content.innerHTML.substr(0, match.index) +
+      replacement + content.innerHTML.substr(match.index + match[0].length);
+
+    attributeFinder.lastIndex = match.index + replacement.length;
+  }
+
+  for (attribute in attributes) {
+    if (attributes.hasOwnProperty(attribute)) {
+      content.setAttribute(attribute, attributes[attribute]);
+    }
+  }
+};
+
 converter.convertSlideClasses = function (content) {
   var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
     , classes

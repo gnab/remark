@@ -4,6 +4,29 @@ var converter = require('../src/remark/converter')
 
 describe('converter', function () {
 
+  describe('convertSlideAttributes', function () {
+    var convert = function(text) {
+      var content = {
+        innerHTML: text
+      , setAttribute: function (attr, value) { this[attr] = value; }
+      };
+      converter.convertSlideAttributes(content);
+      return content;
+    };
+
+    it('should extract single attribute', function () {
+      convert('.data-x=1000').innerHTML.should.equal('');
+    });
+
+    it('should apply single attribute', function () {
+      convert('.data-x=1000').should.have.property('data-x', '1000');
+    });
+
+    it('should ignore slide class', function () {
+      convert('.data-x').should.not.have.property('data-x');
+    });
+  });
+
   describe('convertSlideClasses', function () {
     var convert = function(text) {
       var content = {innerHTML: text};

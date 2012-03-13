@@ -47,6 +47,7 @@ var prepareSlide = function (slide) {
 
 var formatContent = function (content) {
   converter.convertContentClasses(content);
+  converter.convertSlideAttributes(content);
   converter.convertSlideClasses(content);
   converter.convertMarkdown(content);
   converter.convertCodeClasses(content);
