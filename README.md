@@ -10,9 +10,11 @@ A simplistic, in-browser, markdown-driven slideshow tool targeted at people who 
 
 - Touch support for smart phones and pads, i.e. swipe to navigate slides
 
+Check out [this remark slideshow](http://gnab.github.com/remark) for a brief introduction.
+
 ### Usage
 
-Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introduction.
+It takes only a few, simple steps to get up and running with remark:
 
 1. Create a boilerplate HTML container:
 
@@ -52,6 +54,8 @@ Visit [gnab.github.com/remark](http://gnab.github.com/remark) for a brief introd
 2. Enter you Markdown-formatted slideshow and any styles needed in the assigned areas.
 
 3. Launch the HTML file in a decent browser and enjoy!
+
+Check out [the remark wiki](http://github.com/gnab/remark/wiki) for more information.
 
 ### Slideshows created with remark
 
