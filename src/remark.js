@@ -1,4 +1,5 @@
 var api = require('./remark/api')
+  , dom = require('./remark/dom')
   , controller = require('./remark/controller')
   , converter = require('./remark/converter')
   , dispatcher = require('./remark/dispatcher')
@@ -6,11 +7,11 @@ var api = require('./remark/api')
   , slideshow = require('./remark/slideshow')
   , resources = require('./remark/resources')
 
-window.remark = api;
+dom.exports.remark = api;
 
-window.onload = function () {
-  var sourceElement = document.getElementById('source')
-    , slideshowElement = document.getElementById('slideshow')
+dom.on('load', function () {
+  var sourceElement = dom.getElementById('source')
+    , slideshowElement = dom.getElementById('slideshow')
     ;
 
   if (!assureElementsExist(sourceElement, slideshowElement)) {
@@ -21,16 +22,16 @@ window.onload = function () {
 
   styleDocument();
   setupSlideshow(sourceElement, slideshowElement);
-};
+});
 
 var assureElementsExist = function (sourceElement, slideshowElement) {
   if (!sourceElement) {
-    alert('remark error: source element not present.')
+    dom.alert('remark error: source element not present.')
     return false;
   }
 
   if (!slideshowElement) {
-    alert('remark error: slideshow element not present.')
+    dom.alert('remark error: slideshow element not present.')
     return false;
   }
 
@@ -38,8 +39,8 @@ var assureElementsExist = function (sourceElement, slideshowElement) {
 };
 
 var styleDocument = function () {
-  var styleElement = document.createElement('style')
-    , headElement = document.getElementsByTagName('head')[0]
+  var styleElement = dom.createElement('style')
+    , headElement = dom.getElementsByTagName('head')[0]
     ;
 
   styleElement.type = 'text/css';

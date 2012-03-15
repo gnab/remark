@@ -1,5 +1,6 @@
 var EventEmitter = require('events').EventEmitter
   , dispatcher = module.exports = new EventEmitter()
+  , dom = require('./dom')
   ;
 
 dispatcher.initialize = function () {
@@ -9,7 +10,7 @@ dispatcher.initialize = function () {
 };
 
 var mapKeys = function () {
-  window.onkeydown = function (event) {
+  dom.on('keydown', function (event) {
     switch (event.keyCode) {
       case 33: // Page up
       case 37: // Left
@@ -25,12 +26,11 @@ var mapKeys = function () {
         gotoNextSlide();
         break;
     }
-  };
+  });
 };
 
 var mapTouches = function () {
-  var width = window.innerWidth
-    , touch
+  var touch
     , startX
     , endX
     ;
@@ -40,7 +40,7 @@ var mapTouches = function () {
   };
 
   var handleTap = function () {
-    if (endX < width / 2) {
+    if (endX < dom.innerWidth / 2) {
       gotoPreviousSlide();
     }
     else {
@@ -57,12 +57,12 @@ var mapTouches = function () {
     }
   };
 
-  document.addEventListener('touchstart', function (event) {
+  dom.on('touchstart', function (event) {
     touch = event.touches[0];
     startX = touch.clientX;
   });
 
-  document.addEventListener('touchend', function (event) {
+  dom.on('touchend', function (event) {
     if (event.target.nodeName.toUpperCase() === 'A') {
       return;
     }
@@ -78,13 +78,13 @@ var mapTouches = function () {
     }
   });
 
-  document.addEventListener('touchmove', function (event) {
+  dom.on('touchmove', function (event) {
     event.preventDefault();
   });
 };
 
 var mapWheel = function () {
-  document.addEventListener('mousewheel', function (event) {
+  dom.on('mousewheel', function (event) {
     if (event.wheelDeltaY > 0) {
       gotoPreviousSlide();
     }

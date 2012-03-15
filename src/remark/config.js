@@ -1,4 +1,7 @@
-var config = module.exports = configure;
+var config = module.exports = configure
+  , api = require('./api')
+  , dom = require('./dom')
+  ;
 
 var VALID_PROPERTIES = [
   'highlightInline'
@@ -6,9 +9,9 @@ var VALID_PROPERTIES = [
 , 'highlightStyle'
 ];
 
-if (typeof document !== 'undefined') {
-  loadConfigFromScriptTag();
-}
+api.config = config;
+
+loadConfigFromScriptTag();
 
 function configure (properties) {
   setProperties(properties);
@@ -16,7 +19,7 @@ function configure (properties) {
 
 function loadConfigFromScriptTag () {
   var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
-    , scriptElements = document.getElementsByTagName('script')
+    , scriptElements = dom.getElementsByTagName('script')
     , element
     , i;
 

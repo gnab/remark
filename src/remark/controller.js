@@ -1,4 +1,5 @@
 var dispatcher = require('./dispatcher')
+  , dom = require('./dom')
   , controller = module.exports = {}
   , currentSlideIndex = -1;
   ;
@@ -9,7 +10,7 @@ controller.initialize = function (slideshow) {
     gotoSlide(slideshow, slideNo - 1);
   }
 
-  window.onhashchange = navigate;
+  dom.on('hashchange', navigate);
   navigate();
 
   dispatcher.on('previousSlide', function() {

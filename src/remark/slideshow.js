@@ -1,5 +1,6 @@
 var api = require('./api')
   , slide = require('./slide')
+  , dom = require('./dom')
   ;
 
 var slideshow = module.exports = {}
@@ -10,7 +11,7 @@ var slideshow = module.exports = {}
 
 slideshow.create = function (source, element) {
   var slides = createSlides(source, element)
-    , positionElement = document.createElement('div')
+    , positionElement = dom.createElement('div')
     ;
 
   positionElement.className = 'position';
@@ -62,8 +63,8 @@ var styleElement = function (element) {
     ;
 
   var resize = function () {
-    var containerHeight = window.innerHeight
-      , containerWidth = window.innerWidth
+    var containerHeight = dom.innerHeight
+      , containerWidth = dom.innerWidth
       , scale
       ;
 
@@ -83,6 +84,6 @@ var styleElement = function (element) {
   element.style.width = scaleFactor * widthFactor + 'px';
   element.style.height = scaleFactor * heightFactor + 'px';
 
-  window.onresize = resize;
-  window.onresize();
+  dom.on('resize', resize);
+  resize();
 };

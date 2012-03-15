@@ -1,4 +1,5 @@
 var converter = require('./converter')
+  , dom = require('./dom')
   , highlighter = require('./highlighter')
 
   , slide = module.exports = {}
@@ -25,10 +26,10 @@ slide.create = function (source) {
 
   _slide.element = function () {
     if (_element === undefined) {
-      _element = document.createElement('div');
+      _element = dom.createElement('div');
       _element.className = 'slide';
       _element.style.display = 'none';
-      _element.appendChild(document.createElement('div'));
+      _element.appendChild(dom.createElement('div'));
 
       prepareSlide(_slide);
     }
