@@ -55,6 +55,6 @@ var setupSlideshow = function (sourceElement, slideshowElement) {
     ;
 
   show = slideshow.create(source, slideshowElement);
-  controller.create(show);
-  dispatcher.create();
+  controller.initialize(show);
+  dispatcher.initialize();
 };

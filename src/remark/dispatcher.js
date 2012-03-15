@@ -2,7 +2,7 @@ var EventEmitter = require('events').EventEmitter
   , dispatcher = module.exports = new EventEmitter()
   ;
 
-dispatcher.create = function () {
+dispatcher.initialize = function () {
   mapKeys();
   mapTouches();
   mapWheel();

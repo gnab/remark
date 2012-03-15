@@ -3,7 +3,7 @@ var dispatcher = require('./dispatcher')
   , currentSlideIndex = -1;
   ;
 
-controller.create = function (slideshow) {
+controller.initialize = function (slideshow) {
   var navigate = function () {
     slideNo = parseInt((location.hash || '').substr(1), 10) || 1;
     gotoSlide(slideshow, slideNo - 1);
