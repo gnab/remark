@@ -44,7 +44,7 @@ function loadConfigFromJSON (jsonStr) {
     properties = JSON.parse(jsonStr);
   }
   catch (err) {
-    alert('Parsing remark config failed! Be sure to use valid JSON.');
+    dom.alert('Parsing remark config failed! Be sure to use valid JSON.');
   }
 
   setProperties(properties);

@@ -90,7 +90,7 @@ var mapWheel = function () {
     }
     else if (event.wheelDeltaY < 0) {
       gotoNextSlide();
-    };
+    }
   });
 };
 

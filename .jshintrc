@@ -1,0 +1,11 @@
+{
+  "eqeqeq": true,
+  "undef": true,
+  "laxcomma": true,
+
+  "predef": [
+    "require",
+    "module",
+    "location"
+  ]
+}

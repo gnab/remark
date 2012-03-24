@@ -1,6 +1,6 @@
 var EventEmitter = require('events').EventEmitter
   , dom = module.exports = new EventEmitter()
-  ;
+  ; 
 
 dom.window = proxyObject('window');
 dom.document = proxyObject('document');

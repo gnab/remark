@@ -1,14 +1,14 @@
 var dispatcher = require('./dispatcher')
   , dom = require('./dom')
   , controller = module.exports = {}
-  , currentSlideIndex = -1;
+  , currentSlideIndex = -1
   ;
 
 controller.initialize = function (slideshow) {
   var navigate = function () {
-    slideNo = parseInt((location.hash || '').substr(1), 10) || 1;
+    var slideNo = parseInt((location.hash || '').substr(1), 10) || 1;
     gotoSlide(slideshow, slideNo - 1);
-  }
+  };
 
   dom.on('hashchange', navigate);
   navigate();

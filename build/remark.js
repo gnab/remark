@@ -2,11 +2,14 @@ var fs = require('fs')
   , path = require('path')
   , jsp = require('uglify-js').parser
   , pro = require('uglify-js').uglify
+  , jshint = require('jshint').JSHINT
   , browserify = require('browserify')
   , resources = require('./resources')
   ;
 
-var options = parseOptions();
+var options = parseOptions()
+  , jshintOptions = JSON.parse(fs.readFileSync(path.join(__dirname, '../.jshintrc')))
+  ;
 
 build(options, function (bundle) {
   fs.writeFileSync(options.target, bundle);
@@ -40,12 +43,14 @@ function build (options, callback) {
     bundle.register('post', minify);
   }
 
+  bundle.register(jshintFile);
+
   resources.bundle();
 
   bundle.addEntry(options.source);
 
   bundle.on('syntaxError', function (err) {
-    console.log(err);
+    console.error(err);
     throw err;
   });
 
@@ -55,7 +60,7 @@ function build (options, callback) {
 
   callback(bundle.bundle());
 }
-    
+
 function minify(content) {
   var ast = jsp.parse(content)
     ;
@@ -64,6 +69,23 @@ function minify(content) {
   ast = pro.ast_squeeze(ast);
 
   return pro.gen_code(ast);
+}
+
+function jshintFile (content, filePath) {
+  if (!/remark\/src/.exec(filePath) || /vendor/.exec(filePath)) {
+    return content;
+  }
+
+  if (!jshint(content, jshintOptions)) {
+    console.log(path.relative(path.join(__dirname, '..'), filePath));
+    jshint.errors.forEach(function (error) {
+      console.log(' - %s:%s: %s', zeroPadNumber(error.line),
+        zeroPadNumber(error.character), error.reason);
+    });
+    process.exit(-1);
+  }
+
+  return content;
 }
 
 function showBuildInfo(target) {
@@ -76,7 +98,7 @@ function showBuildInfo(target) {
       zeroPadNumber(now.getMinutes()),
       zeroPadNumber(now.getSeconds()),
       target, stat.size);
-};
+}
 
 function zeroPadNumber(n) {
   return n < 10 ? "0" + n : "" + n;

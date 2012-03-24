@@ -1,11 +1,11 @@
 var api = require('./remark/api')
   , dom = require('./remark/dom')
   , controller = require('./remark/controller')
-  , converter = require('./remark/converter')
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
   , slideshow = require('./remark/slideshow')
   , resources = require('./remark/resources')
+  ;
 
 dom.exports.remark = api;
 
@@ -24,21 +24,21 @@ dom.on('load', function () {
   setupSlideshow(sourceElement, slideshowElement);
 });
 
-var assureElementsExist = function (sourceElement, slideshowElement) {
+function assureElementsExist (sourceElement, slideshowElement) {
   if (!sourceElement) {
-    dom.alert('remark error: source element not present.')
+    dom.alert('remark error: source element not present.');
     return false;
   }
 
   if (!slideshowElement) {
-    dom.alert('remark error: slideshow element not present.')
+    dom.alert('remark error: slideshow element not present.');
     return false;
   }
 
   return true;
-};
+}
 
-var styleDocument = function () {
+function styleDocument () {
   var styleElement = dom.createElement('style')
     , headElement = dom.getElementsByTagName('head')[0]
     ;
@@ -48,9 +48,9 @@ var styleDocument = function () {
   styleElement.innerHTML += highlighter.cssForStyle();
 
   headElement.insertBefore(styleElement, headElement.firstChild);
-};
+}
 
-var setupSlideshow = function (sourceElement, slideshowElement) {
+function setupSlideshow (sourceElement, slideshowElement) {
   var source = sourceElement.innerHTML
     , show
     ;
@@ -58,4 +58,4 @@ var setupSlideshow = function (sourceElement, slideshowElement) {
   show = slideshow.create(source, slideshowElement);
   controller.initialize(show);
   dispatcher.initialize();
-};
+}

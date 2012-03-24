@@ -7,14 +7,14 @@ marked.setOptions({gfm: false});
 
 converter.convertSlideAttributes = function (content) {
   var attributeFinder =
-    /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*=\s*([^$\n]*)\s*(?:$|\n)/ig
+    /(?:^|\n)(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\s*=\s*([^$\n]*)\s*(?:$|\n)/ig
     , replacement
     , attributes = {}
     , match
     , attribute
     ;
 
-  while (match = attributeFinder.exec(content.innerHTML)) {
+  while ((match = attributeFinder.exec(content.innerHTML)) !== null) {
     if (match[1]) {
       // Simply remove escape slash
       replacement = match[0].replace(/\\/, '');
@@ -39,14 +39,14 @@ converter.convertSlideAttributes = function (content) {
 };
 
 converter.convertSlideClasses = function (content) {
-  var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\s*(?:$|\n)/ig
+  var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\s*(?:$|\n)/ig
     , classes
     , replacement
     , contentClasses = ['content']
     , match
     ;
 
-  while (match = classFinder.exec(content.innerHTML)) {
+  while ((match = classFinder.exec(content.innerHTML)) !== null) {
     if (match[1]) {
       // Simply remove escape slash
       replacement = match[0].replace(/\\/, '');
@@ -70,7 +70,7 @@ converter.convertSlideClasses = function (content) {
 };
 
 converter.convertContentClasses = function (content) {
-  var classFinder = /(\\)?((?:\.[a-z_-][a-z-_0-9]*)+)\[/ig
+  var classFinder = /(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/ig
     , match
     , classes
     , text
@@ -78,7 +78,7 @@ converter.convertContentClasses = function (content) {
     , after
     ;
 
-  while (match = classFinder.exec(content.innerHTML)) {
+  while ((match = classFinder.exec(content.innerHTML)) !== null) {
     text = getSquareBracketedText(content.innerHTML.substr(
           match.index + match[0].length));
 
@@ -166,11 +166,11 @@ var convertCodeClass = function (block) {
 };
 
 var setCodeClass = function (block) {
-  var classFinder = /^(\\)?\.([a-z_-][a-z-_0-9]*)(?:\n|\ )/i
+  var classFinder = /^(\\)?\.([a-z_\-][a-z\-_0-9]*)(?:\n|\ )/i
     , match
     ;
 
-  if (match = classFinder.exec(block.innerHTML)) {
+  if ((match = classFinder.exec(block.innerHTML)) !== null) {
     if (match[1]) {
       block.innerHTML = block.innerHTML.substr(match[1].length);
     }
