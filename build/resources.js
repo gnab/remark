@@ -1,3 +1,5 @@
+/*global "__dirname": true */
+
 var fs = require('fs')
   , path = require('path')
   , less = require('less')
