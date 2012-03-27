@@ -1,3 +1,5 @@
+/*global "describe": true, "it": true, "before": true */
+
 var converter = require('../src/remark/converter')
   , config = require('../src/remark/config')
   ;
@@ -92,34 +94,38 @@ describe('converter', function () {
 
     it('should convert single class', function () {
       convert('.class[text]')
-       .should.equal('<span class="class">text</span>')
+       .should.equal('&lt;span class="class"&gt;text&lt;/span&gt;');
     });
 
     it('should convert several classes', function () {
       convert('.class[text] and .class2[text]')
-       .should.equal('<span class="class">text</span> and <span class="class2">text</span>')
+       .should.equal('&lt;span class="class"&gt;text&lt;/span&gt; and &lt;span class="class2"&gt;text&lt;/span&gt;');
     });
 
     it('should convert multiple classes', function () {
       convert('.a.b.c[text]')
-       .should.equal('<span class="a b c">text</span>');
+       .should.equal('&lt;span class="a b c"&gt;text&lt;/span&gt;');
     });
 
     it('should convert recursive classes', function () {
       convert('.a[text.b[text]]')
-       .should.equal('<span class="a">text<span class="b">text</span></span>');
+       .should.equal('&lt;span class="a"&gt;text&lt;span class="b"&gt;text&lt;/span&gt;&lt;/span&gt;');
     });
 
     it('should convert class containing fancy markdown', function () {
       convert('.right[![title](image.png)]')
-       .should.equal('<span class="right">![title](image.png)</span>')
+       .should.equal('&lt;span class="right"&gt;![title](image.png)&lt;/span&gt;');
+    });
+
+    it('should convert class containing multiline content into div tag', function () {
+      convert('.multi[\ntest]').should.equal('&lt;div class="multi"&gt;\ntest&lt;/div&gt;');
     });
   });
 
   describe('convertMarkdown', function () {
     var convert = function (text) {
       var content = {innerHTML: text};
-      converter.convertMarkdown(content)
+      converter.convertMarkdown(content);
       return content.innerHTML;
     };
 

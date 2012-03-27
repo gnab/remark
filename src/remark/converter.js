@@ -75,6 +75,7 @@ converter.convertContentClasses = function (content) {
     , classes
     , text
     , replacement
+    , tag
     , after
     ;
 
@@ -93,15 +94,16 @@ converter.convertContentClasses = function (content) {
     }
     else {
       classes = match[2].substr(1).split('.');
+      tag = text.indexOf('\n') === -1 ? 'span' : 'div';
 
-      replacement = "<span class=\"" + 
+      replacement = "&lt;" + tag + " class=\"" + 
         classes.join(' ') + 
-        "\">" + 
+        "\"&gt;" + 
         text +
-        "</span>";
+        "&lt;/" + tag + "&gt;";
 
       classFinder.lastIndex = match.index + 
-        ("<span class=\"" + classes.join(' ') + "\">").length;
+        ("&lt;" + tag + " class=\"" + classes.join(' ') + "\"&gt;").length;
     }
 
     after = content.innerHTML.substr(
