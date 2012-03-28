@@ -2,7 +2,7 @@ var api = require('../src/remark/api')
   , config = require('../src/remark/config')
   , highlighter = require('../src/remark/highlighter')
   , resources = require('../src/remark/resources')
-  , highlight = require('../src/vendor/highlight/highlight.min')
+  , highlight = require('../vendor/highlight.js/src/highlight')
   ;
 
 describe('highlighter', function () {

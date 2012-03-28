@@ -1,4 +1,4 @@
-var highlight = require('../vendor/highlight/highlight.min')
+var highlight = require('../../vendor/highlight.js/src/highlight')
   , api = require('./api')
   , config = require('./config')
   , resources = require('./resources')

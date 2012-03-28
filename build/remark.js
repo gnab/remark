@@ -16,7 +16,7 @@ function parseOptions () {
   var options = {
       debug: false
     , watch: false
-    , source: path.join(__dirname, '../src/remark.js')
+    , source: path.join(__dirname, '../index.js')
     , target: path.join(__dirname, '../remark.min.js')
     };
 

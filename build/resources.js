@@ -34,13 +34,22 @@ function bundleResources () {
 }
 
 function bundleHighlightStyles () {
-  var stylesPath = path.join(__dirname, '../src/vendor/highlight/styles')
+  var stylesPath = path.join(__dirname, '../vendor/highlight.js/src/styles')
+    , ignoredStyles = ['brown_paper', 'school_bool']
     , files = fs.readdirSync(stylesPath)
     , styles = {}
     ;
 
   files.forEach(function (file) {
-    styles[path.basename(file, path.extname(file))] = 
+    var extname = path.extname(file)
+      , basename = path.basename(file, extname)
+      ;
+
+    if (extname !== '.js' || ignoredStyles.indexOf(basename) !== -1) {
+      return;
+    }
+
+    styles[basename] = 
       stringify(path.join(stylesPath, file));
   });
 
