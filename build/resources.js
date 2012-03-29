@@ -3,6 +3,7 @@
 var fs = require('fs')
   , path = require('path')
   , less = require('less')
+  , config = require('./utils/config')
   , resourcesBundle = path.join(__dirname, '../src/remark/resources.js')
   ;
 
@@ -41,8 +42,8 @@ function bundleHighlightEngine () {
 
   engineStr += fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/highlight.js'));
 
-  traverseDirectory(path.join(__dirname, '../vendor/highlight.js/src/languages'), function (file) {
-    engineStr += '\n' + fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/languages', file));
+  config.highlighter.languages.forEach(function (language) {
+    engineStr += '\n' + fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/languages', language + '.js'));
   });
 
   engineStr += '\nreturn hljs;})();';

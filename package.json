@@ -8,8 +8,7 @@
     "type": "git",
     "url": "https://github.com/gnab/remark.git"
   }
-, "devDependencies":
-  {
+, "devDependencies": {
     "browserify": "1.10.4"
   , "uglify-js": "1.2.5"
   , "less": "1.2.1"
@@ -17,4 +16,25 @@
   , "should": "0.6.0"
   , "jshint": "0.5.9"
   }
+, "config": {
+    "highlighter": {
+      "languages": [
+        "javascript"
+      , "ruby"
+      , "python"
+      , "bash"
+      , "java"
+      , "php"
+      , "perl"
+      , "cpp"
+      , "objectivec"
+      , "cs"
+      , "sql"
+      , "xml"
+      , "css"
+      , "scala"
+      , "coffeescript"
+      ]
+    }
+}
 }
