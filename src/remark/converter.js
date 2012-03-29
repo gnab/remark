@@ -1,4 +1,4 @@
-var marked = require('../../vendor/marked')
+var marked = require('marked')
   , config = require('./config')
   , converter = module.exports = {}
   ;

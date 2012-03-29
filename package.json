@@ -1,6 +1,9 @@
 {
   "name": "remark"
 , "version" : "0.3.1"
+, "dependencies": {
+    "marked": "0.2.3"
+}
 , "devDependencies":
   {
     "browserify": "1.10.4"
