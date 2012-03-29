@@ -1,4 +1,7 @@
-all: test bundle
+all: deps test bundle
+
+deps:
+	npm install
 
 test:
 	./node_modules/.bin/mocha
@@ -6,5 +9,4 @@ test:
 bundle:
 	node build/remark.js
 
-.PHONY: test
-.PHONY: bundle
+.PHONY: deps test bundle
