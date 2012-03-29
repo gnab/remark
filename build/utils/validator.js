@@ -28,11 +28,11 @@ module.exports = function (content, filePath) {
 };
 
 function isSourceFile(filePath) {
-  if (!/remark\/src/.exec(filePath) || /vendor/.exec(filePath)) {
-    return false;
+  if (/remark\/src/.exec(filePath) && !/resources.js$/.exec(filePath)) {
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 function zeroPadNumber(n) {

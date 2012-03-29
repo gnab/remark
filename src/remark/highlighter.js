@@ -1,5 +1,4 @@
-var highlight = require('../../vendor/highlight.js/src/highlight')
-  , api = require('./api')
+var api = require('./api')
   , config = require('./config')
   , resources = require('./resources')
 
@@ -8,7 +7,7 @@ var highlight = require('../../vendor/highlight.js/src/highlight')
 
 api.highlighter = {
   engine: function() {
-    return highlight;
+    return resources.highlighter.engine;
   }
 };
 
@@ -21,7 +20,7 @@ highlighter.cssForStyle = function () {
     return '';
   }
 
-  return resources.highlightStyles[config.highlightStyle];
+  return resources.highlighter.styles[config.highlightStyle];
 };
 
 highlighter.highlightCodeBlocks = function (content) {
@@ -33,6 +32,6 @@ highlighter.highlightCodeBlocks = function (content) {
   for (i = 0; i < codeBlocks.length; i++) {
     block = codeBlocks[i];
 
-    highlight.highlightBlock(block, '  ');
+    resources.highlighter.engine.highlightBlock(block, '  ');
   }
 };

@@ -20,6 +20,7 @@ function writeResourcesToFile () {
     ;
 
   resourcesString += 'module.exports = ' + JSON.stringify(resources) + ';';
+  resourcesString += 'module.exports.highlighter.engine = ' + bundleHighlightEngine();
 
   fs.writeFileSync(resourcesBundle, resourcesString);
 }
@@ -28,9 +29,25 @@ function bundleResources () {
   var resources = {};
 
   resources.documentStyles = stringify(path.join(__dirname, '../src/remark.less'));
-  resources.highlightStyles = bundleHighlightStyles();
+  resources.highlighter = {
+    styles: bundleHighlightStyles()
+  };
 
   return resources;
+}
+
+function bundleHighlightEngine () {
+  var engineStr = '(function () {\n';
+
+  engineStr += fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/highlight.js'));
+
+  traverseDirectory(path.join(__dirname, '../vendor/highlight.js/src/languages'), function (file) {
+    engineStr += '\n' + fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/languages', file));
+  });
+
+  engineStr += '\nreturn hljs;})();';
+
+  return engineStr;
 }
 
 function bundleHighlightStyles () {
@@ -40,12 +57,12 @@ function bundleHighlightStyles () {
     , styles = {}
     ;
 
-  files.forEach(function (file) {
+  traverseDirectory(stylesPath, function (file) {
     var extname = path.extname(file)
       , basename = path.basename(file, extname)
       ;
 
-    if (extname !== '.js' || ignoredStyles.indexOf(basename) !== -1) {
+    if (extname !== '.css' || ignoredStyles.indexOf(basename) !== -1) {
       return;
     }
 
@@ -56,11 +73,23 @@ function bundleHighlightStyles () {
   return styles;
 }
 
+function traverseDirectory(path, callback) {
+  var files = fs.readdirSync(path);
+
+  files.forEach(callback);
+}
+
 function stringify(filePath) {
   var content = fs.readFileSync(filePath, 'utf8')
     , parser = new less.Parser()
     , css
     ;
+
+  // utf-8 may contain BOM (Byte Mark Order) which needs
+  // to be removed before handing over to less parser 
+  if (content.charCodeAt(0) === 65279) {
+      content = content.substring(1);
+  }
 
   parser.parse(content, function (err, tree) {
     if (err) {
