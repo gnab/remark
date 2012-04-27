@@ -1,7 +1,7 @@
 all: deps test bundle
 
 deps:
-	npm install
+	npm install && git submodule init && git submodule update
 
 test:
 	./node_modules/.bin/mocha
