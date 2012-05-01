@@ -1,5 +1,5 @@
 /* Automatically generated */
-module.exports = {"documentStyles":"html,body{background:#d7d7d7;font-family:Georgia;font-size:20px;overflow:hidden;}#slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}#slideshow .slide{height:100%;width:100%;}#slideshow .slide>.left{text-align:center;}#slideshow .slide>.center{text-align:center;}#slideshow .slide>.right{text-align:right;}#slideshow .slide>.top{vertical-align:top;}#slideshow .slide>.middle{vertical-align:middle;}#slideshow .slide>.bottom{vertical-align:bottom;}#slideshow .slide .content{display:table-cell;padding:1em 4em 1em 4em;}#slideshow .slide .content .left{display:block;text-align:left;}#slideshow .slide .content .center{display:block;text-align:center;}#slideshow .slide .content .right{display:block;text-align:right;}#slideshow .slide .content pre,#slideshow .slide .content code{font-family:Monaco, monospace;font-size:16px;}#slideshow .slide .content h1 code{font-size:0.8em;}#slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}p>code{padding:1px 4px;}","highlighter":{"styles":{"dark":"pre code{display:block;padding:0.5em;background:#444;}pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .tex .special{color:white;}pre code,pre .ruby .subst{color:#DDD;}pre .string,pre .function .title,pre .class .title,pre .haskell .label,pre .ini .title,pre .tag .value,pre .css .rules .value,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .ruby .instancevar,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .ruby .string,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .input_number{color:#D88;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket,pre .tex .formula{color:#777;}pre .keyword,pre .literal,pre .css .id,pre .phpdoc,pre .function .title,pre .class .title,pre .haskell .label,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .lisp .title,pre .apache .tag,pre .tex .special{font-weight:bold;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}","solarized_dark":"pre code{display:block;padding:0.5em;background:#002b36;color:#839496;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .lisp .string,pre .javadoc{color:#586e75;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .javascript .title,pre .method,pre .addition,pre .css .tag,pre .lisp .title{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .function .title,pre .chunk,pre .decorator,pre .builtin,pre .built_in,pre .lisp .title,pre .identifier,pre .title .keymethods,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .instancevar,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .label{color:#b58900;}pre .preprocessor,pre .pi,pre .shebang,pre .symbol,pre .diff .change,pre .special,pre .keymethods,pre .attr_selector,pre .important,pre .subst,pre .cdata{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#073642;}","zenburn":"pre code{display:block;padding:0.5em;background:#3F3F3F;color:#DCDCDC;}pre .keyword,pre .tag,pre .django .tag,pre .django .keyword,pre .css .class,pre .css .id,pre .lisp .title{color:#E3CEAB;}pre .django .template_tag,pre .django .variable,pre .django .filter .argument{color:#DCDCDC;}pre .number,pre .date{color:#8CD0D3;}pre .dos .envvar,pre .dos .stream,pre .variable,pre .apache .sqbracket{color:#EFDCBC;}pre .dos .flow,pre .diff .change,pre .python .exception,pre .python .built_in,pre .literal,pre .tex .special{color:#EFEFAF;}pre .diff .chunk,pre .ruby .subst{color:#8F8F8F;}pre .dos .keyword,pre .python .decorator,pre .class .title,pre .haskell .label,pre .function .title,pre .ini .title,pre .diff .header,pre .ruby .class .parent,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .input_number{color:#efef8f;}pre .dos .winutils,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .ruby .string,pre .ruby .instancevar{color:#DCA3A3;}pre .diff .deletion,pre .string,pre .tag .value,pre .preprocessor,pre .built_in,pre .sql .aggregate,pre .javadoc,pre .smalltalk .class,pre .smalltalk .localvars,pre .smalltalk .array,pre .css .rules .value,pre .attr_selector,pre .pseudo,pre .apache .cbracket,pre .tex .formula{color:#CC9393;}pre .shebang,pre .diff .addition,pre .comment,pre .java .annotation,pre .template_comment,pre .pi,pre .doctype{color:#7F9F7F;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}","sunburst":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .comment,pre .template_comment,pre .javadoc{color:#aeaeae;font-style:italic;}pre .keyword,pre .ruby .function .keyword{color:#E28964;}pre .function .keyword,pre .sub .keyword,pre .method,pre .list .title{color:#99CF50;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .tex .command{color:#65B042;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .function .title,pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .ini .title,pre .shebang,pre .input_number{color:#89BDFF;}pre .class .title,pre .haskell .label,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc{text-decoration:underline;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .number{color:#3387CC;}pre .params,pre .variable{color:#3E87E3;}pre .css .tag,pre .rules .property,pre .pseudo,pre .tex .special{color:#CDA869;}pre .css .class{color:#9B703F;}pre .rules .keyword{color:#C5AF75;}pre .rules .value{color:#CF6A4C;}pre .css .id{color:#8B98AB;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor{color:#8996A8;}pre .hexcolor,pre .css .value .number{color:#DD7B3B;}pre .css .function{color:#DAD085;}pre .diff .header,pre .chunk,pre .tex .formula{background-color:#0E2231;color:#F8F8F8;font-style:italic;}pre .diff .change{background-color:#4A410D;color:#F8F8F8;}pre .addition{background-color:#253B22;color:#F8F8F8;}pre .deletion{background-color:#420E09;color:#F8F8F8;}","magula":"pre code{display:block;padding:0.5em;background-color:#f4f4f4;}pre code,pre .ruby .subst,pre .lisp .title{color:black;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .instancevar,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .cbracket{color:#050;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk{color:#777;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .change,pre .tex .special{color:#800;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .input_number{color:#00e;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .xml .tag,pre .xml .title,pre .tex .command{font-weight:bold;color:navy;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}pre .apache .tag{font-weight:bold;color:blue;}","github":"pre code{display:block;padding:0.5em;color:#000;background:#f8f8ff;}pre .comment,pre .template_comment,pre .diff .header,pre .javadoc{color:#998;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .javascript .title,pre .lisp .title,pre .subst{color:#000;font-weight:bold;}pre .number,pre .hexcolor{color:#40a070;}pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula{color:#dd1144;}pre .title,pre .id{color:#900;font-weight:bold;}pre .javascript .title,pre .lisp .title,pre .subst{font-weight:normal;}pre .class .title,pre .haskell .label,pre .tex .command{color:#458;font-weight:bold;}pre .tag,pre .tag .title,pre .rules .property,pre .django .tag .keyword{color:#000080;font-weight:normal;}pre .attribute,pre .variable,pre .instancevar,pre .lisp .body{color:#008080;}pre .regexp{color:#009926;}pre .class{color:#458;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .lisp .keyword,pre .tex .special,pre .input_number{color:#990073;}pre .builtin,pre .built_in,pre .lisp .title{color:#0086b3;}pre .preprocessor,pre .pi,pre .doctype,pre .shebang,pre .cdata{color:#999;font-weight:bold;}pre .deletion{background:#ffdddd;}pre .addition{background:#ddffdd;}pre .diff .change{background:#0086b3;}pre .chunk{color:#aaaaaa;}pre .tex .formula{opacity:0.5;}","solarized_light":"pre code{display:block;padding:0.5em;background:#fdf6e3;color:#657b83;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .lisp .string,pre .javadoc{color:#93a1a1;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .javascript .title,pre .method,pre .addition,pre .css .tag,pre .lisp .title{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .function .title,pre .chunk,pre .decorator,pre .builtin,pre .built_in,pre .lisp .title,pre .identifier,pre .title .keymethods,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .instancevar,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .label{color:#b58900;}pre .preprocessor,pre .pi,pre .shebang,pre .symbol,pre .diff .change,pre .special,pre .keymethods,pre .attr_selector,pre .important,pre .subst,pre .cdata{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#eee8d5;}","vs":"pre code{display:block;padding:0.5em;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .apache .cbracket{color:#008000;}pre .keyword,pre .id,pre .title,pre .built_in,pre .aggregate,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .tex .command{color:#0000ff;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .instancevar,pre .aggregate,pre .template_tag,pre .django .variable,pre .addition,pre .flow,pre .stream,pre .apache .tag,pre .date,pre .tex .formula{color:#a31515;}pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .preprocessor,pre .userType,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .special,pre .input_number{color:#2b91af;}pre .phpdoc,pre .javadoc,pre .xmlDocTag{color:#808080;}pre .vhdl .type{font-weight:bold;}pre .vhdl .string{color:#666666;}pre .vhdl .literal{color:#a31515;}","ir_black":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .shebang,pre .comment,pre .template_comment,pre .javadoc{color:#7c7c7c;}pre .keyword,pre .tag,pre .ruby .function .keyword,pre .tex .command{color:#96CBFE;}pre .function .keyword,pre .sub .keyword,pre .method,pre .list .title{color:#FFFFB6;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date{color:#A8FF60;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .function .title,pre .sub .identifier,pre .pi,pre .decorator,pre .ini .title,pre .tex .special{color:#FFFFB6;}pre .class .title,pre .haskell .label,pre .constant,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .nginx .built_in{color:#FFFFB6;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .number,pre .variable,pre .vbscript,pre .literal{color:#C6C5FE;}pre .css .tag{color:#96CBFE;}pre .css .rules .property,pre .css .id{color:#FFFFB6;}pre .css .class{color:#FFF;}pre .hexcolor{color:#C6C5FE;}pre .number{color:#FF73FD;}pre .tex .formula{opacity:0.7;}","school_book":"pre code{display:block;padding:15px 0.5em 0.5em 30px;font-size:11px !important;line-height:16px !important;}pre{background:#f6f6ae url(./school_book.png);border-top:solid 2px #d2e8b9;border-bottom:solid 1px #d2e8b9;}pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .tex .special{color:#005599;font-weight:bold;}pre code,pre .ruby .subst,pre .tag .keyword{color:#3E5915;}pre .string,pre .function .title,pre .class .title,pre .haskell .label,pre .ini .title,pre .tag .value,pre .css .rules .value,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .ruby .instancevar,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .ruby .string,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .nginx .built_in,pre .tex .command{color:#2C009F;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket{color:#E60415;}pre .keyword,pre .literal,pre .css .id,pre .phpdoc,pre .function .title,pre .class .title,pre .haskell .label,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .lisp .title,pre .apache .tag,pre .tex .command{font-weight:bold;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}","ascetic":"pre code{display:block;padding:0.5em;background:white;color:black;}pre .string,pre .tag .value,pre .filter .argument,pre .addition,pre .change,pre .apache .tag,pre .apache .cbracket,pre .nginx .built_in,pre .tex .formula{color:#888;}pre .comment,pre .template_comment,pre .shebang,pre .doctype,pre .pi,pre .javadoc,pre .deletion,pre .apache .sqbracket{color:#CCC;}pre .keyword,pre .tag .title,pre .css .tag,pre .ini .title,pre .winutils,pre .flow,pre .lisp .title,pre .apache .tag,pre .tex .command{font-weight:bold;}","far":"pre code{display:block;padding:0.5em;background:#000080;}pre code,.ruby .subst{color:#0FF;}pre .string,pre .ruby .string,pre .function .title,pre .class .title,pre .haskell .label,pre .ini .title,pre .tag .value,pre .css .rules .value,pre .css .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .apache .tag,pre .apache .cbracket,pre .tex .command{color:#FF0;}pre .keyword,pre .css .id,pre .function .title,pre .class .title,pre .haskell .label,pre .ini .title,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .winutils,pre .flow,pre .lisp .title,pre .change,pre .envvar,pre .bash .variable,pre .tex .special{color:#FFF;}pre .comment,pre .phpdoc,pre .javadoc,pre .java .annotation,pre .template_comment,pre .deletion,pre .apache .sqbracket,pre .tex .formula{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char{color:#0F0;}pre .python .decorator,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .xml .pi,pre .diff .header,pre .chunk,pre .shebang,pre .nginx .built_in,pre .input_number{color:#008080;}pre .keyword,pre .css .id,pre .function .title,pre .class .title,pre .haskell .label,pre .ini .title,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .winutils,pre .flow,pre .lisp .title,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .tex .special{font-weight:bold;}","idea":"pre code{display:block;padding:0.5em;color:#000;background:#fff;}pre .subst,pre .title{font-weight:normal;color:#000;}pre .comment,pre .template_comment,pre .javadoc,pre .diff .header{color:#808080;font-style:italic;}pre .annotation,pre .decorator,pre .preprocessor,pre .doctype,pre .pi,pre .chunk,pre .shebang,pre .apache .cbracket,pre .input_number{color:#808000;}pre .tag,pre .pi{background:#efefef;}pre .tag .title,pre .id,pre .attr_selector,pre .pseudo,pre .literal,pre .keyword,pre .hexcolor,pre .css .function,pre .ini .title,pre .css .class,pre .list .title,pre .tex .command{font-weight:bold;color:#000080;}pre .attribute,pre .rules .keyword,pre .number,pre .date,pre .regexp,pre .tex .special{font-weight:bold;color:#0000ff;}pre .number,pre .regexp{font-weight:normal;}pre .string,pre .value,pre .filter .argument,pre .css .function .params,pre .apache .tag{color:#008000;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .char,pre .tex .formula{color:#000;background:#d0eded;font-style:italic;}pre .phpdoc,pre .yardoctag,pre .javadoctag{text-decoration:underline;}pre .variable,pre .envvar,pre .apache .sqbracket,pre .nginx .built_in{color:#660e7a;}pre .addition{background:#baeeba;}pre .deletion{background:#ffc8bd;}pre .diff .change{background:#bccff9;}","arta":"pre code{display:block;padding:0.5em;background:#222;}pre .header,pre .profile .header *,pre .ini .title{color:#fff;}pre .comment,pre .javadoc,pre .preprocessor,pre .shebang,pre .profile .summary,pre .diff,pre .pi,pre .doctype,pre .xml .tag,pre .template_comment,pre .css .rules,pre .tex .special{color:#444;}pre .string,pre .symbol,pre .diff .change,pre .regexp,pre .xml .attribute,pre .xml .value,pre .smalltalk .char,pre .ini .value{color:#ffcc33;}pre .number,pre .addition{color:#00cc66;}pre .built_in,pre .literal,pre .vhdl .type,pre .go .constant,pre .go .typename,pre .ini .keyword,pre .lua .title,pre .perl .variable,pre .php .variable,pre .mel .variable,pre .django .variable,pre .css .funtion,pre .smalltalk .method,pre .hexcolor,pre .important,pre .flow,pre .inheritance,pre .parser3 .variable{color:#32AAEE;}pre .keyword,pre .xml .tag .title,pre .css .tag,pre .css .class,pre .css .id,pre .css .pseudo,pre .css .attr_selector,pre .lisp .title,pre .winutils,pre .tex .command{color:#6644aa;}pre .class .title,pre .ruby .constant,pre .vala .constant,pre .parent,pre .deletion,pre .template_tag,pre .css .keyword,pre .javascript .title,pre .objectivec .class .id,pre .smalltalk .class,pre .lisp .keyword,pre .apache .tag,pre .nginx .variable,pre .envvar,pre .bash .variable,pre .go .built_in,pre .vbscript .built_in,pre .lua .built_in,pre .rsl .built_in,pre .tail,pre .avrasm .label,pre .parser3 .title,pre .tex .formula,pre .tex .formula *{color:#bb1166;}pre .yardoctag,pre .phpdoc,pre .profile .header,pre .ini .title,pre .apache .tag,pre .parser3 .title{font-weight:bold;}pre .coffeescript .javascript,pre .xml .javascript,pre .xml .css,pre .xml .cdata{opacity:0.6;}pre code,pre .javascript,pre .css,pre .xml,pre .subst,pre .diff .chunk,pre .css .value,pre .css .attribute,pre .lisp .string,pre .lisp .number,pre .tail .params,pre .container,pre .haskell *,pre .erlang *,pre .erlang_repl *{color:#aaa;}","default":"pre code{display:block;padding:0.5em;background:#F0F0F0;}pre code,pre .ruby .subst,pre .tag .title,pre .lisp .title{color:black;}pre .string,pre .title,pre .constant,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .instancevar,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .tex .special,pre .erlang_repl .function_or_atom,pre .markdown .header{color:#800;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .markdown .blockquote{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .go .constant,pre .change,pre .markdown .bullet,pre .markdown .link_url{color:#080;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .important,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .erlang_repl .reserved,pre .input_number,pre .markdown .link_label{color:#8888ff;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .css .tag,pre .javadoctag,pre .phpdoc,pre .yardoctag,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .go .typename,pre .tex .command,pre .markdown .strong{font-weight:bold;}pre .markdown .emphasis{font-style:italic;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}"}}};module.exports.highlighter.engine = (function () {
+module.exports = {"documentStyles":"html,body{background:#d7d7d7;font-family:Georgia;font-size:20px;overflow:hidden;}#slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}#slideshow .slide{height:100%;width:100%;}#slideshow .slide>.left{text-align:center;}#slideshow .slide>.center{text-align:center;}#slideshow .slide>.right{text-align:right;}#slideshow .slide>.top{vertical-align:top;}#slideshow .slide>.middle{vertical-align:middle;}#slideshow .slide>.bottom{vertical-align:bottom;}#slideshow .slide .content{display:table-cell;padding:1em 4em 1em 4em;}#slideshow .slide .content .left{display:block;text-align:left;}#slideshow .slide .content .center{display:block;text-align:center;}#slideshow .slide .content .right{display:block;text-align:right;}#slideshow .slide .content pre,#slideshow .slide .content code{font-family:Monaco, monospace;font-size:16px;}#slideshow .slide .content h1 code{font-size:0.8em;}#slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}p>code{padding:1px 4px;}","highlighter":{"styles":{"dark":"pre code{display:block;padding:0.5em;background:#444;}pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .tex .special{color:white;}pre code,pre .ruby .subst{color:#DDD;}pre .string,pre .title,pre .haskell .label,pre .ini .title,pre .tag .value,pre .css .rules .value,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .ruby .instancevar,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .ruby .string,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .input_number{color:#D88;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket,pre .tex .formula{color:#777;}pre .keyword,pre .literal,pre .title,pre .css .id,pre .phpdoc,pre .haskell .label,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .apache .tag,pre .tex .special,pre .header{font-weight:bold;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}","solarized_dark":"pre code{display:block;padding:0.5em;background:#002b36;color:#839496;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .pi,pre .lisp .string,pre .javadoc{color:#586e75;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .method,pre .addition,pre .css .tag,pre .header{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .chunk,pre .decorator,pre .builtin,pre .built_in,pre .identifier,pre .title .keymethods,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .instancevar,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .label{color:#b58900;}pre .preprocessor,pre .preprocessor .keyword,pre .shebang,pre .symbol,pre .diff .change,pre .special,pre .keymethods,pre .attr_selector,pre .important,pre .subst,pre .cdata{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#073642;}","zenburn":"pre code{display:block;padding:0.5em;background:#3F3F3F;color:#DCDCDC;}pre .keyword,pre .tag,pre .django .tag,pre .django .keyword,pre .css .class,pre .css .id,pre .lisp .title,pre .header{color:#E3CEAB;}pre .django .template_tag,pre .django .variable,pre .django .filter .argument{color:#DCDCDC;}pre .number,pre .date{color:#8CD0D3;}pre .dos .envvar,pre .dos .stream,pre .variable,pre .apache .sqbracket{color:#EFDCBC;}pre .dos .flow,pre .diff .change,pre .python .exception,pre .python .built_in,pre .literal,pre .tex .special{color:#EFEFAF;}pre .diff .chunk,pre .ruby .subst{color:#8F8F8F;}pre .dos .keyword,pre .python .decorator,pre .title,pre .haskell .label,pre .diff .header,pre .ruby .class .parent,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .input_number{color:#efef8f;}pre .dos .winutils,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .ruby .string,pre .ruby .instancevar{color:#DCA3A3;}pre .diff .deletion,pre .string,pre .tag .value,pre .preprocessor,pre .built_in,pre .sql .aggregate,pre .javadoc,pre .smalltalk .class,pre .smalltalk .localvars,pre .smalltalk .array,pre .css .rules .value,pre .attr_selector,pre .pseudo,pre .apache .cbracket,pre .tex .formula{color:#CC9393;}pre .shebang,pre .diff .addition,pre .comment,pre .java .annotation,pre .template_comment,pre .pi,pre .doctype{color:#7F9F7F;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}","googlecode":"pre code{display:block;padding:0.5em;background:white;color:black;}pre .comment,pre .template_comment,pre .javadoc,pre .comment *{color:#800;}pre .keyword,pre .ruby .function .keyword,pre .function .keyword,pre .sub .keyword,pre .method,pre .list .title,pre .tag .title,pre .setting .value,pre .winutils,pre .tex .command,pre .http .title{color:#008;}pre .envvar,pre .tex .special{color:#660;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .regexp{color:#080;}pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .ini .title,pre .shebang,pre .input_number,pre .hexcolor,pre .rules .value,pre .css .value .number,pre .literal,pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .number,pre .css .function{color:#066;}pre .class .title,pre .haskell .label,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .typename,pre .tag .attribute,pre .doctype,pre .class .id,pre .built_in,pre .setting,pre .params,pre .variable,pre .header{color:#606;}pre .css .tag,pre .rules .property,pre .pseudo,pre .subst{color:#000;}pre .css .class,pre .css .id{color:#9B703F;}pre .value .important{color:#ff7700;font-weight:bold;}pre .rules .keyword{color:#C5AF75;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor,pre .preprocessor *{color:#444;}pre .tex .formula{background-color:#EEE;font-style:italic;}pre .diff .header,pre .chunk{color:#808080;font-weight:bold;}pre .diff .change{background-color:#BCCFF9;}pre .addition{background-color:#BAEEBA;}pre .deletion{background-color:#FFC8BD;}pre .comment .yardoctag{font-weight:bold;}","sunburst":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .comment,pre .template_comment,pre .javadoc{color:#aeaeae;font-style:italic;}pre .keyword,pre .ruby .function .keyword,pre .header{color:#E28964;}pre .function .keyword,pre .sub .keyword,pre .method,pre .list .title{color:#99CF50;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .tex .command{color:#65B042;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .title,pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .shebang,pre .input_number{color:#89BDFF;}pre .class .title,pre .haskell .label,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc{text-decoration:underline;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .number{color:#3387CC;}pre .params,pre .variable{color:#3E87E3;}pre .css .tag,pre .rules .property,pre .pseudo,pre .tex .special{color:#CDA869;}pre .css .class{color:#9B703F;}pre .rules .keyword{color:#C5AF75;}pre .rules .value{color:#CF6A4C;}pre .css .id{color:#8B98AB;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor{color:#8996A8;}pre .hexcolor,pre .css .value .number{color:#DD7B3B;}pre .css .function{color:#DAD085;}pre .diff .header,pre .chunk,pre .tex .formula{background-color:#0E2231;color:#F8F8F8;font-style:italic;}pre .diff .change{background-color:#4A410D;color:#F8F8F8;}pre .addition{background-color:#253B22;color:#F8F8F8;}pre .deletion{background-color:#420E09;color:#F8F8F8;}","magula":"pre code{display:block;padding:0.5em;background-color:#f4f4f4;}pre code,pre .ruby .subst,pre .lisp .title{color:black;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .instancevar,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .cbracket{color:#050;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk{color:#777;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .change,pre .tex .special{color:#800;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .input_number{color:#00e;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .xml .tag,pre .tex .command,pre .header{font-weight:bold;color:navy;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}pre .apache .tag{font-weight:bold;color:blue;}","github":"pre code{display:block;padding:0.5em;color:#000;background:#f8f8ff;}pre .comment,pre .template_comment,pre .diff .header,pre .javadoc{color:#998;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .javascript .title,pre .lisp .title,pre .subst{color:#000;font-weight:bold;}pre .number,pre .hexcolor{color:#40a070;}pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula{color:#dd1144;}pre .title,pre .id{color:#900;font-weight:bold;}pre .javascript .title,pre .lisp .title,pre .subst{font-weight:normal;}pre .class .title,pre .haskell .label,pre .tex .command{color:#458;font-weight:bold;}pre .tag,pre .tag .title,pre .rules .property,pre .django .tag .keyword{color:#000080;font-weight:normal;}pre .attribute,pre .variable,pre .instancevar,pre .lisp .body,pre .header{color:#008080;}pre .regexp{color:#009926;}pre .class{color:#458;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .lisp .keyword,pre .tex .special,pre .input_number{color:#990073;}pre .builtin,pre .built_in,pre .lisp .title{color:#0086b3;}pre .preprocessor,pre .pi,pre .doctype,pre .shebang,pre .cdata{color:#999;font-weight:bold;}pre .deletion{background:#ffdddd;}pre .addition{background:#ddffdd;}pre .diff .change{background:#0086b3;}pre .chunk{color:#aaaaaa;}pre .tex .formula{opacity:0.5;}","monokai":"pre code{display:block;padding:0.5em;background:#272822;}pre .params .identifier .keymethods{color:#FD971F;}pre .tag,pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .tex .special{color:#F92672;}pre code{color:#DDD;}pre code .constant{color:#66D9EF;}pre .class .title{color:white;}pre .attribute,pre .symbol,pre .value,pre .regexp{color:#BF79DB;}pre .tag .value,pre .string,pre .ruby .subst,pre .title,pre .haskell .label,pre .preprocessor,pre .ruby .instancevar,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .ruby .string,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .input_number{color:#A6E22E;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket,pre .tex .formula{color:#75715E;}pre .keyword,pre .literal,pre .css .id,pre .phpdoc,pre .title,pre .haskell .label,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .apache .tag,pre .tex .special{font-weight:bold;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}","solarized_light":"pre code{display:block;padding:0.5em;background:#fdf6e3;color:#657b83;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .pi,pre .lisp .string,pre .javadoc{color:#93a1a1;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .method,pre .addition,pre .css .tag,pre .header{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .chunk,pre .decorator,pre .builtin,pre .built_in,pre .identifier,pre .title .keymethods,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .instancevar,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .label{color:#b58900;}pre .preprocessor,pre .preprocessor .keyword,pre .shebang,pre .symbol,pre .diff .change,pre .special,pre .keymethods,pre .attr_selector,pre .important,pre .subst,pre .cdata{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#eee8d5;}","vs":"pre code{display:block;padding:0.5em;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .apache .cbracket{color:#008000;}pre .keyword,pre .id,pre .built_in,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .tex .command,pre .header{color:#0000ff;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .instancevar,pre .aggregate,pre .template_tag,pre .django .variable,pre .addition,pre .flow,pre .stream,pre .apache .tag,pre .date,pre .tex .formula{color:#a31515;}pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .preprocessor,pre .userType,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .special,pre .input_number{color:#2b91af;}pre .phpdoc,pre .javadoc,pre .xmlDocTag{color:#808080;}pre .vhdl .type{font-weight:bold;}pre .vhdl .string{color:#666666;}pre .vhdl .literal{color:#a31515;}","ir_black":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .shebang,pre .comment,pre .template_comment,pre .javadoc{color:#7c7c7c;}pre .keyword,pre .tag,pre .header,pre .tex .command{color:#96CBFE;}pre .sub .keyword,pre .method,pre .list .title{color:#FFFFB6;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date{color:#A8FF60;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .title,pre .sub .identifier,pre .pi,pre .decorator,pre .tex .special,pre .haskell .label,pre .constant,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .nginx .built_in{color:#FFFFB6;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .number,pre .variable,pre .vbscript,pre .literal{color:#C6C5FE;}pre .css .tag{color:#96CBFE;}pre .css .rules .property,pre .css .id{color:#FFFFB6;}pre .css .class{color:#FFF;}pre .hexcolor{color:#C6C5FE;}pre .number{color:#FF73FD;}pre .tex .formula{opacity:0.7;}","school_book":"pre code{display:block;padding:15px 0.5em 0.5em 30px;font-size:11px !important;line-height:16px !important;}pre{background:#f6f6ae url(./school_book.png);border-top:solid 2px #d2e8b9;border-bottom:solid 1px #d2e8b9;}pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .tex .special,pre .header{color:#005599;font-weight:bold;}pre code,pre .ruby .subst,pre .tag .keyword{color:#3E5915;}pre .string,pre .title,pre .haskell .label,pre .tag .value,pre .css .rules .value,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .ruby .instancevar,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .ruby .string,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .nginx .built_in,pre .tex .command{color:#2C009F;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket{color:#E60415;}pre .keyword,pre .literal,pre .css .id,pre .phpdoc,pre .title,pre .haskell .label,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .apache .tag,pre .tex .command{font-weight:bold;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}","ascetic":"pre code{display:block;padding:0.5em;background:white;color:black;}pre .string,pre .tag .value,pre .filter .argument,pre .addition,pre .change,pre .apache .tag,pre .apache .cbracket,pre .nginx .built_in,pre .tex .formula,pre .header{color:#888;}pre .comment,pre .template_comment,pre .shebang,pre .doctype,pre .pi,pre .javadoc,pre .deletion,pre .apache .sqbracket{color:#CCC;}pre .keyword,pre .tag .title,pre .css .tag,pre .ini .title,pre .winutils,pre .flow,pre .lisp .title,pre .apache .tag,pre .tex .command,pre .http .title{font-weight:bold;}","far":"pre code{display:block;padding:0.5em;background:#000080;}pre code,.ruby .subst{color:#0FF;}pre .string,pre .ruby .string,pre .haskell .label,pre .tag .value,pre .css .rules .value,pre .css .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .apache .tag,pre .apache .cbracket,pre .tex .command{color:#FF0;}pre .keyword,pre .css .id,pre .title,pre .haskell .label,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .winutils,pre .flow,pre .change,pre .envvar,pre .bash .variable,pre .tex .special{color:#FFF;}pre .comment,pre .phpdoc,pre .javadoc,pre .java .annotation,pre .template_comment,pre .deletion,pre .apache .sqbracket,pre .tex .formula{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char{color:#0F0;}pre .python .decorator,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .xml .pi,pre .diff .header,pre .chunk,pre .shebang,pre .nginx .built_in,pre .input_number{color:#008080;}pre .keyword,pre .css .id,pre .title,pre .haskell .label,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .winutils,pre .flow,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .tex .special,pre .header{font-weight:bold;}","idea":"pre code{display:block;padding:0.5em;color:#000;background:#fff;}pre .subst,pre .title{font-weight:normal;color:#000;}pre .comment,pre .template_comment,pre .javadoc,pre .diff .header{color:#808080;font-style:italic;}pre .annotation,pre .decorator,pre .preprocessor,pre .doctype,pre .pi,pre .chunk,pre .shebang,pre .apache .cbracket,pre .input_number,pre .http .title{color:#808000;}pre .tag,pre .pi{background:#efefef;}pre .tag .title,pre .id,pre .attr_selector,pre .pseudo,pre .literal,pre .keyword,pre .hexcolor,pre .css .function,pre .ini .title,pre .css .class,pre .list .title,pre .tex .command{font-weight:bold;color:#000080;}pre .attribute,pre .rules .keyword,pre .number,pre .date,pre .regexp,pre .tex .special,pre .header{font-weight:bold;color:#0000ff;}pre .number,pre .regexp{font-weight:normal;}pre .string,pre .value,pre .filter .argument,pre .css .function .params,pre .apache .tag{color:#008000;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .char,pre .tex .formula{color:#000;background:#d0eded;font-style:italic;}pre .phpdoc,pre .yardoctag,pre .javadoctag{text-decoration:underline;}pre .variable,pre .envvar,pre .apache .sqbracket,pre .nginx .built_in{color:#660e7a;}pre .addition{background:#baeeba;}pre .deletion{background:#ffc8bd;}pre .diff .change{background:#bccff9;}","arta":"pre code{display:block;padding:0.5em;background:#222;}pre .header,pre .profile .header *,pre .ini .title{color:#fff;}pre .comment,pre .javadoc,pre .preprocessor,pre .preprocessor .title,pre .shebang,pre .profile .summary,pre .diff,pre .pi,pre .doctype,pre .tag,pre .template_comment,pre .css .rules,pre .tex .special{color:#444;}pre .string,pre .symbol,pre .diff .change,pre .regexp,pre .xml .attribute,pre .xml .value,pre .smalltalk .char,pre .ini .value{color:#ffcc33;}pre .number,pre .addition{color:#00cc66;}pre .built_in,pre .literal,pre .vhdl .type,pre .go .constant,pre .go .typename,pre .ini .keyword,pre .lua .title,pre .perl .variable,pre .php .variable,pre .mel .variable,pre .django .variable,pre .css .funtion,pre .smalltalk .method,pre .hexcolor,pre .important,pre .flow,pre .inheritance,pre .parser3 .variable{color:#32AAEE;}pre .keyword,pre .tag .title,pre .css .tag,pre .css .class,pre .css .id,pre .css .pseudo,pre .css .attr_selector,pre .lisp .title,pre .winutils,pre .tex .command{color:#6644aa;}pre .title,pre .ruby .constant,pre .vala .constant,pre .parent,pre .deletion,pre .template_tag,pre .css .keyword,pre .objectivec .class .id,pre .smalltalk .class,pre .lisp .keyword,pre .apache .tag,pre .nginx .variable,pre .envvar,pre .bash .variable,pre .go .built_in,pre .vbscript .built_in,pre .lua .built_in,pre .rsl .built_in,pre .tail,pre .avrasm .label,pre .tex .formula,pre .tex .formula *{color:#bb1166;}pre .yardoctag,pre .phpdoc,pre .profile .header,pre .ini .title,pre .apache .tag,pre .parser3 .title{font-weight:bold;}pre .coffeescript .javascript,pre .xml .javascript,pre .xml .css,pre .xml .cdata{opacity:0.6;}pre code,pre .javascript,pre .css,pre .xml,pre .subst,pre .diff .chunk,pre .css .value,pre .css .attribute,pre .lisp .string,pre .lisp .number,pre .tail .params,pre .container,pre .haskell *,pre .erlang *,pre .erlang_repl *{color:#aaa;}","default":"pre code{display:block;padding:0.5em;background:#F0F0F0;}pre code,pre .ruby .subst,pre .tag .title,pre .lisp .title{color:black;}pre .string,pre .title,pre .constant,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .instancevar,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .tex .special,pre .erlang_repl .function_or_atom,pre .markdown .header{color:#800;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .markdown .blockquote{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .go .constant,pre .change,pre .markdown .bullet,pre .markdown .link_url{color:#080;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .important,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .erlang_repl .reserved,pre .input_number,pre .markdown .link_label{color:#8888ff;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .css .tag,pre .javadoctag,pre .phpdoc,pre .yardoctag,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .go .typename,pre .tex .command,pre .markdown .strong,pre .header{font-weight:bold;}pre .markdown .emphasis{font-style:italic;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .xml .css,pre .xml .javascript,pre .xml .vbscript,pre .tex .formula{opacity:0.5;}"}}};module.exports.highlighter.engine = (function () {
 /*
 Syntax highlighting with language autodetection.
 http://softwaremaniacs.org/soft/highlight/
@@ -49,7 +49,7 @@ var hljs = new function() {
   }
 
   function blockLanguage(block) {
-    var classes = block.className.split(/\s+/)
+    var classes = block.className.split(/\s+/);
     classes = classes.concat(block.parentNode.className.split(/\s+/));
     for (var i = 0; i < classes.length; i++) {
       var class_ = classes[i].replace(/^language-/, '');
@@ -63,19 +63,19 @@ var hljs = new function() {
 
   function nodeStream(node) {
     var result = [];
-    (function (node, offset) {
+    (function _nodeStream(node, offset) {
       for (var i = 0; i < node.childNodes.length; i++) {
         if (node.childNodes[i].nodeType == 3)
           offset += node.childNodes[i].nodeValue.length;
         else if (node.childNodes[i].nodeName == 'BR')
-          offset += 1
+          offset += 1;
         else if (node.childNodes[i].nodeType == 1) {
           result.push({
             event: 'start',
             offset: offset,
             node: node.childNodes[i]
           });
-          offset = arguments.callee(node.childNodes[i], offset)
+          offset = _nodeStream(node.childNodes[i], offset);
           result.push({
             event: 'stop',
             offset: offset,
@@ -125,7 +125,7 @@ var hljs = new function() {
       for (var i = 0; i < node.attributes.length; i++) {
         var attribute = node.attributes[i];
         result += ' ' + attribute.nodeName.toLowerCase();
-        if (attribute.value != undefined && attribute.value != false && attribute.value != null) {
+        if (attribute.value !== undefined && attribute.value !== false && attribute.value !== null) {
           result += '="' + escape(attribute.value) + '"';
         }
       }
@@ -140,10 +140,10 @@ var hljs = new function() {
         result += open(current.node);
         nodeStack.push(current.node);
       } else if (current.event == 'stop') {
-        var i = nodeStack.length;
+        var node, i = nodeStack.length;
         do {
           i--;
-          var node = nodeStack[i];
+          node = nodeStack[i];
           result += ('</' + node.nodeName.toLowerCase() + '>');
         } while (node != current.node);
         nodeStack.splice(i, 1);
@@ -153,8 +153,7 @@ var hljs = new function() {
         }
       }
     }
-    result += value.substr(processed);
-    return result;
+    return result + escape(value.substr(processed));
   }
 
   /* Initialization */
@@ -164,36 +163,42 @@ var hljs = new function() {
     function compileMode(mode, language, is_default) {
       if (mode.compiled)
         return;
+      var group;
 
-      if (!is_default) {
-        mode.beginRe = langRe(language, mode.begin ? mode.begin : '\\B|\\b');
-        if (!mode.end && !mode.endsWithParent)
-          mode.end = '\\B|\\b'
-        if (mode.end)
-          mode.endRe = langRe(language, mode.end);
-      }
-      if (mode.illegal)
-        mode.illegalRe = langRe(language, mode.illegal);
-      if (mode.relevance == undefined)
-        mode.relevance = 1;
+      var keywords = []; // used later with beginWithKeyword but filled as a side-effect of keywords compilation
       if (mode.keywords) {
         mode.lexemsRe = langRe(language, mode.lexems || hljs.IDENT_RE, true);
         for (var className in mode.keywords) {
           if (!mode.keywords.hasOwnProperty(className))
             continue;
           if (mode.keywords[className] instanceof Object) {
-            var group = mode.keywords[className];
+            group = mode.keywords[className];
           } else {
-            var group = mode.keywords;
+            group = mode.keywords;
             className = 'keyword';
           }
           for (var keyword in group) {
             if (!group.hasOwnProperty(keyword))
               continue;
             mode.keywords[keyword] = [className, group[keyword]];
+            keywords.push(keyword);
           }
         }
       }
+      if (!is_default) {
+        if (mode.beginWithKeyword) {
+          mode.begin = '\\b(' + keywords.join('|') + ')\\s';
+        }
+        mode.beginRe = langRe(language, mode.begin ? mode.begin : '\\B|\\b');
+        if (!mode.end && !mode.endsWithParent)
+          mode.end = '\\B|\\b';
+        if (mode.end)
+          mode.endRe = langRe(language, mode.end);
+      }
+      if (mode.illegal)
+        mode.illegalRe = langRe(language, mode.illegal);
+      if (mode.relevance === undefined)
+        mode.relevance = 1;
       if (!mode.contains) {
         mode.contains = [];
       }
@@ -201,6 +206,9 @@ var hljs = new function() {
       // (see lisp where quoted_list contains quoted_list)
       mode.compiled = true;
       for (var i = 0; i < mode.contains.length; i++) {
+        if (mode.contains[i] == 'self') {
+          mode.contains[i] = mode;
+        }
         compileMode(mode.contains[i], language, false);
       }
       if (mode.starts) {
@@ -232,7 +240,8 @@ var hljs = new function() {
 
     function subMode(lexem, mode) {
       for (var i = 0; i < mode.contains.length; i++) {
-        if (mode.contains[i].beginRe.test(lexem)) {
+        var match = mode.contains[i].beginRe.exec(lexem);
+        if (match && match.index == 0) {
           return mode.contains[i];
         }
       }
@@ -249,7 +258,7 @@ var hljs = new function() {
     }
 
     function isIllegal(lexem, mode) {
-      return mode.illegalRe && mode.illegalRe.test(lexem);
+      return mode.illegal && mode.illegalRe.test(lexem);
     }
 
     function compileTerminators(mode, language) {
@@ -271,7 +280,7 @@ var hljs = new function() {
         terminators.push(mode.illegal);
       }
 
-      return langRe(language, '(' + terminators.join('|') + ')', true);
+      return langRe(language, terminators.join('|'), true);
     }
 
     function eatModeChunk(value, index) {
@@ -281,10 +290,7 @@ var hljs = new function() {
       }
       mode.terminators.lastIndex = index;
       var match = mode.terminators.exec(value);
-      if (match)
-        return [value.substr(index, match.index - index), match[0], false];
-      else
-        return [value.substr(index), '', true];
+      return match ? [value.substr(index, match.index - index), match[0], false] : [value.substr(index), '', true];
     }
 
     function keywordMatch(mode, match) {
@@ -296,33 +302,49 @@ var hljs = new function() {
     }
 
     function processKeywords(buffer, mode) {
+      buffer = escape(buffer);
       if (!mode.keywords)
-        return escape(buffer);
+        return buffer;
       var result = '';
       var last_index = 0;
       mode.lexemsRe.lastIndex = 0;
       var match = mode.lexemsRe.exec(buffer);
       while (match) {
-        result += escape(buffer.substr(last_index, match.index - last_index));
+        result += buffer.substr(last_index, match.index - last_index);
         var keyword_match = keywordMatch(mode, match);
         if (keyword_match) {
           keyword_count += keyword_match[1];
-          result += '<span class="'+ keyword_match[0] +'">' + escape(match[0]) + '</span>';
+          result += '<span class="'+ keyword_match[0] +'">' + match[0] + '</span>';
         } else {
-          result += escape(match[0]);
+          result += match[0];
         }
         last_index = mode.lexemsRe.lastIndex;
         match = mode.lexemsRe.exec(buffer);
       }
-      result += escape(buffer.substr(last_index, buffer.length - last_index));
-      return result;
+      return result + buffer.substr(last_index, buffer.length - last_index);
+    }
+
+    function processSubLanguage(buffer, mode) {
+      var result;
+      if (mode.subLanguage == '') {
+        result = highlightAuto(buffer);
+      } else {
+        result = highlight(mode.subLanguage, buffer);
+      }
+      // Counting embedded language score towards the host language may be disabled
+      // with zeroing the containing mode relevance. Usecase in point is Markdown that
+      // allows XML everywhere and makes every XML snippet to have a much larger Markdown
+      // score.
+      if (mode.relevance > 0) {
+        keyword_count += result.keyword_count;
+        relevance += result.relevance;
+      }
+      return '<span class="' + result.language  + '">' + result.value + '</span>';
     }
 
     function processBuffer(buffer, mode) {
-      if (mode.subLanguage && languages[mode.subLanguage]) {
-        var result = highlight(mode.subLanguage, buffer);
-        keyword_count += result.keyword_count;
-        return result.value;
+      if (mode.subLanguage && languages[mode.subLanguage] || mode.subLanguage == '') {
+        return processSubLanguage(buffer, mode);
       } else {
         return processKeywords(buffer, mode);
       }
@@ -393,10 +415,10 @@ var hljs = new function() {
     var keyword_count = 0;
     var result = '';
     try {
-      var index = 0;
+      var mode_info, index = 0;
       language.defaultMode.buffer = '';
       do {
-        var mode_info = eatModeChunk(value, index);
+        mode_info = eatModeChunk(value, index);
         var return_lexem = processModeInfo(mode_info[0], mode_info[1], mode_info[2]);
         index += mode_info[0].length;
         if (!return_lexem) {
@@ -408,15 +430,16 @@ var hljs = new function() {
       return {
         relevance: relevance,
         keyword_count: keyword_count,
-        value: result
-      }
+        value: result,
+        language: language_name
+      };
     } catch (e) {
       if (e == 'Illegal') {
         return {
           relevance: 0,
           keyword_count: 0,
           value: escape(value)
-        }
+        };
       } else {
         throw e;
       }
@@ -472,7 +495,7 @@ var hljs = new function() {
     if (tabReplace) {
       value = value.replace(/^((<[^>]+>|\t)+)/gm, function(match, p1, offset, s) {
         return p1.replace(/\t/g, tabReplace);
-      })
+      });
     }
     if (useBR) {
       value = value.replace(/\n/g, '<br>');
@@ -487,17 +510,18 @@ var hljs = new function() {
   function highlightBlock(block, tabReplace, useBR) {
     var text = blockText(block, useBR);
     var language = blockLanguage(block);
+    var result, pre;
     if (language == 'no-highlight')
         return;
     if (language) {
-      var result = highlight(language, text);
+      result = highlight(language, text);
     } else {
-      var result = highlightAuto(text);
+      result = highlightAuto(text);
       language = result.language;
     }
     var original = nodeStream(block);
     if (original.length) {
-      var pre = document.createElement('pre');
+      pre = document.createElement('pre');
       pre.innerHTML = result.value;
       result.value = mergeStreams(original, nodeStream(pre), text);
     }
@@ -510,7 +534,7 @@ var hljs = new function() {
     if (/MSIE [678]/.test(navigator.userAgent) && block.tagName == 'CODE' && block.parentNode.tagName == 'PRE') {
       // This is for backwards compatibility only. IE needs this strange
       // hack becasue it cannot just cleanly replace <code> block contents.
-      var pre = block.parentNode;
+      pre = block.parentNode;
       var container = document.createElement('div');
       container.innerHTML = '<pre><code>' + result.value + '</code></pre>';
       block = container.firstChild.firstChild;
@@ -581,6 +605,7 @@ var hljs = new function() {
   this.C_NUMBER_RE = '\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)'; // 0x..., 0..., decimal, float
   this.BINARY_NUMBER_RE = '\\b(0b[01]+)'; // 0b...
   this.RE_STARTERS_RE = '!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~';
+  this.EOF_RE = '(?![\\s\\S])';
 
   // Common modes
   this.BACKSLASH_ESCAPE = {
@@ -630,12 +655,13 @@ var hljs = new function() {
 
   // Utility functions
   this.inherit = function(parent, obj) {
-    function wrapper() {
+    var result = {}
+    for (var key in parent)
+      result[key] = parent[key];
+    if (obj)
       for (var key in obj)
-        this[key] = obj[key];
-    }
-    wrapper.prototype = parent;
-    return new wrapper();
+        result[key] = obj[key];
+    return result;
   }
 }();
 
@@ -660,7 +686,7 @@ hljs.LANGUAGES.javascript = {
       hljs.C_BLOCK_COMMENT_MODE,
       hljs.C_NUMBER_MODE,
       { // regexp container
-        begin: '(' + hljs.RE_STARTERS_RE + '|case|return|throw)\\s*',
+        begin: '(' + hljs.RE_STARTERS_RE + '|\\b(case|return|throw)\\b)\\s*',
         keywords: {'return': 1, 'throw': 1, 'case': 1},
         contains: [
           hljs.C_LINE_COMMENT_MODE,
@@ -675,7 +701,7 @@ hljs.LANGUAGES.javascript = {
       },
       {
         className: 'function',
-        begin: '\\bfunction\\b', end: '{',
+        beginWithKeyword: true, end: '{',
         keywords: {'function': 1},
         contains: [
           {
@@ -765,21 +791,23 @@ hljs.LANGUAGES.ruby = function(){
     className: 'yardoctag',
     begin: '@[A-Za-z]+'
   };
-  var COMMENT1 = {
-    className: 'comment',
-    begin: '#', end: '$',
-    contains: [YARDOCTAG]
-  };
-  var COMMENT2 = {
-    className: 'comment',
-    begin: '^\\=begin', end: '^\\=end',
-    contains: [YARDOCTAG],
-    relevance: 10
-  };
-  var COMMENT3 = {
-    className: 'comment',
-    begin: '^__END__', end: '\\n$'
-  };
+  var COMMENTS = [
+    {
+      className: 'comment',
+      begin: '#', end: '$',
+      contains: [YARDOCTAG]
+    },
+    {
+      className: 'comment',
+      begin: '^\\=begin', end: '^\\=end',
+      contains: [YARDOCTAG],
+      relevance: 10
+    },
+    {
+      className: 'comment',
+      begin: '^__END__', end: '\\n$'
+    }
+  ];
   var SUBST = {
     className: 'subst',
     begin: '#\\{', end: '}',
@@ -787,66 +815,68 @@ hljs.LANGUAGES.ruby = function(){
     keywords: RUBY_KEYWORDS
   };
   var STR_CONTAINS = [hljs.BACKSLASH_ESCAPE, SUBST];
-  var STR1 = {
-    className: 'string',
-    begin: '\'', end: '\'',
-    contains: STR_CONTAINS,
-    relevance: 0
-  };
-  var STR2 = {
-    className: 'string',
-    begin: '"', end: '"',
-    contains: STR_CONTAINS,
-    relevance: 0
-  };
-  var STR3 = {
-    className: 'string',
-    begin: '%[qw]?\\(', end: '\\)',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
-  var STR4 = {
-    className: 'string',
-    begin: '%[qw]?\\[', end: '\\]',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
-  var STR5 = {
-    className: 'string',
-    begin: '%[qw]?{', end: '}',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
-  var STR6 = {
-    className: 'string',
-    begin: '%[qw]?<', end: '>',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
-  var STR7 = {
-    className: 'string',
-    begin: '%[qw]?/', end: '/',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
-  var STR8 = {
-    className: 'string',
-    begin: '%[qw]?%', end: '%',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
-  var STR9 = {
-    className: 'string',
-    begin: '%[qw]?-', end: '-',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
-  var STR10 = {
-    className: 'string',
-    begin: '%[qw]?\\|', end: '\\|',
-    contains: STR_CONTAINS,
-    relevance: 10
-  };
+  var STRINGS = [
+    {
+      className: 'string',
+      begin: '\'', end: '\'',
+      contains: STR_CONTAINS,
+      relevance: 0
+    },
+    {
+      className: 'string',
+      begin: '"', end: '"',
+      contains: STR_CONTAINS,
+      relevance: 0
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?\\(', end: '\\)',
+      contains: STR_CONTAINS,
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?\\[', end: '\\]',
+      contains: STR_CONTAINS,
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?{', end: '}',
+      contains: STR_CONTAINS,
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?<', end: '>',
+      contains: STR_CONTAINS,
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?/', end: '/',
+      contains: STR_CONTAINS,
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?%', end: '%',
+      contains: STR_CONTAINS,
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?-', end: '-',
+      contains: STR_CONTAINS,
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '%[qw]?\\|', end: '\\|',
+      contains: STR_CONTAINS,
+      relevance: 10
+    }
+  ];
   var FUNCTION = {
     className: 'function',
     begin: '\\bdef\\s+', end: ' |$|;',
@@ -864,9 +894,8 @@ hljs.LANGUAGES.ruby = function(){
         begin: '\\(', end: '\\)',
         lexems: RUBY_IDENT_RE,
         keywords: RUBY_KEYWORDS
-      },
-      COMMENT1, COMMENT2, COMMENT3
-    ]
+      }
+    ].concat(COMMENTS)
   };
   var IDENTIFIER = {
     className: 'identifier',
@@ -876,9 +905,7 @@ hljs.LANGUAGES.ruby = function(){
     relevance: 0
   };
 
-  var RUBY_DEFAULT_CONTAINS = [
-    COMMENT1, COMMENT2, COMMENT3,
-    STR1, STR2, STR3, STR4, STR5, STR6, STR7, STR8, STR9, STR10,
+  var RUBY_DEFAULT_CONTAINS = COMMENTS.concat(STRINGS.concat([
     {
       className: 'class',
       begin: '\\b(class|module)\\b', end: '$|;',
@@ -896,9 +923,8 @@ hljs.LANGUAGES.ruby = function(){
             className: 'parent',
             begin: '(' + hljs.IDENT_RE + '::)?' + hljs.IDENT_RE
           }]
-        },
-        COMMENT1, COMMENT2, COMMENT3
-      ]
+        }
+      ].concat(COMMENTS)
     },
     FUNCTION,
     {
@@ -909,7 +935,7 @@ hljs.LANGUAGES.ruby = function(){
     {
       className: 'symbol',
       begin: ':',
-      contains: [STR1, STR2, STR3, STR4, STR5, STR6, STR7, STR8, STR9, STR10, IDENTIFIER],
+      contains: STRINGS.concat([IDENTIFIER]),
       relevance: 0
     },
     {
@@ -928,18 +954,17 @@ hljs.LANGUAGES.ruby = function(){
     IDENTIFIER,
     { // regexp container
       begin: '(' + hljs.RE_STARTERS_RE + ')\\s*',
-      contains: [
-        COMMENT1, COMMENT2, COMMENT3,
+      contains: COMMENTS.concat([
         {
           className: 'regexp',
           begin: '/', end: '/[a-z]*',
           illegal: '\\n',
           contains: [hljs.BACKSLASH_ESCAPE]
         }
-      ],
+      ]),
       relevance: 0
     }
-  ];
+  ]));
   SUBST.contains = RUBY_DEFAULT_CONTAINS;
   FUNCTION.contains[1].contains = RUBY_DEFAULT_CONTAINS;
 
@@ -957,45 +982,56 @@ Language: Python
 */
 
 hljs.LANGUAGES.python = function() {
-  var STR1 = {
-    className: 'string',
-    begin: '(u|b)?r?\'\'\'', end: '\'\'\'',
-    relevance: 10
-  };
-  var STR2 = {
-    className: 'string',
-    begin: '(u|b)?r?"""', end: '"""',
-    relevance: 10
-  };
-  var STR3 = {
-    className: 'string',
-    begin: '(u|r|ur)\'', end: '\'',
-    contains: [hljs.BACKSLASH_ESCAPE],
-    relevance: 10
-  };
-  var STR4 = {
-    className: 'string',
-    begin: '(u|r|ur)"', end: '"',
-    contains: [hljs.BACKSLASH_ESCAPE],
-    relevance: 10
-  };
-  var STR5 = {
-    className: 'string',
-    begin: '(b|br)\'', end: '\'',
-    contains: [hljs.BACKSLASH_ESCAPE]
-  };
-  var STR6 = {
-    className: 'string',
-    begin: '(b|br)"', end: '"',
-    contains: [hljs.BACKSLASH_ESCAPE]
-  };
+  var STRINGS = [
+    {
+      className: 'string',
+      begin: '(u|b)?r?\'\'\'', end: '\'\'\'',
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '(u|b)?r?"""', end: '"""',
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '(u|r|ur)\'', end: '\'',
+      contains: [hljs.BACKSLASH_ESCAPE],
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '(u|r|ur)"', end: '"',
+      contains: [hljs.BACKSLASH_ESCAPE],
+      relevance: 10
+    },
+    {
+      className: 'string',
+      begin: '(b|br)\'', end: '\'',
+      contains: [hljs.BACKSLASH_ESCAPE]
+    },
+    {
+      className: 'string',
+      begin: '(b|br)"', end: '"',
+      contains: [hljs.BACKSLASH_ESCAPE]
+    }
+  ].concat([
+    hljs.APOS_STRING_MODE,
+    hljs.QUOTE_STRING_MODE
+  ]);
   var TITLE = {
     className: 'title', begin: hljs.UNDERSCORE_IDENT_RE
   };
   var PARAMS = {
     className: 'params',
     begin: '\\(', end: '\\)',
-    contains: [STR1, STR2, STR3, STR4, STR5, STR6, hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE]
+    contains: STRINGS.concat([hljs.C_NUMBER_MODE])
+  };
+  var FUNC_CLASS_PROTO = {
+    beginWithKeyword: true, end: ':',
+    illegal: '[${]',
+    contains: [TITLE, PARAMS],
+    relevance: 10
   };
 
   return {
@@ -1010,31 +1046,16 @@ hljs.LANGUAGES.python = function() {
         'built_in': {'None': 1, 'True': 1, 'False': 1, 'Ellipsis': 1, 'NotImplemented': 1}
       },
       illegal: '(</|->|\\?)',
-      contains: [
+      contains: STRINGS.concat([
         hljs.HASH_COMMENT_MODE,
-        STR1, STR2, STR3, STR4, STR5, STR6, hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE,
-        {
-          className: 'function',
-          begin: '\\bdef ', end: ':',
-          illegal: '$',
-          keywords: {'def': 1},
-          contains: [TITLE, PARAMS],
-          relevance: 10
-        },
-        {
-          className: 'class',
-          begin: '\\bclass ', end: ':',
-          illegal: '[${]',
-          keywords: {'class': 1},
-          contains: [TITLE, PARAMS],
-          relevance: 10
-        },
+        hljs.inherit(FUNC_CLASS_PROTO, {className: 'function', keywords: {'def': 1}}),
+        hljs.inherit(FUNC_CLASS_PROTO, {className: 'class', keywords: {'class': 1}}),
         hljs.C_NUMBER_MODE,
         {
           className: 'decorator',
           begin: '@', end: '$'
         }
-      ]
+      ])
     }
   };
 }();
@@ -1065,6 +1086,7 @@ hljs.LANGUAGES.bash = function(){
   var APOS_STRING = {
     className: 'string',
     begin: '\'', end: '\'',
+    contains: [{begin: '\'\''}],
     relevance: 0
   };
   var TEST_CONDITION = {
@@ -1113,11 +1135,11 @@ Author: Vsevolod Solovyov <vsevolod.solovyov@gmail.com>
 hljs.LANGUAGES.java  = {
   defaultMode: {
     keywords: {
-      'false': 1, 'synchronized': 1, 'int': 1, 'abstract': 1, 'float': 1, 'private': 1, 'char': 1, 'interface': 1,
+      'false': 1, 'synchronized': 1, 'int': 1, 'abstract': 1, 'float': 1, 'private': 1, 'char': 1,
       'boolean': 1, 'static': 1, 'null': 1, 'if': 1, 'const': 1, 'for': 1, 'true': 1, 'while': 1, 'long': 1,
-      'throw': 1, 'strictfp': 1, 'finally': 1, 'protected': 1, 'extends': 1, 'import': 1, 'native': 1, 'final': 1,
-      'implements': 1, 'return': 1, 'void': 1, 'enum': 1, 'else': 1, 'break': 1, 'transient': 1, 'new': 1, 'catch': 1,
-      'instanceof': 1, 'byte': 1, 'super': 1, 'class': 1, 'volatile': 1, 'case': 1, 'assert': 1, 'short': 1,
+      'throw': 1, 'strictfp': 1, 'finally': 1, 'protected': 1, 'import': 1, 'native': 1, 'final': 1,
+      'return': 1, 'void': 1, 'enum': 1, 'else': 1, 'break': 1, 'transient': 1, 'new': 1, 'catch': 1,
+      'instanceof': 1, 'byte': 1, 'super': 1, 'volatile': 1, 'case': 1, 'assert': 1, 'short': 1,
       'package': 1, 'default': 1, 'double': 1, 'public': 1, 'try': 1, 'this': 1, 'switch': 1, 'continue': 1,
       'throws': 1
     },
@@ -1136,12 +1158,12 @@ hljs.LANGUAGES.java  = {
       hljs.QUOTE_STRING_MODE,
       {
         className: 'class',
-        begin: '(class |interface )', end: '{',
+        beginWithKeyword: true, end: '{',
         keywords: {'class': 1, 'interface': 1},
         illegal: ':',
         contains: [
           {
-            begin: '(implements|extends)',
+            beginWithKeyword: true,
             keywords: {'extends': 1, 'implements': 1},
             relevance: 10
           },
@@ -1162,80 +1184,123 @@ hljs.LANGUAGES.java  = {
 /*
 Language: PHP
 Author: Victor Karamzin <Victor.Karamzin@enterra-inc.com>
-Contributors: Evgeny Stepanischev <imbolk@gmail.com>
+Contributors: Evgeny Stepanischev <imbolk@gmail.com>, Ivan Sagalaev <maniac@softwaremaniacs.org>
 */
 
-hljs.LANGUAGES.php = {
-  case_insensitive: true,
-  defaultMode: {
-    keywords: {
-      'and': 1, 'include_once': 1, 'list': 1, 'abstract': 1, 'global': 1,
-      'private': 1, 'echo': 1, 'interface': 1, 'as': 1, 'static': 1,
-      'endswitch': 1, 'array': 1, 'null': 1, 'if': 1, 'endwhile': 1, 'or': 1,
-      'const': 1, 'for': 1, 'endforeach': 1, 'self': 1, 'var': 1, 'while': 1,
-      'isset': 1, 'public': 1, 'protected': 1, 'exit': 1, 'foreach': 1,
-      'throw': 1, 'elseif': 1, 'extends': 1, 'include': 1, '__FILE__': 1,
-      'empty': 1, 'require_once': 1, 'function': 1, 'do': 1, 'xor': 1,
-      'return': 1, 'implements': 1, 'parent': 1, 'clone': 1, 'use': 1,
-      '__CLASS__': 1, '__LINE__': 1, 'else': 1, 'break': 1, 'print': 1,
-      'eval': 1, 'new': 1, 'catch': 1, '__METHOD__': 1, 'class': 1, 'case': 1,
-      'exception': 1, 'php_user_filter': 1, 'default': 1, 'die': 1,
-      'require': 1, '__FUNCTION__': 1, 'enddeclare': 1, 'final': 1, 'try': 1,
-      'this': 1, 'switch': 1, 'continue': 1, 'endfor': 1, 'endif': 1,
-      'declare': 1, 'unset': 1, 'true': 1, 'false': 1, 'namespace': 1, 'trait':1,
-      'goto':1, 'instanceof':1, '__DIR__':1, '__NAMESPACE__':1, '__halt_compiler':1
+hljs.LANGUAGES.php = function() {
+  var VARIABLE = {
+    className: 'variable', begin: '\\$+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*'
+  };
+  var STRINGS = [
+    hljs.inherit(hljs.APOS_STRING_MODE, {illegal: null}),
+    hljs.inherit(hljs.QUOTE_STRING_MODE, {illegal: null}),
+    {
+      className: 'string',
+      begin: 'b"', end: '"',
+      contains: [hljs.BACKSLASH_ESCAPE]
     },
-    contains: [
-      hljs.C_LINE_COMMENT_MODE,
-      hljs.HASH_COMMENT_MODE,
-      {
-        className: 'comment',
-        begin: '/\\*', end: '\\*/',
-        contains: [{
-            className: 'phpdoc',
-            begin: '\\s@[A-Za-z]+'
-        }]
+    {
+      className: 'string',
+      begin: 'b\'', end: '\'',
+      contains: [hljs.BACKSLASH_ESCAPE]
+    }
+  ];
+  var NUMBERS = [
+    hljs.C_NUMBER_MODE, // 0x..., 0..., decimal, float
+    hljs.BINARY_NUMBER_MODE // 0b...
+  ];
+  var TITLE = {
+    className: 'title', begin: hljs.UNDERSCORE_IDENT_RE
+  };
+  return {
+    case_insensitive: true,
+    defaultMode: {
+      keywords: {
+        'and': 1, 'include_once': 1, 'list': 1, 'abstract': 1, 'global': 1,
+        'private': 1, 'echo': 1, 'interface': 1, 'as': 1, 'static': 1,
+        'endswitch': 1, 'array': 1, 'null': 1, 'if': 1, 'endwhile': 1, 'or': 1,
+        'const': 1, 'for': 1, 'endforeach': 1, 'self': 1, 'var': 1, 'while': 1,
+        'isset': 1, 'public': 1, 'protected': 1, 'exit': 1, 'foreach': 1,
+        'throw': 1, 'elseif': 1, 'include': 1, '__FILE__': 1,
+        'empty': 1, 'require_once': 1, 'do': 1, 'xor': 1,
+        'return': 1, 'implements': 1, 'parent': 1, 'clone': 1, 'use': 1,
+        '__CLASS__': 1, '__LINE__': 1, 'else': 1, 'break': 1, 'print': 1,
+        'eval': 1, 'new': 1, 'catch': 1, '__METHOD__': 1, 'case': 1,
+        'exception': 1, 'php_user_filter': 1, 'default': 1, 'die': 1,
+        'require': 1, '__FUNCTION__': 1, 'enddeclare': 1, 'final': 1, 'try': 1,
+        'this': 1, 'switch': 1, 'continue': 1, 'endfor': 1, 'endif': 1,
+        'declare': 1, 'unset': 1, 'true': 1, 'false': 1, 'namespace': 1, 'trait':1,
+        'goto':1, 'instanceof':1, 'insteadof': 1, '__DIR__':1, '__NAMESPACE__':1, '__halt_compiler':1
       },
-      {
+      contains: [
+        hljs.C_LINE_COMMENT_MODE,
+        hljs.HASH_COMMENT_MODE,
+        {
           className: 'comment',
-          excludeBegin: true,
-          begin: '__halt_compiler[^;]+;', end: '[\\n\\r]$'
-      },
-      hljs.C_NUMBER_MODE, // 0x..., 0..., decimal, float
-      hljs.BINARY_NUMBER_MODE, // 0b...
-      hljs.inherit(hljs.APOS_STRING_MODE, {illegal: null}),
-      hljs.inherit(hljs.QUOTE_STRING_MODE, {illegal: null}),
-      {
-        className: 'string',
-        begin: 'b"', end: '"',
-        contains: [hljs.BACKSLASH_ESCAPE]
-      },
-      {
-        className: 'string',
-        begin: 'b\'', end: '\'',
-        contains: [hljs.BACKSLASH_ESCAPE]
-      },
-      {
-        className: 'string',
-        begin: '<<<[\'"]?\\w+[\'"]?$', end: '^\\w+;',
-        contains: [hljs.BACKSLASH_ESCAPE]
-      },
-      {
-        className: 'variable',
-        begin: '\\$+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*'
-      },
-      {
-        className: 'preprocessor',
-        begin: '<\\?php',
-        relevance: 10
-      },
-      {
-        className: 'preprocessor',
-        begin: '\\?>'
-      }
-    ]
-  }
-};
+          begin: '/\\*', end: '\\*/',
+          contains: [{
+              className: 'phpdoc',
+              begin: '\\s@[A-Za-z]+'
+          }]
+        },
+        {
+            className: 'comment',
+            excludeBegin: true,
+            begin: '__halt_compiler.+?;', end: hljs.EOF_RE
+        },
+        {
+          className: 'string',
+          begin: '<<<[\'"]?\\w+[\'"]?$', end: '^\\w+;',
+          contains: [hljs.BACKSLASH_ESCAPE]
+        },
+        {
+          className: 'preprocessor',
+          begin: '<\\?php',
+          relevance: 10
+        },
+        {
+          className: 'preprocessor',
+          begin: '\\?>'
+        },
+        VARIABLE,
+        {
+          className: 'function',
+          beginWithKeyword: true, end: '{',
+          keywords: {'function': 1},
+          illegal: '\\$',
+          contains: [
+            TITLE,
+            {
+              className: 'params',
+              begin: '\\(', end: '\\)',
+              contains: [
+                VARIABLE,
+                hljs.C_BLOCK_COMMENT_MODE
+              ].concat(STRINGS).concat(NUMBERS)
+            }
+          ]
+        },
+        {
+          className: 'class',
+          beginWithKeyword: true, end: '{',
+          keywords: {'class': 1},
+          illegal: '[:\\(\\$]',
+          contains: [
+            {
+              beginWithKeyword: true, endsWithParent: true,
+              keywords: {'extends': 1},
+              contains: [TITLE]
+            },
+            TITLE
+          ]
+        },
+        {
+          begin: '=>' // No markup, just a relevance booster
+        }
+      ].concat(STRINGS).concat(NUMBERS)
+    }
+  };
+}();
 
 /*
 Language: Perl
@@ -1248,15 +1313,15 @@ hljs.LANGUAGES.perl = function(){
     'lc': 1, 'ma': 1, 'syswrite': 1, 'tr': 1, 'send': 1, 'umask': 1, 'sysopen': 1, 'shmwrite': 1, 'vec': 1, 'qx': 1,
     'utime': 1, 'local': 1, 'oct': 1, 'semctl': 1, 'localtime': 1, 'readpipe': 1, 'do': 1, 'return': 1, 'format': 1,
     'read': 1, 'sprintf': 1, 'dbmopen': 1, 'pop': 1, 'getpgrp': 1, 'not': 1, 'getpwnam': 1, 'rewinddir': 1, 'qq': 1,
-    'fileno': 1, 'qw': 1, 'endprotoent': 1, 'wait': 1, 'sethostent': 1, 'bless': 1, 's': 1, 'opendir': 1,
+    'fileno': 1, 'qw': 1, 'endprotoent': 1, 'wait': 1, 'sethostent': 1, 'bless': 1, 's': 0, 'opendir': 1,
     'continue': 1, 'each': 1, 'sleep': 1, 'endgrent': 1, 'shutdown': 1, 'dump': 1, 'chomp': 1, 'connect': 1,
     'getsockname': 1, 'die': 1, 'socketpair': 1, 'close': 1, 'flock': 1, 'exists': 1, 'index': 1, 'shmget': 1,
     'sub': 1, 'for': 1, 'endpwent': 1, 'redo': 1, 'lstat': 1, 'msgctl': 1, 'setpgrp': 1, 'abs': 1, 'exit': 1,
     'select': 1, 'print': 1, 'ref': 1, 'gethostbyaddr': 1, 'unshift': 1, 'fcntl': 1, 'syscall': 1, 'goto': 1,
-    'getnetbyaddr': 1, 'join': 1, 'gmtime': 1, 'symlink': 1, 'semget': 1, 'splice': 1, 'x': 1, 'getpeername': 1,
+    'getnetbyaddr': 1, 'join': 1, 'gmtime': 1, 'symlink': 1, 'semget': 1, 'splice': 1, 'x': 0, 'getpeername': 1,
     'recv': 1, 'log': 1, 'setsockopt': 1, 'cos': 1, 'last': 1, 'reverse': 1, 'gethostbyname': 1, 'getgrnam': 1,
     'study': 1, 'formline': 1, 'endhostent': 1, 'times': 1, 'chop': 1, 'length': 1, 'gethostent': 1, 'getnetent': 1,
-    'pack': 1, 'getprotoent': 1, 'getservbyname': 1, 'rand': 1, 'mkdir': 1, 'pos': 1, 'chmod': 1, 'y': 1, 'substr': 1,
+    'pack': 1, 'getprotoent': 1, 'getservbyname': 1, 'rand': 1, 'mkdir': 1, 'pos': 1, 'chmod': 1, 'y': 0, 'substr': 1,
     'endnetent': 1, 'printf': 1, 'next': 1, 'open': 1, 'msgsnd': 1, 'readdir': 1, 'use': 1, 'unlink': 1,
     'getsockopt': 1, 'getpriority': 1, 'rindex': 1, 'wantarray': 1, 'hex': 1, 'system': 1, 'getservbyport': 1,
     'endservent': 1, 'int': 1, 'chr': 1, 'untie': 1, 'rmdir': 1, 'prototype': 1, 'tell': 1, 'listen': 1, 'fork': 1,
@@ -1264,13 +1329,13 @@ hljs.LANGUAGES.perl = function(){
     'waitpid': 1, 'unpack': 1, 'getnetbyname': 1, 'reset': 1, 'chdir': 1, 'grep': 1, 'split': 1, 'require': 1,
     'caller': 1, 'lcfirst': 1, 'until': 1, 'warn': 1, 'while': 1, 'values': 1, 'shift': 1, 'telldir': 1, 'getpwuid': 1,
     'my': 1, 'getprotobynumber': 1, 'delete': 1, 'and': 1, 'sort': 1, 'uc': 1, 'defined': 1, 'srand': 1, 'accept': 1,
-    'package': 1, 'seekdir': 1, 'getprotobyname': 1, 'semop': 1, 'our': 1, 'rename': 1, 'seek': 1, 'if': 1, 'q': 1,
+    'package': 1, 'seekdir': 1, 'getprotobyname': 1, 'semop': 1, 'our': 1, 'rename': 1, 'seek': 1, 'if': 1, 'q': 0,
     'chroot': 1, 'sysread': 1, 'setpwent': 1, 'no': 1, 'crypt': 1, 'getc': 1, 'chown': 1, 'sqrt': 1, 'write': 1,
     'setnetent': 1, 'setpriority': 1, 'foreach': 1, 'tie': 1, 'sin': 1, 'msgget': 1, 'map': 1, 'stat': 1,
     'getlogin': 1, 'unless': 1, 'elsif': 1, 'truncate': 1, 'exec': 1, 'keys': 1, 'glob': 1, 'tied': 1, 'closedir': 1,
     'ioctl': 1, 'socket': 1, 'readlink': 1, 'eval': 1, 'xor': 1, 'readline': 1, 'binmode': 1, 'setservent': 1,
     'eof': 1, 'ord': 1, 'bind': 1, 'alarm': 1, 'pipe': 1, 'atan2': 1, 'getgrent': 1, 'exp': 1, 'time': 1, 'push': 1,
-    'setgrent': 1, 'gt': 1, 'lt': 1, 'or': 1, 'ne': 1, 'm': 1
+    'setgrent': 1, 'gt': 1, 'lt': 1, 'or': 1, 'ne': 1, 'm': 0
   };
   var SUBST = {
     className: 'subst',
@@ -1294,14 +1359,15 @@ hljs.LANGUAGES.perl = function(){
       {begin: '{', end: '}'}
     ]
   };
+  var COMMENT = {
+    className: 'comment',
+    begin: '^(__END__|__DATA__)', end: '\\n$',
+    relevance: 5
+  }
   var PERL_DEFAULT_CONTAINS = [
     VAR1, VAR2,
     hljs.HASH_COMMENT_MODE,
-    {
-      className: 'comment',
-      begin: '^(__END__|__DATA__)', end: '\\n$',
-      relevance: 5
-    },
+    COMMENT,
     METHOD,
     {
       className: 'string',
@@ -1371,16 +1437,25 @@ hljs.LANGUAGES.perl = function(){
       begin: '(\\b0[0-7_]+)|(\\b0x[0-9a-fA-F_]+)|(\\b[1-9][0-9_]*(\\.[0-9_]+)?)|[0_]\\b',
       relevance: 0
     },
-    {
-      className: 'regexp',
-      begin: '(s|tr|y)/(\\\\.|[^/])*/(\\\\.|[^/])*/[a-z]*',
-      relevance: 10
-    },
-    {
-      className: 'regexp',
-      begin: '(m|qr)?/', end: '/[a-z]*',
-      contains: [hljs.BACKSLASH_ESCAPE],
-      relevance: 0 // allows empty "//" which is a common comment delimiter in other languages
+    { // regexp container
+      begin: '(' + hljs.RE_STARTERS_RE + '|\\b(split|return|print|reverse|grep)\\b)\\s*',
+      keywords: {'split': 1, 'return': 1, 'print': 1, 'reverse': 1, 'grep': 1},
+      relevance: 0,
+      contains: [
+        hljs.HASH_COMMENT_MODE,
+        COMMENT,
+        {
+          className: 'regexp',
+          begin: '(s|tr|y)/(\\\\.|[^/])*/(\\\\.|[^/])*/[a-z]*',
+          relevance: 10
+        },
+        {
+          className: 'regexp',
+          begin: '(m|qr)?/', end: '/[a-z]*',
+          contains: [hljs.BACKSLASH_ESCAPE],
+          relevance: 0 // allows empty "//" which is a common comment delimiter in other languages
+        }
+      ]
     },
     {
       className: 'sub',
@@ -1411,6 +1486,7 @@ hljs.LANGUAGES.perl = function(){
 
 /*
 Language: C++
+Contributors: Evgeny Stepanischev <imbolk@gmail.com>
 */
 
 hljs.LANGUAGES.cpp = function(){
@@ -1430,7 +1506,7 @@ hljs.LANGUAGES.cpp = function(){
       'this': 1, 'switch': 1, 'continue': 1, 'wchar_t': 1, 'inline': 1,
       'delete': 1, 'alignof': 1, 'char16_t': 1, 'char32_t': 1, 'constexpr': 1,
       'decltype': 1, 'noexcept': 1, 'nullptr': 1, 'static_assert': 1,
-      'thread_local': 1
+      'thread_local': 1, 'restrict': 1, '_Bool':1, 'complex': 1
     },
     'built_in': {
       'std': 1, 'string': 1, 'cin': 1, 'cout': 1, 'cerr': 1, 'clog': 1,
@@ -1441,13 +1517,6 @@ hljs.LANGUAGES.cpp = function(){
       'array': 1, 'shared_ptr': 1
     }
   };
-  var STL_CONTAINER = {
-    className: 'stl_container',
-    begin: '\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<', end: '>',
-    keywords: CPP_KEYWORDS,
-    relevance: 10
-  };
-  STL_CONTAINER.contains = [STL_CONTAINER];
   return {
     defaultMode: {
       keywords: CPP_KEYWORDS,
@@ -1458,15 +1527,25 @@ hljs.LANGUAGES.cpp = function(){
         hljs.QUOTE_STRING_MODE,
         {
           className: 'string',
-          begin: '\'', end: '[^\\\\]\'',
-          illegal: '[^\\\\][^\']'
+          begin: '\'\\\\?.', end: '\'',
+          illegal: '.'
+        },
+        {
+          className: 'number',
+          begin: '\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)'
         },
         hljs.C_NUMBER_MODE,
         {
           className: 'preprocessor',
           begin: '#', end: '$'
         },
-        STL_CONTAINER
+        {
+          className: 'stl_container',
+          begin: '\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<', end: '>',
+          keywords: CPP_KEYWORDS,
+          relevance: 10,
+          contains: ['self']
+        }
       ]
     }
   };
@@ -1548,7 +1627,7 @@ hljs.LANGUAGES.objectivec = function(){
         },
         {
           className: 'class',
-          begin: 'interface|class|protocol|implementation',
+          beginWithKeyword: true,
           end: '({|$)',
           keywords: {
             'interface': 1,
@@ -1637,7 +1716,7 @@ hljs.LANGUAGES.sql = {
     contains: [
       {
         className: 'operator',
-        begin: '(begin|start|commit|rollback|savepoint|lock|alter|create|drop|rename|call|delete|do|handler|insert|load|replace|select|truncate|update|set|show|pragma|grant)\\b', end: ';|$',
+        begin: '(begin|start|commit|rollback|savepoint|lock|alter|create|drop|rename|call|delete|do|handler|insert|load|replace|select|truncate|update|set|show|pragma|grant)\\b', end: ';|' + hljs.EOF_RE,
         keywords: {
           'keyword': {
             'all': 1, 'partial': 1, 'global': 1, 'month': 1,
@@ -1704,8 +1783,7 @@ hljs.LANGUAGES.sql = {
             begin: '`', end: '`',
             contains: [hljs.BACKSLASH_ESCAPE]
           },
-          hljs.C_NUMBER_MODE,
-          {begin: '\\n'}
+          hljs.C_NUMBER_MODE
         ]
       },
       hljs.C_BLOCK_COMMENT_MODE,
@@ -1791,7 +1869,6 @@ hljs.LANGUAGES.xml = function(){
           keywords: {'title': {'style': 1}},
           contains: [TAG_INTERNALS],
           starts: {
-            className: 'css',
             end: '</style>', returnEnd: true,
             subLanguage: 'css'
           }
@@ -1803,13 +1880,11 @@ hljs.LANGUAGES.xml = function(){
           keywords: {'title': {'script': 1}},
           contains: [TAG_INTERNALS],
           starts: {
-            className: 'javascript',
             end: '</script>', returnEnd: true,
             subLanguage: 'javascript'
           }
         },
         {
-          className: 'vbscript',
           begin: '<%', end: '%>',
           subLanguage: 'vbscript'
         },
@@ -1967,12 +2042,12 @@ hljs.LANGUAGES.scala = function() {
         hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE, STRING,
         {
           className: 'class',
-          begin: '((case )?class |object |trait )', end: '({|$)',
+          begin: '((case )?class |object |trait )', end: '({|$)', // beginWithKeyword won't work because a single "case" shouldn't start this mode
           illegal: ':',
           keywords: {'case' : 1, 'class': 1, 'trait': 1, 'object': 1},
           contains: [
             {
-              begin: '(extends|with)',
+              beginWithKeyword: true,
               keywords: {'extends': 1, 'with': 1},
               relevance: 10
             },
@@ -2081,7 +2156,6 @@ hljs.LANGUAGES.coffeescript = function() {
   };
 
   var COFFEE_EMBEDDED_JAVASCRIPT = {
-    className: 'javascript',
     begin: '`', end: '`',
     excludeBegin: true, excludeEnd: true,
     subLanguage: 'javascript'
@@ -2091,7 +2165,7 @@ hljs.LANGUAGES.coffeescript = function() {
     defaultMode: {
       keywords: keywords,
       contains: [
-        // Numbers 
+        // Numbers
         hljs.C_NUMBER_MODE,
         hljs.BINARY_NUMBER_MODE,
         // Strings
