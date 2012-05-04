@@ -51,7 +51,7 @@ It takes only a few, simple steps to get up and running with remark:
           </body>
         </html>
 
-2. Enter you Markdown-formatted slideshow and any styles needed in the assigned areas.
+2. Enter your Markdown-formatted slideshow and any styles needed in the assigned areas.
 
 3. Launch the HTML file in a decent browser and enjoy!
 
