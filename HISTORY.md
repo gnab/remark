@@ -3,22 +3,22 @@
 * Upgrade marked.
 * Configure embedded languages for build in package.json.
 * Update embedded languages:
-** javascript
-** ruby
-** python
-** bash
-** java
-** php
-** perl
-** cpp
-** objectivec
-** cs
-** sql
-** xml
-** css
-** scala
-** coffeescript
-** lisp
+  * javascript
+  * ruby
+  * python
+  * bash
+  * java
+  * php
+  * perl
+  * cpp
+  * objectivec
+  * cs
+  * sql
+  * xml
+  * css
+  * scala
+  * coffeescript
+  * lisp
 
 ### 0.3.5
 * Convert slide attributes, i.e. .attribute=value.
