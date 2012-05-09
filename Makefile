@@ -6,6 +6,9 @@ deps:
 test:
 	./node_modules/.bin/mocha
 
+autotest:
+	./node_modules/.bin/mocha -w
+
 bundle:
 	node build/remark.js
 
