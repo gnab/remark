@@ -5,68 +5,31 @@ var marked = require('marked')
 
 marked.setOptions({gfm: false});
 
-converter.convertSlideAttributes = function (content) {
-  var attributeFinder =
-    /(?:^|\n)(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\s*=\s*([^$\n]*)\s*(?:$|\n)/ig
-    , replacement
-    , attributes = {}
+converter.convertSlideProperties = function (slide, content) {
+  var propertyFinder =
+    /^\n*((?:[a-z_\-][a-z\-_0-9]*)+)\s*:\s*([^$\n]*)\s*(?:$|\n)/i
     , match
-    , attribute
+    , properties = {}
     ;
 
-  while ((match = attributeFinder.exec(content.innerHTML)) !== null) {
-    if (match[1]) {
-      // Simply remove escape slash
-      replacement = match[0].replace(/\\/, '');
-    }
-    else {
-      replacement = "";
-
-      attributes[match[2].substr(1)] = match[3];
-    }
-
+  while ((match = propertyFinder.exec(content.innerHTML)) !== null) {
     content.innerHTML = content.innerHTML.substr(0, match.index) +
-      replacement + content.innerHTML.substr(match.index + match[0].length);
+      content.innerHTML.substr(match.index + match[0].length);
 
-    attributeFinder.lastIndex = match.index + replacement.length;
+    properties[match[1]] = match[2];
+
+    propertyFinder.lastIndex = match.index;
   }
 
-  for (attribute in attributes) {
-    if (attributes.hasOwnProperty(attribute)) {
-      content.setAttribute(attribute, attributes[attribute]);
-    }
-  }
+  setContentClass(content, properties['class']);
+
+  return properties;
 };
 
-converter.convertSlideClasses = function (content) {
-  var classFinder = /(?:^|\n)(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\s*(?:$|\n)/ig
-    , classes
-    , replacement
-    , contentClasses = ['content']
-    , match
-    ;
+var setContentClass = function (content, classProperty) {
+  var classes = (classProperty || '').split(/, /);
 
-  while ((match = classFinder.exec(content.innerHTML)) !== null) {
-    if (match[1]) {
-      // Simply remove escape slash
-      replacement = match[0].replace(/\\/, '');
-    }
-    else {
-      replacement = "";
-
-      classes = match[2].substr(1).split('.');
-      contentClasses = contentClasses.concat(classes);
-    }
-
-    content.innerHTML = content.innerHTML.substr(0, match.index) +
-      replacement + content.innerHTML.substr(match.index + match[0].length);
-
-    classFinder.lastIndex = match.index + replacement.length;
-  }
-
-  if (contentClasses.length) {
-    content.className = contentClasses.join(' ');
-  }
+  content.className = ['content'].concat(classes).join(' ');
 };
 
 converter.convertContentClasses = function (content) {

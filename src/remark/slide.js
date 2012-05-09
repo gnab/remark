@@ -43,14 +43,11 @@ slide.create = function (source) {
 var prepareSlide = function (slide) {
   var content = slide.element().children[0];
   content.innerHTML = slide.source();
-  formatContent(content);
-};
 
-var formatContent = function (content) {
+  converter.convertSlideProperties(slide, content);
   converter.convertContentClasses(content);
-  converter.convertSlideAttributes(content);
-  converter.convertSlideClasses(content);
   converter.convertMarkdown(content);
   converter.convertCodeClasses(content);
+
   highlighter.highlightCodeBlocks(content);
 };

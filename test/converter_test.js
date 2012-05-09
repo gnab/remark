@@ -6,66 +6,24 @@ var converter = require('../src/remark/converter')
 
 describe('converter', function () {
 
-  describe('convertSlideAttributes', function () {
+  describe('convertSlideProperties', function () {
     var convert = function(text) {
-      var content = {
-        innerHTML: text
-      , setAttribute: function (attr, value) { this[attr] = value; }
+      var slide = {}
+        ,content = { innerHTML: text }
+          , properties
+        ;
+
+      properties = converter.convertSlideProperties(slide, content);
+
+      return {
+        content: content
+      , properties: properties
       };
-      converter.convertSlideAttributes(content);
-      return content;
     };
 
-    it('should extract single attribute', function () {
-      convert('.data-x=1000').innerHTML.should.equal('');
-    });
-
-    it('should apply single attribute', function () {
-      convert('.data-x=1000').should.have.property('data-x', '1000');
-    });
-
-    it('should ignore slide class', function () {
-      convert('.data-x').should.not.have.property('data-x');
-    });
-  });
-
-  describe('convertSlideClasses', function () {
-    var convert = function(text) {
-      var content = {innerHTML: text};
-      converter.convertSlideClasses(content);
-      return content;
-    };
-
-    it('should leave regular text as it', function () {
-      convert('some text').innerHTML.should.equal('some text');
-    });
-
-    it('should ignore class not on beginning of line', function () {
-      convert(' .class').innerHTML.should.equal(' .class');
-    });
-
-    it('should unescape escaped test', function () {
-      convert('\\.class').innerHTML.should.equal('.class');
-    });
-
-    it('should ignore content class with square brackets', function () {
-      convert('.class[text]').innerHTML.should.equal('.class[text]');
-    });
-
-    it('should extract single class', function () {
-      convert('.class').innerHTML.should.equal('');
-    });
-
-    it('should apply single class', function () {
-      convert('.class').className.should.equal('content class');
-    });
-
-    it('should extract multiple classes', function () {
-      convert('.a.b.c').innerHTML.should.equal('');
-    });
-
-    it('should apply multiple classes', function () {
-      convert('.a.b.c').className.should.equal('content a b c');
+    it('should set content class', function () {
+      convert('class: middle, center').content.className
+        .should.equal('content middle center');
     });
   });
 
