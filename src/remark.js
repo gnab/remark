@@ -1,6 +1,6 @@
 var api = require('./remark/api')
   , dom = require('./remark/dom')
-  , controller = require('./remark/controller')
+  , Controller = require('./remark/controller').Controller
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
   , Slideshow = require('./remark/slideshow').Slideshow
@@ -56,6 +56,6 @@ function setupSlideshow (sourceElement, slideshowElement) {
     ;
 
   slideshow = new Slideshow(source, slideshowElement);
-  controller.initialize(slideshow);
+  new Controller(slideshow);
   dispatcher.initialize();
 }

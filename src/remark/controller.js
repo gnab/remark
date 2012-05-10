@@ -1,10 +1,11 @@
 var dispatcher = require('./dispatcher')
   , dom = require('./dom')
-  , controller = module.exports = {}
   , currentSlideIndex = -1
   ;
 
-controller.initialize = function (slideshow) {
+exports.Controller = Controller;
+
+function Controller (slideshow) {
   var navigate = function () {
     var slideNo = parseInt((location.hash || '').substr(1), 10) || 1;
     gotoSlide(slideshow, slideNo - 1);
@@ -20,7 +21,7 @@ controller.initialize = function (slideshow) {
   dispatcher.on('nextSlide', function() {
     gotoSlide(slideshow, currentSlideIndex + 1);
   });
-};
+}
 
 var gotoSlide = function (slideshow, slideIndex) {
   var alreadyOnSlide = slideIndex === currentSlideIndex
