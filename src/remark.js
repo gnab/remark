@@ -3,7 +3,7 @@ var api = require('./remark/api')
   , controller = require('./remark/controller')
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
-  , slideshow = require('./remark/slideshow')
+  , Slideshow = require('./remark/slideshow').Slideshow
   , resources = require('./remark/resources')
   ;
 
@@ -52,10 +52,10 @@ function styleDocument () {
 
 function setupSlideshow (sourceElement, slideshowElement) {
   var source = sourceElement.innerHTML
-    , show
+    , slideshow
     ;
 
-  show = slideshow.create(source, slideshowElement);
-  controller.initialize(show);
+  slideshow = new Slideshow(source, slideshowElement);
+  controller.initialize(slideshow);
   dispatcher.initialize();
 }

@@ -1,44 +1,44 @@
 var api = require('./api')
   , Slide = require('./slide').Slide
   , dom = require('./dom')
-  ;
 
-var slideshow = module.exports = {}
   , scaleFactor = 227
   , heightFactor = 3
   , widthFactor = 4
   ;
 
-slideshow.create = function (source, element) {
-  var slides = createSlides(source, element)
-    , positionElement = dom.createElement('div')
-    ;
+exports.Slideshow = Slideshow;
 
-  positionElement.className = 'position';
-  element.appendChild(positionElement);
+function Slideshow (source, element) {
+  this.slides = createSlides(source, element);
+  this.positionElement = dom.createElement('div');
+
+  this.positionElement.className = 'position';
+  element.appendChild(this.positionElement);
 
   styleElement(element);
 
-  for (var i = 0; i < slides.length; i++) {
-    var slide = slides[i];
+  for (var i = 0; i < this.slides.length; i++) {
+    var slide = this.slides[i];
     element.appendChild(slide.element);
   }
+}
 
-  return {
-    showSlide: function (slideIndex) {
-      var slide = slides[slideIndex];
-      slide.show();
-      positionElement.innerHTML = slideIndex + 1 + ' / ' + slides.length;
-    }
-  , hideSlide: function (slideIndex) {
-      var slide = slides[slideIndex];
-      api.emit('slideout', slide.element, slideIndex);
-      slide.hide();
-    }
-  , getSlideCount: function () {
-      return slides.length;
-    }
-  };
+Slideshow.prototype.showSlide =  function (slideIndex) {
+  var slide = this.slides[slideIndex];
+  api.emit('slidein', slide.element, slideIndex);
+  slide.show();
+  this.positionElement.innerHTML = slideIndex + 1 + ' / ' + this.slides.length;
+};
+
+Slideshow.prototype.hideSlide = function (slideIndex) {
+  var slide = this.slides[slideIndex];
+  api.emit('slideout', slide.element, slideIndex);
+  slide.hide();
+};
+
+Slideshow.prototype.getSlideCount = function () {
+  return this.slides.length;
 };
 
 var createSlides = function (source, element) {
