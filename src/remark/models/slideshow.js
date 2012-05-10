@@ -13,14 +13,15 @@ Slideshow.prototype.getSlideCount = function () {
 var createSlides = function (source) {
   var parts
     , slides = []
-    , i
+    , slide
+    , previousSlide
     ;
 
-  parts = source.split(/\n\n---\n/);
-
-  for (i = 0; i < parts.length; ++i) {
-    slides.push(new Slide(parts[i]));
-  }
+  source.split(/\n---\n/).each(function (part) {
+    slide = new Slide(part, previousSlide);
+    slides.push(slide);
+    previousSlide = slide;
+  });
 
   return slides;
 };

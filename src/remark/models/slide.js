@@ -1,8 +1,11 @@
 exports.Slide = Slide;
 
-function Slide (source) {
+function Slide (source, previousSlide) {
   this.properties = {};
   this.source = extractProperties(source, this.properties);
+
+  inheritProperties(this, previousSlide);
+  inheritSource(this, previousSlide);
 }
 
 function extractProperties (source, properties) {
@@ -21,4 +24,30 @@ function extractProperties (source, properties) {
   }
 
   return source;
+}
+
+function inheritProperties (slide, previousSlide) {
+  var property;
+
+  if (shouldInheritPreviousSlide(slide, previousSlide)) {
+    for (property in previousSlide.properties) {
+      if (!previousSlide.properties.hasOwnProperty(property)) {
+        continue;
+      }
+
+      if (slide.properties[property] === undefined) {
+        slide.properties[property] = previousSlide.properties[property];
+      }
+    }
+  }
+}
+
+function inheritSource (slide, previousSlide) {
+  if (shouldInheritPreviousSlide(slide, previousSlide)) {
+    slide.source = previousSlide.source + '\n' + slide.source;
+  }
+}
+
+function shouldInheritPreviousSlide (slide, previousSlide) {
+  return slide.properties['continue'] === 'true' && previousSlide;
 }
