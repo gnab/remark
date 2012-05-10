@@ -1,48 +1,28 @@
 var converter = require('./converter')
   , dom = require('./dom')
   , highlighter = require('./highlighter')
-
-  , slide = module.exports = {}
   ;
 
-slide.create = function (source) {
-  var _slide = {}
-    , _source = source
-    , _element
-    ;
+exports.Slide = Slide;
 
-  _slide.source = function (value) {
-    if (value === undefined) {
-      return _source;
-    }
+function Slide (source) {
+  this.source = source;
+  this.element = createSlideElement();
 
-    _source = value;
+  prepareSlide(this);
+}
 
-    if (_element !== undefined) {
-      prepareSlide(_slide);
-    }
-  };
+function createSlideElement () {
+  var element = dom.createElement('div');
+  element.className = 'slide';
+  element.style.display = 'none';
+  element.appendChild(dom.createElement('div'));
+  return element;
+}
 
-
-  _slide.element = function () {
-    if (_element === undefined) {
-      _element = dom.createElement('div');
-      _element.className = 'slide';
-      _element.style.display = 'none';
-      _element.appendChild(dom.createElement('div'));
-
-      prepareSlide(_slide);
-    }
-
-    return _element;
-  };
-
-  return _slide;
-};
-
-var prepareSlide = function (slide) {
-  var content = slide.element().children[0];
-  content.innerHTML = slide.source();
+function prepareSlide (slide) {
+  var content = slide.element.children[0];
+  content.innerHTML = slide.source;
 
   converter.convertSlideProperties(slide, content);
   converter.convertContentClasses(content);
@@ -50,4 +30,12 @@ var prepareSlide = function (slide) {
   converter.convertCodeClasses(content);
 
   highlighter.highlightCodeBlocks(content);
+}
+
+Slide.prototype.show = function () {
+  this.element.style.display = 'table';
+};
+
+Slide.prototype.hide = function () {
+  this.element.style.display = 'none';
 };

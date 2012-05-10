@@ -6,6 +6,7 @@
   "predef": [
     "require",
     "module",
+    "exports",
     "location"
   ]
 }
