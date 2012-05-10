@@ -1,4 +1,4 @@
-var Slide = require('../src/remark/slide').Slide;
+var Slide = require('../../../src/remark/slide').Slide;
 
 describe('Slide', function () {
   describe('properties', function () {

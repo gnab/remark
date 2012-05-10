@@ -9,6 +9,7 @@
     "exports",
     "location",
     "describe",
+    "before",
     "it"
   ]
 }

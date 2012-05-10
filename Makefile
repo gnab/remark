@@ -4,12 +4,12 @@ deps:
 	npm install && git submodule init && git submodule update
 
 test:
-	./node_modules/.bin/mocha
+	find test -name *_test.js | xargs ./node_modules/.bin/mocha $(OPTS)
 
 autotest:
-	./node_modules/.bin/mocha -w
+	make test OPTS=-w
 
 bundle:
 	node build/remark.js
 
-.PHONY: deps test bundle
+.PHONY: deps test autotest bundle

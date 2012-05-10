@@ -1,5 +1,5 @@
-var config = require('../src/remark/config')
-  , api = require('../src/remark/api')
+var config = require('../../src/remark/config')
+  , api = require('../../src/remark/api')
   ;
 
 describe('config', function () {

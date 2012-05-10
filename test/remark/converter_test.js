@@ -1,7 +1,5 @@
-/*global "describe": true, "it": true, "before": true */
-
-var converter = require('../src/remark/converter')
-  , config = require('../src/remark/config')
+var converter = require('../../src/remark/converter')
+  , config = require('../../src/remark/config')
   ;
 
 describe('converter', function () {
