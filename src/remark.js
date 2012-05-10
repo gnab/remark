@@ -5,6 +5,7 @@ var utils = require('./remark/utils')
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
   , Slideshow = require('./remark/slideshow').Slideshow
+  , SlideshowView = require('./remark/views/slideshowView').SlideshowView
   , resources = require('./remark/resources')
   ;
 
@@ -54,9 +55,13 @@ function styleDocument () {
 function setupSlideshow (sourceElement, slideshowElement) {
   var source = sourceElement.innerHTML
     , slideshow
+    , slideshowView
+    , controller
     ;
 
-  slideshow = new Slideshow(source, slideshowElement);
-  new Controller(slideshow);
+  slideshow = new Slideshow(source);
+  slideshowView = new SlideshowView(slideshow, slideshowElement);
+  controller = new Controller(slideshow);
+
   dispatcher.initialize();
 }
