@@ -1,4 +1,5 @@
-var api = require('./remark/api')
+var utils = require('./remark/utils')
+  , api = require('./remark/api')
   , dom = require('./remark/dom')
   , Controller = require('./remark/controller').Controller
   , dispatcher = require('./remark/dispatcher')

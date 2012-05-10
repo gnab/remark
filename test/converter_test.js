@@ -6,27 +6,6 @@ var converter = require('../src/remark/converter')
 
 describe('converter', function () {
 
-  describe('convertSlideProperties', function () {
-    var convert = function(text) {
-      var slide = {}
-        ,content = { innerHTML: text }
-          , properties
-        ;
-
-      properties = converter.convertSlideProperties(slide, content);
-
-      return {
-        content: content
-      , properties: properties
-      };
-    };
-
-    it('should set content class', function () {
-      convert('class: middle, center').content.className
-        .should.equal('content middle center');
-    });
-  });
-
   describe('convertContentClasses', function () {
     var convert = function(text) {
       var content = {innerHTML: text};

@@ -7,6 +7,8 @@
     "require",
     "module",
     "exports",
-    "location"
+    "location",
+    "describe",
+    "it"
   ]
 }

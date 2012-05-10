@@ -1,41 +1,24 @@
-var converter = require('./converter')
-  , dom = require('./dom')
-  , highlighter = require('./highlighter')
-  ;
-
 exports.Slide = Slide;
 
 function Slide (source) {
-  this.source = source;
-  this.element = createSlideElement();
-
-  prepareSlide(this);
+  this.properties = {};
+  this.source = extractProperties(source, this.properties);
 }
 
-function createSlideElement () {
-  var element = dom.createElement('div');
-  element.className = 'slide';
-  element.style.display = 'none';
-  element.appendChild(dom.createElement('div'));
-  return element;
+function extractProperties (source, properties) {
+  var propertyFinder =
+    /^\n*((?:[a-z_\-][a-z\-_0-9]*)+)\s*:\s*([^$\n]*)\s*(?:$|\n)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1]] = match[2];
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
 }
-
-function prepareSlide (slide) {
-  var content = slide.element.children[0];
-  content.innerHTML = slide.source;
-
-  converter.convertSlideProperties(slide, content);
-  converter.convertContentClasses(content);
-  converter.convertMarkdown(content);
-  converter.convertCodeClasses(content);
-
-  highlighter.highlightCodeBlocks(content);
-}
-
-Slide.prototype.show = function () {
-  this.element.style.display = 'table';
-};
-
-Slide.prototype.hide = function () {
-  this.element.style.display = 'none';
-};

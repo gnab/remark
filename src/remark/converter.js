@@ -5,33 +5,6 @@ var marked = require('marked')
 
 marked.setOptions({gfm: false});
 
-converter.convertSlideProperties = function (slide, content) {
-  var propertyFinder =
-    /^\n*((?:[a-z_\-][a-z\-_0-9]*)+)\s*:\s*([^$\n]*)\s*(?:$|\n)/i
-    , match
-    , properties = {}
-    ;
-
-  while ((match = propertyFinder.exec(content.innerHTML)) !== null) {
-    content.innerHTML = content.innerHTML.substr(0, match.index) +
-      content.innerHTML.substr(match.index + match[0].length);
-
-    properties[match[1]] = match[2];
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  setContentClass(content, properties['class']);
-
-  return properties;
-};
-
-var setContentClass = function (content, classProperty) {
-  var classes = (classProperty || '').split(/, /);
-
-  content.className = ['content'].concat(classes).join(' ');
-};
-
 converter.convertContentClasses = function (content) {
   var classFinder = /(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/ig
     , match

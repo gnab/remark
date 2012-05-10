@@ -1,5 +1,6 @@
 var api = require('./api')
   , Slide = require('./slide').Slide
+  , SlideView = require('./views/slideView').SlideView
   , dom = require('./dom')
 
   , scaleFactor = 227
@@ -11,6 +12,8 @@ exports.Slideshow = Slideshow;
 
 function Slideshow (source, element) {
   this.slides = createSlides(source, element);
+  this.slideViews = this.slides.map(createSlideView);
+
   this.positionElement = dom.createElement('div');
 
   this.positionElement.className = 'position';
@@ -18,21 +21,20 @@ function Slideshow (source, element) {
 
   styleElement(element);
 
-  for (var i = 0; i < this.slides.length; i++) {
-    var slide = this.slides[i];
-    element.appendChild(slide.element);
-  }
+  this.slideViews.each(function (slideView) {
+    element.appendChild(slideView.element);
+  });
 }
 
 Slideshow.prototype.showSlide =  function (slideIndex) {
-  var slide = this.slides[slideIndex];
+  var slide = this.slideViews[slideIndex];
   api.emit('slidein', slide.element, slideIndex);
   slide.show();
   this.positionElement.innerHTML = slideIndex + 1 + ' / ' + this.slides.length;
 };
 
 Slideshow.prototype.hideSlide = function (slideIndex) {
-  var slide = this.slides[slideIndex];
+  var slide = this.slideViews[slideIndex];
   api.emit('slideout', slide.element, slideIndex);
   slide.hide();
 };
@@ -55,6 +57,10 @@ var createSlides = function (source, element) {
 
   return slides;
 };
+
+function createSlideView (slide) {
+  return new SlideView(slide);
+}
 
 var styleElement = function (element) {
   var elementWidth = scaleFactor * widthFactor
