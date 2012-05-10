@@ -47,7 +47,8 @@ function createContentElement (source, properties) {
 }
 
 function setClassFromProperties (element, properties) {
-  var classes = (properties['class'] || '').split(/, /);
+  var classes = (properties['class'] || '').split(/,| /)
+        .filter(function (s) { return s !== ''; });
 
   element.className = ['content'].concat(classes).join(' ');
 }

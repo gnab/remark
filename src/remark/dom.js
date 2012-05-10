@@ -1,6 +1,6 @@
 var EventEmitter = require('events').EventEmitter
   , dom = module.exports = new EventEmitter()
-  ; 
+  ;
 
 dom.window = proxyObject('window');
 dom.document = proxyObject('document');
@@ -41,7 +41,18 @@ function proxyFunction (element, func) {
     dom[func] = function () { return element[func].apply(element, arguments); };
   }
   else {
-    dom[func] = function () { return {}; };
+    if (func === 'createElement') {
+      dom[func] = function () {
+        return {
+          style: {}
+        , appendChild: function () { }
+        , getElementsByTagName: function () { return []; }
+        };
+      };
+    }
+    else {
+        dom[func] = function () { return {}; };
+    }
   }
 }
 

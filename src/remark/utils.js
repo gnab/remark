@@ -6,14 +6,24 @@ Array.prototype.each = Array.prototype.map || function (f) {
   }
 };
 
-Array.prototype.map = Array.prototype.map || function (f) {
-  var i
-    , result = []
-    ;
+Array.prototype.filter = Array.prototype.filter || function (f) {
+  var result = [];
 
-  for (i = 0; i < this.length; ++i) {
-    result.push(f(this[i]));
-  }
+  this.each(function (element) {
+    if (f(element)) {
+      result.push();
+    }
+  });
+
+  return result;
+};
+
+Array.prototype.map = Array.prototype.map || function (f) {
+  var result = [];
+
+  this.each(function (element) {
+    result.push(f(element));
+  });
 
   return result;
 };
