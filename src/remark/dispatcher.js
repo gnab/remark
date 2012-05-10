@@ -4,12 +4,23 @@ var EventEmitter = require('events').EventEmitter
   ;
 
 dispatcher.initialize = function () {
+  mapHash();
   mapKeys();
   mapTouches();
   mapWheel();
 };
 
-var mapKeys = function () {
+function mapHash () {
+  dom.on('hashchange', navigate);
+  navigate();
+    
+  function navigate () {
+    var slideNo = parseInt((dom.window.location.hash || '').substr(1), 10) || 1;
+    gotoSlide(slideNo - 1);
+  }
+}
+
+function mapKeys () {
   dom.on('keydown', function (event) {
     switch (event.keyCode) {
       case 33: // Page up
@@ -27,9 +38,9 @@ var mapKeys = function () {
         break;
     }
   });
-};
+}
 
-var mapTouches = function () {
+function mapTouches () {
   var touch
     , startX
     , endX
@@ -81,9 +92,9 @@ var mapTouches = function () {
   dom.on('touchmove', function (event) {
     event.preventDefault();
   });
-};
+}
 
-var mapWheel = function () {
+function mapWheel () {
   dom.on('mousewheel', function (event) {
     if (event.wheelDeltaY > 0) {
       gotoPreviousSlide();
@@ -92,12 +103,16 @@ var mapWheel = function () {
       gotoNextSlide();
     }
   });
-};
+}
 
-var gotoNextSlide = function () {
-  dispatcher.emit('nextSlide');
-};
+function gotoSlide (slideIndex) {
+  dispatcher.emit('gotoSlide', slideIndex);
+}
 
-var gotoPreviousSlide = function () {
-  dispatcher.emit('previousSlide');
-};
+function gotoNextSlide () {
+  dispatcher.emit('gotoNextSlide');
+}
+
+function gotoPreviousSlide () {
+  dispatcher.emit('gotoPreviousSlide');
+}

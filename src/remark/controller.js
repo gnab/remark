@@ -7,21 +7,17 @@ exports.Controller = Controller;
 function Controller (slideshow) {
   var currentSlideIndex = -1;
 
-  dom.on('hashchange', navigate);
-  navigate();
+  dispatcher.on('gotoSlide', function (slideIndex) {
+    gotoSlide(slideshow, slideIndex);
+  });
 
-  dispatcher.on('previousSlide', function() {
+  dispatcher.on('gotoPreviousSlide', function() {
     gotoSlide(slideshow, currentSlideIndex - 1);
   });
 
-  dispatcher.on('nextSlide', function() {
+  dispatcher.on('gotoNextSlide', function() {
     gotoSlide(slideshow, currentSlideIndex + 1);
   });
-
-  function navigate () {
-    var slideNo = parseInt((location.hash || '').substr(1), 10) || 1;
-    gotoSlide(slideshow, slideNo - 1);
-  }
 
   function gotoSlide (slideshow, slideIndex) {
     var alreadyOnSlide = slideIndex === currentSlideIndex
@@ -40,6 +36,6 @@ function Controller (slideshow) {
     dispatcher.emit('showSlide', slideIndex);
 
     currentSlideIndex = slideIndex;
-    location.hash = currentSlideIndex + 1;
+    dom.window.location.hash = currentSlideIndex + 1;
   }
 }
