@@ -4,7 +4,7 @@ var utils = require('./remark/utils')
   , Controller = require('./remark/controller').Controller
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
-  , Slideshow = require('./remark/slideshow').Slideshow
+  , Slideshow = require('./remark/models/slideshow').Slideshow
   , SlideshowView = require('./remark/views/slideshowView').SlideshowView
   , resources = require('./remark/resources')
   ;

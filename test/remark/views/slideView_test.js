@@ -1,4 +1,4 @@
-var Slide = require('../../../src/remark/slide').Slide
+var Slide = require('../../../src/remark/models/slide').Slide
   , SlideView = require('../../../src/remark/views/slideView').SlideView
   ;
 
