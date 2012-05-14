@@ -1,11 +1,10 @@
 exports.Slide = Slide;
 
-function Slide (source, previousSlide) {
+function Slide (source, previousSlide, namedSlides) {
   this.properties = {};
   this.source = extractProperties(source, this.properties);
 
-  inheritProperties(this, previousSlide);
-  inheritSource(this, previousSlide);
+  inheritSlide(this, previousSlide, namedSlides);
 }
 
 function extractProperties (source, properties) {
@@ -26,29 +25,41 @@ function extractProperties (source, properties) {
   return source;
 }
 
-function inheritProperties (slide, previousSlide) {
+function inheritSlide (slide, previousSlide, namedSlides) {
+  var slideToInherit =
+    shouldInheritPreviousSlide(slide, previousSlide) ||
+    shouldInheritNamedSlide(slide, namedSlides);
+
+  if (slideToInherit) {
+    inheritProperties(slide, slideToInherit);
+    inheritSource(slide, slideToInherit);
+  }
+}
+
+function inheritProperties (slide, slideToInherit) {
   var property;
 
-  if (shouldInheritPreviousSlide(slide, previousSlide)) {
-    for (property in previousSlide.properties) {
-      if (!previousSlide.properties.hasOwnProperty(property) ||
-          property === 'name') {
-        continue;
-      }
+  for (property in slideToInherit.properties) {
+    if (!slideToInherit.properties.hasOwnProperty(property) ||
+        property === 'name') {
+      continue;
+    }
 
-      if (slide.properties[property] === undefined) {
-        slide.properties[property] = previousSlide.properties[property];
-      }
+    if (slide.properties[property] === undefined) {
+      slide.properties[property] = slideToInherit.properties[property];
     }
   }
 }
 
-function inheritSource (slide, previousSlide) {
-  if (shouldInheritPreviousSlide(slide, previousSlide)) {
-    slide.source = previousSlide.source + '\n' + slide.source;
-  }
+function inheritSource (slide, slideToInherit) {
+  slide.source = slideToInherit.source + '\n' + slide.source;
 }
 
 function shouldInheritPreviousSlide (slide, previousSlide) {
   return slide.properties['continue'] === 'true' && previousSlide;
+}
+
+function shouldInheritNamedSlide (slide, namedSlides) {
+  return slide.properties['continue'] && namedSlides &&
+    namedSlides[slide.properties['continue']];
 }

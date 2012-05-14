@@ -24,7 +24,7 @@ var createSlides = function (source) {
   slides.names = {};
 
   source.split(/\n---\n/).each(function (part) {
-    slide = new Slide(part, previousSlide);
+    slide = new Slide(part, previousSlide, slides.names);
     slide.index = slides.length;
     slides.push(slide);
     previousSlide = slide;
