@@ -10,7 +10,7 @@ describe('Slide', function () {
     });
   });
 
-  describe('extending previous slide', function () {
+  describe('continuing previous slide', function () {
     it('should inherit properties', function () {
       var previousSlide = new Slide('key1:val1\nkey2:val2\n\nSome content.')
         , slide = new Slide('key2:overridden\ncontinue:true\n\nMore content.',
@@ -34,6 +34,13 @@ describe('Slide', function () {
             previousSlide);
 
       slide.source.should.equal('Some content.\n\nMore content.');
+    });
+
+    it('should not inherit name property', function () {
+      var previousSlide = new Slide('name: name\n\nSome content.')
+        , slide = new Slide('continue:true\n\nMore content.', previousSlide);
+
+      slide.properties.should.not.have.property('name');
     });
   });
 });

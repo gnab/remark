@@ -31,7 +31,8 @@ function inheritProperties (slide, previousSlide) {
 
   if (shouldInheritPreviousSlide(slide, previousSlide)) {
     for (property in previousSlide.properties) {
-      if (!previousSlide.properties.hasOwnProperty(property)) {
+      if (!previousSlide.properties.hasOwnProperty(property) ||
+          property === 'name') {
         continue;
       }
 
