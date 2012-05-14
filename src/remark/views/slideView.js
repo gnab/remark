@@ -33,6 +33,10 @@ function createSlideElement () {
 function createContentElement (source, properties) {
   var element = dom.createElement('div');
 
+  if (properties.name) {
+    element.id = "slide-" + properties.name;
+  }
+
   element.innerHTML = source;
 
   setClassFromProperties(element, properties);

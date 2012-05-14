@@ -11,7 +11,7 @@ Array.prototype.filter = Array.prototype.filter || function (f) {
 
   this.each(function (element) {
     if (f(element)) {
-      result.push();
+      result.push(element);
     }
   });
 

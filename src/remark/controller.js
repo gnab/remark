@@ -5,37 +5,58 @@ var dispatcher = require('./dispatcher')
 exports.Controller = Controller;
 
 function Controller (slideshow) {
-  var currentSlideIndex = -1;
+  var currentSlideNo = 0;
 
-  dispatcher.on('gotoSlide', function (slideIndex) {
-    gotoSlide(slideshow, slideIndex);
+  dispatcher.on('gotoSlide', function (slideNoOrName) {
+    gotoSlide(slideshow, slideNoOrName);
   });
 
   dispatcher.on('gotoPreviousSlide', function() {
-    gotoSlide(slideshow, currentSlideIndex - 1);
+    gotoSlide(slideshow, currentSlideNo - 1);
   });
 
   dispatcher.on('gotoNextSlide', function() {
-    gotoSlide(slideshow, currentSlideIndex + 1);
+    gotoSlide(slideshow, currentSlideNo + 1);
   });
 
-  function gotoSlide (slideshow, slideIndex) {
-    var alreadyOnSlide = slideIndex === currentSlideIndex
-      , lastSlideIndex = slideshow.getSlideCount() - 1
-      , slideOutOfRange = slideIndex < 0 || slideIndex > lastSlideIndex
+  function gotoSlide (slideshow, slideNoOrName) {
+    var slideNo = getSlideNo(slideNoOrName)
+      , alreadyOnSlide = slideNo === currentSlideNo
+      , slideOutOfRange = slideNo < 1 || slideNo > slideshow.getSlideCount()
       ;
 
     if (alreadyOnSlide || slideOutOfRange) {
       return;
     }
 
-    if (currentSlideIndex !== -1) {
-      dispatcher.emit('hideSlide', currentSlideIndex);
+    if (currentSlideNo !== 0) {
+      dispatcher.emit('hideSlide', currentSlideNo - 1);
     }
 
-    dispatcher.emit('showSlide', slideIndex);
+    dispatcher.emit('showSlide', slideNo - 1);
 
-    currentSlideIndex = slideIndex;
-    dom.window.location.hash = currentSlideIndex + 1;
+    currentSlideNo = slideNo;
+
+    dom.window.location.hash = slideNoOrName;
+  }
+
+  function getSlideNo (slideNoOrName) {
+    var slideNo
+      , slide
+      ;
+
+    if (typeof slideNoOrName === 'number') {
+      return slideNoOrName;
+    }
+
+    if ((slideNo = parseInt(slideNoOrName, 10)).toString() === slideNoOrName) {
+      return slideNo;
+    }
+
+    if ((slide = slideshow.getSlideByName(slideNoOrName))) {
+      return slide.index + 1;
+    }
+
+    return 1;
   }
 }

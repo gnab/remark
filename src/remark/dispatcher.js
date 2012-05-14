@@ -13,10 +13,11 @@ dispatcher.initialize = function () {
 function mapHash () {
   dom.on('hashchange', navigate);
   navigate();
-    
+
   function navigate () {
-    var slideNo = parseInt((dom.window.location.hash || '').substr(1), 10) || 1;
-    gotoSlide(slideNo - 1);
+    var slideNoOrName = (dom.window.location.hash || '').substr(1);
+
+    gotoSlide(slideNoOrName);
   }
 }
 
@@ -105,8 +106,8 @@ function mapWheel () {
   });
 }
 
-function gotoSlide (slideIndex) {
-  dispatcher.emit('gotoSlide', slideIndex);
+function gotoSlide (slideNoOrName) {
+  dispatcher.emit('gotoSlide', slideNoOrName);
 }
 
 function gotoNextSlide () {
