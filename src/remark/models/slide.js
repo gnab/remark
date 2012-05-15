@@ -9,7 +9,7 @@ function Slide (source, previousSlide, namedSlides) {
 
 function extractProperties (source, properties) {
   var propertyFinder =
-    /^\n*((?:[a-z_\-][a-z\-_0-9]*)+)\s*:\s*([^$\n]*)\s*(?:$|\n)/i
+    /^\n*([^:$\n]+):([^$\n]*)/i
     , match
     ;
 
@@ -17,7 +17,7 @@ function extractProperties (source, properties) {
     source = source.substr(0, match.index) +
       source.substr(match.index + match[0].length);
 
-    properties[match[1]] = match[2];
+    properties[match[1].trim()] = match[2].trim();
 
     propertyFinder.lastIndex = match.index;
   }
@@ -26,14 +26,17 @@ function extractProperties (source, properties) {
 }
 
 function inheritSlide (slide, previousSlide, namedSlides) {
-  var slideToInherit =
-    shouldInheritPreviousSlide(slide, previousSlide) ||
-    shouldInheritNamedSlide(slide, namedSlides);
+  var slideToInherit = getSlideToInherit(slide, previousSlide, namedSlides);
 
   if (slideToInherit) {
     inheritProperties(slide, slideToInherit);
     inheritSource(slide, slideToInherit);
   }
+}
+
+function getSlideToInherit (slide, previousSlide, namedSlides) {
+  return (slide.properties.continued === 'true' && previousSlide) ||
+     (namedSlides && namedSlides[slide.properties['template']]);
 }
 
 function inheritProperties (slide, slideToInherit) {
@@ -52,14 +55,5 @@ function inheritProperties (slide, slideToInherit) {
 }
 
 function inheritSource (slide, slideToInherit) {
-  slide.source = slideToInherit.source + '\n' + slide.source;
-}
-
-function shouldInheritPreviousSlide (slide, previousSlide) {
-  return slide.properties['continue'] === 'true' && previousSlide;
-}
-
-function shouldInheritNamedSlide (slide, namedSlides) {
-  return slide.properties['continue'] && namedSlides &&
-    namedSlides[slide.properties['continue']];
+  slide.source = slideToInherit.source + slide.source;
 }
