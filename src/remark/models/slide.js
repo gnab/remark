@@ -4,12 +4,11 @@ function Slide (source, previousSlide, namedSlides) {
   this.properties = {};
   this.source = extractProperties(source, this.properties);
 
-  inheritSlide(this, previousSlide, namedSlides);
+  inheritTemplate(this, previousSlide, namedSlides);
 }
 
 function extractProperties (source, properties) {
-  var propertyFinder =
-    /^\n*([^:$\n]+):([^$\n]*)/i
+  var propertyFinder = /^\n*([^:$\n]+):([^$\n]*)/i
     , match
     ;
 
@@ -25,35 +24,39 @@ function extractProperties (source, properties) {
   return source;
 }
 
-function inheritSlide (slide, previousSlide, namedSlides) {
-  var slideToInherit = getSlideToInherit(slide, previousSlide, namedSlides);
+function inheritTemplate (slide, previousSlide, namedSlides) {
+  var template = getTemplate(slide, previousSlide, namedSlides);
 
-  if (slideToInherit) {
-    inheritProperties(slide, slideToInherit);
-    inheritSource(slide, slideToInherit);
+  if (template) {
+    inheritProperties(slide, template);
+    inheritSource(slide, template);
   }
 }
 
-function getSlideToInherit (slide, previousSlide, namedSlides) {
+function getTemplate (slide, previousSlide, namedSlides) {
   return (slide.properties.continued === 'true' && previousSlide) ||
-     (namedSlides && namedSlides[slide.properties['template']]);
+     (namedSlides && namedSlides[slide.properties.template]);
 }
 
-function inheritProperties (slide, slideToInherit) {
+function inheritProperties (slide, template) {
   var property;
 
-  for (property in slideToInherit.properties) {
-    if (!slideToInherit.properties.hasOwnProperty(property) ||
-        property === 'name') {
+  for (property in template.properties) {
+    if (!template.properties.hasOwnProperty(property) ||
+        ignoreProperty(property)) {
       continue;
     }
 
     if (slide.properties[property] === undefined) {
-      slide.properties[property] = slideToInherit.properties[property];
+      slide.properties[property] = template.properties[property];
     }
   }
 }
 
-function inheritSource (slide, slideToInherit) {
-  slide.source = slideToInherit.source + slide.source;
+function ignoreProperty (property) {
+  return property === 'name' ;
+}
+
+function inheritSource (slide, template) {
+  slide.source = template.source + slide.source;
 }
