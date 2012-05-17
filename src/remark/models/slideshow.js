@@ -12,6 +12,8 @@ function Slideshow (source) {
   slides = stripLayoutSlides(slides);
   slides = indexSlides(slides);
 
+  expandVariables(slides);
+
   this.slides = slides;
   this.slides.names = names;
 }
@@ -73,5 +75,11 @@ function indexSlides (slides) {
     slide.index = index;
 
     return slide;
+  });
+}
+
+function expandVariables (slides) {
+  slides.each(function (slide) {
+    slide.expandVariables();
   });
 }

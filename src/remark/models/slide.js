@@ -54,3 +54,12 @@ function ignoreProperty (property) {
 function inheritSource (slide, template) {
   slide.source = template.source + slide.source;
 }
+
+Slide.prototype.expandVariables = function () {
+  var properties = this.properties;
+
+  this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
+    function (match, escaped, unescapedMatch, property) {
+      return !escaped && properties[property.trim()] || unescapedMatch;
+    });
+};

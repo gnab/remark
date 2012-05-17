@@ -45,4 +45,30 @@ describe('Slide', function () {
       slide.properties.should.not.have.property('layout');
     });
   });
+
+  describe('variables', function () {
+    it('should be expanded to matching properties', function () {
+      var slide = Slide.create('prop1: val1\nprop1 = {{ prop1 }}');
+
+      slide.expandVariables();
+
+      slide.source.should.equal('\nprop1 = val1');
+    });
+
+    it('should ignore escaped variables', function () {
+      var slide = Slide.create('prop1: val1\nprop1 = \\{{ prop1 }}');
+
+      slide.expandVariables();
+
+      slide.source.should.equal('\nprop1 = {{ prop1 }}');
+    });
+
+    it('should ignore undefined variables', function () {
+      var slide = Slide.create('prop1 = {{ prop1 }}');
+
+      slide.expandVariables();
+
+      slide.source.should.equal('prop1 = {{ prop1 }}');
+    });
+  });
 });
