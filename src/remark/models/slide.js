@@ -1,10 +1,12 @@
 exports.Slide = Slide;
 
-function Slide (source, previousSlide, namedSlides) {
+Slide.create = function (source, opts) {
+  return new Slide(source, opts);
+};
+
+function Slide (source) {
   this.properties = {};
   this.source = extractProperties(source, this.properties);
-
-  inheritTemplate(this, previousSlide, namedSlides);
 }
 
 function extractProperties (source, properties) {
@@ -24,19 +26,10 @@ function extractProperties (source, properties) {
   return source;
 }
 
-function inheritTemplate (slide, previousSlide, namedSlides) {
-  var template = getTemplate(slide, previousSlide, namedSlides);
-
-  if (template) {
-    inheritProperties(slide, template);
-    inheritSource(slide, template);
-  }
-}
-
-function getTemplate (slide, previousSlide, namedSlides) {
-  return (slide.properties.continued === 'true' && previousSlide) ||
-     (namedSlides && namedSlides[slide.properties.template]);
-}
+Slide.prototype.inherit = function (template) {
+  inheritProperties(this, template);
+  inheritSource(this, template);
+};
 
 function inheritProperties (slide, template) {
   var property;
@@ -54,7 +47,8 @@ function inheritProperties (slide, template) {
 }
 
 function ignoreProperty (property) {
-  return property === 'name' ;
+  return property === 'name' ||
+    property === 'layout';
 }
 
 function inheritSource (slide, template) {

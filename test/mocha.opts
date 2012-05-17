@@ -1,3 +1,4 @@
 --require should
+--require ./src/remark/utils
 --reporter dot
 --ui bdd
