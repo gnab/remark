@@ -1,3 +1,14 @@
+### 0.4.0
+* Slide classes are DEPRECATED, use slide `class` property instead.
+* Slide properties:
+  * name
+  * class
+  * continued
+  * template
+  * layout
+* Expand `{{ property }}` to corresponding property value.
+* Access slides by name in URL fragment.
+
 ### 0.3.6
 * Upgrade highlight.js.
 * Upgrade marked.

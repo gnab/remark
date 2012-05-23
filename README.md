@@ -31,7 +31,8 @@ It takes only a few, simple steps to get up and running with remark:
           <body>
             <textarea id="source">
 
-        .center.middle
+        class: center, middle
+
         # Title
 
         ---
