@@ -44,6 +44,15 @@ describe('Slide', function () {
 
       slide.properties.should.not.have.property('layout');
     });
+
+    it('should aggregate class property value', function () {
+      var template = Slide.create('class: a\n\nSome content.')
+        , slide = Slide.create('class: b\n\nMore content.');
+
+      slide.inherit(template);
+
+      slide.properties.should.have.property('class', 'a, b');
+    });
   });
 
   describe('variables', function () {

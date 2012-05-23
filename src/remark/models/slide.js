@@ -32,7 +32,9 @@ Slide.prototype.inherit = function (template) {
 };
 
 function inheritProperties (slide, template) {
-  var property;
+  var property
+    , value
+    ;
 
   for (property in template.properties) {
     if (!template.properties.hasOwnProperty(property) ||
@@ -40,8 +42,14 @@ function inheritProperties (slide, template) {
       continue;
     }
 
-    if (slide.properties[property] === undefined) {
-      slide.properties[property] = template.properties[property];
+    value = [template.properties[property]];
+
+    if (property === 'class' && slide.properties[property]) {
+      value.push(slide.properties[property]);
+    }
+
+    if (property === 'class' || slide.properties[property] === undefined) {
+      slide.properties[property] = value.join(', ');
     }
   }
 }
