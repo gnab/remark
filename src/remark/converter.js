@@ -121,3 +121,7 @@ var setCodeClass = function (block) {
 
   return false;
 };
+
+converter.trimEmptySpace = function (content) {
+  content.innerHTML = content.innerHTML.replace(/<p>\s*<\/p>/g, '');
+};

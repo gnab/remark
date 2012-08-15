@@ -148,4 +148,14 @@ describe('converter', function () {
     });
   });
 
+  describe('trimEmptySpace', function () {
+    it('should remove empty p tags', function () {
+      var content = {innerHTML: '<p> </p>\nabc\n<p></p>' };
+
+      converter.trimEmptySpace(content);
+
+      content.innerHTML.should.equal('\nabc\n');
+    });
+  });
+
 });

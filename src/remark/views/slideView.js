@@ -44,6 +44,7 @@ function createContentElement (source, properties) {
   converter.convertContentClasses(element);
   converter.convertMarkdown(element);
   converter.convertCodeClasses(element);
+  converter.trimEmptySpace(element);
 
   highlighter.highlightCodeBlocks(element);
 
