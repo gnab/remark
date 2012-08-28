@@ -68,6 +68,7 @@ Check out [the remark wiki](http://github.com/gnab/remark/wiki) for more informa
 - [ivarconr.github.com/Test-Driven-Web-Development/slides](http://ivarconr.github.com/Test-Driven-Web-Development/slides)
 - [havard.github.com/node.js-intro-norwegian](http://havard.github.com/node.js-intro-norwegian)
 - [mobmad.github.com/js-tdd-erfaringer](http://mobmad.github.com/js-tdd-erfaringer)
+- [torgeir.github.com/busterjs-lightning-talk](http://torgeir.github.com/busterjs-lightning-talk)
 
 ### Credits
 
