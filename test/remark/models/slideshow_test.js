@@ -9,6 +9,12 @@ describe('Slideshow', function () {
 
       slideshow.slides.should.have.length(2);
     });
+
+    it('should be continued when initiated by two dashes instead of three', function () {
+      var slideshow = new Slideshow('a\n--\nb'); 
+
+      slideshow.slides[1].properties.should.have.property('continued', 'true');
+    });
   });
 
   describe('name mapping', function () {

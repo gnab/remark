@@ -1,11 +1,11 @@
 exports.Slide = Slide;
 
-Slide.create = function (source, opts) {
-  return new Slide(source, opts);
+Slide.create = function (source, properties) {
+  return new Slide(source, properties);
 };
 
-function Slide (source) {
-  this.properties = {};
+function Slide (source, properties) {
+  this.properties = properties || {};
   this.source = extractProperties(source, this.properties);
 }
 

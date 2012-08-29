@@ -27,9 +27,27 @@ Slideshow.prototype.getSlideCount = function () {
 };
 
 function createSlides (source) {
-  return source.split(/\n---\n/).map(function (part, index) {
-    return Slide.create(part);
-  });
+  var slides = []
+    , separatorFinder = /\n---?\n/
+    , continuedSlide = false
+    , match
+    ;
+
+  while ((match = separatorFinder.exec(source)) !== null) {
+    slides.push(Slide.create(source.substr(0, match.index), {
+      continued: continuedSlide.toString()
+    }));
+    source = source.substr(match.index + match[0].length);
+    continuedSlide = match[0] === '\n--\n';
+  }
+
+  if (source !== '') {
+    slides.push(Slide.create(source, {
+      continued: continuedSlide.toString()
+    }));
+  }
+
+  return slides;
 }
 
 function mapNamedSlides (slides) {
