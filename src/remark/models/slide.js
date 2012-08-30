@@ -60,14 +60,44 @@ function ignoreProperty (property) {
 }
 
 function inheritSource (slide, template) {
-  slide.source = template.source + slide.source;
+  var expandedVariables;
+
+  slide.properties.content = slide.source;
+  slide.source = template.source;
+
+  expandedVariables = slide.expandVariables(true);
+
+  if (expandedVariables.content === undefined) {
+    slide.source += slide.properties.content;
+  }
+
+  delete slide.properties.content;
 }
 
-Slide.prototype.expandVariables = function () {
-  var properties = this.properties;
+Slide.prototype.expandVariables = function (keepEscapes) {
+  var properties = this.properties
+    , expandResult = {}
+    ;
 
   this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
     function (match, escaped, unescapedMatch, property) {
-      return !escaped && properties[property.trim()] || unescapedMatch;
+      var propertyName = property.trim()
+        , propertyValue
+        ;
+
+      if (escaped) {
+        return keepEscapes ? match[0] : unescapedMatch;
+      }
+
+      propertyValue = properties[propertyName];
+
+      if (propertyValue !== undefined) {
+        expandResult[propertyName] = propertyValue;
+        return propertyValue;
+      }
+
+      return propertyName === 'content' ? '' : unescapedMatch;
     });
+
+  return expandResult;
 };
