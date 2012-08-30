@@ -72,6 +72,9 @@ function applyTemplates (slides, names) {
     else if (names[slide.properties.template]) {
       slide.inherit(names[slide.properties.template]);
     }
+    else if (slide.properties.layout === 'false') {
+      layoutSlide = undefined;
+    }
     else if (layoutSlide && slide.properties.layout !== 'true') {
       slide.inherit(layoutSlide);
     }
