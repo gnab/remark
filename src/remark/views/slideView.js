@@ -5,11 +5,10 @@ var converter = require('../converter')
 
 exports.SlideView = SlideView;
 
-function SlideView (slide) {
+function SlideView (slide, slideNo) {
   this.slide = slide;
-  this.element = createSlideElement();
+  this.element = createSlideElement(slideNo, slide.properties);
   this.contentElement = createContentElement(slide.source, slide.properties);
-
   this.element.appendChild(this.contentElement);
 }
 
@@ -21,11 +20,15 @@ SlideView.prototype.hide = function () {
   this.element.style.display = 'none';
 };
 
-function createSlideElement () {
+function createSlideElement (slideNo, properties) {
   var element = dom.createElement('div');
 
   element.className = 'slide';
   element.style.display = 'none';
+  element.title = slideNo.toString();
+  if (properties.name) {
+      element.title = properties.name;
+  }
 
   return element;
 }
