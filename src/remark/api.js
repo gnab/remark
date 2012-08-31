@@ -11,3 +11,11 @@ api.addListener('pauseRemark', function () {
 api.addListener('resumeRemark', function () {
     dispatcher.enableinteraction();
 });
+
+api.addListener('gotoPrevSlide', function() {
+    dispatcher.emit('gotoPreviousSlide');
+});
+
+api.addListener('gotoNextSlide', function() {
+    dispatcher.emit('gotoNextSlide');
+});
