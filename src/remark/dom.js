@@ -4,6 +4,7 @@ var EventEmitter = require('events').EventEmitter
 
 dom.window = proxyObject('window');
 dom.document = proxyObject('document');
+dom.console = proxyObject('console');
 
 dom.exports = dom.window;
 
