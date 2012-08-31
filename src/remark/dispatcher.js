@@ -5,9 +5,21 @@ var EventEmitter = require('events').EventEmitter
 
 dispatcher.initialize = function () {
   mapHash();
+  this.enableinteraction();
+};
+
+dispatcher.enableinteraction = function () {
   mapKeys();
   mapTouches();
-  mapWheel();
+  mapWheel();   
+};
+
+dispatcher.disableinteraction = function () {
+  dom.removeAllListeners('keydown');
+  dom.removeAllListeners('touchstart');
+  dom.removeAllListeners('touchend');
+  dom.removeAllListeners('touchmove');
+  dom.removeAllListeners('mousewheel');
 };
 
 function mapHash () {
