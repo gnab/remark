@@ -35,6 +35,7 @@
       , "scala"
       , "coffeescript"
       , "lisp"
+      , "clojure"
       ]
     }
 }

@@ -2,6 +2,7 @@
 
 var fs = require('fs')
   , path = require('path')
+  , util = require('util')
   , less = require('less')
   , config = require('./utils/config')
   , resourcesBundle = path.join(__dirname, '../src/remark/resources.js')
@@ -20,8 +21,8 @@ function writeResourcesToFile () {
     , resources = bundleResources()
     ;
 
-  resourcesString += 'module.exports = ' + JSON.stringify(resources) + ';';
-  resourcesString += 'module.exports.highlighter.engine = ' + bundleHighlightEngine();
+  resourcesString += util.format('\nmodule.exports = %s;', JSON.stringify(resources));
+  resourcesString += '\nmodule.exports.highlighter.engine = ' + bundleHighlightEngine();
 
   fs.writeFileSync(resourcesBundle, resourcesString);
 }
@@ -38,12 +39,18 @@ function bundleResources () {
 }
 
 function bundleHighlightEngine () {
-  var engineStr = '(function () {\n';
+  var engineStr = '(function () {';
 
-  engineStr += fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/highlight.js'));
+  engineStr += util.format('\nvar hljs = new %s();', 
+    fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/highlight.js')));
 
   config.highlighter.languages.forEach(function (language) {
-    engineStr += '\n' + fs.readFileSync(path.join(__dirname, '../vendor/highlight.js/src/languages', language + '.js'));
+    var languagePath = path.join(
+      __dirname, '../vendor/highlight.js/src/languages', language + '.js');
+
+    engineStr += util.format('\nhljs.LANGUAGES%s = (%s)(hljs);',
+      language.match(/^\d|\-/) ? '["' + language + '"]' : '.' + language,
+      fs.readFileSync(languagePath));
   });
 
   engineStr += '\nreturn hljs;})();';

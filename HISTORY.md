@@ -8,6 +8,7 @@
   * layout
 * Expand `{{ property }}` to corresponding property value.
 * Access slides by name in URL fragment.
+* Upgrade highlight.js.
 
 ### 0.3.6
 * Upgrade highlight.js.
