@@ -60,7 +60,7 @@ function bundleHighlightEngine () {
 
 function bundleHighlightStyles () {
   var stylesPath = path.join(__dirname, '../vendor/highlight.js/src/styles')
-    , ignoredStyles = ['brown_paper', 'school_bool']
+    , ignoredStyles = ['brown_paper', 'school_book', 'pojoaque']
     , files = fs.readdirSync(stylesPath)
     , styles = {}
     ;
