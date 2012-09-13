@@ -65,7 +65,7 @@ function inheritSource (slide, template) {
   slide.properties.content = slide.source;
   slide.source = template.source;
 
-  expandedVariables = slide.expandVariables(true);
+  expandedVariables = slide.expandVariables(/* contentOnly: */ true);
 
   if (expandedVariables.content === undefined) {
     slide.source += slide.properties.content;
@@ -74,7 +74,7 @@ function inheritSource (slide, template) {
   delete slide.properties.content;
 }
 
-Slide.prototype.expandVariables = function (keepEscapes) {
+Slide.prototype.expandVariables = function (contentOnly) {
   var properties = this.properties
     , expandResult = {}
     ;
@@ -86,7 +86,11 @@ Slide.prototype.expandVariables = function (keepEscapes) {
         ;
 
       if (escaped) {
-        return keepEscapes ? match[0] : unescapedMatch;
+        return contentOnly ? match[0] : unescapedMatch;
+      }
+
+      if (contentOnly && propertyName !== 'content') {
+        return match;
       }
 
       propertyValue = properties[propertyName];

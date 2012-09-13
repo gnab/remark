@@ -53,6 +53,15 @@ describe('Slide', function () {
 
       slide.properties.should.have.property('class', 'a, b');
     });
+
+    it('should not expand regular properties when inheriting template', function () {
+      var template = Slide.create('name: a\n\n{{name}}')
+        , slide = Slide.create('name: b');
+
+      slide.inherit(template);
+
+      slide.source.should.equal('\n\n{{name}}');
+    });
   });
 
   describe('variables', function () {
