@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Remark</title>
-    <script src="http://cloud.github.com/downloads/gnab/remark/remark-0.4.0.min.js" type="text/javascript">
+    <script src="https://github.com/downloads/gnab/remark/remark-0.4.1.min.js" type="text/javascript">
       {"highlightStyle": "monokai"}
     </script>
     <script type="text/javascript">
@@ -88,13 +88,15 @@
       }
 
       /* Two-column layout */
-      .active { color: #000; }
       .left-column {
         color: #777;
         width: 20%;
         height: 92%;
         float: left;
       }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
       .right-column {
         width: 75%;
         float: right;
@@ -115,9 +117,7 @@ class: center, middle, inverse
 ---
 layout: false
 .left-column[
-  .active[
   ## What is it?
-  ]
 ]
 .right-column[
   A simplistic, in-browser, Markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
@@ -135,9 +135,7 @@ layout: false
 ---
 .left-column[
   ## What is it?
-  .active[
   ## Why use it?
-  ]
 ]
 .right-column[
 If your ideal slideshow creation workflow contains any of the following steps:
@@ -157,9 +155,7 @@ Then remark might be perfect for your next.red[*] slideshow!
 ---
 .left-column[
   ## What is it?
-  .active[
   ## Why use it?
-  ]
 ]
 .right-column[
 As the slideshow is expressed using Markdown, you may:
@@ -188,10 +184,8 @@ template: inverse
 name: how
 
 .left-column[
-  .active[
   ## How does it work?
 ### - Markdown
-  ]
 ]
 .right-column[
 A Markdown-formatted chunk of text is transformed into individual slides by JavaScript running in the browser:
@@ -224,13 +218,9 @@ Have a look at the [Markdown website](http://daringfireball.net/projects/markdow
 ]
 ---
 .left-column[
-  .active[
   ## How does it work?
-  ]
   ### - Markdown
-  .active[
   ### - Inside HTML
-  ]
 ]
 .right-column[
 A simple HTML document is needed for hosting the styles, Markdown and the generated slides themselves:
@@ -259,9 +249,7 @@ template: inverse
 ## Of course, Markdown can only go so far.
 ---
 .left-column[
-  .active[
   ## Markdown extensions
-  ]
 ]
 .right-column[
 To help out with slide layout and formatting, a few Markdown extensions have been included:
@@ -275,10 +263,8 @@ To help out with slide layout and formatting, a few Markdown extensions have bee
 
 ---
 .left-column[
-  .active[
   ## Markdown extensions
   ### - Slide properties
-  ]
 ]
 .right-column[
 Initial lines containing key-value pairs are extracted as slide properties:
@@ -301,13 +287,9 @@ Slide properties serve multiple purposes:
 ]
 ---
 .left-column[
-  .active[
   ## Markdown extensions
-  ]
   ### - Slide properties
-  .active[
   ### - Content classes
-  ]
 ]
 .right-column[
 Any occurences of one or more dotted CSS class names followed by square brackets are replaced with the contents of the brackets with the specified classes applied:
@@ -323,14 +305,10 @@ Resulting HTML extract:
 ]
 ---
 .left-column[
-  .active[
   ## Markdown extensions
-  ]
   ### - Slide properties
   ### - Content classes
-  .active[
   ### - Syntax Highlighting
-  ]
 ]
 .right-column[
 Code blocks are automatically syntax highlighted, based on the number of recognized keywords from a set of [supported languages](https://github.com/gnab/remark/wiki/Configuration#wiki-highlighting).
@@ -354,14 +332,10 @@ To disable syntax highlighting, use the class `.no-highlight no-highlight`.
 ]
 ---
 .left-column[
-  .active[
   ## Markdown extensions
-  ]
   ### - Slide properties
   ### - Content classes
-  .active[
   ### - Syntax Highlighting
-  ]
 ]
 .right-column[
 A number of highlighting [styles](https://github.com/gnab/remark/wiki/Configuration#wiki-highlighting) are available, including several well-known themes from different editors and IDEs.
@@ -379,10 +353,8 @@ If you're using some custom style, you might want to prevent any of the bundled 
 ]
 ---
 .left-column[
-  .active[
   ## Slide properties
   ### - Name
-  ]
 ]
 .right-column[
 The `name` property accepts a name used to identify the current slide:
@@ -407,13 +379,9 @@ A slide name may be used to:
 ]
 ---
 .left-column[
-  .active[
   ## Slide properties
-  ]
   ### - Name
-  .active[
   ### - Class
-  ]
 ]
 .right-column[
 The `class` property accepts a comma-separated list of class names, which are applied to the current slide:
@@ -435,14 +403,10 @@ The `center` and `middle` classes are included along with a few other common cas
 ---
 name: template
 .left-column[
-  .active[
   ## Slide properties
-  ]
   ### - Name
   ### - Class
-  .active[
   ### - Template
-  ]
 ]
 .right-column[
 The `template` property names another slide to be used as a template for the current slide:
@@ -473,14 +437,10 @@ Both template slide content and properties are prepended to the current slide, w
 ---
 name: template
 .left-column[
-  .active[
   ## Slide properties
-  ]
   ### - Name
   ### - Class
-  .active[
   ### - Template
-  ]
 ]
 .right-column[
 The `template` property may be used to (apparantly) add content to a slide incrementally, like bullet lists appearing a bullet at a time.
@@ -500,15 +460,11 @@ Template slides may also contain a special `\{{content}}` expression to explicit
 ]
 ---
 .left-column[
-  .active[
   ## Slide properties
-  ]
   ### - Name
   ### - Class
   ### - Template
-  .active[
   ### - Layout
-  ]
 ]
 .right-column[
 The `layout` property either makes the current slide a layout slide, which is omitted from the slideshow and serves as the default template used for all subsequent slides:
@@ -536,9 +492,7 @@ template: inverse
 ## It's time to get started!
 ---
 .left-column[
-  .active[
   ## Getting started
-  ]
 ]
 .right-column[
 Getting up and running is done in only a few steps:
