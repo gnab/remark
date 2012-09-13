@@ -1,3 +1,7 @@
+### 0.4.1
+* Perform regular property expansion after inheriting templates.
+* Exclude highlight.js styles depending on background images.
+
 ### 0.4.0
 * Slide classes are DEPRECATED, use slide `class` property instead.
 * Slide properties:
