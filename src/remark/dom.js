@@ -24,13 +24,19 @@ proxyEvent(dom.document, 'mousewheel');
 dom.on('load', updateDimensions);
 dom.on('resize', updateDimensions);
 
-function proxyObject (object) {
-  if (typeof this[object] !== 'undefined') {
-    object = this[object];
+function proxyObject (objectName) {
+  var object;
+
+  if (typeof this[objectName] !== 'undefined') {
+    object = this[objectName];
   }
   else {
     object = new EventEmitter();
     object.addEventListener = object.on;
+
+    if (objectName === 'window') {
+      object.location = {};
+    }
   }
 
   return object;
@@ -41,17 +47,33 @@ function proxyFunction (element, func) {
     dom[func] = function () { return element[func].apply(element, arguments); };
   }
   else {
-    if (func === 'createElement') {
+    if (['createElement', 'getElementById'].indexOf(func) !== -1) {
       dom[func] = function () {
         return {
           style: {}
         , appendChild: function () { }
-        , getElementsByTagName: function () { return []; }
+        , getElementsByTagName: function () {
+            return [{
+              parentNode: {
+                nodeName: ''
+              }
+            , childNodes: []
+            , className: ''
+            }];
+          }
+        , innerHTML: ''
         };
       };
     }
+    else if (func === 'getElementsByTagName') {
+      dom[func] = function () {
+        return [{
+          insertBefore: function () {}
+        }];
+      };
+    }
     else {
-        dom[func] = function () { return {}; };
+      dom[func] = function () { return {}; };
     }
   }
 }

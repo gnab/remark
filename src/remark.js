@@ -24,6 +24,8 @@ dom.on('load', function () {
 
   styleDocument();
   setupSlideshow(sourceElement, slideshowElement);
+
+  api.emit('ready');
 });
 
 function assureElementsExist (sourceElement, slideshowElement) {
