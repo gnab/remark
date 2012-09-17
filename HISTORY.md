@@ -1,3 +1,6 @@
+### 0.4.2
+* Emit 'ready' event.
+
 ### 0.4.1
 * Perform regular property expansion after inheriting templates.
 * Exclude highlight.js styles depending on background images.
