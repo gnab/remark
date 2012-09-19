@@ -3,8 +3,6 @@ var marked = require('marked')
   , converter = module.exports = {}
   ;
 
-marked.setOptions({gfm: false});
-
 converter.convertContentClasses = function (content) {
   var classFinder = /(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/ig
     , match
