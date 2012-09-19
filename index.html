@@ -39,6 +39,17 @@
         background: #e7e8e2;
         border-radius: 5px;
       }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
       #slideshow .slide .content code {
         font-size: 0.8em;
       }
@@ -313,7 +324,9 @@ Resulting HTML extract:
 .right-column[
 Code blocks are automatically syntax highlighted, based on the number of recognized keywords from a set of [supported languages](https://github.com/gnab/remark/wiki/Configuration#wiki-highlighting).
 
-If the language detected is incorrect, you may specify the language to use by adding a dotted language class on the first line of code:
+Both indented code blocks and [GFM](http://github.github.com/github-flavored-markdown/) fenced code blocks are supported, optionally overriding the automatically detected language:
+
+.pull-left[
 
     .no-highlight
     Code:
@@ -322,6 +335,19 @@ If the language detected is incorrect, you may specify the language to use by ad
         def add(a, b)
           a + b
         end
+        &nbsp;
+]
+.pull-right[
+
+    .no-highlight
+    Code:
+
+    ```ruby
+    def add(a, b)
+      a + b
+    end
+    ```
+]
 
 Inline code is not automatically highlighted, and must be supplied a language class to be highlighted:
 
