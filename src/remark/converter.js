@@ -89,7 +89,7 @@ var convertCodeClass = function (block) {
     , isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE'
     ;
 
-    if (setCodeClass(block)) {
+    if (setCodeClass(block) || transformCodeClass(block)) {
       return;
     }
 
@@ -118,6 +118,14 @@ var setCodeClass = function (block) {
   }
 
   return false;
+};
+
+var transformCodeClass = function (block) {
+  var className = block.className || '';
+
+  block.className = className.replace('lang-', '');
+
+  return block.className !== className;
 };
 
 converter.trimEmptySpace = function (content) {

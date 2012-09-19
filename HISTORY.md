@@ -1,5 +1,6 @@
 ### 0.4.2
 * Emit 'ready' event.
+* Upgrade marked.
 
 ### 0.4.1
 * Perform regular property expansion after inheriting templates.

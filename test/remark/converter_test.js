@@ -76,10 +76,10 @@ describe('converter', function () {
   });
 
   describe('convertCodeClasses', function () {
-    var convert = function(code, parentTagName) {
+    var convert = function(code, parentTagName, className) {
       var i
         , content = { nodeName: parentTagName || 'div'}
-        , node = { parentNode: content, innerHTML: code, className: '' }
+        , node = { parentNode: content, innerHTML: code, className: className || '' }
         ;
 
       content.getElementsByTagName = function () { return [node]; };
@@ -89,7 +89,7 @@ describe('converter', function () {
       return node;
     };
 
-    before(function resetConfiguration () {
+    beforeEach(function resetConfiguration () {
       config({
         highlightStyle: undefined
       , highlightLanguage: undefined
@@ -145,6 +145,10 @@ describe('converter', function () {
       config({highlightLanguage: 'not-a-language'});
 
       convert('.ruby a = 5', 'pre').className.should.equal('ruby');
+    });
+
+    it('should remove lang- code class prefix', function () {
+      convert('', undefined, 'lang-ruby').className.should.equal('ruby');
     });
   });
 
