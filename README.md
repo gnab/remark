@@ -70,6 +70,7 @@ Check out [the remark wiki](http://github.com/gnab/remark/wiki) for more informa
 - [havard.github.com/node.js-intro-norwegian](http://havard.github.com/node.js-intro-norwegian)
 - [mobmad.github.com/js-tdd-erfaringer](http://mobmad.github.com/js-tdd-erfaringer)
 - [torgeir.github.com/busterjs-lightning-talk](http://torgeir.github.com/busterjs-lightning-talk)
+- [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
 
 ### Credits
 
