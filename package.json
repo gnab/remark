@@ -9,11 +9,11 @@
     "url": "https://github.com/gnab/remark.git"
   }
 , "devDependencies": {
-    "browserify": "1.10.4"
+    "browserify": "1.16.3"
   , "uglify-js": "1.2.5"
   , "less": "1.2.1"
-  , "mocha": "0.14.1"
-  , "should": "0.6.0"
+  , "mocha": "1.7.0"
+  , "should": "1.2.1"
   , "jshint": "0.5.9"
   }
 , "config": {
