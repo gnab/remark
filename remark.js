@@ -1,16 +1,18 @@
-var require = function (file, cwd) {
+(function(){var require = function (file, cwd) {
     var resolved = require.resolve(file, cwd || '/');
     var mod = require.modules[resolved];
     if (!mod) throw new Error(
         'Failed to resolve module ' + file + ', tried ' + resolved
     );
-    var res = mod._cached ? mod._cached : mod();
+    var cached = require.cache[resolved];
+    var res = cached? cached.exports : mod();
     return res;
-}
+};
 
 require.paths = [];
 require.modules = {};
-require.extensions = [".js",".coffee"];
+require.cache = {};
+require.extensions = [".js",".coffee",".json"];
 
 require._core = {
     'assert': true,
@@ -41,6 +43,7 @@ require.resolve = (function () {
         throw new Error("Cannot find module '" + x + "'");
         
         function loadAsFileSync (x) {
+            x = path.normalize(x);
             if (require.modules[x]) {
                 return x;
             }
@@ -53,7 +56,7 @@ require.resolve = (function () {
         
         function loadAsDirectorySync (x) {
             x = x.replace(/\/+$/, '');
-            var pkgfile = x + '/package.json';
+            var pkgfile = path.normalize(x + '/package.json');
             if (require.modules[pkgfile]) {
                 var pkg = require.modules[pkgfile]();
                 var b = pkg.browserify;
@@ -118,7 +121,7 @@ require.alias = function (from, to) {
     
     var keys = (Object.keys || function (obj) {
         var res = [];
-        for (var key in obj) res.push(key)
+        for (var key in obj) res.push(key);
         return res;
     })(require.modules);
     
@@ -134,77 +137,66 @@ require.alias = function (from, to) {
     }
 };
 
-require.define = function (filename, fn) {
-    var dirname = require._core[filename]
-        ? ''
-        : require.modules.path().dirname(filename)
-    ;
+(function () {
+    var process = {};
+    var global = typeof window !== 'undefined' ? window : {};
+    var definedProcess = false;
     
-    var require_ = function (file) {
-        return require(file, dirname)
-    };
-    require_.resolve = function (name) {
-        return require.resolve(name, dirname);
-    };
-    require_.modules = require.modules;
-    require_.define = require.define;
-    var module_ = { exports : {} };
-    
-    require.modules[filename] = function () {
-        require.modules[filename]._cached = module_.exports;
-        fn.call(
-            module_.exports,
-            require_,
-            module_,
-            module_.exports,
-            dirname,
-            filename
-        );
-        require.modules[filename]._cached = module_.exports;
-        return module_.exports;
-    };
-};
-
-if (typeof process === 'undefined') process = {};
-
-if (!process.nextTick) process.nextTick = (function () {
-    var queue = [];
-    var canPost = typeof window !== 'undefined'
-        && window.postMessage && window.addEventListener
-    ;
-    
-    if (canPost) {
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'browserify-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-    }
-    
-    return function (fn) {
-        if (canPost) {
-            queue.push(fn);
-            window.postMessage('browserify-tick', '*');
+    require.define = function (filename, fn) {
+        if (!definedProcess && require.modules.__browserify_process) {
+            process = require.modules.__browserify_process();
+            definedProcess = true;
         }
-        else setTimeout(fn, 0);
+        
+        var dirname = require._core[filename]
+            ? ''
+            : require.modules.path().dirname(filename)
+        ;
+        
+        var require_ = function (file) {
+            var requiredModule = require(file, dirname);
+            var cached = require.cache[require.resolve(file, dirname)];
+
+            if (cached && cached.parent === null) {
+                cached.parent = module_;
+            }
+
+            return requiredModule;
+        };
+        require_.resolve = function (name) {
+            return require.resolve(name, dirname);
+        };
+        require_.modules = require.modules;
+        require_.define = require.define;
+        require_.cache = require.cache;
+        var module_ = {
+            id : filename,
+            filename: filename,
+            exports : {},
+            loaded : false,
+            parent: null
+        };
+        
+        require.modules[filename] = function () {
+            require.cache[filename] = module_;
+            fn.call(
+                module_.exports,
+                require_,
+                module_,
+                module_.exports,
+                dirname,
+                filename,
+                process,
+                global
+            );
+            module_.loaded = true;
+            return module_.exports;
+        };
     };
 })();
 
-if (!process.title) process.title = 'browser';
 
-if (!process.binding) process.binding = function (name) {
-    if (name === 'evals') return require('vm')
-    else throw new Error('No such module')
-};
-
-if (!process.cwd) process.cwd = function () { return '.' };
-
-require.define("path", function (require, module, exports, __dirname, __filename) {
-function filter (xs, fn) {
+require.define("path",function(require,module,exports,__dirname,__filename,process,global){function filter (xs, fn) {
     var res = [];
     for (var i = 0; i < xs.length; i++) {
         if (fn(xs[i], i, xs)) res.push(xs[i]);
@@ -341,8 +333,65 @@ exports.extname = function(path) {
 
 });
 
-require.define("/src/remark.js", function (require, module, exports, __dirname, __filename) {
-var utils = require('./remark/utils')
+require.define("__browserify_process",function(require,module,exports,__dirname,__filename,process,global){var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+        && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+        && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return window.setImmediate;
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            if (ev.source === window && ev.data === 'browserify-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('browserify-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    if (name === 'evals') return (require)('vm')
+    else throw new Error('No such module. (Possibly not yet loaded)')
+};
+
+(function () {
+    var cwd = '/';
+    var path;
+    process.cwd = function () { return cwd };
+    process.chdir = function (dir) {
+        if (!path) path = require('path');
+        cwd = path.resolve(dir, cwd);
+    };
+})();
+
+});
+
+require.define("/src/remark.js",function(require,module,exports,__dirname,__filename,process,global){var utils = require('./remark/utils')
   , api = require('./remark/api')
   , dom = require('./remark/dom')
   , Controller = require('./remark/controller').Controller
@@ -414,8 +463,7 @@ function setupSlideshow (sourceElement, slideshowElement) {
 
 });
 
-require.define("/src/remark/utils.js", function (require, module, exports, __dirname, __filename) {
-Array.prototype.each = Array.prototype.each || function (f) {
+require.define("/src/remark/utils.js",function(require,module,exports,__dirname,__filename,process,global){Array.prototype.each = Array.prototype.each || function (f) {
   var i;
 
   for (i = 0; i < this.length; ++i) {
@@ -447,21 +495,19 @@ Array.prototype.map = Array.prototype.map || function (f) {
 
 });
 
-require.define("/src/remark/api.js", function (require, module, exports, __dirname, __filename) {
-var EventEmitter = require('events').EventEmitter
+require.define("/src/remark/api.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
   , api = module.exports = new EventEmitter()
   ;
 
 });
 
-require.define("events", function (require, module, exports, __dirname, __filename) {
-if (!process.EventEmitter) process.EventEmitter = function () {};
+require.define("events",function(require,module,exports,__dirname,__filename,process,global){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
 var isArray = typeof Array.isArray === 'function'
     ? Array.isArray
     : function (xs) {
-        return Object.toString.call(xs) === '[object Array]'
+        return Object.prototype.toString.call(xs) === '[object Array]'
     }
 ;
 
@@ -629,8 +675,7 @@ EventEmitter.prototype.listeners = function(type) {
 
 });
 
-require.define("/src/remark/dom.js", function (require, module, exports, __dirname, __filename) {
-var EventEmitter = require('events').EventEmitter
+require.define("/src/remark/dom.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
   , dom = module.exports = new EventEmitter()
   ;
 
@@ -694,6 +739,7 @@ function proxyFunction (element, func) {
             }];
           }
         , innerHTML: ''
+        , childNodes: [{nodeValue: ''}]
         };
       };
     }
@@ -723,8 +769,7 @@ function updateDimensions () {
 
 });
 
-require.define("/src/remark/controller.js", function (require, module, exports, __dirname, __filename) {
-var dispatcher = require('./dispatcher')
+require.define("/src/remark/controller.js",function(require,module,exports,__dirname,__filename,process,global){var dispatcher = require('./dispatcher')
   , dom = require('./dom')
   ;
 
@@ -789,8 +834,7 @@ function Controller (slideshow) {
 
 });
 
-require.define("/src/remark/dispatcher.js", function (require, module, exports, __dirname, __filename) {
-var EventEmitter = require('events').EventEmitter
+require.define("/src/remark/dispatcher.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
   , dispatcher = module.exports = new EventEmitter()
   , dom = require('./dom')
   ;
@@ -912,8 +956,7 @@ function gotoPreviousSlide () {
 
 });
 
-require.define("/src/remark/highlighter.js", function (require, module, exports, __dirname, __filename) {
-var api = require('./api')
+require.define("/src/remark/highlighter.js",function(require,module,exports,__dirname,__filename,process,global){var api = require('./api')
   , config = require('./config')
   , resources = require('./resources')
 
@@ -953,8 +996,7 @@ highlighter.highlightCodeBlocks = function (content) {
 
 });
 
-require.define("/src/remark/config.js", function (require, module, exports, __dirname, __filename) {
-var config = module.exports = configure
+require.define("/src/remark/config.js",function(require,module,exports,__dirname,__filename,process,global){var config = module.exports = configure
   , api = require('./api')
   , dom = require('./dom')
   ;
@@ -1021,10 +1063,9 @@ function setProperties (properties) {
 
 });
 
-require.define("/src/remark/resources.js", function (require, module, exports, __dirname, __filename) {
-/* Automatically generated */
+require.define("/src/remark/resources.js",function(require,module,exports,__dirname,__filename,process,global){/* Automatically generated */
 
-module.exports = {"documentStyles":"html,body{background:#d7d7d7;font-family:Georgia;font-size:20px;overflow:hidden;}#slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}#slideshow .slide{height:100%;width:100%;}#slideshow .slide>.left{text-align:center;}#slideshow .slide>.center{text-align:center;}#slideshow .slide>.right{text-align:right;}#slideshow .slide>.top{vertical-align:top;}#slideshow .slide>.middle{vertical-align:middle;}#slideshow .slide>.bottom{vertical-align:bottom;}#slideshow .slide .content{display:table-cell;padding:1em 4em 1em 4em;}#slideshow .slide .content .left{display:block;text-align:left;}#slideshow .slide .content .center{display:block;text-align:center;}#slideshow .slide .content .right{display:block;text-align:right;}#slideshow .slide .content pre,#slideshow .slide .content code{font-family:Monaco, monospace;font-size:16px;}#slideshow .slide .content h1 code{font-size:0.8em;}#slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}li>code,p>code{padding:1px 4px;}","highlighter":{"styles":{"dark":"pre code{display:block;padding:0.5em;background:#444;}pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .clojure .built_in,pre .nginx .title,pre .tex .special{color:white;}pre code,pre .subst{color:#DDD;}pre .string,pre .title,pre .haskell .type,pre .ini .title,pre .tag .value,pre .css .rules .value,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .ruby .string,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .input_number{color:#D88;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket,pre .tex .formula{color:#777;}pre .keyword,pre .literal,pre .title,pre .css .id,pre .phpdoc,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .apache .tag,pre .tex .special,pre .request,pre .status{font-weight:bold;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","solarized_dark":"pre code{display:block;padding:0.5em;background:#002b36;color:#839496;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .pi,pre .lisp .string,pre .javadoc{color:#586e75;font-style:italic;}pre .keyword,pre .winutils,pre .method,pre .addition,pre .css .tag,pre .request,pre .status,pre .nginx .title{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .chunk,pre .decorator,pre .built_in,pre .identifier,pre .vhdl .literal,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .type{color:#b58900;}pre .preprocessor,pre .preprocessor .keyword,pre .shebang,pre .symbol,pre .symbol .string,pre .diff .change,pre .special,pre .attr_selector,pre .important,pre .subst,pre .cdata,pre .clojure .title{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#073642;}","rainbow":"pre::-moz-selection{background:#FF5E99;color:#fff;text-shadow:none;}pre::selection{background:#FF5E99;color:#fff;text-shadow:none;}pre code{display:block;padding:0.5em;background:#474949;color:#D1D9E1;}pre .body,pre .collection{color:#D1D9E1;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .lisp .string,pre .javadoc{color:#969896;font-style:italic;}pre .keyword,pre .clojure .attribute,pre .winutils,pre .javascript .title,pre .addition,pre .css .tag{color:#cc99cc;}pre .number{color:#f99157;}pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#8abeb7;}pre .title,pre .localvars,pre .function .title,pre .chunk,pre .decorator,pre .built_in,pre .lisp .title,pre .identifier{color:#b5bd68;}pre .class .keyword{color:#f2777a;}pre .variable,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .label,pre .id,pre .lisp .title,pre .clojure .title .built_in{color:#ffcc66;}pre .tag .title,pre .rules .property,pre .django .tag .keyword,pre .clojure .title .built_in{font-weight:bold;}pre .attribute,pre .clojure .title{color:#81a2be;}pre .preprocessor,pre .pi,pre .shebang,pre .symbol,pre .symbol .string,pre .diff .change,pre .special,pre .attr_selector,pre .important,pre .subst,pre .cdata{color:#f99157;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#eee8d5;}","zenburn":"pre code{display:block;padding:0.5em;background:#3F3F3F;color:#DCDCDC;}pre .keyword,pre .tag,pre .css .class,pre .css .id,pre .lisp .title,pre .nginx .title,pre .request,pre .status,pre .clojure .attribute{color:#E3CEAB;}pre .django .template_tag,pre .django .variable,pre .django .filter .argument{color:#DCDCDC;}pre .number,pre .date{color:#8CD0D3;}pre .dos .envvar,pre .dos .stream,pre .variable,pre .apache .sqbracket{color:#EFDCBC;}pre .dos .flow,pre .diff .change,pre .python .exception,pre .python .built_in,pre .literal,pre .tex .special{color:#EFEFAF;}pre .diff .chunk,pre .subst{color:#8F8F8F;}pre .dos .keyword,pre .python .decorator,pre .title,pre .haskell .type,pre .diff .header,pre .ruby .class .parent,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .input_number{color:#efef8f;}pre .dos .winutils,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .string{color:#DCA3A3;}pre .diff .deletion,pre .string,pre .tag .value,pre .preprocessor,pre .built_in,pre .sql .aggregate,pre .javadoc,pre .smalltalk .class,pre .smalltalk .localvars,pre .smalltalk .array,pre .css .rules .value,pre .attr_selector,pre .pseudo,pre .apache .cbracket,pre .tex .formula{color:#CC9393;}pre .shebang,pre .diff .addition,pre .comment,pre .java .annotation,pre .template_comment,pre .pi,pre .doctype{color:#7F9F7F;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","tomorrow-night-blue":".tomorrow-comment,pre .comment,pre .title{color:#7285b7;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#ff9da4;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#ffc58f;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#ffeead;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#d1f1a9;}.tomorrow-aqua,pre .css .hexcolor{color:#99ffff;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#bbdaff;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#ebbbff;}pre code{display:block;background:#002451;color:white;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","googlecode":"pre code{display:block;padding:0.5em;background:white;color:black;}pre .comment,pre .template_comment,pre .javadoc,pre .comment *{color:#800;}pre .keyword,pre .method,pre .list .title,pre .clojure .built_in,pre .nginx .title,pre .tag .title,pre .setting .value,pre .winutils,pre .tex .command,pre .http .title,pre .request,pre .status{color:#008;}pre .envvar,pre .tex .special{color:#660;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .regexp{color:#080;}pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .ini .title,pre .shebang,pre .input_number,pre .hexcolor,pre .rules .value,pre .css .value .number,pre .literal,pre .symbol,pre .ruby .symbol .string,pre .number,pre .css .function,pre .clojure .attribute{color:#066;}pre .class .title,pre .haskell .type,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .typename,pre .tag .attribute,pre .doctype,pre .class .id,pre .built_in,pre .setting,pre .params,pre .variable,pre .clojure .title{color:#606;}pre .css .tag,pre .rules .property,pre .pseudo,pre .subst{color:#000;}pre .css .class,pre .css .id{color:#9B703F;}pre .value .important{color:#ff7700;font-weight:bold;}pre .rules .keyword{color:#C5AF75;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor,pre .preprocessor *{color:#444;}pre .tex .formula{background-color:#EEE;font-style:italic;}pre .diff .header,pre .chunk{color:#808080;font-weight:bold;}pre .diff .change{background-color:#BCCFF9;}pre .addition{background-color:#BAEEBA;}pre .deletion{background-color:#FFC8BD;}pre .comment .yardoctag{font-weight:bold;}","sunburst":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .comment,pre .template_comment,pre .javadoc{color:#aeaeae;font-style:italic;}pre .keyword,pre .ruby .function .keyword,pre .request,pre .status,pre .nginx .title{color:#E28964;}pre .function .keyword,pre .sub .keyword,pre .method,pre .list .title{color:#99CF50;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .tex .command{color:#65B042;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .title,pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .shebang,pre .input_number{color:#89BDFF;}pre .class .title,pre .haskell .type,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc{text-decoration:underline;}pre .symbol,pre .ruby .symbol .string,pre .number{color:#3387CC;}pre .params,pre .variable,pre .clojure .attribute{color:#3E87E3;}pre .css .tag,pre .rules .property,pre .pseudo,pre .tex .special{color:#CDA869;}pre .css .class{color:#9B703F;}pre .rules .keyword{color:#C5AF75;}pre .rules .value{color:#CF6A4C;}pre .css .id{color:#8B98AB;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor{color:#8996A8;}pre .hexcolor,pre .css .value .number{color:#DD7B3B;}pre .css .function{color:#DAD085;}pre .diff .header,pre .chunk,pre .tex .formula{background-color:#0E2231;color:#F8F8F8;font-style:italic;}pre .diff .change{background-color:#4A410D;color:#F8F8F8;}pre .addition{background-color:#253B22;color:#F8F8F8;}pre .deletion{background-color:#420E09;color:#F8F8F8;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","magula":"pre code{display:block;padding:0.5em;background-color:#f4f4f4;}pre code,pre .subst,pre .lisp .title,pre .clojure .built_in{color:black;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .cbracket{color:#050;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk{color:#777;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .change,pre .tex .special{color:#800;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .input_number,pre .clojure .attribute{color:#00e;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .xml .tag,pre .tex .command,pre .request,pre .status{font-weight:bold;color:navy;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}pre .apache .tag{font-weight:bold;color:blue;}","github":"pre code{display:block;padding:0.5em;color:#333;background:#f8f8ff;}pre .comment,pre .template_comment,pre .diff .header,pre .javadoc{color:#998;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .javascript .title,pre .nginx .title,pre .subst,pre .request,pre .status{color:#333;font-weight:bold;}pre .number,pre .hexcolor,pre .ruby .constant{color:#099;}pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula{color:#dd1144;}pre .title,pre .id{color:#900;font-weight:bold;}pre .javascript .title,pre .lisp .title,pre .clojure .title,pre .subst{font-weight:normal;}pre .class .title,pre .haskell .type,pre .vhdl .literal,pre .tex .command{color:#458;font-weight:bold;}pre .tag,pre .tag .title,pre .rules .property,pre .django .tag .keyword{color:#000080;font-weight:normal;}pre .attribute,pre .variable,pre .lisp .body{color:#008080;}pre .regexp{color:#009926;}pre .class{color:#458;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .lisp .keyword,pre .tex .special,pre .input_number{color:#990073;}pre .built_in,pre .lisp .title,pre .clojure .built_in{color:#0086b3;}pre .preprocessor,pre .pi,pre .doctype,pre .shebang,pre .cdata{color:#999;font-weight:bold;}pre .deletion{background:#ffdddd;}pre .addition{background:#ddffdd;}pre .diff .change{background:#0086b3;}pre .chunk{color:#aaaaaa;}","monokai":"pre code{display:block;padding:0.5em;background:#272822;}pre .tag,pre .tag .title,pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .clojure .built_in,pre .nginx .title,pre .tex .special{color:#F92672;}pre code{color:#DDD;}pre code .constant{color:#66D9EF;}pre .class .title{color:white;}pre .attribute,pre .symbol,pre .symbol .string,pre .value,pre .regexp{color:#BF79DB;}pre .tag .value,pre .string,pre .subst,pre .title,pre .haskell .type,pre .preprocessor,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .input_number{color:#A6E22E;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket,pre .tex .formula{color:#75715E;}pre .keyword,pre .literal,pre .css .id,pre .phpdoc,pre .title,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .apache .tag,pre .tex .special,pre .request,pre .status{font-weight:bold;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","tomorrow":".tomorrow-comment,pre .comment,pre .title{color:#8e908c;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#c82829;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#f5871f;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#eab700;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#718c00;}.tomorrow-aqua,pre .css .hexcolor{color:#3e999f;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#4271ae;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#8959a8;}pre code{display:block;background:white;color:#4d4d4c;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","tomorrow-night":".tomorrow-comment,pre .comment,pre .title{color:#969896;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#cc6666;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#de935f;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#f0c674;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#b5bd68;}.tomorrow-aqua,pre .css .hexcolor{color:#8abeb7;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#81a2be;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#b294bb;}pre code{display:block;background:#1d1f21;color:#c5c8c6;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","solarized_light":"pre code{display:block;padding:0.5em;background:#fdf6e3;color:#657b83;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .pi,pre .lisp .string,pre .javadoc{color:#93a1a1;font-style:italic;}pre .keyword,pre .winutils,pre .method,pre .addition,pre .css .tag,pre .request,pre .status,pre .nginx .title{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .chunk,pre .decorator,pre .built_in,pre .identifier,pre .vhdl .literal,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .type{color:#b58900;}pre .preprocessor,pre .preprocessor .keyword,pre .shebang,pre .symbol,pre .symbol .string,pre .diff .change,pre .special,pre .attr_selector,pre .important,pre .subst,pre .cdata,pre .clojure .title{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#eee8d5;}","vs":"pre code{display:block;padding:0.5em;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .apache .cbracket{color:#008000;}pre .keyword,pre .id,pre .built_in,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .tex .command,pre .request,pre .status,pre .nginx .title,pre .xml .tag,pre .xml .tag .value{color:#0000ff;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .ruby .symbol,pre .ruby .symbol .string,pre .aggregate,pre .template_tag,pre .django .variable,pre .addition,pre .flow,pre .stream,pre .apache .tag,pre .date,pre .tex .formula{color:#a31515;}pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .preprocessor,pre .userType,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .special,pre .input_number{color:#2b91af;}pre .phpdoc,pre .javadoc,pre .xmlDocTag{color:#808080;}pre .vhdl .typename{font-weight:bold;}pre .vhdl .string{color:#666666;}pre .vhdl .literal{color:#a31515;}pre .vhdl .attribute{color:#00B0E8;}pre .xml .attribute{color:#ff0000;}","ir_black":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .shebang,pre .comment,pre .template_comment,pre .javadoc{color:#7c7c7c;}pre .keyword,pre .tag,pre .tex .command,pre .request,pre .status,pre .clojure .attribute{color:#96CBFE;}pre .sub .keyword,pre .method,pre .list .title,pre .nginx .title{color:#FFFFB6;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date{color:#A8FF60;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .title,pre .sub .identifier,pre .pi,pre .decorator,pre .tex .special,pre .haskell .type,pre .constant,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .nginx .built_in{color:#FFFFB6;}pre .symbol,pre .ruby .symbol .string,pre .number,pre .variable,pre .vbscript,pre .literal{color:#C6C5FE;}pre .css .tag{color:#96CBFE;}pre .css .rules .property,pre .css .id{color:#FFFFB6;}pre .css .class{color:#FFF;}pre .hexcolor{color:#C6C5FE;}pre .number{color:#FF73FD;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.7;}","tomorrow-night-bright":".tomorrow-comment,pre .comment,pre .title{color:#969896;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#d54e53;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#e78c45;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#e7c547;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#b9ca4a;}.tomorrow-aqua,pre .css .hexcolor{color:#70c0b1;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#7aa6da;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#c397d8;}pre code{display:block;background:black;color:#eaeaea;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","ascetic":"pre code{display:block;padding:0.5em;background:white;color:black;}pre .string,pre .tag .value,pre .filter .argument,pre .addition,pre .change,pre .apache .tag,pre .apache .cbracket,pre .nginx .built_in,pre .tex .formula{color:#888;}pre .comment,pre .template_comment,pre .shebang,pre .doctype,pre .pi,pre .javadoc,pre .deletion,pre .apache .sqbracket{color:#CCC;}pre .keyword,pre .tag .title,pre .ini .title,pre .lisp .title,pre .clojure .title,pre .http .title,pre .nginx .title,pre .css .tag,pre .winutils,pre .flow,pre .apache .tag,pre .tex .command,pre .request,pre .status{font-weight:bold;}","far":"pre code{display:block;padding:0.5em;background:#000080;}pre code,pre .subst{color:#0FF;}pre .string,pre .ruby .string,pre .haskell .type,pre .tag .value,pre .css .rules .value,pre .css .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .clojure .title{color:#FF0;}pre .keyword,pre .css .id,pre .title,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .winutils,pre .flow,pre .change,pre .envvar,pre .bash .variable,pre .tex .special,pre .clojure .built_in{color:#FFF;}pre .comment,pre .phpdoc,pre .javadoc,pre .java .annotation,pre .template_comment,pre .deletion,pre .apache .sqbracket,pre .tex .formula{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .clojure .attribute{color:#0F0;}pre .python .decorator,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .xml .pi,pre .diff .header,pre .chunk,pre .shebang,pre .nginx .built_in,pre .input_number{color:#008080;}pre .keyword,pre .css .id,pre .title,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .winutils,pre .flow,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .tex .special,pre .request,pre .status{font-weight:bold;}","idea":"pre code{display:block;padding:0.5em;color:#000;background:#fff;}pre .subst,pre .title{font-weight:normal;color:#000;}pre .comment,pre .template_comment,pre .javadoc,pre .diff .header{color:#808080;font-style:italic;}pre .annotation,pre .decorator,pre .preprocessor,pre .doctype,pre .pi,pre .chunk,pre .shebang,pre .apache .cbracket,pre .input_number,pre .http .title{color:#808000;}pre .tag,pre .pi{background:#efefef;}pre .tag .title,pre .id,pre .attr_selector,pre .pseudo,pre .literal,pre .keyword,pre .hexcolor,pre .css .function,pre .ini .title,pre .css .class,pre .list .title,pre .clojure .title,pre .nginx .title,pre .tex .command,pre .request,pre .status{font-weight:bold;color:#000080;}pre .attribute,pre .rules .keyword,pre .number,pre .date,pre .regexp,pre .tex .special{font-weight:bold;color:#0000ff;}pre .number,pre .regexp{font-weight:normal;}pre .string,pre .value,pre .filter .argument,pre .css .function .params,pre .apache .tag{color:#008000;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .char,pre .tex .formula{color:#000;background:#d0eded;font-style:italic;}pre .phpdoc,pre .yardoctag,pre .javadoctag{text-decoration:underline;}pre .variable,pre .envvar,pre .apache .sqbracket,pre .nginx .built_in{color:#660e7a;}pre .addition{background:#baeeba;}pre .deletion{background:#ffc8bd;}pre .diff .change{background:#bccff9;}","arta":"pre code{display:block;padding:0.5em;background:#222;}pre .profile .header *,pre .ini .title,pre .nginx .title{color:#fff;}pre .comment,pre .javadoc,pre .preprocessor,pre .preprocessor .title,pre .shebang,pre .profile .summary,pre .diff,pre .pi,pre .doctype,pre .tag,pre .template_comment,pre .css .rules,pre .tex .special{color:#444;}pre .string,pre .symbol,pre .diff .change,pre .regexp,pre .xml .attribute,pre .smalltalk .char,pre .xml .value,pre .ini .value,pre .clojure .attribute{color:#ffcc33;}pre .number,pre .addition{color:#00cc66;}pre .built_in,pre .literal,pre .vhdl .typename,pre .go .constant,pre .go .typename,pre .ini .keyword,pre .lua .title,pre .perl .variable,pre .php .variable,pre .mel .variable,pre .django .variable,pre .css .funtion,pre .smalltalk .method,pre .hexcolor,pre .important,pre .flow,pre .inheritance,pre .parser3 .variable{color:#32AAEE;}pre .keyword,pre .tag .title,pre .css .tag,pre .css .class,pre .css .id,pre .css .pseudo,pre .css .attr_selector,pre .lisp .title,pre .clojure .built_in,pre .winutils,pre .tex .command,pre .request,pre .status{color:#6644aa;}pre .title,pre .ruby .constant,pre .vala .constant,pre .parent,pre .deletion,pre .template_tag,pre .css .keyword,pre .objectivec .class .id,pre .smalltalk .class,pre .lisp .keyword,pre .apache .tag,pre .nginx .variable,pre .envvar,pre .bash .variable,pre .go .built_in,pre .vbscript .built_in,pre .lua .built_in,pre .rsl .built_in,pre .tail,pre .avrasm .label,pre .tex .formula,pre .tex .formula *{color:#bb1166;}pre .yardoctag,pre .phpdoc,pre .profile .header,pre .ini .title,pre .apache .tag,pre .parser3 .title{font-weight:bold;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.6;}pre code,pre .javascript,pre .css,pre .xml,pre .subst,pre .diff .chunk,pre .css .value,pre .css .attribute,pre .lisp .string,pre .lisp .number,pre .tail .params,pre .container,pre .haskell *,pre .erlang *,pre .erlang_repl *{color:#aaa;}","xcode":"pre code{display:block;padding:0.5em;background:#fff;color:black;}pre .comment,pre .template_comment,pre .javadoc,pre .comment *{color:#006a00;}pre .keyword,pre .literal,pre .nginx .title{color:#aa0d91;}pre .method,pre .list .title,pre .tag .title,pre .setting .value,pre .winutils,pre .tex .command,pre .http .title,pre .request,pre .status{color:#008;}pre .envvar,pre .tex .special{color:#660;}pre .string{color:#c41a16;}pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .regexp{color:#080;}pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .ini .title,pre .shebang,pre .input_number,pre .hexcolor,pre .rules .value,pre .css .value .number,pre .symbol,pre .symbol .string,pre .number,pre .css .function,pre .clojure .title,pre .clojure .built_in{color:#1c00cf;}pre .class .title,pre .haskell .type,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .typename,pre .tag .attribute,pre .doctype,pre .class .id,pre .built_in,pre .setting,pre .params,pre .clojure .attribute{color:#5c2699;}pre .variable{color:#3f6e74;}pre .css .tag,pre .rules .property,pre .pseudo,pre .subst{color:#000;}pre .css .class,pre .css .id{color:#9B703F;}pre .value .important{color:#ff7700;font-weight:bold;}pre .rules .keyword{color:#C5AF75;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor,pre .preprocessor *{color:#643820;}pre .tex .formula{background-color:#EEE;font-style:italic;}pre .diff .header,pre .chunk{color:#808080;font-weight:bold;}pre .diff .change{background-color:#BCCFF9;}pre .addition{background-color:#BAEEBA;}pre .deletion{background-color:#FFC8BD;}pre .comment .yardoctag{font-weight:bold;}pre .method .id{color:#000;}","default":"pre code{display:block;padding:0.5em;background:#F0F0F0;}pre code,pre .subst,pre .tag .title,pre .lisp .title,pre .clojure .built_in,pre .nginx .title{color:black;}pre .string,pre .title,pre .constant,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .tex .special,pre .erlang_repl .function_or_atom,pre .markdown .header{color:#800;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .markdown .blockquote{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .go .constant,pre .change,pre .markdown .bullet,pre .markdown .link_url{color:#080;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .important,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .erlang_repl .reserved,pre .input_number,pre .markdown .link_label,pre .vhdl .attribute,pre .clojure .attribute,pre .coffeescript .property{color:#8888ff;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .css .tag,pre .javadoctag,pre .phpdoc,pre .yardoctag,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .go .typename,pre .tex .command,pre .markdown .strong,pre .request,pre .status{font-weight:bold;}pre .markdown .emphasis{font-style:italic;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","tomorrow-night-eighties":".tomorrow-comment,pre .comment,pre .title{color:#999999;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#f2777a;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#f99157;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#ffcc66;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#99cc99;}.tomorrow-aqua,pre .css .hexcolor{color:#66cccc;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#6699cc;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#cc99cc;}pre code{display:block;background:#2d2d2d;color:#cccccc;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}"}}};
+module.exports = {"documentStyles":"html,body{background:#d7d7d7;font-family:Georgia;font-size:20px;overflow:hidden;}#slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}#slideshow .slide{height:100%;width:100%;}#slideshow .slide>.left{text-align:center;}#slideshow .slide>.center{text-align:center;}#slideshow .slide>.right{text-align:right;}#slideshow .slide>.top{vertical-align:top;}#slideshow .slide>.middle{vertical-align:middle;}#slideshow .slide>.bottom{vertical-align:bottom;}#slideshow .slide .content{display:table-cell;padding:1em 4em 1em 4em;}#slideshow .slide .content .left{display:block;text-align:left;}#slideshow .slide .content .center{display:block;text-align:center;}#slideshow .slide .content .right{display:block;text-align:right;}#slideshow .slide .content pre,#slideshow .slide .content code{font-family:Monaco, monospace;font-size:16px;}#slideshow .slide .content h1 code{font-size:0.8em;}#slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}li>code,p>code{padding:1px 4px;}","highlighter":{"styles":{"github":"pre code{display:block;padding:0.5em;color:#333;background:#f8f8ff;}pre .comment,pre .template_comment,pre .diff .header,pre .javadoc{color:#998;font-style:italic;}pre .keyword,pre .css .rule .keyword,pre .winutils,pre .javascript .title,pre .nginx .title,pre .subst,pre .request,pre .status{color:#333;font-weight:bold;}pre .number,pre .hexcolor,pre .ruby .constant{color:#099;}pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula{color:#dd1144;}pre .title,pre .id{color:#900;font-weight:bold;}pre .javascript .title,pre .lisp .title,pre .clojure .title,pre .subst{font-weight:normal;}pre .class .title,pre .haskell .type,pre .vhdl .literal,pre .tex .command{color:#458;font-weight:bold;}pre .tag,pre .tag .title,pre .rules .property,pre .django .tag .keyword{color:#000080;font-weight:normal;}pre .attribute,pre .variable,pre .lisp .body{color:#008080;}pre .regexp{color:#009926;}pre .class{color:#458;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .lisp .keyword,pre .tex .special,pre .input_number{color:#990073;}pre .built_in,pre .lisp .title,pre .clojure .built_in{color:#0086b3;}pre .preprocessor,pre .pi,pre .doctype,pre .shebang,pre .cdata{color:#999;font-weight:bold;}pre .deletion{background:#ffdddd;}pre .addition{background:#ddffdd;}pre .diff .change{background:#0086b3;}pre .chunk{color:#aaaaaa;}","tomorrow-night":".tomorrow-comment,pre .comment,pre .title{color:#969896;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#cc6666;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#de935f;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#f0c674;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#b5bd68;}.tomorrow-aqua,pre .css .hexcolor{color:#8abeb7;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#81a2be;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#b294bb;}pre code{display:block;background:#1d1f21;color:#c5c8c6;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","sunburst":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .comment,pre .template_comment,pre .javadoc{color:#aeaeae;font-style:italic;}pre .keyword,pre .ruby .function .keyword,pre .request,pre .status,pre .nginx .title{color:#E28964;}pre .function .keyword,pre .sub .keyword,pre .method,pre .list .title{color:#99CF50;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .tex .command{color:#65B042;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .title,pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .shebang,pre .input_number{color:#89BDFF;}pre .class .title,pre .haskell .type,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc{text-decoration:underline;}pre .symbol,pre .ruby .symbol .string,pre .number{color:#3387CC;}pre .params,pre .variable,pre .clojure .attribute{color:#3E87E3;}pre .css .tag,pre .rules .property,pre .pseudo,pre .tex .special{color:#CDA869;}pre .css .class{color:#9B703F;}pre .rules .keyword{color:#C5AF75;}pre .rules .value{color:#CF6A4C;}pre .css .id{color:#8B98AB;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor{color:#8996A8;}pre .hexcolor,pre .css .value .number{color:#DD7B3B;}pre .css .function{color:#DAD085;}pre .diff .header,pre .chunk,pre .tex .formula{background-color:#0E2231;color:#F8F8F8;font-style:italic;}pre .diff .change{background-color:#4A410D;color:#F8F8F8;}pre .addition{background-color:#253B22;color:#F8F8F8;}pre .deletion{background-color:#420E09;color:#F8F8F8;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","rainbow":"pre::-moz-selection{background:#FF5E99;color:#fff;text-shadow:none;}pre::selection{background:#FF5E99;color:#fff;text-shadow:none;}pre code{display:block;padding:0.5em;background:#474949;color:#D1D9E1;}pre .body,pre .collection{color:#D1D9E1;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .lisp .string,pre .javadoc{color:#969896;font-style:italic;}pre .keyword,pre .clojure .attribute,pre .winutils,pre .javascript .title,pre .addition,pre .css .tag{color:#cc99cc;}pre .number{color:#f99157;}pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#8abeb7;}pre .title,pre .localvars,pre .function .title,pre .chunk,pre .decorator,pre .built_in,pre .lisp .title,pre .identifier{color:#b5bd68;}pre .class .keyword{color:#f2777a;}pre .variable,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .label,pre .id,pre .lisp .title,pre .clojure .title .built_in{color:#ffcc66;}pre .tag .title,pre .rules .property,pre .django .tag .keyword,pre .clojure .title .built_in{font-weight:bold;}pre .attribute,pre .clojure .title{color:#81a2be;}pre .preprocessor,pre .pi,pre .shebang,pre .symbol,pre .symbol .string,pre .diff .change,pre .special,pre .attr_selector,pre .important,pre .subst,pre .cdata{color:#f99157;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#eee8d5;}","monokai":"pre code{display:block;padding:0.5em;background:#272822;}pre .tag,pre .tag .title,pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .clojure .built_in,pre .nginx .title,pre .tex .special{color:#F92672;}pre code{color:#DDD;}pre code .constant{color:#66D9EF;}pre .class .title{color:white;}pre .attribute,pre .symbol,pre .symbol .string,pre .value,pre .regexp{color:#BF79DB;}pre .tag .value,pre .string,pre .subst,pre .title,pre .haskell .type,pre .preprocessor,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .input_number{color:#A6E22E;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket,pre .tex .formula{color:#75715E;}pre .keyword,pre .literal,pre .css .id,pre .phpdoc,pre .title,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .apache .tag,pre .tex .special,pre .request,pre .status{font-weight:bold;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","googlecode":"pre code{display:block;padding:0.5em;background:white;color:black;}pre .comment,pre .template_comment,pre .javadoc,pre .comment *{color:#800;}pre .keyword,pre .method,pre .list .title,pre .clojure .built_in,pre .nginx .title,pre .tag .title,pre .setting .value,pre .winutils,pre .tex .command,pre .http .title,pre .request,pre .status{color:#008;}pre .envvar,pre .tex .special{color:#660;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .regexp{color:#080;}pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .ini .title,pre .shebang,pre .input_number,pre .hexcolor,pre .rules .value,pre .css .value .number,pre .literal,pre .symbol,pre .ruby .symbol .string,pre .number,pre .css .function,pre .clojure .attribute{color:#066;}pre .class .title,pre .haskell .type,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .typename,pre .tag .attribute,pre .doctype,pre .class .id,pre .built_in,pre .setting,pre .params,pre .variable,pre .clojure .title{color:#606;}pre .css .tag,pre .rules .property,pre .pseudo,pre .subst{color:#000;}pre .css .class,pre .css .id{color:#9B703F;}pre .value .important{color:#ff7700;font-weight:bold;}pre .rules .keyword{color:#C5AF75;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor,pre .preprocessor *{color:#444;}pre .tex .formula{background-color:#EEE;font-style:italic;}pre .diff .header,pre .chunk{color:#808080;font-weight:bold;}pre .diff .change{background-color:#BCCFF9;}pre .addition{background-color:#BAEEBA;}pre .deletion{background-color:#FFC8BD;}pre .comment .yardoctag{font-weight:bold;}","idea":"pre code{display:block;padding:0.5em;color:#000;background:#fff;}pre .subst,pre .title{font-weight:normal;color:#000;}pre .comment,pre .template_comment,pre .javadoc,pre .diff .header{color:#808080;font-style:italic;}pre .annotation,pre .decorator,pre .preprocessor,pre .doctype,pre .pi,pre .chunk,pre .shebang,pre .apache .cbracket,pre .input_number,pre .http .title{color:#808000;}pre .tag,pre .pi{background:#efefef;}pre .tag .title,pre .id,pre .attr_selector,pre .pseudo,pre .literal,pre .keyword,pre .hexcolor,pre .css .function,pre .ini .title,pre .css .class,pre .list .title,pre .clojure .title,pre .nginx .title,pre .tex .command,pre .request,pre .status{font-weight:bold;color:#000080;}pre .attribute,pre .rules .keyword,pre .number,pre .date,pre .regexp,pre .tex .special{font-weight:bold;color:#0000ff;}pre .number,pre .regexp{font-weight:normal;}pre .string,pre .value,pre .filter .argument,pre .css .function .params,pre .apache .tag{color:#008000;font-weight:bold;}pre .symbol,pre .ruby .symbol .string,pre .char,pre .tex .formula{color:#000;background:#d0eded;font-style:italic;}pre .phpdoc,pre .yardoctag,pre .javadoctag{text-decoration:underline;}pre .variable,pre .envvar,pre .apache .sqbracket,pre .nginx .built_in{color:#660e7a;}pre .addition{background:#baeeba;}pre .deletion{background:#ffc8bd;}pre .diff .change{background:#bccff9;}","tomorrow-night-blue":".tomorrow-comment,pre .comment,pre .title{color:#7285b7;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#ff9da4;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#ffc58f;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#ffeead;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#d1f1a9;}.tomorrow-aqua,pre .css .hexcolor{color:#99ffff;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#bbdaff;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#ebbbff;}pre code{display:block;background:#002451;color:white;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","xcode":"pre code{display:block;padding:0.5em;background:#fff;color:black;}pre .comment,pre .template_comment,pre .javadoc,pre .comment *{color:#006a00;}pre .keyword,pre .literal,pre .nginx .title{color:#aa0d91;}pre .method,pre .list .title,pre .tag .title,pre .setting .value,pre .winutils,pre .tex .command,pre .http .title,pre .request,pre .status{color:#008;}pre .envvar,pre .tex .special{color:#660;}pre .string{color:#c41a16;}pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date,pre .regexp{color:#080;}pre .sub .identifier,pre .pi,pre .tag,pre .tag .keyword,pre .decorator,pre .ini .title,pre .shebang,pre .input_number,pre .hexcolor,pre .rules .value,pre .css .value .number,pre .symbol,pre .symbol .string,pre .number,pre .css .function,pre .clojure .title,pre .clojure .built_in{color:#1c00cf;}pre .class .title,pre .haskell .type,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .typename,pre .tag .attribute,pre .doctype,pre .class .id,pre .built_in,pre .setting,pre .params,pre .clojure .attribute{color:#5c2699;}pre .variable{color:#3f6e74;}pre .css .tag,pre .rules .property,pre .pseudo,pre .subst{color:#000;}pre .css .class,pre .css .id{color:#9B703F;}pre .value .important{color:#ff7700;font-weight:bold;}pre .rules .keyword{color:#C5AF75;}pre .annotation,pre .apache .sqbracket,pre .nginx .built_in{color:#9B859D;}pre .preprocessor,pre .preprocessor *{color:#643820;}pre .tex .formula{background-color:#EEE;font-style:italic;}pre .diff .header,pre .chunk{color:#808080;font-weight:bold;}pre .diff .change{background-color:#BCCFF9;}pre .addition{background-color:#BAEEBA;}pre .deletion{background-color:#FFC8BD;}pre .comment .yardoctag{font-weight:bold;}pre .method .id{color:#000;}","far":"pre code{display:block;padding:0.5em;background:#000080;}pre code,pre .subst{color:#0FF;}pre .string,pre .ruby .string,pre .haskell .type,pre .tag .value,pre .css .rules .value,pre .css .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .clojure .title{color:#FF0;}pre .keyword,pre .css .id,pre .title,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .xml .tag .title,pre .winutils,pre .flow,pre .change,pre .envvar,pre .bash .variable,pre .tex .special,pre .clojure .built_in{color:#FFF;}pre .comment,pre .phpdoc,pre .javadoc,pre .java .annotation,pre .template_comment,pre .deletion,pre .apache .sqbracket,pre .tex .formula{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .clojure .attribute{color:#0F0;}pre .python .decorator,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .xml .pi,pre .diff .header,pre .chunk,pre .shebang,pre .nginx .built_in,pre .input_number{color:#008080;}pre .keyword,pre .css .id,pre .title,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .winutils,pre .flow,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .tex .special,pre .request,pre .status{font-weight:bold;}","solarized_light":"pre code{display:block;padding:0.5em;background:#fdf6e3;color:#657b83;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .pi,pre .lisp .string,pre .javadoc{color:#93a1a1;font-style:italic;}pre .keyword,pre .winutils,pre .method,pre .addition,pre .css .tag,pre .request,pre .status,pre .nginx .title{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .chunk,pre .decorator,pre .built_in,pre .identifier,pre .vhdl .literal,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .type{color:#b58900;}pre .preprocessor,pre .preprocessor .keyword,pre .shebang,pre .symbol,pre .symbol .string,pre .diff .change,pre .special,pre .attr_selector,pre .important,pre .subst,pre .cdata,pre .clojure .title{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#eee8d5;}","tomorrow":".tomorrow-comment,pre .comment,pre .title{color:#8e908c;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#c82829;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#f5871f;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#eab700;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#718c00;}.tomorrow-aqua,pre .css .hexcolor{color:#3e999f;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#4271ae;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#8959a8;}pre code{display:block;background:white;color:#4d4d4c;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","tomorrow-night-eighties":".tomorrow-comment,pre .comment,pre .title{color:#999999;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#f2777a;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#f99157;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#ffcc66;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#99cc99;}.tomorrow-aqua,pre .css .hexcolor{color:#66cccc;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#6699cc;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#cc99cc;}pre code{display:block;background:#2d2d2d;color:#cccccc;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","ir_black":"pre code{display:block;padding:0.5em;background:#000;color:#f8f8f8;}pre .shebang,pre .comment,pre .template_comment,pre .javadoc{color:#7c7c7c;}pre .keyword,pre .tag,pre .tex .command,pre .request,pre .status,pre .clojure .attribute{color:#96CBFE;}pre .sub .keyword,pre .method,pre .list .title,pre .nginx .title{color:#FFFFB6;}pre .string,pre .tag .value,pre .cdata,pre .filter .argument,pre .attr_selector,pre .apache .cbracket,pre .date{color:#A8FF60;}pre .subst{color:#DAEFA3;}pre .regexp{color:#E9C062;}pre .title,pre .sub .identifier,pre .pi,pre .decorator,pre .tex .special,pre .haskell .type,pre .constant,pre .smalltalk .class,pre .javadoctag,pre .yardoctag,pre .phpdoc,pre .nginx .built_in{color:#FFFFB6;}pre .symbol,pre .ruby .symbol .string,pre .number,pre .variable,pre .vbscript,pre .literal{color:#C6C5FE;}pre .css .tag{color:#96CBFE;}pre .css .rules .property,pre .css .id{color:#FFFFB6;}pre .css .class{color:#FFF;}pre .hexcolor{color:#C6C5FE;}pre .number{color:#FF73FD;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.7;}","dark":"pre code{display:block;padding:0.5em;background:#444;}pre .keyword,pre .literal,pre .change,pre .winutils,pre .flow,pre .lisp .title,pre .clojure .built_in,pre .nginx .title,pre .tex .special{color:white;}pre code,pre .subst{color:#DDD;}pre .string,pre .title,pre .haskell .type,pre .ini .title,pre .tag .value,pre .css .rules .value,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .class .parent,pre .built_in,pre .sql .aggregate,pre .django .template_tag,pre .django .variable,pre .smalltalk .class,pre .javadoc,pre .ruby .string,pre .django .filter .argument,pre .smalltalk .localvars,pre .smalltalk .array,pre .attr_selector,pre .pseudo,pre .addition,pre .stream,pre .envvar,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .input_number{color:#D88;}pre .comment,pre .java .annotation,pre .python .decorator,pre .template_comment,pre .pi,pre .doctype,pre .deletion,pre .shebang,pre .apache .sqbracket,pre .tex .formula{color:#777;}pre .keyword,pre .literal,pre .title,pre .css .id,pre .phpdoc,pre .haskell .type,pre .vbscript .built_in,pre .sql .aggregate,pre .rsl .built_in,pre .smalltalk .class,pre .diff .header,pre .chunk,pre .winutils,pre .bash .variable,pre .apache .tag,pre .tex .special,pre .request,pre .status{font-weight:bold;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","zenburn":"pre code{display:block;padding:0.5em;background:#3F3F3F;color:#DCDCDC;}pre .keyword,pre .tag,pre .css .class,pre .css .id,pre .lisp .title,pre .nginx .title,pre .request,pre .status,pre .clojure .attribute{color:#E3CEAB;}pre .django .template_tag,pre .django .variable,pre .django .filter .argument{color:#DCDCDC;}pre .number,pre .date{color:#8CD0D3;}pre .dos .envvar,pre .dos .stream,pre .variable,pre .apache .sqbracket{color:#EFDCBC;}pre .dos .flow,pre .diff .change,pre .python .exception,pre .python .built_in,pre .literal,pre .tex .special{color:#EFEFAF;}pre .diff .chunk,pre .subst{color:#8F8F8F;}pre .dos .keyword,pre .python .decorator,pre .title,pre .haskell .type,pre .diff .header,pre .ruby .class .parent,pre .apache .tag,pre .nginx .built_in,pre .tex .command,pre .input_number{color:#efef8f;}pre .dos .winutils,pre .ruby .symbol,pre .ruby .symbol .string,pre .ruby .string{color:#DCA3A3;}pre .diff .deletion,pre .string,pre .tag .value,pre .preprocessor,pre .built_in,pre .sql .aggregate,pre .javadoc,pre .smalltalk .class,pre .smalltalk .localvars,pre .smalltalk .array,pre .css .rules .value,pre .attr_selector,pre .pseudo,pre .apache .cbracket,pre .tex .formula{color:#CC9393;}pre .shebang,pre .diff .addition,pre .comment,pre .java .annotation,pre .template_comment,pre .pi,pre .doctype{color:#7F9F7F;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","arta":"pre code{display:block;padding:0.5em;background:#222;}pre .profile .header *,pre .ini .title,pre .nginx .title{color:#fff;}pre .comment,pre .javadoc,pre .preprocessor,pre .preprocessor .title,pre .shebang,pre .profile .summary,pre .diff,pre .pi,pre .doctype,pre .tag,pre .template_comment,pre .css .rules,pre .tex .special{color:#444;}pre .string,pre .symbol,pre .diff .change,pre .regexp,pre .xml .attribute,pre .smalltalk .char,pre .xml .value,pre .ini .value,pre .clojure .attribute{color:#ffcc33;}pre .number,pre .addition{color:#00cc66;}pre .built_in,pre .literal,pre .vhdl .typename,pre .go .constant,pre .go .typename,pre .ini .keyword,pre .lua .title,pre .perl .variable,pre .php .variable,pre .mel .variable,pre .django .variable,pre .css .funtion,pre .smalltalk .method,pre .hexcolor,pre .important,pre .flow,pre .inheritance,pre .parser3 .variable{color:#32AAEE;}pre .keyword,pre .tag .title,pre .css .tag,pre .css .class,pre .css .id,pre .css .pseudo,pre .css .attr_selector,pre .lisp .title,pre .clojure .built_in,pre .winutils,pre .tex .command,pre .request,pre .status{color:#6644aa;}pre .title,pre .ruby .constant,pre .vala .constant,pre .parent,pre .deletion,pre .template_tag,pre .css .keyword,pre .objectivec .class .id,pre .smalltalk .class,pre .lisp .keyword,pre .apache .tag,pre .nginx .variable,pre .envvar,pre .bash .variable,pre .go .built_in,pre .vbscript .built_in,pre .lua .built_in,pre .rsl .built_in,pre .tail,pre .avrasm .label,pre .tex .formula,pre .tex .formula *{color:#bb1166;}pre .yardoctag,pre .phpdoc,pre .profile .header,pre .ini .title,pre .apache .tag,pre .parser3 .title{font-weight:bold;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.6;}pre code,pre .javascript,pre .css,pre .xml,pre .subst,pre .diff .chunk,pre .css .value,pre .css .attribute,pre .lisp .string,pre .lisp .number,pre .tail .params,pre .container,pre .haskell *,pre .erlang *,pre .erlang_repl *{color:#aaa;}","default":"pre code{display:block;padding:0.5em;background:#F0F0F0;}pre code,pre .subst,pre .tag .title,pre .lisp .title,pre .clojure .built_in,pre .nginx .title{color:black;}pre .string,pre .title,pre .constant,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .tag,pre .apache .cbracket,pre .tex .command,pre .tex .special,pre .erlang_repl .function_or_atom,pre .markdown .header{color:#800;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .markdown .blockquote{color:#888;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .go .constant,pre .change,pre .markdown .bullet,pre .markdown .link_url{color:#080;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .important,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .erlang_repl .reserved,pre .input_number,pre .markdown .link_label,pre .vhdl .attribute,pre .clojure .attribute,pre .coffeescript .property{color:#8888ff;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .css .tag,pre .javadoctag,pre .phpdoc,pre .yardoctag,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .go .typename,pre .tex .command,pre .markdown .strong,pre .request,pre .status{font-weight:bold;}pre .markdown .emphasis{font-style:italic;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","solarized_dark":"pre code{display:block;padding:0.5em;background:#002b36;color:#839496;}pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .pi,pre .lisp .string,pre .javadoc{color:#586e75;font-style:italic;}pre .keyword,pre .winutils,pre .method,pre .addition,pre .css .tag,pre .request,pre .status,pre .nginx .title{color:#859900;}pre .number,pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor{color:#2aa198;}pre .title,pre .localvars,pre .chunk,pre .decorator,pre .built_in,pre .identifier,pre .vhdl .literal,pre .id{color:#268bd2;}pre .attribute,pre .variable,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .type{color:#b58900;}pre .preprocessor,pre .preprocessor .keyword,pre .shebang,pre .symbol,pre .symbol .string,pre .diff .change,pre .special,pre .attr_selector,pre .important,pre .subst,pre .cdata,pre .clojure .title{color:#cb4b16;}pre .deletion{color:#dc322f;}pre .tex .formula{background:#073642;}","magula":"pre code{display:block;padding:0.5em;background-color:#f4f4f4;}pre code,pre .subst,pre .lisp .title,pre .clojure .built_in{color:black;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .preprocessor,pre .ruby .symbol,pre .ruby .symbol .string,pre .aggregate,pre .template_tag,pre .django .variable,pre .smalltalk .class,pre .addition,pre .flow,pre .stream,pre .bash .variable,pre .apache .cbracket{color:#050;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk{color:#777;}pre .number,pre .date,pre .regexp,pre .literal,pre .smalltalk .symbol,pre .smalltalk .char,pre .change,pre .tex .special{color:#800;}pre .label,pre .javadoc,pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .formula,pre .input_number,pre .clojure .attribute{color:#00e;}pre .keyword,pre .id,pre .phpdoc,pre .title,pre .built_in,pre .aggregate,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .apache .tag,pre .xml .tag,pre .tex .command,pre .request,pre .status{font-weight:bold;color:navy;}pre .nginx .built_in{font-weight:normal;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}pre .apache .tag{font-weight:bold;color:blue;}","vs":"pre code{display:block;padding:0.5em;}pre .comment,pre .annotation,pre .template_comment,pre .diff .header,pre .chunk,pre .apache .cbracket{color:#008000;}pre .keyword,pre .id,pre .built_in,pre .smalltalk .class,pre .winutils,pre .bash .variable,pre .tex .command,pre .request,pre .status,pre .nginx .title,pre .xml .tag,pre .xml .tag .value{color:#0000ff;}pre .string,pre .title,pre .parent,pre .tag .value,pre .rules .value,pre .rules .value .number,pre .ruby .symbol,pre .ruby .symbol .string,pre .aggregate,pre .template_tag,pre .django .variable,pre .addition,pre .flow,pre .stream,pre .apache .tag,pre .date,pre .tex .formula{color:#a31515;}pre .ruby .string,pre .decorator,pre .filter .argument,pre .localvars,pre .array,pre .attr_selector,pre .pseudo,pre .pi,pre .doctype,pre .deletion,pre .envvar,pre .shebang,pre .preprocessor,pre .userType,pre .apache .sqbracket,pre .nginx .built_in,pre .tex .special,pre .input_number{color:#2b91af;}pre .phpdoc,pre .javadoc,pre .xmlDocTag{color:#808080;}pre .vhdl .typename{font-weight:bold;}pre .vhdl .string{color:#666666;}pre .vhdl .literal{color:#a31515;}pre .vhdl .attribute{color:#00B0E8;}pre .xml .attribute{color:#ff0000;}","tomorrow-night-bright":".tomorrow-comment,pre .comment,pre .title{color:#969896;}.tomorrow-red,pre .variable,pre .attribute,pre .tag,pre .regexp,pre .ruby .constant,pre .xml .tag .title,pre .xml .pi,pre .xml .doctype,pre .html .doctype,pre .css .id,pre .css .class,pre .css .pseudo{color:#d54e53;}.tomorrow-orange,pre .number,pre .preprocessor,pre .built_in,pre .literal,pre .params,pre .constant{color:#e78c45;}.tomorrow-yellow,pre .class,pre .ruby .class .title,pre .css .rules .attribute{color:#e7c547;}.tomorrow-green,pre .string,pre .value,pre .inheritance,pre .header,pre .ruby .symbol,pre .xml .cdata{color:#b9ca4a;}.tomorrow-aqua,pre .css .hexcolor{color:#70c0b1;}.tomorrow-blue,pre .function,pre .python .decorator,pre .python .title,pre .ruby .function .title,pre .ruby .title .keyword,pre .perl .sub,pre .javascript .title,pre .coffeescript .title{color:#7aa6da;}.tomorrow-purple,pre .keyword,pre .javascript .function{color:#c397d8;}pre code{display:block;background:black;color:#eaeaea;padding:0.5em;}pre .coffeescript .javascript,pre .javascript .xml,pre .tex .formula,pre .xml .javascript,pre .xml .vbscript,pre .xml .css,pre .xml .cdata{opacity:0.5;}","ascetic":"pre code{display:block;padding:0.5em;background:white;color:black;}pre .string,pre .tag .value,pre .filter .argument,pre .addition,pre .change,pre .apache .tag,pre .apache .cbracket,pre .nginx .built_in,pre .tex .formula{color:#888;}pre .comment,pre .template_comment,pre .shebang,pre .doctype,pre .pi,pre .javadoc,pre .deletion,pre .apache .sqbracket{color:#CCC;}pre .keyword,pre .tag .title,pre .ini .title,pre .lisp .title,pre .clojure .title,pre .http .title,pre .nginx .title,pre .css .tag,pre .winutils,pre .flow,pre .apache .tag,pre .tex .command,pre .request,pre .status{font-weight:bold;}"}}};
 module.exports.highlighter.engine = (function () {
 var hljs = new /*
 Syntax highlighting with language autodetection.
@@ -3159,8 +3200,7 @@ function(hljs) {
 return hljs;})();
 });
 
-require.define("/src/remark/models/slideshow.js", function (require, module, exports, __dirname, __filename) {
-var Slide = require('./slide').Slide;
+require.define("/src/remark/models/slideshow.js",function(require,module,exports,__dirname,__filename,process,global){var Slide = require('./slide').Slide;
 
 exports.Slideshow = Slideshow;
 
@@ -3269,8 +3309,7 @@ function expandVariables (slides) {
 
 });
 
-require.define("/src/remark/models/slide.js", function (require, module, exports, __dirname, __filename) {
-exports.Slide = Slide;
+require.define("/src/remark/models/slide.js",function(require,module,exports,__dirname,__filename,process,global){exports.Slide = Slide;
 
 Slide.create = function (source, properties) {
   return new Slide(source, properties);
@@ -3380,8 +3419,7 @@ Slide.prototype.expandVariables = function (contentOnly) {
 
 });
 
-require.define("/src/remark/views/slideshowView.js", function (require, module, exports, __dirname, __filename) {
-var api = require('../api')
+require.define("/src/remark/views/slideshowView.js",function(require,module,exports,__dirname,__filename,process,global){var api = require('../api')
   , dispatcher = require('../dispatcher')
   , SlideView = require('./slideView').SlideView
   , dom = require('../dom')
@@ -3477,8 +3515,7 @@ function mapStyles (element) {
 
 });
 
-require.define("/src/remark/views/slideView.js", function (require, module, exports, __dirname, __filename) {
-var converter = require('../converter')
+require.define("/src/remark/views/slideView.js",function(require,module,exports,__dirname,__filename,process,global){var converter = require('../converter')
   , dom = require('../dom')
   , highlighter = require('../highlighter')
   ;
@@ -3540,8 +3577,7 @@ function setClassFromProperties (element, properties) {
 
 });
 
-require.define("/src/remark/converter.js", function (require, module, exports, __dirname, __filename) {
-var marked = require('marked')
+require.define("/src/remark/converter.js",function(require,module,exports,__dirname,__filename,process,global){var marked = require('marked')
   , config = require('./config')
   , converter = module.exports = {}
   ;
@@ -3606,7 +3642,9 @@ var getSquareBracketedText = function (text) {
 };
 
 converter.convertMarkdown = function (content) {
-  content.innerHTML = marked(content.innerHTML.replace(/^\s+/, ''));
+  var source = content.childNodes[0].nodeValue;
+
+  content.innerHTML = marked(source.replace(/^\s+/, ''));
 
   content.innerHTML = content.innerHTML.replace(/&[l|g]t;/g,
     function (match) {
@@ -3677,12 +3715,10 @@ converter.trimEmptySpace = function (content) {
 
 });
 
-require.define("/node_modules/marked/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"./lib/marked.js"}
+require.define("/node_modules/marked/package.json",function(require,module,exports,__dirname,__filename,process,global){module.exports = {"main":"./lib/marked.js"}
 });
 
-require.define("/node_modules/marked/lib/marked.js", function (require, module, exports, __dirname, __filename) {
-/**
+require.define("/node_modules/marked/lib/marked.js",function(require,module,exports,__dirname,__filename,process,global){/**
  * marked - A markdown parser (https://github.com/chjj/marked)
  * Copyright (c) 2011-2012, Christopher Jeffrey. (MIT Licensed)
  */
@@ -4476,8 +4512,8 @@ if (typeof module !== 'undefined') {
 
 });
 
-require.define("/index.js", function (require, module, exports, __dirname, __filename) {
-    var remark = require('./src/remark');
+require.define("/index.js",function(require,module,exports,__dirname,__filename,process,global){var remark = require('./src/remark');
 
 });
 require("/index.js");
+})();

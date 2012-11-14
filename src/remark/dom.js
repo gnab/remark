@@ -62,6 +62,7 @@ function proxyFunction (element, func) {
             }];
           }
         , innerHTML: ''
+        , childNodes: [{nodeValue: ''}]
         };
       };
     }

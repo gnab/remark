@@ -59,7 +59,10 @@ describe('converter', function () {
 
   describe('convertMarkdown', function () {
     var convert = function (text) {
-      var content = {innerHTML: text};
+      var content = {
+        innerHTML: text,
+        childNodes: [{nodeValue: text}]
+      };
       converter.convertMarkdown(content);
       return content.innerHTML;
     };
