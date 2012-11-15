@@ -3,13 +3,16 @@
 var fs = require('fs')
   , path = require('path')
   , bundler = require('./utils/bundler')
+  , minifier = require('./utils/minifier')
   ;
 
 var options = parseOptions();
 
 bundler.bundle(options, function (bundle) {
-  fs.writeFileSync(options.target, bundle);
-  showBuildInfo(options.target);
+  fs.writeFileSync(options.target + '.js', bundle);
+  showBuildInfo(options.target + '.js');
+  fs.writeFileSync(options.target + '.min.js', minifier.minify(bundle));
+  showBuildInfo(options.target + '.min.js');
 });
 
 function parseOptions () {
@@ -17,14 +20,11 @@ function parseOptions () {
       debug: false
     , watch: false
     , source: path.join(__dirname, '../index.js')
-    , target: path.join(__dirname, '../remark.min.js')
+    , target: path.join(__dirname, '../remark')
     };
 
   process.argv.forEach(function (val, index) {
-    if (val === '--debug' || val === '-d') {
-      options.debug = true;
-    }
-    else if (val === '--watch' || val === '-w') {
+    if (val === '--watch' || val === '-w') {
       options.watch = true;
     }
   });

@@ -2,7 +2,7 @@ var jsp = require('uglify-js').parser
   , pro = require('uglify-js').uglify
   ;
 
-module.exports = function (content) {
+exports.minify = function (content) {
   var ast = jsp.parse(content);
 
   ast = pro.ast_mangle(ast);
