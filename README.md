@@ -23,7 +23,7 @@ It takes only a few, simple steps to get up and running with remark:
           <head>
             <title>Title</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-            <script src="https://github.com/downloads/gnab/remark/remark-0.4.2.min.js" type="text/javascript"></script>
+            <script src="https://github.com/downloads/gnab/remark/remark-0.4.3.min.js" type="text/javascript"></script>
             <style type="text/css" media="screen">
               /* Slideshow styles */
             </style>

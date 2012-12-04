@@ -1,3 +1,8 @@
+### 0.4.3
+* Fix .left CSS class (via @lionel-m).
+* Fix support for block-quotes (via @joshbode).
+* Update dependencies to support node v0.8.x.
+
 ### 0.4.2
 * Emit 'ready' event.
 * Upgrade marked.
