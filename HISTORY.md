@@ -1,3 +1,6 @@
+### 0.4.4
+* Fix missing Markdown conversion of content inside HTML blocks.
+
 ### 0.4.3
 * Fix .left CSS class (via @lionel-m).
 * Fix support for block-quotes (via @joshbode).

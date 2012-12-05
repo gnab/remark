@@ -1,6 +1,6 @@
 {
   "name": "remark"
-, "version" : "0.4.3"
+, "version" : "0.4.4"
 , "dependencies": {
     "marked": "0.2.6"
 }
