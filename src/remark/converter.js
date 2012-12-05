@@ -20,7 +20,7 @@ converter.convertContentClasses = function (content) {
     if (text === null) {
       continue;
     }
-    
+
     if (match[1]) {
       // Simply remove escape slash
       replacement = match[2] + '[' + text + ']';
@@ -30,13 +30,13 @@ converter.convertContentClasses = function (content) {
       classes = match[2].substr(1).split('.');
       tag = text.indexOf('\n') === -1 ? 'span' : 'div';
 
-      replacement = "&lt;" + tag + " class=\"" + 
-        classes.join(' ') + 
-        "\"&gt;" + 
+      replacement = "&lt;" + tag + " class=\"" +
+        classes.join(' ') +
+        "\"&gt;" +
         text +
         "&lt;/" + tag + "&gt;";
 
-      classFinder.lastIndex = match.index + 
+      classFinder.lastIndex = match.index +
         ("&lt;" + tag + " class=\"" + classes.join(' ') + "\"&gt;").length;
     }
 
@@ -63,15 +63,23 @@ var getSquareBracketedText = function (text) {
 };
 
 converter.convertMarkdown = function (content) {
-  var source = content.childNodes[0].nodeValue;
+  // Store innerHTML in variable to allow intermediate conversion
+  // into invalid HTML to handle block-quotes
+  var source = content.innerHTML;
 
+  // Unescape block-quotes before conversion (&gt; => >)
+  source = source.replace(/(^|\n)( *)&gt;/, '$1$2>');
+
+  // Perform the actual Markdown conversion
   content.innerHTML = marked(source.replace(/^\s+/, ''));
 
+  // Unescape HTML escaped by the browser; &lt;, &gt;, ...
   content.innerHTML = content.innerHTML.replace(/&[l|g]t;/g,
     function (match) {
       return match === '&lt;' ? '<' : '>';
     });
 
+  // ... and &amp;
   content.innerHTML = content.innerHTML.replace(/&amp;/g, '&');
 };
 

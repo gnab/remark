@@ -67,6 +67,11 @@ describe('converter', function () {
       return content.innerHTML;
     };
 
+    it('should unescape block-quote before conversion', function () {
+      convert('&gt; a block quote')
+        .should.equal('<blockquote>\n<p>a block quote</p>\n</blockquote>\n');
+    });
+
     it('should unescape HTML', function () {
       convert('&lt;b class="test"&gt;a&lt;/b&gt;')
         .should.equal('<p><b class=&quot;test&quot;>a</b></p>\n');

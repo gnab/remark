@@ -2,7 +2,7 @@
   "name": "remark"
 , "version" : "0.4.3"
 , "dependencies": {
-    "marked": "0.2.5"
+    "marked": "0.2.6"
 }
 , "repository": {
     "type": "git",
