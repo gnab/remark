@@ -66,4 +66,5 @@ function setupSlideshow (sourceElement, slideshowElement) {
   controller = new Controller(slideshow);
 
   dispatcher.initialize();
+  api.emit('remarkReady');
 }

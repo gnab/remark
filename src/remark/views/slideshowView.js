@@ -25,9 +25,11 @@ function SlideshowView (slideshow, element) {
 }
 
 function createSlideViews (slides) {
-  return slides.map(function (slide) {
-    return new SlideView(slide);
-  });
+  var views = [];
+  for(var i = 0; i<slides.length; i++) {
+      views[i] = new SlideView(slides[i], i);
+  }
+  return views;
 }
 
 function createPositionElement () {
@@ -50,15 +52,15 @@ function mapEvents (slideshowView) {
 
 SlideshowView.prototype.showSlide =  function (slideIndex) {
   var slideView = this.slideViews[slideIndex];
-  api.emit('slidein', slideView.element, slideIndex);
   slideView.show();
   this.positionElement.innerHTML = slideIndex + 1 + ' / ' + this.slideViews.length;
+  api.emit('slidein', slideView.element, slideIndex);
 };
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
   var slideView = this.slideViews[slideIndex];
-  api.emit('slideout', slideView.element, slideIndex);
   slideView.hide();
+  api.emit('slideout', slideView.element, slideIndex);
 };
 
 function mapStyles (element) {
