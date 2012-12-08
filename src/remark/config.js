@@ -7,6 +7,7 @@ var VALID_PROPERTIES = [
   'highlightInline'
 , 'highlightLanguage'
 , 'highlightStyle'
+, 'ratio'
 ];
 
 api.config = config;
