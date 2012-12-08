@@ -45,11 +45,11 @@ function assureElementsExist (sourceElement, slideshowElement) {
 function styleDocument () {
   var styleElement = dom.createElement('style')
     , headElement = dom.getElementsByTagName('head')[0]
+    , styles = resources.documentStyles + highlighter.cssForStyle()
     ;
 
   styleElement.type = 'text/css';
-  styleElement.innerHTML = resources.documentStyles;
-  styleElement.innerHTML += highlighter.cssForStyle();
+  styleElement.innerHTML = styles;
 
   headElement.insertBefore(styleElement, headElement.firstChild);
 }
