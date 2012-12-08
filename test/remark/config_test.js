@@ -15,6 +15,12 @@ describe('config', function () {
     config.should.not.have.property('undefinedProperty');
   });
 
+  it('should handle setting no properties', function () {
+    (function () {
+      config();
+    }).should.not.throw();
+  });
+
   it('should be exposed', function () {
     api.should.have.property('config', config);
   });

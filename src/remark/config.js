@@ -55,6 +55,8 @@ function setProperties (properties) {
     , property
     ;
 
+  properties = properties || {};
+
   for (i = 0; i < VALID_PROPERTIES.length; ++i) {
     property = VALID_PROPERTIES[i];
     if (properties.hasOwnProperty(property)) {
