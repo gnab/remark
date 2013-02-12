@@ -12,7 +12,7 @@ A simplistic, in-browser, markdown-driven slideshow tool targeted at people who 
 
 Check out [this remark slideshow](http://gnab.github.com/remark) for a brief introduction.
 
-### Usage
+### Getting Started
 
 It takes only a few, simple steps to get up and running with remark:
 
