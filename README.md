@@ -16,45 +16,47 @@ Check out [this remark slideshow](http://gnab.github.com/remark) for a brief int
 
 It takes only a few, simple steps to get up and running with remark:
 
-1. Create a boilerplate HTML container:
+1. Create a HTML file to contain your slideshow (see below)
+2. Open the HTML file in a decent browser
+3. Edit the Markdown and/or CSS styles as needed, save and refresh!
 
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Title</title>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-            <script src="http://gnab.github.com/remark/downloads/remark-0.4.4.min.js" type="text/javascript"></script>
-            <style type="text/css" media="screen">
-              /* Slideshow styles */
-            </style>
-          </head>
-          <body>
-            <textarea id="source">
+Below is a boilerplate HTML file to get you started:
 
-        class: center, middle
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="http://gnab.github.com/remark/downloads/remark-0.4.4.min.js" type="text/javascript"></script>
+    <style type="text/css" media="screen">
+      /* Slideshow styles */
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
 
-        # Title
+class: center, middle
 
-        ---
+# Title
 
-        # Agenda
+ ---
 
-        1. Introduction
-        2. Deep-dive
-        3. ...
+# Agenda
 
-        ---
+1. Introduction
+2. Deep-dive
+3. ...
 
-        # Introduction
+---
 
-            </textarea>
-            <div id="slideshow"></div>
-          </body>
-        </html>
+# Introduction
 
-2. Enter your Markdown-formatted slideshow and any styles needed in the assigned areas.
-
-3. Launch the HTML file in a decent browser and enjoy!
+    </textarea>
+    <div id="slideshow"></div>
+  </body>
+</html>
+```
 
 Check out [the remark wiki](http://github.com/gnab/remark/wiki) for more information.
 
