@@ -59,9 +59,12 @@ class: center, middle
 </html>
 ```
 
-Check out [the remark wiki](http://github.com/gnab/remark/wiki) for more information.
+### Moving On
 
-### Slideshows created with remark
+The above boilerplate HTML container will get you up and running. To get the most out of remark, 
+please move on to the [the remark wiki](http://github.com/gnab/remark/wiki) for more information.
+
+### Slideshows Created With remark
 
 - [gnab.github.com/remark](http://gnab.github.com/remark)
 - [gnab.github.com/editorjs](http://gnab.github.com/editorjs)
