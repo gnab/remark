@@ -1,6 +1,5 @@
 var config = module.exports = configure
   , api = require('./api')
-  , dom = require('./dom')
   ;
 
 var VALID_PROPERTIES = [
@@ -20,7 +19,7 @@ function configure (properties) {
 
 function loadConfigFromScriptTag () {
   var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
-    , scriptElements = dom.getElementsByTagName('script')
+    , scriptElements = document.getElementsByTagName('script')
     , element
     , i;
 
@@ -45,7 +44,7 @@ function loadConfigFromJSON (jsonStr) {
     properties = JSON.parse(jsonStr);
   }
   catch (err) {
-    dom.alert('Parsing remark config failed! Be sure to use valid JSON.');
+    alert('Parsing remark config failed! Be sure to use valid JSON.');
   }
 
   setProperties(properties);

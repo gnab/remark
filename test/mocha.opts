@@ -1,4 +1,5 @@
 --require should
+--require ./test/dom
 --require ./src/remark/utils
 --reporter dot
 --ui bdd

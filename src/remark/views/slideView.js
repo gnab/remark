@@ -1,5 +1,4 @@
 var converter = require('../converter')
-  , dom = require('../dom')
   , highlighter = require('../highlighter')
   ;
 
@@ -22,7 +21,7 @@ SlideView.prototype.hide = function () {
 };
 
 function createSlideElement () {
-  var element = dom.createElement('div');
+  var element = document.createElement('div');
 
   element.className = 'slide';
   element.style.display = 'none';
@@ -31,7 +30,7 @@ function createSlideElement () {
 }
 
 function createContentElement (source, properties) {
-  var element = dom.createElement('div');
+  var element = document.createElement('div');
 
   if (properties.name) {
     element.id = "slide-" + properties.name;

@@ -2,7 +2,6 @@ var api = require('../api')
   , dispatcher = require('../dispatcher')
   , SlideView = require('./slideView').SlideView
   , config = require('../config')
-  , dom = require('../dom')
 
   , referenceWidth = 908
   , referenceHeight = 681
@@ -32,7 +31,7 @@ function createSlideViews (slides) {
 }
 
 function createPositionElement () {
-  var element = dom.createElement('div');
+  var element = document.createElement('div');
 
   element.className = 'position';
 
@@ -71,12 +70,12 @@ function mapStyles (element) {
   element.style.width = dimensions.width + 'px';
   element.style.height = dimensions.height + 'px';
 
-  dom.on('resize', resize);
+  window.addEventListener('resize', resize);
   resize();
 
   function resize () {
-    var containerHeight = dom.innerHeight
-      , containerWidth = dom.innerWidth
+    var containerHeight = window.innerHeight
+      , containerWidth = window.innerWidth
       , scale
       , scaledWidth
       , scaledHeight

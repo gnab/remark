@@ -1,12 +1,11 @@
 var SlideshowView = require('../../../src/remark/views/slideshowView').SlideshowView
   , config = require('../../../src/remark/config')
-  , dom = require('../../../src/remark/dom')
   ;
 
 describe('SlideshowView', function () {
   it('should calculate element size for 4:3', function () {
     var slideshow = { slides: [] }
-      , element = dom.createElement()
+      , element = document.createElement('div')
       , slideshowView
       ;
 
@@ -20,7 +19,7 @@ describe('SlideshowView', function () {
 
   it('should calculate element size for 4:3', function () {
     var slideshow = { slides: [] }
-      , element = dom.createElement()
+      , element = document.createElement('div')
       , slideshowView
       ;
 

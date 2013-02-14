@@ -393,7 +393,6 @@ process.binding = function (name) {
 
 require.define("/src/remark.js",function(require,module,exports,__dirname,__filename,process,global){var utils = require('./remark/utils')
   , api = require('./remark/api')
-  , dom = require('./remark/dom')
   , Controller = require('./remark/controller').Controller
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
@@ -402,11 +401,11 @@ require.define("/src/remark.js",function(require,module,exports,__dirname,__file
   , resources = require('./remark/resources')
   ;
 
-dom.exports.remark = api;
+window.remark = api;
 
-dom.on('load', function () {
-  var sourceElement = dom.getElementById('source')
-    , slideshowElement = dom.getElementById('slideshow')
+window.addEventListener('load', function () {
+  var sourceElement = document.getElementById('source')
+    , slideshowElement = document.getElementById('slideshow')
     ;
 
   if (!assureElementsExist(sourceElement, slideshowElement)) {
@@ -423,12 +422,12 @@ dom.on('load', function () {
 
 function assureElementsExist (sourceElement, slideshowElement) {
   if (!sourceElement) {
-    dom.alert('remark error: source element not present.');
+    alert('remark error: source element not present.');
     return false;
   }
 
   if (!slideshowElement) {
-    dom.alert('remark error: slideshow element not present.');
+    alert('remark error: slideshow element not present.');
     return false;
   }
 
@@ -436,8 +435,8 @@ function assureElementsExist (sourceElement, slideshowElement) {
 }
 
 function styleDocument () {
-  var styleElement = dom.createElement('style')
-    , headElement = dom.getElementsByTagName('head')[0]
+  var styleElement = document.createElement('style')
+    , headElement = document.getElementsByTagName('head')[0]
     , styles = resources.documentStyles + highlighter.cssForStyle()
     ;
 
@@ -675,102 +674,7 @@ EventEmitter.prototype.listeners = function(type) {
 
 });
 
-require.define("/src/remark/dom.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
-  , dom = module.exports = new EventEmitter()
-  ;
-
-dom.window = proxyObject('window');
-dom.document = proxyObject('document');
-
-dom.exports = dom.window;
-
-proxyFunction(dom.window, 'alert');
-proxyFunction(dom.document, 'createElement');
-proxyFunction(dom.document, 'getElementById');
-proxyFunction(dom.document, 'getElementsByTagName');
-
-proxyEvent(dom.window, 'load');
-proxyEvent(dom.window, 'resize');
-proxyEvent(dom.window, 'keydown');
-proxyEvent(dom.window, 'hashchange');
-proxyEvent(dom.document, 'touchstart');
-proxyEvent(dom.document, 'touchend');
-proxyEvent(dom.document, 'touchmove');
-proxyEvent(dom.document, 'mousewheel');
-
-dom.on('load', updateDimensions);
-dom.on('resize', updateDimensions);
-
-function proxyObject (objectName) {
-  var object;
-
-  if (typeof this[objectName] !== 'undefined') {
-    object = this[objectName];
-  }
-  else {
-    object = new EventEmitter();
-    object.addEventListener = object.on;
-
-    if (objectName === 'window') {
-      object.location = {};
-    }
-  }
-
-  return object;
-}
-
-function proxyFunction (element, func) {
-  if (typeof element[func] === 'function') {
-    dom[func] = function () { return element[func].apply(element, arguments); };
-  }
-  else {
-    if (['createElement', 'getElementById'].indexOf(func) !== -1) {
-      dom[func] = function () {
-        return {
-          style: {}
-        , appendChild: function () { }
-        , getElementsByTagName: function () {
-            return [{
-              parentNode: {
-                nodeName: ''
-              }
-            , childNodes: []
-            , className: ''
-            }];
-          }
-        , innerHTML: ''
-        , childNodes: [{nodeValue: ''}]
-        };
-      };
-    }
-    else if (func === 'getElementsByTagName') {
-      dom[func] = function () {
-        return [{
-          insertBefore: function () {}
-        }];
-      };
-    }
-    else {
-      dom[func] = function () { return {}; };
-    }
-  }
-}
-
-function proxyEvent (element, eventName) {
-  element.addEventListener(eventName, function (event) {
-    dom.emit(eventName, event);
-  });
-}
-
-function updateDimensions () {
-  dom.innerHeight = dom.window.innerHeight;
-  dom.innerWidth = dom.window.innerWidth;
-}
-
-});
-
 require.define("/src/remark/controller.js",function(require,module,exports,__dirname,__filename,process,global){var dispatcher = require('./dispatcher')
-  , dom = require('./dom')
   ;
 
 exports.Controller = Controller;
@@ -808,7 +712,7 @@ function Controller (slideshow) {
 
     currentSlideNo = slideNo;
 
-    dom.window.location.hash = slideNoOrName;
+    window.location.hash = slideNoOrName;
   }
 
   function getSlideNo (slideNoOrName) {
@@ -836,7 +740,6 @@ function Controller (slideshow) {
 
 require.define("/src/remark/dispatcher.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
   , dispatcher = module.exports = new EventEmitter()
-  , dom = require('./dom')
   ;
 
 dispatcher.initialize = function () {
@@ -847,18 +750,18 @@ dispatcher.initialize = function () {
 };
 
 function mapHash () {
-  dom.on('hashchange', navigate);
+  window.addEventListener('hashchange', navigate);
   navigate();
 
   function navigate () {
-    var slideNoOrName = (dom.window.location.hash || '').substr(1);
+    var slideNoOrName = (window.location.hash || '').substr(1);
 
     gotoSlide(slideNoOrName);
   }
 }
 
 function mapKeys () {
-  dom.on('keydown', function (event) {
+  window.addEventListener('keydown', function (event) {
     switch (event.keyCode) {
       case 33: // Page up
       case 37: // Left
@@ -888,7 +791,7 @@ function mapTouches () {
   };
 
   var handleTap = function () {
-    if (endX < dom.innerWidth / 2) {
+    if (endX < window.innerWidth / 2) {
       gotoPreviousSlide();
     }
     else {
@@ -905,12 +808,12 @@ function mapTouches () {
     }
   };
 
-  dom.on('touchstart', function (event) {
+  document.addEventListener('touchstart', function (event) {
     touch = event.touches[0];
     startX = touch.clientX;
   });
 
-  dom.on('touchend', function (event) {
+  document.addEventListener('touchend', function (event) {
     if (event.target.nodeName.toUpperCase() === 'A') {
       return;
     }
@@ -926,13 +829,13 @@ function mapTouches () {
     }
   });
 
-  dom.on('touchmove', function (event) {
+  document.addEventListener('touchmove', function (event) {
     event.preventDefault();
   });
 }
 
 function mapWheel () {
-  dom.on('mousewheel', function (event) {
+  document.addEventListener('mousewheel', function (event) {
     if (event.wheelDeltaY > 0) {
       gotoPreviousSlide();
     }
@@ -998,7 +901,6 @@ highlighter.highlightCodeBlocks = function (content) {
 
 require.define("/src/remark/config.js",function(require,module,exports,__dirname,__filename,process,global){var config = module.exports = configure
   , api = require('./api')
-  , dom = require('./dom')
   ;
 
 var VALID_PROPERTIES = [
@@ -1018,7 +920,7 @@ function configure (properties) {
 
 function loadConfigFromScriptTag () {
   var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
-    , scriptElements = dom.getElementsByTagName('script')
+    , scriptElements = document.getElementsByTagName('script')
     , element
     , i;
 
@@ -1043,7 +945,7 @@ function loadConfigFromJSON (jsonStr) {
     properties = JSON.parse(jsonStr);
   }
   catch (err) {
-    dom.alert('Parsing remark config failed! Be sure to use valid JSON.');
+    alert('Parsing remark config failed! Be sure to use valid JSON.');
   }
 
   setProperties(properties);
@@ -3426,7 +3328,6 @@ require.define("/src/remark/views/slideshowView.js",function(require,module,expo
   , dispatcher = require('../dispatcher')
   , SlideView = require('./slideView').SlideView
   , config = require('../config')
-  , dom = require('../dom')
 
   , referenceWidth = 908
   , referenceHeight = 681
@@ -3456,7 +3357,7 @@ function createSlideViews (slides) {
 }
 
 function createPositionElement () {
-  var element = dom.createElement('div');
+  var element = document.createElement('div');
 
   element.className = 'position';
 
@@ -3495,12 +3396,12 @@ function mapStyles (element) {
   element.style.width = dimensions.width + 'px';
   element.style.height = dimensions.height + 'px';
 
-  dom.on('resize', resize);
+  window.addEventListener('resize', resize);
   resize();
 
   function resize () {
-    var containerHeight = dom.innerHeight
-      , containerWidth = dom.innerWidth
+    var containerHeight = window.innerHeight
+      , containerWidth = window.innerWidth
       , scale
       , scaledWidth
       , scaledHeight
@@ -3549,7 +3450,6 @@ function getRatio () {
 });
 
 require.define("/src/remark/views/slideView.js",function(require,module,exports,__dirname,__filename,process,global){var converter = require('../converter')
-  , dom = require('../dom')
   , highlighter = require('../highlighter')
   ;
 
@@ -3572,7 +3472,7 @@ SlideView.prototype.hide = function () {
 };
 
 function createSlideElement () {
-  var element = dom.createElement('div');
+  var element = document.createElement('div');
 
   element.className = 'slide';
   element.style.display = 'none';
@@ -3581,7 +3481,7 @@ function createSlideElement () {
 }
 
 function createContentElement (source, properties) {
-  var element = dom.createElement('div');
+  var element = document.createElement('div');
 
   if (properties.name) {
     element.id = "slide-" + properties.name;
@@ -4006,7 +3906,6 @@ block.token = function(src, tokens, top) {
     // html
     if (cap = block.html.exec(src)) {
       src = src.substring(cap[0].length);
-      console.log(src);
       tokens.push({
         type: options.sanitize
           ? 'paragraph'

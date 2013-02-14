@@ -1,6 +1,5 @@
 var utils = require('./remark/utils')
   , api = require('./remark/api')
-  , dom = require('./remark/dom')
   , Controller = require('./remark/controller').Controller
   , dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
@@ -9,11 +8,11 @@ var utils = require('./remark/utils')
   , resources = require('./remark/resources')
   ;
 
-dom.exports.remark = api;
+window.remark = api;
 
-dom.on('load', function () {
-  var sourceElement = dom.getElementById('source')
-    , slideshowElement = dom.getElementById('slideshow')
+window.addEventListener('load', function () {
+  var sourceElement = document.getElementById('source')
+    , slideshowElement = document.getElementById('slideshow')
     ;
 
   if (!assureElementsExist(sourceElement, slideshowElement)) {
@@ -30,12 +29,12 @@ dom.on('load', function () {
 
 function assureElementsExist (sourceElement, slideshowElement) {
   if (!sourceElement) {
-    dom.alert('remark error: source element not present.');
+    alert('remark error: source element not present.');
     return false;
   }
 
   if (!slideshowElement) {
-    dom.alert('remark error: slideshow element not present.');
+    alert('remark error: slideshow element not present.');
     return false;
   }
 
@@ -43,8 +42,8 @@ function assureElementsExist (sourceElement, slideshowElement) {
 }
 
 function styleDocument () {
-  var styleElement = dom.createElement('style')
-    , headElement = dom.getElementsByTagName('head')[0]
+  var styleElement = document.createElement('style')
+    , headElement = document.getElementsByTagName('head')[0]
     , styles = resources.documentStyles + highlighter.cssForStyle()
     ;
 

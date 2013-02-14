@@ -1,5 +1,4 @@
 var dispatcher = require('./dispatcher')
-  , dom = require('./dom')
   ;
 
 exports.Controller = Controller;
@@ -37,7 +36,7 @@ function Controller (slideshow) {
 
     currentSlideNo = slideNo;
 
-    dom.window.location.hash = slideNoOrName;
+    window.location.hash = slideNoOrName;
   }
 
   function getSlideNo (slideNoOrName) {
