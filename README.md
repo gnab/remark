@@ -1,6 +1,6 @@
 # remark
 
-A simplistic, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
+A simple, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
 
 - Markdown formatting, with smart extensions
 
