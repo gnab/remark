@@ -1,4 +1,4 @@
-all: deps test bundle
+all: deps bundle
 
 deps:
 	npm install && git submodule update --init --recursive
@@ -6,10 +6,7 @@ deps:
 resources:
 	node make resources
 
-test:
-	node make test
-
 bundle:
 	node make
 
-.PHONY: deps test bundle
+.PHONY: deps bundle
