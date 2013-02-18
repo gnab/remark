@@ -61,9 +61,15 @@ class: center, middle
 The above boilerplate HTML container will get you up and running. To get the most out of remark, 
 please move on to the [the remark wiki](http://github.com/gnab/remark/wiki) for more information.
 
-### Slideshows Created With remark
+### Real-world remark slideshows
 
-- [gnab.github.com/remark](http://gnab.github.com/remark)
+On using remark:
+
+- [The Official remark Slideshow](http://gnab.github.com/remark)
+- [Coloured Terminal Listings in remark](http://joshbode.github.com/remark/ansi.html) by [joshbode](https://github.com/joshbode)
+
+Other interesting stuff:
+
 - [gnab.github.com/editorjs](http://gnab.github.com/editorjs)
 - [judoole.github.com/GroovyBDD](http://judoole.github.com/GroovyBDD)
 - [kjbekkelund.github.com/nith-coffeescript](http://kjbekkelund.github.com/nith-coffeescript)
