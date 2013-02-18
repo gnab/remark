@@ -1,15 +1,15 @@
 all: deps test bundle
 
 deps:
-	npm install && git submodule init && git submodule update
+	npm install && git submodule update --init --recursive
+
+resources:
+	node make resources
 
 test:
-	find test -name *_test.js | xargs ./node_modules/.bin/mocha $(OPTS)
-
-autotest:
-	make test OPTS=-w
+	node make test
 
 bundle:
-	node build/remark.js
+	node make
 
-.PHONY: deps test autotest bundle
+.PHONY: deps test bundle

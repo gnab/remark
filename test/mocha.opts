@@ -1,5 +1,5 @@
 --require should
---require ./test/dom
+--require ./test/environment
 --require ./src/remark/utils
 --reporter dot
 --ui bdd

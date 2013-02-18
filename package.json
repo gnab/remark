@@ -16,6 +16,10 @@
   , "should": "1.2.1"
   , "jshint": "0.5.9"
   , "jsdom": "0.5.0"
+  , "shelljs": "0.1.2"
+  }
+, "scripts": {
+    "test": "node make test"
   }
 , "config": {
     "highlighter": {

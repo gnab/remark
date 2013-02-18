@@ -1,0 +1,17 @@
+/* Automatically generated */
+
+var hljs = new (%HIGHLIGHTER_ENGINE%)()
+  , languages = [%HIGHLIGHTER_LANGUAGES%]
+  ;
+
+for (var i = 0; i < languages.length; ++i) {
+  hljs.LANGUAGES[languages[i].name] = languages[i].create(hljs);
+}
+
+module.exports = {
+  documentStyles: %DOCUMENT_STYLES%,
+  highlighter: {
+    styles: %HIGHLIGHTER_STYLES%,
+    engine: hljs
+  }
+};
