@@ -9,7 +9,7 @@ var VALID_PROPERTIES = [
 , 'ratio'
 ];
 
-api.exports.config = config;
+api.config = config;
 
 loadConfigFromScriptTag();
 

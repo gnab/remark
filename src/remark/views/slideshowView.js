@@ -1,5 +1,5 @@
 var api = require('../api')
-  , dispatcher = require('../dispatcher')
+  , events = require('../events')
   , SlideView = require('./slideView').SlideView
   , config = require('../config')
 
@@ -45,11 +45,11 @@ function createPositionElement () {
 }
 
 function mapEvents (slideshowView) {
-  dispatcher.on('hideSlide', function (slideIndex) {
+  events.on('hideSlide', function (slideIndex) {
     slideshowView.hideSlide(slideIndex);
   });
 
-  dispatcher.on('showSlide', function (slideIndex) {
+  events.on('showSlide', function (slideIndex) {
     slideshowView.showSlide(slideIndex);
   });
 }

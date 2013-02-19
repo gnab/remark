@@ -6,7 +6,10 @@ deps:
 resources:
 	node make resources
 
+test:
+	node make test
+
 bundle:
 	node make
 
-.PHONY: deps bundle
+.PHONY: deps test bundle

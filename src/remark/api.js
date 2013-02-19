@@ -1,9 +1,8 @@
 var EventEmitter = require('events').EventEmitter
   , api = module.exports = new EventEmitter()
+  , events = require('./events')
   ;
 
-api.exports = new EventEmitter();
-
-api.exports.loadFromString = function (source) {
-  api.emit('loadFromString', source);
+api.loadFromString = function (source) {
+  events.emit('loadFromString', source);
 };

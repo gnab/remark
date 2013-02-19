@@ -1,6 +1,6 @@
 var EventEmitter = require('events').EventEmitter
   , Slide = require('./slide').Slide
-  , api = require('../api')
+  , events = require('../events')
   ;
 
 exports.Slideshow = Slideshow;
@@ -12,7 +12,7 @@ function Slideshow (source) {
 
   self.loadFromString(source, true);
 
-  api.on('loadFromString', function (source) {
+  events.on('loadFromString', function (source) {
     self.loadFromString(source);
   });
 }

@@ -1,13 +1,15 @@
 var EventEmitter = require('events').EventEmitter
-  , dispatcher = module.exports = new EventEmitter()
+  , events = require('./events')
   ;
+  
+module.exports = Dispatcher;
 
-dispatcher.initialize = function () {
+function Dispatcher () {
   mapHash();
   mapKeys();
   mapTouches();
   mapWheel();
-};
+}
 
 function mapHash () {
   window.addEventListener('hashchange', navigate);
@@ -105,13 +107,13 @@ function mapWheel () {
 }
 
 function gotoSlide (slideNoOrName) {
-  dispatcher.emit('gotoSlide', slideNoOrName);
+  events.emit('gotoSlide', slideNoOrName);
 }
 
 function gotoNextSlide () {
-  dispatcher.emit('gotoNextSlide');
+  events.emit('gotoNextSlide');
 }
 
 function gotoPreviousSlide () {
-  dispatcher.emit('gotoPreviousSlide');
+  events.emit('gotoPreviousSlide');
 }

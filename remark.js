@@ -425,12 +425,11 @@ Array.prototype.map = Array.prototype.map || function (f) {
 
 require.define("/src/remark/api.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
   , api = module.exports = new EventEmitter()
+  , events = require('./events')
   ;
 
-api.exports = new EventEmitter();
-
-api.exports.loadFromString = function (source) {
-  api.emit('loadFromString', source);
+api.loadFromString = function (source) {
+  events.emit('loadFromString', source);
 };
 
 });
@@ -609,7 +608,13 @@ EventEmitter.prototype.listeners = function(type) {
 
 });
 
-require.define("/src/remark/controller.js",function(require,module,exports,__dirname,__filename,process,global){var dispatcher = require('./dispatcher')
+require.define("/src/remark/events.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
+  , events = module.exports = new EventEmitter()
+  ;
+
+});
+
+require.define("/src/remark/controller.js",function(require,module,exports,__dirname,__filename,process,global){var events = require('./events')
   ;
 
 exports.Controller = Controller;
@@ -634,15 +639,15 @@ function Controller (slideshow) {
     }
   });
 
-  dispatcher.on('gotoSlide', function (slideNoOrName) {
+  events.on('gotoSlide', function (slideNoOrName) {
     gotoSlide(slideshow, slideNoOrName);
   });
 
-  dispatcher.on('gotoPreviousSlide', function() {
+  events.on('gotoPreviousSlide', function() {
     gotoSlide(slideshow, currentSlideNo - 1);
   });
 
-  dispatcher.on('gotoNextSlide', function() {
+  events.on('gotoNextSlide', function() {
     gotoSlide(slideshow, currentSlideNo + 1);
   });
 
@@ -657,10 +662,10 @@ function Controller (slideshow) {
     }
 
     if (currentSlideNo !== 0) {
-      dispatcher.emit('hideSlide', currentSlideNo - 1);
+      events.emit('hideSlide', currentSlideNo - 1);
     }
 
-    dispatcher.emit('showSlide', slideNo - 1);
+    events.emit('showSlide', slideNo - 1);
 
     currentSlideNo = slideNo;
 
@@ -691,15 +696,17 @@ function Controller (slideshow) {
 });
 
 require.define("/src/remark/dispatcher.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
-  , dispatcher = module.exports = new EventEmitter()
+  , events = require('./events')
   ;
+  
+module.exports = Dispatcher;
 
-dispatcher.initialize = function () {
+function Dispatcher () {
   mapHash();
   mapKeys();
   mapTouches();
   mapWheel();
-};
+}
 
 function mapHash () {
   window.addEventListener('hashchange', navigate);
@@ -797,15 +804,15 @@ function mapWheel () {
 }
 
 function gotoSlide (slideNoOrName) {
-  dispatcher.emit('gotoSlide', slideNoOrName);
+  events.emit('gotoSlide', slideNoOrName);
 }
 
 function gotoNextSlide () {
-  dispatcher.emit('gotoNextSlide');
+  events.emit('gotoNextSlide');
 }
 
 function gotoPreviousSlide () {
-  dispatcher.emit('gotoPreviousSlide');
+  events.emit('gotoPreviousSlide');
 }
 
 });
@@ -861,7 +868,7 @@ var VALID_PROPERTIES = [
 , 'ratio'
 ];
 
-api.exports.config = config;
+api.config = config;
 
 loadConfigFromScriptTag();
 
@@ -3053,7 +3060,7 @@ module.exports = {
 
 require.define("/src/remark/models/slideshow.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
   , Slide = require('./slide').Slide
-  , api = require('../api')
+  , events = require('../events')
   ;
 
 exports.Slideshow = Slideshow;
@@ -3065,7 +3072,7 @@ function Slideshow (source) {
 
   self.loadFromString(source, true);
 
-  api.on('loadFromString', function (source) {
+  events.on('loadFromString', function (source) {
     self.loadFromString(source);
   });
 }
@@ -3290,7 +3297,7 @@ Slide.prototype.expandVariables = function (contentOnly) {
 });
 
 require.define("/src/remark/views/slideshowView.js",function(require,module,exports,__dirname,__filename,process,global){var api = require('../api')
-  , dispatcher = require('../dispatcher')
+  , events = require('../events')
   , SlideView = require('./slideView').SlideView
   , config = require('../config')
 
@@ -3336,11 +3343,11 @@ function createPositionElement () {
 }
 
 function mapEvents (slideshowView) {
-  dispatcher.on('hideSlide', function (slideIndex) {
+  events.on('hideSlide', function (slideIndex) {
     slideshowView.hideSlide(slideIndex);
   });
 
-  dispatcher.on('showSlide', function (slideIndex) {
+  events.on('showSlide', function (slideIndex) {
     slideshowView.showSlide(slideIndex);
   });
 }
@@ -4433,14 +4440,14 @@ if (typeof module !== 'undefined') {
 require.define("/src/remark.js",function(require,module,exports,__dirname,__filename,process,global){var utils = require('./remark/utils')
   , api = require('./remark/api')
   , Controller = require('./remark/controller').Controller
-  , dispatcher = require('./remark/dispatcher')
+  , Dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
   , Slideshow = require('./remark/models/slideshow').Slideshow
   , SlideshowView = require('./remark/views/slideshowView').SlideshowView
   , resources = require('./remark/resources')
   ;
 
-window.remark = api.exports;
+window.remark = api;
 
 window.addEventListener('load', function () {
   var sourceElement = document.getElementById('source')
@@ -4456,7 +4463,7 @@ window.addEventListener('load', function () {
   styleDocument();
   setupSlideshow(sourceElement, slideshowElement);
 
-  api.exports.emit('ready');
+  api.emit('ready');
 });
 
 function assureElementsExist (sourceElement, slideshowElement) {
@@ -4490,13 +4497,13 @@ function setupSlideshow (sourceElement, slideshowElement) {
     , slideshow
     , slideshowView
     , controller
+    , dispatcher
     ;
 
   slideshow = new Slideshow(source);
   slideshowView = new SlideshowView(slideshow, slideshowElement);
   controller = new Controller(slideshow);
-
-  dispatcher.initialize();
+  dispatcher = new Dispatcher();
 }
 
 });

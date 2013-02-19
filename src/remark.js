@@ -1,14 +1,14 @@
 var utils = require('./remark/utils')
   , api = require('./remark/api')
   , Controller = require('./remark/controller').Controller
-  , dispatcher = require('./remark/dispatcher')
+  , Dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
   , Slideshow = require('./remark/models/slideshow').Slideshow
   , SlideshowView = require('./remark/views/slideshowView').SlideshowView
   , resources = require('./remark/resources')
   ;
 
-window.remark = api.exports;
+window.remark = api;
 
 window.addEventListener('load', function () {
   var sourceElement = document.getElementById('source')
@@ -24,7 +24,7 @@ window.addEventListener('load', function () {
   styleDocument();
   setupSlideshow(sourceElement, slideshowElement);
 
-  api.exports.emit('ready');
+  api.emit('ready');
 });
 
 function assureElementsExist (sourceElement, slideshowElement) {
@@ -58,11 +58,11 @@ function setupSlideshow (sourceElement, slideshowElement) {
     , slideshow
     , slideshowView
     , controller
+    , dispatcher
     ;
 
   slideshow = new Slideshow(source);
   slideshowView = new SlideshowView(slideshow, slideshowElement);
   controller = new Controller(slideshow);
-
-  dispatcher.initialize();
+  dispatcher = new Dispatcher();
 }

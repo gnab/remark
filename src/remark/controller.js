@@ -1,4 +1,4 @@
-var dispatcher = require('./dispatcher')
+var events = require('./events')
   ;
 
 exports.Controller = Controller;
@@ -23,15 +23,15 @@ function Controller (slideshow) {
     }
   });
 
-  dispatcher.on('gotoSlide', function (slideNoOrName) {
+  events.on('gotoSlide', function (slideNoOrName) {
     gotoSlide(slideshow, slideNoOrName);
   });
 
-  dispatcher.on('gotoPreviousSlide', function() {
+  events.on('gotoPreviousSlide', function() {
     gotoSlide(slideshow, currentSlideNo - 1);
   });
 
-  dispatcher.on('gotoNextSlide', function() {
+  events.on('gotoNextSlide', function() {
     gotoSlide(slideshow, currentSlideNo + 1);
   });
 
@@ -46,10 +46,10 @@ function Controller (slideshow) {
     }
 
     if (currentSlideNo !== 0) {
-      dispatcher.emit('hideSlide', currentSlideNo - 1);
+      events.emit('hideSlide', currentSlideNo - 1);
     }
 
-    dispatcher.emit('showSlide', slideNo - 1);
+    events.emit('showSlide', slideNo - 1);
 
     currentSlideNo = slideNo;
 
