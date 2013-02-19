@@ -6,6 +6,23 @@ exports.Controller = Controller;
 function Controller (slideshow) {
   var currentSlideNo = 0;
 
+  gotoSlide(slideshow, 1);
+
+  slideshow.on('update', function () {
+    var slideNo = currentSlideNo
+      , slideCount = slideshow.getSlideCount()
+      ;
+
+    currentSlideNo = 0;
+
+    if (slideNo > slideCount) {
+      gotoSlide(slideshow, slideCount);
+    }
+    else {
+      gotoSlide(slideshow, slideNo);
+    }
+  });
+
   dispatcher.on('gotoSlide', function (slideNoOrName) {
     gotoSlide(slideshow, slideNoOrName);
   });

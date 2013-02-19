@@ -8,7 +8,7 @@ var utils = require('./remark/utils')
   , resources = require('./remark/resources')
   ;
 
-window.remark = api;
+window.remark = api.exports;
 
 window.addEventListener('load', function () {
   var sourceElement = document.getElementById('source')
@@ -24,7 +24,7 @@ window.addEventListener('load', function () {
   styleDocument();
   setupSlideshow(sourceElement, slideshowElement);
 
-  api.emit('ready');
+  api.exports.emit('ready');
 });
 
 function assureElementsExist (sourceElement, slideshowElement) {

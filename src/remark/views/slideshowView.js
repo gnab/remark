@@ -11,17 +11,23 @@ var api = require('../api')
 exports.SlideshowView = SlideshowView;
 
 function SlideshowView (slideshow, element) {
-  this.slideViews = createSlideViews(slideshow.slides);
+  var self = this;
 
-  this.slideViews.each(function (slideView) {
-    element.appendChild(slideView.element);
+  self.element = element;
+  self.slideViews = createSlideViews(slideshow.slides);
+  self.appendSlideViews();
+
+  slideshow.on('update', function () {
+    self.removeSlideViews();
+    self.slideViews = createSlideViews(slideshow.slides);
+    self.appendSlideViews();
   });
 
-  this.positionElement = createPositionElement();
-  element.appendChild(this.positionElement);
+  self.positionElement = createPositionElement();
+  element.appendChild(self.positionElement);
 
   mapStyles(element);
-  mapEvents(this);
+  mapEvents(self);
 }
 
 function createSlideViews (slides) {
@@ -47,6 +53,22 @@ function mapEvents (slideshowView) {
     slideshowView.showSlide(slideIndex);
   });
 }
+
+SlideshowView.prototype.appendSlideViews = function () {
+  var self = this;
+
+  self.slideViews.each(function (slideView) {
+    self.element.appendChild(slideView.element);
+  });
+};
+
+SlideshowView.prototype.removeSlideViews = function () {
+  var self = this;
+
+  self.slideViews.each(function (slideView) {
+    self.element.removeChild(slideView.element);
+  });
+};
 
 SlideshowView.prototype.showSlide =  function (slideIndex) {
   var slideView = this.slideViews[slideIndex];

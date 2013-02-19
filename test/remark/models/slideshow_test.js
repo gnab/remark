@@ -4,10 +4,19 @@ var Slideshow = require('../../../src/remark/models/slideshow').Slideshow
 
 describe('Slideshow', function () {
   describe('slides', function () {
-    it('should be created', function () {
-      var slideshow = new Slideshow('a\n---\nb'); 
+    var slideshow;
 
+    beforeEach(function () {
+      slideshow = new Slideshow('a\n---\nb'); 
+    });
+
+    it('should be created', function () {
       slideshow.slides.should.have.length(2);
+    });
+
+    it('should be recreated', function () {
+      slideshow.loadFromString('a\n---\nb\n---\nc');
+      slideshow.slides.should.have.length(3);
     });
 
     it('should be continued when initiated by two dashes instead of three', function () {
@@ -62,6 +71,18 @@ describe('Slideshow', function () {
       var slideshow = new Slideshow('name: a\nlayout: true'); 
 
       slideshow.slides.names.should.have.keys(['a']);
+    });
+  });
+
+  describe('events', function () {
+    it('should emit update event', function (done) {
+      var slideshow = new Slideshow('');
+
+      slideshow.on('update', function () {
+        done();
+      });
+
+      slideshow.loadFromString('a\n---\nb');
     });
   });
 });

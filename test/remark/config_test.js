@@ -22,6 +22,6 @@ describe('config', function () {
   });
 
   it('should be exposed', function () {
-    api.should.have.property('config', config);
+    api.exports.should.have.property('config', config);
   });
 });

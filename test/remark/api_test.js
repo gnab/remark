@@ -8,7 +8,7 @@ describe('API', function () {
     });
 
     it('should be exposed', function () {
-      window.should.have.property('remark', api);
+      window.should.have.property('remark', api.exports);
     });
   });
 });

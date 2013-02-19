@@ -1,8 +1,23 @@
-var Slide = require('./slide').Slide;
+var EventEmitter = require('events').EventEmitter
+  , Slide = require('./slide').Slide
+  , api = require('../api')
+  ;
 
 exports.Slideshow = Slideshow;
 
+Slideshow.prototype = new EventEmitter();
+
 function Slideshow (source) {
+  var self = this;
+
+  self.loadFromString(source, true);
+
+  api.on('loadFromString', function (source) {
+    self.loadFromString(source);
+  });
+}
+
+Slideshow.prototype.loadFromString = function (source, initial) {
   var slides = createSlides(source)
     , names = mapNamedSlides(slides)
     ;
@@ -16,7 +31,11 @@ function Slideshow (source) {
 
   this.slides = slides;
   this.slides.names = names;
-}
+
+  if (!initial) {
+    this.emit('update');
+  }
+};
 
 Slideshow.prototype.getSlideByName = function (name) {
   return this.slides.names[name];

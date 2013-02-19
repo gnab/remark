@@ -427,6 +427,12 @@ require.define("/src/remark/api.js",function(require,module,exports,__dirname,__
   , api = module.exports = new EventEmitter()
   ;
 
+api.exports = new EventEmitter();
+
+api.exports.loadFromString = function (source) {
+  api.emit('loadFromString', source);
+};
+
 });
 
 require.define("events",function(require,module,exports,__dirname,__filename,process,global){if (!process.EventEmitter) process.EventEmitter = function () {};
@@ -611,6 +617,23 @@ exports.Controller = Controller;
 function Controller (slideshow) {
   var currentSlideNo = 0;
 
+  gotoSlide(slideshow, 1);
+
+  slideshow.on('update', function () {
+    var slideNo = currentSlideNo
+      , slideCount = slideshow.getSlideCount()
+      ;
+
+    currentSlideNo = 0;
+
+    if (slideNo > slideCount) {
+      gotoSlide(slideshow, slideCount);
+    }
+    else {
+      gotoSlide(slideshow, slideNo);
+    }
+  });
+
   dispatcher.on('gotoSlide', function (slideNoOrName) {
     gotoSlide(slideshow, slideNoOrName);
   });
@@ -680,7 +703,6 @@ dispatcher.initialize = function () {
 
 function mapHash () {
   window.addEventListener('hashchange', navigate);
-  navigate();
 
   function navigate () {
     var slideNoOrName = (window.location.hash || '').substr(1);
@@ -839,7 +861,7 @@ var VALID_PROPERTIES = [
 , 'ratio'
 ];
 
-api.config = config;
+api.exports.config = config;
 
 loadConfigFromScriptTag();
 
@@ -3029,11 +3051,26 @@ module.exports = {
 
 });
 
-require.define("/src/remark/models/slideshow.js",function(require,module,exports,__dirname,__filename,process,global){var Slide = require('./slide').Slide;
+require.define("/src/remark/models/slideshow.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
+  , Slide = require('./slide').Slide
+  , api = require('../api')
+  ;
 
 exports.Slideshow = Slideshow;
 
+Slideshow.prototype = new EventEmitter();
+
 function Slideshow (source) {
+  var self = this;
+
+  self.loadFromString(source, true);
+
+  api.on('loadFromString', function (source) {
+    self.loadFromString(source);
+  });
+}
+
+Slideshow.prototype.loadFromString = function (source, initial) {
   var slides = createSlides(source)
     , names = mapNamedSlides(slides)
     ;
@@ -3047,7 +3084,11 @@ function Slideshow (source) {
 
   this.slides = slides;
   this.slides.names = names;
-}
+
+  if (!initial) {
+    this.emit('update');
+  }
+};
 
 Slideshow.prototype.getSlideByName = function (name) {
   return this.slides.names[name];
@@ -3261,17 +3302,23 @@ require.define("/src/remark/views/slideshowView.js",function(require,module,expo
 exports.SlideshowView = SlideshowView;
 
 function SlideshowView (slideshow, element) {
-  this.slideViews = createSlideViews(slideshow.slides);
+  var self = this;
 
-  this.slideViews.each(function (slideView) {
-    element.appendChild(slideView.element);
+  self.element = element;
+  self.slideViews = createSlideViews(slideshow.slides);
+  self.appendSlideViews();
+
+  slideshow.on('update', function () {
+    self.removeSlideViews();
+    self.slideViews = createSlideViews(slideshow.slides);
+    self.appendSlideViews();
   });
 
-  this.positionElement = createPositionElement();
-  element.appendChild(this.positionElement);
+  self.positionElement = createPositionElement();
+  element.appendChild(self.positionElement);
 
   mapStyles(element);
-  mapEvents(this);
+  mapEvents(self);
 }
 
 function createSlideViews (slides) {
@@ -3297,6 +3344,22 @@ function mapEvents (slideshowView) {
     slideshowView.showSlide(slideIndex);
   });
 }
+
+SlideshowView.prototype.appendSlideViews = function () {
+  var self = this;
+
+  self.slideViews.each(function (slideView) {
+    self.element.appendChild(slideView.element);
+  });
+};
+
+SlideshowView.prototype.removeSlideViews = function () {
+  var self = this;
+
+  self.slideViews.each(function (slideView) {
+    self.element.removeChild(slideView.element);
+  });
+};
 
 SlideshowView.prototype.showSlide =  function (slideIndex) {
   var slideView = this.slideViews[slideIndex];
@@ -4377,7 +4440,7 @@ require.define("/src/remark.js",function(require,module,exports,__dirname,__file
   , resources = require('./remark/resources')
   ;
 
-window.remark = api;
+window.remark = api.exports;
 
 window.addEventListener('load', function () {
   var sourceElement = document.getElementById('source')
@@ -4393,7 +4456,7 @@ window.addEventListener('load', function () {
   styleDocument();
   setupSlideshow(sourceElement, slideshowElement);
 
-  api.emit('ready');
+  api.exports.emit('ready');
 });
 
 function assureElementsExist (sourceElement, slideshowElement) {
