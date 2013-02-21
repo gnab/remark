@@ -23,6 +23,12 @@
     </tr>
     <tr>
       <td>
+        <kbd>home</kbd> / <kbd>end</kbd>
+      </td>
+      <td>Go to first / last slide</td>
+    </tr>
+    <tr>
+      <td>
         <kbd>?</kbd>
       </td>
       <td>Show help</td>
