@@ -35,6 +35,14 @@ function Controller (slideshow) {
     gotoSlide(slideshow, currentSlideNo + 1);
   });
 
+  events.on('gotoFirstSlide', function () {
+    gotoSlide(slideshow, 1);
+  });
+
+  events.on('gotoLastSlide', function () {
+    gotoSlide(slideshow, slideshow.getSlideCount());
+  });
+
   function gotoSlide (slideshow, slideNoOrName) {
     var slideNo = getSlideNo(slideNoOrName)
       , alreadyOnSlide = slideNo === currentSlideNo

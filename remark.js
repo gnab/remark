@@ -651,6 +651,14 @@ function Controller (slideshow) {
     gotoSlide(slideshow, currentSlideNo + 1);
   });
 
+  events.on('gotoFirstSlide', function () {
+    gotoSlide(slideshow, 1);
+  });
+
+  events.on('gotoLastSlide', function () {
+    gotoSlide(slideshow, slideshow.getSlideCount());
+  });
+
   function gotoSlide (slideshow, slideNoOrName) {
     var slideNo = getSlideNo(slideNoOrName)
       , alreadyOnSlide = slideNo === currentSlideNo
@@ -733,6 +741,12 @@ function mapKeys () {
       case 40: // Down
       case 74: // j
         gotoNextSlide();
+        break;
+      case 36: // Home
+        gotoFirstSlide();
+        break;
+      case 35: // End
+        gotoLastSlide();
         break;
       case 191: // ?
         toggleHelp();
@@ -819,6 +833,14 @@ function gotoNextSlide () {
 
 function gotoPreviousSlide () {
   events.emit('gotoPreviousSlide');
+}
+
+function gotoFirstSlide() {
+  events.emit('gotoFirstSlide');
+}
+
+function gotoLastSlide() {
+  events.emit('gotoLastSlide');
 }
 
 function toggleHelp () {
@@ -4485,19 +4507,6 @@ function show (element) {
 
 function hide (element) {
   element.style.display = 'none';
-}
-
-function visible (element) {
-  return element.style.display !== 'none';
-}
-
-function toggle (element) {
-  if (visible(element)) {
-    hide(element);
-  }
-  else {
-    show(element);
-  }
 }
 
 });

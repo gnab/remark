@@ -37,6 +37,12 @@ function mapKeys () {
       case 74: // j
         gotoNextSlide();
         break;
+      case 36: // Home
+        gotoFirstSlide();
+        break;
+      case 35: // End
+        gotoLastSlide();
+        break;
       case 191: // ?
         toggleHelp();
         break;
@@ -122,6 +128,14 @@ function gotoNextSlide () {
 
 function gotoPreviousSlide () {
   events.emit('gotoPreviousSlide');
+}
+
+function gotoFirstSlide() {
+  events.emit('gotoFirstSlide');
+}
+
+function gotoLastSlide() {
+  events.emit('gotoLastSlide');
 }
 
 function toggleHelp () {
