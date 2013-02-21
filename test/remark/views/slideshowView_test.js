@@ -40,14 +40,14 @@ describe('SlideshowView', function () {
     });
 
     it('should create initial slide views', function () {
-      container.children.length.should.equal(1);
+      container.children.length.should.equal(2);
     });
 
     it('should replace slide views on slideshow update', function () {
 
       model.loadFromString('a\n---\nb');
 
-      container.children.length.should.equal(3);
+      container.children.length.should.equal(4);
     });
   });
 });

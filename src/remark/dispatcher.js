@@ -37,6 +37,12 @@ function mapKeys () {
       case 74: // j
         gotoNextSlide();
         break;
+      case 191: // ?
+        toggleHelp();
+        break;
+      case 27: // Escape
+        hideOverlay();
+        break;
     }
   });
 }
@@ -116,4 +122,12 @@ function gotoNextSlide () {
 
 function gotoPreviousSlide () {
   events.emit('gotoPreviousSlide');
+}
+
+function toggleHelp () {
+  events.emit('toggleHelp');
+}
+
+function hideOverlay () {
+  events.emit('hideOverlay');
 }

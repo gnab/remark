@@ -1,0 +1,41 @@
+<div class="content help">
+  <h1>Help</h1>
+  <p><b>Keyboard shortcuts</b></p>
+  <table class="light-keys">
+    <tr>
+      <td>
+        <kbd>&uarr;</kbd>,
+        <kbd>&larr;</kbd>,
+        <kbd>pg up</kbd>,
+        <kbd>k</kbd>
+      </td>
+      <td>Go to previous slide</td>
+    </tr>
+    <tr>
+      <td>
+        <kbd>&darr;</kbd>,
+        <kbd>&rarr;</kbd>,
+        <kbd>pg dn</kbd>,
+        <kbd>space</kbd>,
+        <kbd>j</kbd>
+      </td>
+      <td>Go to next slide</td>
+    </tr>
+    <tr>
+      <td>
+        <kbd>?</kbd>
+      </td>
+      <td>Show help</td>
+    </tr>
+  </table>
+</div>
+<div class="content dismiss">
+  <table class="light-keys">
+    <tr>
+      <td>
+        <kbd>esc</kbd>
+      </td>
+      <td>Back to slideshow</td>
+    </tr>
+  </table>
+</div>

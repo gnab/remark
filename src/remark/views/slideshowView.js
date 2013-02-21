@@ -1,6 +1,7 @@
 var api = require('../api')
   , events = require('../events')
   , SlideView = require('./slideView').SlideView
+  , OverlayView = require('./overlayView')
   , config = require('../config')
 
   , referenceWidth = 908
@@ -25,6 +26,8 @@ function SlideshowView (slideshow, element) {
 
   self.positionElement = createPositionElement();
   element.appendChild(self.positionElement);
+
+  self.overlayView = new OverlayView(element);
 
   mapStyles(element);
   mapEvents(self);

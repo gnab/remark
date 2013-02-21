@@ -1,3 +1,5 @@
+@import "../vendor/keyscss/keys.css.less";
+
 html, body {
   background: #d7d7d7;
   font-family: Georgia;
@@ -71,6 +73,39 @@ html, body {
       h1 code {
         font-size: 0.8em;
       }
+    }
+  }
+
+  .overlay {
+    bottom: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    opacity: 0.95;
+    background: #000;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+
+    .content {
+      color: white;
+      position: absolute;
+      top: 10%;
+      bottom: 10%;
+      left: 10%;
+      height: 10%;
+
+      td {
+        color: white;
+        padding: 10px;
+      }
+      td:first-child {
+        padding-left: 0;
+      }
+    }
+
+    .dismiss {
+      top: 85%;
     }
   }
 

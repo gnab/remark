@@ -10,6 +10,7 @@ for (var i = 0; i < languages.length; ++i) {
 
 module.exports = {
   documentStyles: %DOCUMENT_STYLES%,
+  overlayTemplate: %OVERLAY_TEMPLATE%,
   highlighter: {
     styles: %HIGHLIGHTER_STYLES%,
     engine: hljs

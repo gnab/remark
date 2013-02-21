@@ -47,6 +47,8 @@ function compileResources (target) {
     , resources = {
         DOCUMENT_STYLES: JSON.stringify(
           less('src/remark.less'))
+      , OVERLAY_TEMPLATE: JSON.stringify(
+          cat('src/overlay.html.template'))
       , HIGHLIGHTER_STYLES: JSON.stringify(
           ls(highlightjs + 'styles/*.css').reduce(mapStyle, {}))
       , HIGHLIGHTER_ENGINE: 
