@@ -40,14 +40,14 @@ describe('SlideshowView', function () {
     });
 
     it('should create initial slide views', function () {
-      container.children.length.should.equal(2);
+      container.getElementsByClassName('slide').length.should.equal(0);
     });
 
     it('should replace slide views on slideshow update', function () {
 
       model.loadFromString('a\n---\nb');
 
-      container.children.length.should.equal(4);
+      container.getElementsByClassName('slide').length.should.equal(2);
     });
   });
 });
