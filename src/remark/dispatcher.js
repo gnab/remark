@@ -27,14 +27,12 @@ function mapKeys () {
       case 33: // Page up
       case 37: // Left
       case 38: // Up
-      case 75: // k
         gotoPreviousSlide();
         break;
       case 32: // Space
       case 34: // Page down
       case 39: // Right
       case 40: // Down
-      case 74: // j
         gotoNextSlide();
         break;
       case 36: // Home
@@ -43,11 +41,21 @@ function mapKeys () {
       case 35: // End
         gotoLastSlide();
         break;
-      case 191: // ?
-        toggleHelp();
-        break;
       case 27: // Escape
         hideOverlay();
+        break;
+    }
+  });
+  window.addEventListener('keypress', function (event) {
+    switch (String.fromCharCode(event.which)) {
+      case 'j':
+        gotoNextSlide();
+        break;
+      case 'k':
+        gotoPreviousSlide();
+        break;
+      case '?':
+        toggleHelp();
         break;
     }
   });
