@@ -622,8 +622,6 @@ exports.Controller = Controller;
 function Controller (slideshow) {
   var currentSlideNo = 0;
 
-  gotoSlide(slideshow, 1);
-
   slideshow.on('update', function () {
     var slideNo = currentSlideNo
       , slideCount = slideshow.getSlideCount()
@@ -718,6 +716,7 @@ function Dispatcher () {
 
 function mapHash () {
   window.addEventListener('hashchange', navigate);
+  navigate();
 
   function navigate () {
     var slideNoOrName = (window.location.hash || '').substr(1);

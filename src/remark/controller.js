@@ -6,8 +6,6 @@ exports.Controller = Controller;
 function Controller (slideshow) {
   var currentSlideNo = 0;
 
-  gotoSlide(slideshow, 1);
-
   slideshow.on('update', function () {
     var slideNo = currentSlideNo
       , slideCount = slideshow.getSlideCount()

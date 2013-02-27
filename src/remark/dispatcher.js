@@ -13,6 +13,7 @@ function Dispatcher () {
 
 function mapHash () {
   window.addEventListener('hashchange', navigate);
+  navigate();
 
   function navigate () {
     var slideNoOrName = (window.location.hash || '').substr(1);
