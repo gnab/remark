@@ -432,6 +432,26 @@ api.loadFromString = function (source) {
   events.emit('loadFromString', source);
 };
 
+api.gotoSlide = function (slideNoOrName) {
+  events.emit('gotoSlide', slideNoOrName);
+};
+
+api.gotoPreviousSlide = function () {
+  events.emit('gotoPreviousSlide');
+};
+
+api.gotoNextSlide = function () {
+  events.emit('gotoNextSlide');
+};
+
+api.gotoFirstSlide = function () {
+  events.emit('gotoFirstSlide');
+};
+
+api.gotoLastSlide = function () {
+  events.emit('gotoLastSlide');
+};
+
 });
 
 require.define("events",function(require,module,exports,__dirname,__filename,process,global){if (!process.EventEmitter) process.EventEmitter = function () {};
