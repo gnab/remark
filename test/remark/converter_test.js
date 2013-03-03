@@ -68,8 +68,8 @@ describe('converter', function () {
     };
 
     it('should unescape block-quote before conversion', function () {
-      convert('&gt; a block quote')
-        .should.equal('<blockquote>\n<p>a block quote</p>\n</blockquote>\n');
+      convert('&gt; a block quote\n&gt; another block quote')
+        .should.equal('<blockquote>\n<p>a block quote\nanother block quote</p>\n</blockquote>\n');
     });
 
     it('should unescape HTML', function () {

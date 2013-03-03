@@ -68,7 +68,7 @@ converter.convertMarkdown = function (content) {
   var source = content.innerHTML;
 
   // Unescape block-quotes before conversion (&gt; => >)
-  source = source.replace(/(^|\n)( *)&gt;/, '$1$2>');
+  source = source.replace(/(^|\n)( *)&gt;/g, '$1$2>');
 
   // Perform the actual Markdown conversion
   content.innerHTML = marked(source.replace(/^\s+/, ''));
