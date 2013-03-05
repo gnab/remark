@@ -29,7 +29,6 @@ function SlideshowView (slideshow, element) {
 
   self.overlayView = new OverlayView(element);
 
-  mapStyles(element);
   mapEvents(self);
 }
 
@@ -48,6 +47,10 @@ function createPositionElement () {
 }
 
 function mapEvents (slideshowView) {
+  var ratio
+    , dimensions
+    ;
+
   events.on('hideSlide', function (slideIndex) {
     slideshowView.hideSlide(slideIndex);
   });
@@ -55,6 +58,25 @@ function mapEvents (slideshowView) {
   events.on('showSlide', function (slideIndex) {
     slideshowView.showSlide(slideIndex);
   });
+
+  events.on('config', onConfig);
+  window.addEventListener('resize', onResize);
+
+  onConfig();
+
+  function onConfig () {
+    ratio = getRatio();
+    dimensions = getDimensions(ratio);
+
+    slideshowView.element.style.width = dimensions.width + 'px';
+    slideshowView.element.style.height = dimensions.height + 'px';
+
+    onResize();
+  }
+
+  function onResize () {
+    slideshowView.resize(ratio, dimensions);
+  }
 }
 
 SlideshowView.prototype.appendSlideViews = function () {
@@ -87,41 +109,29 @@ SlideshowView.prototype.hideSlide = function (slideIndex) {
   slideView.hide();
 };
 
-function mapStyles (element) {
-  var ratio = getRatio()
-    , dimensions = getDimensions(ratio)
+SlideshowView.prototype.resize = function (ratio, dimensions) {
+  var containerHeight = window.innerHeight
+    , containerWidth = window.innerWidth
+    , scale
+    , scaledWidth
+    , scaledHeight
     ;
 
-  element.style.width = dimensions.width + 'px';
-  element.style.height = dimensions.height + 'px';
-
-  window.addEventListener('resize', resize);
-  resize();
-
-  function resize () {
-    var containerHeight = window.innerHeight
-      , containerWidth = window.innerWidth
-      , scale
-      , scaledWidth
-      , scaledHeight
-      ;
-
-    if (containerWidth / ratio.width > containerHeight / ratio.height) {
-      scale = containerHeight / dimensions.height;
-    }
-    else {
-      scale = containerWidth / dimensions.width;
-    }
-
-    scaledWidth = dimensions.width * scale;
-    scaledHeight = dimensions.height * scale;
-
-    element.style['-webkit-transform'] = 'scale(' + scale + ')';
-    element.style.MozTransform = 'scale(' + scale + ')';
-    element.style.left = (containerWidth - scaledWidth) / 2 + 'px';
-    element.style.top = (containerHeight - scaledHeight) / 2 + 'px';
+  if (containerWidth / ratio.width > containerHeight / ratio.height) {
+    scale = containerHeight / dimensions.height;
   }
-}
+  else {
+    scale = containerWidth / dimensions.width;
+  }
+
+  scaledWidth = dimensions.width * scale;
+  scaledHeight = dimensions.height * scale;
+
+  this.element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  this.element.style.MozTransform = 'scale(' + scale + ')';
+  this.element.style.left = (containerWidth - scaledWidth) / 2 + 'px';
+  this.element.style.top = (containerHeight - scaledHeight) / 2 + 'px';
+};
 
 function getDimensions (ratio) {
   return {

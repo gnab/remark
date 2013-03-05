@@ -32,6 +32,17 @@ describe('SlideshowView', function () {
       container.style.width.should.equal('1210px');
       container.style.height.should.equal('681px');
     });
+
+    it('should recalculate element size when reconfigured', function () {
+      config({ratio: '4:3'});
+
+      view = new SlideshowView(model, container);
+
+      config({ratio: '16:9'});
+
+      container.style.width.should.equal('1210px');
+      container.style.height.should.equal('681px');
+    });
   });
 
   describe('model synchronization', function () {
