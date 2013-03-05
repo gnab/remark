@@ -1,4 +1,5 @@
 var config = module.exports = configure
+  , events = require('./events')
   , api = require('./api')
   ;
 
@@ -53,6 +54,7 @@ function loadConfigFromJSON (jsonStr) {
 function setProperties (properties) {
   var i
     , property
+    , propertyWasSet
     ;
 
   properties = properties || {};
@@ -61,6 +63,11 @@ function setProperties (properties) {
     property = VALID_PROPERTIES[i];
     if (properties.hasOwnProperty(property)) {
         config[property] = properties[property];
+        propertyWasSet = true;
     }
+  }
+
+  if (propertyWasSet) {
+    events.emit('config');
   }
 }

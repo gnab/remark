@@ -1,4 +1,5 @@
 var config = require('../../src/remark/config')
+  , events = require('../../src/remark/events')
   , api = require('../../src/remark/api')
   ;
 
@@ -21,7 +22,12 @@ describe('config', function () {
     }).should.not.throw();
   });
 
+  it('should notify when set', function (done) {
+    events.once('config', done);
+    config({ratio: '16:9'});
+  });
+
   it('should be exposed', function () {
-    api.should.have.property('config', config);
+    api.config.should.equal(config);
   });
 });

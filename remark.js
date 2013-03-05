@@ -921,6 +921,7 @@ highlighter.highlightCodeBlocks = function (content) {
 });
 
 require.define("/src/remark/config.js",function(require,module,exports,__dirname,__filename,process,global){var config = module.exports = configure
+  , events = require('./events')
   , api = require('./api')
   ;
 
@@ -975,6 +976,7 @@ function loadConfigFromJSON (jsonStr) {
 function setProperties (properties) {
   var i
     , property
+    , propertyWasSet
     ;
 
   properties = properties || {};
@@ -983,7 +985,12 @@ function setProperties (properties) {
     property = VALID_PROPERTIES[i];
     if (properties.hasOwnProperty(property)) {
         config[property] = properties[property];
+        propertyWasSet = true;
     }
+  }
+
+  if (propertyWasSet) {
+    events.emit('config');
   }
 }
 
