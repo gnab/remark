@@ -58,8 +58,7 @@ class: center, middle
 
 ### Moving On
 
-The above boilerplate HTML container will get you up and running. To get the most out of remark, 
-please move on to the [the remark wiki](http://github.com/gnab/remark/wiki) for more information.
+For more information on using remark, please check out the [wiki](http://github.com/gnab/remark/wiki) pages.
 
 ### Real-world remark slideshows
 
