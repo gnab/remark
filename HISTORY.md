@@ -4,12 +4,12 @@
 * Add HOME and END shortcut keys for navigation to first and last slide.
 * Add help overlay triggered by pressing ?.
 * Add API methods:
-** `remark.loadFromString('markdown string')`
-** `remark.gotoFirstSlide()`
-** `remark.gotoLastSlide()`
-** `remark.gotoNextSlide()`
-** `remark.gotoPreviousSlide()`
-** `remark.gotoSlide(slideNoOrName)`
+  * `remark.loadFromString('markdown string')`
+  * `remark.gotoFirstSlide()`
+  * `remark.gotoLastSlide()`
+  * `remark.gotoNextSlide()`
+  * `remark.gotoPreviousSlide()`
+  * `remark.gotoSlide(slideNoOrName)`
 * Add `ratio` configuration option.
 
 ### 0.4.4
