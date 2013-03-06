@@ -94,8 +94,8 @@ converter.convertCodeClasses = function (content) {
 };
 
 var convertCodeClass = function (block) {
-  var defaultClass = config.highlightLanguage
-    , highlightInline = config.highlightInline
+  var defaultClass = config.get('highlightLanguage')
+    , highlightInline = config.get('highlightInline')
     , isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE'
     ;
 

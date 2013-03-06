@@ -16,7 +16,7 @@ describe('SlideshowView', function () {
 
   describe('ratio calculation', function () {
     it('should calculate element size for 4:3', function () {
-      config({ratio: '4:3'});
+      config.set({ratio: '4:3'});
 
       view = new SlideshowView(model, container);
 
@@ -25,7 +25,7 @@ describe('SlideshowView', function () {
     });
 
     it('should calculate element size for 16:9', function () {
-      config({ratio: '16:9'});
+      config.set({ratio: '16:9'});
 
       view = new SlideshowView(model, container);
 
@@ -34,11 +34,11 @@ describe('SlideshowView', function () {
     });
 
     it('should recalculate element size when reconfigured', function () {
-      config({ratio: '4:3'});
+      config.set({ratio: '4:3'});
 
       view = new SlideshowView(model, container);
 
-      config({ratio: '16:9'});
+      config.set({ratio: '16:9'});
 
       container.style.width.should.equal('1210px');
       container.style.height.should.equal('681px');

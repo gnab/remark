@@ -1,8 +1,11 @@
 var EventEmitter = require('events').EventEmitter
+  , config = require('./config')
   , highlighter = require('./highlighter')
   , events = require('./events')
   , api = module.exports = new EventEmitter()
   ;
+
+api.config = config;
 
 api.highlighter = {
   engine: function() {

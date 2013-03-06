@@ -141,7 +141,7 @@ function getDimensions (ratio) {
 }
 
 function getRatio () {
-  var ratioString = config.ratio || '4:3'
+  var ratioString = config.get('ratio') || '4:3'
     , ratioComponents = ratioString.split(':')
     , ratio
     ;

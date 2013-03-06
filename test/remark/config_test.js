@@ -4,27 +4,23 @@ var config = require('../../src/remark/config')
   ;
 
 describe('config', function () {
-  it('should allow setting predefined property', function () {
-    config({highlightStyle: 'some-style'});
+  it('should allow setting and getting properties', function () {
+    config.set({highlightStyle: 'some-style'});
 
-    config.should.have.property('highlightStyle', 'some-style');
-  });
-
-  it('should disallow setting undefined properties', function () {
-    config({undefinedProperty: 'some-value'});
-
-    config.should.not.have.property('undefinedProperty');
+    config.get('highlightStyle').should.equal('some-style');
   });
 
   it('should handle setting no properties', function () {
     (function () {
-      config();
+      config.set();
     }).should.not.throw();
   });
 
   it('should notify when set', function (done) {
-    events.once('config', done);
-    config({ratio: '16:9'});
+    events.once('config', function (changes) {
+      done();
+    });
+    config.set({ratio: '16:9'});
   });
 
   it('should be exposed', function () {

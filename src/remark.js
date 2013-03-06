@@ -57,12 +57,12 @@ function styleDocument () {
   function onConfig () {
     var highlighterStyle;
     
-    if (config.highlightStyle === null) {
+    if (config.get('highlightStyle') === null) {
       highlighterStyle = '';
     }
     else {
       highlighterStyle = 
-        highlighter.styles[config.highlightStyle] ||
+        highlighter.styles[config.get('highlightStyle')] ||
         highlighter.styles['default'];
     }
     

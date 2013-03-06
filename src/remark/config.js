@@ -1,21 +1,37 @@
-var config = module.exports = configure
-  , events = require('./events')
-  , api = require('./api')
+var events = require('./events')
+  , properties = {}
+  , config = module.exports = {
+      get: get
+    , set: set
+    }
   ;
-
-var VALID_PROPERTIES = [
-  'highlightInline'
-, 'highlightLanguage'
-, 'highlightStyle'
-, 'ratio'
-];
-
-api.config = config;
 
 loadConfigFromScriptTag();
 
-function configure (properties) {
-  setProperties(properties);
+function get (property) {
+  return properties[property];
+}
+
+function set (property, value) {
+  var changes = {};
+
+  if (typeof property === 'string') {
+    properties[property] = value;
+    changes[property] = value;
+    events.emit('config', changes);
+  }
+  else {
+    setProperties(property);
+    events.emit('config', property);
+  }
+}
+
+function setProperties (source) {
+  var property;
+
+  for (property in source) {
+    properties[property] = source[property];
+  }
 }
 
 function loadConfigFromScriptTag () {
@@ -49,25 +65,4 @@ function loadConfigFromJSON (jsonStr) {
   }
 
   setProperties(properties);
-}
-
-function setProperties (properties) {
-  var i
-    , property
-    , propertyWasSet
-    ;
-
-  properties = properties || {};
-
-  for (i = 0; i < VALID_PROPERTIES.length; ++i) {
-    property = VALID_PROPERTIES[i];
-    if (properties.hasOwnProperty(property)) {
-        config[property] = properties[property];
-        propertyWasSet = true;
-    }
-  }
-
-  if (propertyWasSet) {
-    events.emit('config');
-  }
 }

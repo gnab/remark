@@ -98,7 +98,7 @@ describe('converter', function () {
     };
 
     beforeEach(function resetConfiguration () {
-      config({
+      config.set({
         highlightStyle: undefined
       , highlightLanguage: undefined
       , highlightInline: undefined
@@ -114,7 +114,7 @@ describe('converter', function () {
     });
 
     it('should enable highlighting for inline code if configured to', function () {
-      config({highlightInline: true});
+      config.set({highlightInline: true});
 
       convert('var a = 5;').className.should.equal('');
     });
@@ -144,13 +144,13 @@ describe('converter', function () {
     });
 
     it('should use configured code class by default', function () {
-      config({highlightLanguage: 'not-a-language'});
+      config.set({highlightLanguage: 'not-a-language'});
 
       convert('a = 5', 'pre').className.should.equal('not-a-language');
     });
 
     it('should ignore configured code class if class is given', function () {
-      config({highlightLanguage: 'not-a-language'});
+      config.set({highlightLanguage: 'not-a-language'});
 
       convert('.ruby a = 5', 'pre').className.should.equal('ruby');
     });

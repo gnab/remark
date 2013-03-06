@@ -424,10 +424,13 @@ Array.prototype.map = Array.prototype.map || function (f) {
 });
 
 require.define("/src/remark/api.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
+  , config = require('./config')
   , highlighter = require('./highlighter')
   , events = require('./events')
   , api = module.exports = new EventEmitter()
   ;
+
+api.config = config;
 
 api.highlighter = {
   engine: function() {
@@ -632,6 +635,83 @@ EventEmitter.prototype.listeners = function(type) {
   }
   return this._events[type];
 };
+
+});
+
+require.define("/src/remark/config.js",function(require,module,exports,__dirname,__filename,process,global){var events = require('./events')
+  , properties = {}
+  , config = module.exports = {
+      get: get
+    , set: set
+    }
+  ;
+
+loadConfigFromScriptTag();
+
+function get (property) {
+  return properties[property];
+}
+
+function set (property, value) {
+  var changes = {};
+
+  if (typeof property === 'string') {
+    properties[property] = value;
+    changes[property] = value;
+    events.emit('config', changes);
+  }
+  else {
+    setProperties(property);
+    events.emit('config', property);
+  }
+}
+
+function setProperties (source) {
+  var property;
+
+  for (property in source) {
+    properties[property] = source[property];
+  }
+}
+
+function loadConfigFromScriptTag () {
+  var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
+    , scriptElements = document.getElementsByTagName('script')
+    , element
+    , i;
+
+  for (i = 0; i < scriptElements.length; ++i) {
+    element = scriptElements[i];
+
+    if (remarkjs.exec(element.src)) {
+      loadConfigFromJSON(element.innerHTML.trim()); 
+      break;
+    }
+  }
+}
+
+function loadConfigFromJSON (jsonStr) {
+  var properties = {};
+
+  if (jsonStr === '') {
+    return;
+  }
+  
+  try {
+    properties = JSON.parse(jsonStr);
+  }
+  catch (err) {
+    alert('Parsing remark config failed! Be sure to use valid JSON.');
+  }
+
+  setProperties(properties);
+}
+
+});
+
+require.define("/src/remark/events.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
+  , events = module.exports = new EventEmitter()
+  ;
 
 });
 
@@ -2803,88 +2883,6 @@ module.exports = {
 
 });
 
-require.define("/src/remark/events.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
-  , events = module.exports = new EventEmitter()
-  ;
-
-});
-
-require.define("/src/remark/config.js",function(require,module,exports,__dirname,__filename,process,global){var config = module.exports = configure
-  , events = require('./events')
-  , api = require('./api')
-  ;
-
-var VALID_PROPERTIES = [
-  'highlightInline'
-, 'highlightLanguage'
-, 'highlightStyle'
-, 'ratio'
-];
-
-api.config = config;
-
-loadConfigFromScriptTag();
-
-function configure (properties) {
-  setProperties(properties);
-}
-
-function loadConfigFromScriptTag () {
-  var remarkjs = /remark(-\d\.\d(\.\d)?)?(\.min)?\.js/i
-    , scriptElements = document.getElementsByTagName('script')
-    , element
-    , i;
-
-  for (i = 0; i < scriptElements.length; ++i) {
-    element = scriptElements[i];
-
-    if (remarkjs.exec(element.src)) {
-      loadConfigFromJSON(element.innerHTML.trim()); 
-      break;
-    }
-  }
-}
-
-function loadConfigFromJSON (jsonStr) {
-  var properties = {};
-
-  if (jsonStr === '') {
-    return;
-  }
-  
-  try {
-    properties = JSON.parse(jsonStr);
-  }
-  catch (err) {
-    alert('Parsing remark config failed! Be sure to use valid JSON.');
-  }
-
-  setProperties(properties);
-}
-
-function setProperties (properties) {
-  var i
-    , property
-    , propertyWasSet
-    ;
-
-  properties = properties || {};
-
-  for (i = 0; i < VALID_PROPERTIES.length; ++i) {
-    property = VALID_PROPERTIES[i];
-    if (properties.hasOwnProperty(property)) {
-        config[property] = properties[property];
-        propertyWasSet = true;
-    }
-  }
-
-  if (propertyWasSet) {
-    events.emit('config');
-  }
-}
-
-});
-
 require.define("/src/remark/controller.js",function(require,module,exports,__dirname,__filename,process,global){var events = require('./events')
   ;
 
@@ -3512,7 +3510,7 @@ function getDimensions (ratio) {
 }
 
 function getRatio () {
-  var ratioString = config.ratio || '4:3'
+  var ratioString = config.get('ratio') || '4:3'
     , ratioComponents = ratioString.split(':')
     , ratio
     ;
@@ -3699,8 +3697,8 @@ converter.convertCodeClasses = function (content) {
 };
 
 var convertCodeClass = function (block) {
-  var defaultClass = config.highlightLanguage
-    , highlightInline = config.highlightInline
+  var defaultClass = config.get('highlightLanguage')
+    , highlightInline = config.get('highlightInline')
     , isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE'
     ;
 
@@ -4638,12 +4636,12 @@ function styleDocument () {
   function onConfig () {
     var highlighterStyle;
     
-    if (config.highlightStyle === null) {
+    if (config.get('highlightStyle') === null) {
       highlighterStyle = '';
     }
     else {
       highlighterStyle = 
-        highlighter.styles[config.highlightStyle] ||
+        highlighter.styles[config.get('highlightStyle')] ||
         highlighter.styles['default'];
     }
     
