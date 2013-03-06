@@ -27,6 +27,7 @@
         position: absolute;
         bottom: 3em;
       }
+      li p { line-height: 1.25em; }
       .red { color: #fa0000; }
       .large { font-size: 2em; }
       a, a > code {
@@ -269,7 +270,7 @@ To help out with slide layout and formatting, a few Markdown extensions have bee
 
 - Content classes, for styling specific content
 
-- Language classes, for syntax highlighting language hinting
+- Syntax highlighting, with language hinting
 ]
 
 ---
@@ -349,7 +350,7 @@ Both indented code blocks and [GFM](http://github.github.com/github-flavored-mar
     ```
 ]
 
-Inline code is not automatically highlighted, and must be supplied a language class to be highlighted:
+Inline code is not automatically highlighted, and must be supplied a language to be highlighted:
 
     .remark
     Inline code: `.ruby a = 5`
