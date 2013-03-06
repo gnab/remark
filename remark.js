@@ -4636,12 +4636,18 @@ function styleDocument () {
   onConfig();
 
   function onConfig () {
-    if (config.highlightStyle === undefined) {
-      config.highlightStyle = 'default';
+    var highlighterStyle;
+    
+    if (config.highlightStyle === null) {
+      highlighterStyle = '';
+    }
+    else {
+      highlighterStyle = 
+        highlighter.styles[config.highlightStyle] ||
+        highlighter.styles['default'];
     }
     
-    styleElement.innerHTML = resources.documentStyles +
-      highlighter.styles[config.highlightStyle] || '';
+    styleElement.innerHTML = resources.documentStyles + highlighterStyle;
   }
 }
 
