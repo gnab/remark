@@ -1,5 +1,6 @@
 var api = require('../../src/remark/api')
   , events = require('../../src/remark/events')
+  , highlighter = require('../../src/remark/highlighter')
   ;
 
 describe('API', function () {
@@ -10,6 +11,12 @@ describe('API', function () {
 
     it('should be exposed', function () {
       window.remark.should.equal(api);
+    });
+  });
+
+  describe('highlighter engine', function () {
+    it('should be exposed via function', function () {
+      api.highlighter.engine().should.equal(highlighter.engine);
     });
   });
 

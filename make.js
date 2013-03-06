@@ -10,9 +10,9 @@ target.all = function () {
   target.minify();
 };
 
-target.resources = function () {
-  console.log('Compiling resources...');
-  compileResources('src/remark/resources.js');
+target.highlighter = function () {
+  console.log('Bundling highlighter...');
+  bundleHighlighter('src/remark/highlighter.js');
 };
 
 target.lint = function () {
@@ -27,6 +27,7 @@ target.test = function () {
 
 target.bundle = function () {
   console.log('Bundling...');
+  bundleResources('src/remark/resources.js');
   run('browserify src/remark.js', {silent: true}).output.to('remark.js');
 };
 
@@ -42,14 +43,25 @@ var path = require('path')
   , ignoredStyles = ['brown_paper', 'school_book', 'pojoaque']
   ;
 
-function compileResources (target) {
-  var highlightjs = 'vendor/highlight.js/src/'
-    , resources = {
+function bundleResources (target) {
+  var resources = {
         DOCUMENT_STYLES: JSON.stringify(
           less('src/remark.less'))
-      , OVERLAY_TEMPLATE: JSON.stringify(
-          cat('src/overlay.html.template'))
-      , HIGHLIGHTER_STYLES: JSON.stringify(
+      , OVERLAY: JSON.stringify(
+          cat('src/overlay.html'))
+      };
+
+  cat('src/resources.js.template')
+    .replace(/%(\w+)%/g, function (match, key) {
+      return resources[key];
+    })
+    .to(target);
+}
+
+function bundleHighlighter (target) {
+  var highlightjs = 'vendor/highlight.js/src/'
+    , resources = {
+        HIGHLIGHTER_STYLES: JSON.stringify(
           ls(highlightjs + 'styles/*.css').reduce(mapStyle, {}))
       , HIGHLIGHTER_ENGINE: 
           cat(highlightjs + 'highlight.js')
@@ -60,7 +72,7 @@ function compileResources (target) {
           }).join(',')
       };
 
-  cat('src/resources.js.template')
+  cat('src/highlighter.js.template')
     .replace(/%(\w+)%/g, function (match, key) {
       return resources[key];
     })

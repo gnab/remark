@@ -1,7 +1,14 @@
 var EventEmitter = require('events').EventEmitter
-  , api = module.exports = new EventEmitter()
+  , highlighter = require('./highlighter')
   , events = require('./events')
+  , api = module.exports = new EventEmitter()
   ;
+
+api.highlighter = {
+  engine: function() {
+    return highlighter.engine;
+  }
+};
 
 api.loadFromString = function (source) {
   events.emit('loadFromString', source);

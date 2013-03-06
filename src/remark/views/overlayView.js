@@ -9,7 +9,7 @@ function OverlayView (element) {
 
   self.element = document.createElement('div');
   self.element.className = 'overlay light-keys';
-  self.element.innerHTML = resources.overlayTemplate;
+  self.element.innerHTML = resources.overlay;
 
   element.appendChild(self.element);
 

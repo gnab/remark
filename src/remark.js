@@ -1,5 +1,7 @@
 var utils = require('./remark/utils')
   , api = require('./remark/api')
+  , config = require('./remark/config')
+  , events = require('./remark/events')
   , Controller = require('./remark/controller').Controller
   , Dispatcher = require('./remark/dispatcher')
   , highlighter = require('./remark/highlighter')
@@ -44,13 +46,22 @@ function assureElementsExist (sourceElement, slideshowElement) {
 function styleDocument () {
   var styleElement = document.createElement('style')
     , headElement = document.getElementsByTagName('head')[0]
-    , styles = resources.documentStyles + highlighter.cssForStyle()
     ;
 
   styleElement.type = 'text/css';
-  styleElement.innerHTML = styles;
-
   headElement.insertBefore(styleElement, headElement.firstChild);
+
+  events.on('config', onConfig);
+  onConfig();
+
+  function onConfig () {
+    if (config.highlightStyle === undefined) {
+      config.highlightStyle = 'default';
+    }
+    
+    styleElement.innerHTML = resources.documentStyles +
+      highlighter.styles[config.highlightStyle] || '';
+  }
 }
 
 function setupSlideshow (sourceElement, slideshowElement) {

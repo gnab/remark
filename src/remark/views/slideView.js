@@ -45,7 +45,7 @@ function createContentElement (source, properties) {
   converter.convertCodeClasses(element);
   converter.trimEmptySpace(element);
 
-  highlighter.highlightCodeBlocks(element);
+  highlightCodeBlocks(element);
 
   return element;
 }
@@ -55,4 +55,17 @@ function setClassFromProperties (element, properties) {
         .filter(function (s) { return s !== ''; });
 
   element.className = ['content'].concat(classes).join(' ');
+}
+
+function highlightCodeBlocks (content) {
+  var codeBlocks = content.getElementsByTagName('code')
+    , block
+    , i
+    ;
+
+  for (i = 0; i < codeBlocks.length; i++) {
+    block = codeBlocks[i];
+
+    highlighter.engine.highlightBlock(block, '  ');
+  }
 }
