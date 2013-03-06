@@ -3442,7 +3442,7 @@ function mapEvents (slideshowView) {
 
   function onConfig (changes) {
     // We only care if the `ratio` configuration option
-    // changes, so simply bail out if it hasn't
+    // changes, so simply bail out if it hasn't changed
     if (!changes.hasOwnProperty('ratio')) {
       return;
     }
@@ -4644,9 +4644,18 @@ function styleDocument () {
   headElement.insertBefore(styleElement, headElement.firstChild);
 
   events.on('config', onConfig);
-  onConfig();
+  
+  // Pass dummy highlightStyle value to signalize that the
+  // `highlightStyle` configuration option has been changed
+  onConfig({highlightStyle: null});
 
-  function onConfig () {
+  function onConfig (changes) {
+    // We only care if the `highlightStyle` configuration option
+    // changes, so simply bail out if it hasn't changed
+    if (!changes.hasOwnProperty('highlightStyle')) {
+      return;
+    }
+
     var highlighterStyle;
     
     if (config.get('highlightStyle') === null) {

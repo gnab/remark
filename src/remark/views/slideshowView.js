@@ -68,7 +68,7 @@ function mapEvents (slideshowView) {
 
   function onConfig (changes) {
     // We only care if the `ratio` configuration option
-    // changes, so simply bail out if it hasn't
+    // changes, so simply bail out if it hasn't changed
     if (!changes.hasOwnProperty('ratio')) {
       return;
     }
