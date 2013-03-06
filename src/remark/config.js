@@ -21,17 +21,22 @@ function set (property, value) {
     events.emit('config', changes);
   }
   else {
-    setProperties(property);
-    events.emit('config', property);
+    if (setProperties(property)) {
+      events.emit('config', property);
+    }
   }
 }
 
 function setProperties (source) {
-  var property;
+  var property
+    , nonEmpty = false;
 
   for (property in source) {
     properties[property] = source[property];
+    nonEmpty = true;
   }
+
+  return nonEmpty;
 }
 
 function loadConfigFromScriptTag () {

@@ -661,17 +661,22 @@ function set (property, value) {
     events.emit('config', changes);
   }
   else {
-    setProperties(property);
-    events.emit('config', property);
+    if (setProperties(property)) {
+      events.emit('config', property);
+    }
   }
 }
 
 function setProperties (source) {
-  var property;
+  var property
+    , nonEmpty = false;
 
   for (property in source) {
     properties[property] = source[property];
+    nonEmpty = true;
   }
+
+  return nonEmpty;
 }
 
 function loadConfigFromScriptTag () {
@@ -3431,9 +3436,17 @@ function mapEvents (slideshowView) {
   events.on('config', onConfig);
   window.addEventListener('resize', onResize);
 
-  onConfig();
+  // Pass dummy ratio value to signalize that the
+  // `ratio` configuration option has been changed
+  onConfig({ratio: null});
 
-  function onConfig () {
+  function onConfig (changes) {
+    // We only care if the `ratio` configuration option
+    // changes, so simply bail out if it hasn't
+    if (!changes.hasOwnProperty('ratio')) {
+      return;
+    }
+
     ratio = getRatio();
     dimensions = getDimensions(ratio);
 
