@@ -1,3 +1,10 @@
+### 0.4.6
+* Add background-image slide property.
+* Make slide backgrounds centered, not repeated, and, if needed, down-scaled to fit slide.
+* Make remark.config.set and .get functions for accessing configuration.
+* Update highlighting styles when highlightStyle property is reconfigured.
+* Update slideshow display ratio when ratio property is reconfigured.
+
 ### 0.4.5
 * Fix multiple block quotes bug.
 * Add HTTP language highlighting support.
