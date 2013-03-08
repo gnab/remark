@@ -4,9 +4,8 @@ var converter = require('../converter')
 
 exports.SlideView = SlideView;
 
-function SlideView (slide, dimensions) {
+function SlideView (slide) {
   this.slide = slide;
-  this.dimensions = dimensions;
 
   this.element = createSlideElement();
   this.contentElement = createContentElement(slide.source, slide.properties);
@@ -22,7 +21,7 @@ SlideView.prototype.hide = function () {
   this.element.style.display = 'none';
 };
 
-SlideView.prototype.scaleBackgroundImage = function () {
+SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   var self = this
     , styles = window.getComputedStyle(this.contentElement)
     , backgroundImage = styles.backgroundImage
@@ -33,11 +32,22 @@ SlideView.prototype.scaleBackgroundImage = function () {
   if ((match = /^url\(([^\)]+?)\)/.exec(backgroundImage)) !== null) {
     image = new Image();
     image.onload = function () {
-      if (image.width > self.dimensions.width || 
-          image.height > self.dimensions.height) {
-
-        // Background image is larger than slide, so scale it to fit
-        self.contentElement.style.backgroundSize = 'contain';
+      if (image.width > dimensions.width || 
+          image.height > dimensions.height) {
+        // Background image is larger than slide
+        if (!self.originalBackgroundSize) {
+          // No custom background size has been set
+          self.originalBackgroundSize = self.contentElement.style.backgroundSize;
+          self.backgroundSizeSet = true;
+          self.contentElement.style.backgroundSize = 'contain';
+        }
+      }
+      else {
+        // Revert to previous background size setting
+        if (self.backgroundSizeSet) {
+          self.contentElement.style.backgroundSize = self.originalBackgroundSize;
+          self.backgroundSizeSet = false;
+        }
       }
     };
     image.src = match[1];

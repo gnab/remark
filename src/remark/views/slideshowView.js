@@ -14,31 +14,31 @@ exports.SlideshowView = SlideshowView;
 function SlideshowView (slideshow, element) {
   var self = this;
 
+  mapEvents(self);
+
   self.element = element;
   self.dimensions = {};
 
-  self.updateDimensions();
-
-  self.slideViews = createSlideViews(slideshow.slides, self.dimensions);
+  self.slideViews = createSlideViews(slideshow.slides);
   self.appendSlideViews();
+  self.updateDimensions();
 
   slideshow.on('update', function () {
     self.removeSlideViews();
-    self.slideViews = createSlideViews(slideshow.slides, self.dimensions);
+    self.slideViews = createSlideViews(slideshow.slides);
     self.appendSlideViews();
+    self.scaleSlideBackgroundImages();
   });
 
   self.positionElement = createPositionElement();
   element.appendChild(self.positionElement);
 
   self.overlayView = new OverlayView(element);
-
-  mapEvents(self);
 }
 
-function createSlideViews (slides, dimensions) {
+function createSlideViews (slides) {
   return slides.map(function (slide) {
-    return new SlideView(slide, dimensions);
+    return new SlideView(slide);
   });
 }
 
@@ -74,12 +74,19 @@ function mapEvents (slideshowView) {
   });
 }
 
+SlideshowView.prototype.scaleSlideBackgroundImages = function () {
+  var self = this;
+
+  self.slideViews.each(function (slideView) {
+    slideView.scaleBackgroundImage(self.dimensions);
+  });
+};
+
 SlideshowView.prototype.appendSlideViews = function () {
   var self = this;
 
   self.slideViews.each(function (slideView) {
     self.element.appendChild(slideView.element);
-    slideView.scaleBackgroundImage();
   });
 };
 
@@ -118,6 +125,7 @@ SlideshowView.prototype.updateDimensions = function () {
   this.element.style.height = this.dimensions.height + 'px';
 
   this.updateSize();
+  this.scaleSlideBackgroundImages();
 };
 
 SlideshowView.prototype.updateSize = function () {
