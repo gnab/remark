@@ -10,7 +10,7 @@ function Slide (source, properties) {
 }
 
 function extractProperties (source, properties) {
-  var propertyFinder = /^\n*(\w+):([^$\n]*)/i
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
     , match
     ;
 

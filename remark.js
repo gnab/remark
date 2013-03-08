@@ -3274,7 +3274,7 @@ function Slide (source, properties) {
 }
 
 function extractProperties (source, properties) {
-  var propertyFinder = /^\n*(\w+):([^$\n]*)/i
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
     , match
     ;
 
@@ -3627,6 +3627,7 @@ function createContentElement (source, properties) {
 
   element.innerHTML = source;
 
+  setBackgroundFromProperties(element, properties);
   setClassFromProperties(element, properties);
 
   converter.convertContentClasses(element);
@@ -3637,6 +3638,14 @@ function createContentElement (source, properties) {
   highlightCodeBlocks(element);
 
   return element;
+}
+
+function setBackgroundFromProperties (element, properties) {
+  var backgroundImage = properties['background-image'];
+
+  if (backgroundImage) {
+    element.style.backgroundImage = backgroundImage;
+  }
 }
 
 function setClassFromProperties (element, properties) {

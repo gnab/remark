@@ -3,6 +3,16 @@ var Slide = require('../../../src/remark/models/slide').Slide
   ;
 
 describe('SlideView', function () {
+  describe('background', function () {
+    it('should be set from background slide property', function () {
+      var slide = new Slide('background-image: image.jpg')
+        , slideView = new SlideView(slide)
+        ;
+
+        slideView.contentElement.style.backgroundImage.should.equal('image.jpg');
+    });
+  });
+
   describe('classes', function () {
     it('should contain "content" class by default', function () {
       var slide = new Slide('')
