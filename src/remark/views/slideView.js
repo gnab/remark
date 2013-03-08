@@ -4,8 +4,10 @@ var converter = require('../converter')
 
 exports.SlideView = SlideView;
 
-function SlideView (slide) {
+function SlideView (slide, dimensions) {
   this.slide = slide;
+  this.dimensions = dimensions;
+
   this.element = createSlideElement();
   this.contentElement = createContentElement(slide.source, slide.properties);
 
@@ -18,6 +20,28 @@ SlideView.prototype.show = function () {
 
 SlideView.prototype.hide = function () {
   this.element.style.display = 'none';
+};
+
+SlideView.prototype.scaleBackgroundImage = function () {
+  var self = this
+    , styles = window.getComputedStyle(this.contentElement)
+    , backgroundImage = styles.backgroundImage
+    , match
+    , image
+    ;
+
+  if ((match = /^url\(([^\)]+?)\)/.exec(backgroundImage)) !== null) {
+    image = new Image();
+    image.onload = function () {
+      if (image.width > self.dimensions.width || 
+          image.height > self.dimensions.height) {
+
+        // Background image is larger than slide, so scale it to fit
+        self.contentElement.style.backgroundSize = 'contain';
+      }
+    };
+    image.src = match[1];
+  }
 };
 
 function createSlideElement () {

@@ -3389,12 +3389,16 @@ function SlideshowView (slideshow, element) {
   var self = this;
 
   self.element = element;
-  self.slideViews = createSlideViews(slideshow.slides);
+  self.dimensions = {};
+
+  self.updateDimensions();
+
+  self.slideViews = createSlideViews(slideshow.slides, self.dimensions);
   self.appendSlideViews();
 
   slideshow.on('update', function () {
     self.removeSlideViews();
-    self.slideViews = createSlideViews(slideshow.slides);
+    self.slideViews = createSlideViews(slideshow.slides, self.dimensions);
     self.appendSlideViews();
   });
 
@@ -3406,9 +3410,9 @@ function SlideshowView (slideshow, element) {
   mapEvents(self);
 }
 
-function createSlideViews (slides) {
+function createSlideViews (slides, dimensions) {
   return slides.map(function (slide) {
-    return new SlideView(slide);
+    return new SlideView(slide, dimensions);
   });
 }
 
@@ -3421,10 +3425,6 @@ function createPositionElement () {
 }
 
 function mapEvents (slideshowView) {
-  var ratio
-    , dimensions
-    ;
-
   events.on('hideSlide', function (slideIndex) {
     slideshowView.hideSlide(slideIndex);
   });
@@ -3433,32 +3433,19 @@ function mapEvents (slideshowView) {
     slideshowView.showSlide(slideIndex);
   });
 
-  events.on('config', onConfig);
-  window.addEventListener('resize', onResize);
-
-  // Pass dummy ratio value to signalize that the
-  // `ratio` configuration option has been changed
-  onConfig({ratio: null});
-
-  function onConfig (changes) {
+  events.on('config', function (changes) {
     // We only care if the `ratio` configuration option
     // changes, so simply bail out if it hasn't changed
     if (!changes.hasOwnProperty('ratio')) {
       return;
     }
 
-    ratio = getRatio();
-    dimensions = getDimensions(ratio);
+    slideshowView.updateDimensions();
+  });
 
-    slideshowView.element.style.width = dimensions.width + 'px';
-    slideshowView.element.style.height = dimensions.height + 'px';
-
-    onResize();
-  }
-
-  function onResize () {
-    slideshowView.resize(ratio, dimensions);
-  }
+  window.addEventListener('resize', function () {
+    slideshowView.updateSize();
+  });
 }
 
 SlideshowView.prototype.appendSlideViews = function () {
@@ -3466,6 +3453,7 @@ SlideshowView.prototype.appendSlideViews = function () {
 
   self.slideViews.each(function (slideView) {
     self.element.appendChild(slideView.element);
+    slideView.scaleBackgroundImage();
   });
 };
 
@@ -3491,12 +3479,29 @@ SlideshowView.prototype.hideSlide = function (slideIndex) {
   slideView.hide();
 };
 
-SlideshowView.prototype.resize = function (ratio, dimensions) {
+SlideshowView.prototype.updateDimensions = function () {
+  var ratio = getRatio()
+    , dimensions = getDimensions(ratio)
+    ;
+
+  this.ratio = ratio;
+  this.dimensions.width = dimensions.width;
+  this.dimensions.height = dimensions.height;
+
+  this.element.style.width = this.dimensions.width + 'px';
+  this.element.style.height = this.dimensions.height + 'px';
+
+  this.updateSize();
+};
+
+SlideshowView.prototype.updateSize = function () {
   var containerHeight = window.innerHeight
     , containerWidth = window.innerWidth
     , scale
     , scaledWidth
     , scaledHeight
+    , ratio = this.ratio
+    , dimensions = this.dimensions
     ;
 
   if (containerWidth / ratio.width > containerHeight / ratio.height) {
@@ -3515,13 +3520,6 @@ SlideshowView.prototype.resize = function (ratio, dimensions) {
   this.element.style.top = (containerHeight - scaledHeight) / 2 + 'px';
 };
 
-function getDimensions (ratio) {
-  return {
-    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
-  , height: referenceHeight
-  };
-}
-
 function getRatio () {
   var ratioString = config.get('ratio') || '4:3'
     , ratioComponents = ratioString.split(':')
@@ -3538,6 +3536,13 @@ function getRatio () {
   return ratio;
 }
 
+function getDimensions (ratio) {
+  return {
+    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
+  , height: referenceHeight
+  };
+}
+
 });
 
 require.define("/src/remark/views/slideView.js",function(require,module,exports,__dirname,__filename,process,global){var converter = require('../converter')
@@ -3546,8 +3551,10 @@ require.define("/src/remark/views/slideView.js",function(require,module,exports,
 
 exports.SlideView = SlideView;
 
-function SlideView (slide) {
+function SlideView (slide, dimensions) {
   this.slide = slide;
+  this.dimensions = dimensions;
+
   this.element = createSlideElement();
   this.contentElement = createContentElement(slide.source, slide.properties);
 
@@ -3560,6 +3567,28 @@ SlideView.prototype.show = function () {
 
 SlideView.prototype.hide = function () {
   this.element.style.display = 'none';
+};
+
+SlideView.prototype.scaleBackgroundImage = function () {
+  var self = this
+    , styles = window.getComputedStyle(this.contentElement)
+    , backgroundImage = styles.backgroundImage
+    , match
+    , image
+    ;
+
+  if ((match = /^url\(([^\)]+?)\)/.exec(backgroundImage)) !== null) {
+    image = new Image();
+    image.onload = function () {
+      if (image.width > self.dimensions.width || 
+          image.height > self.dimensions.height) {
+
+        // Background image is larger than slide, so scale it to fit
+        self.contentElement.style.backgroundSize = 'contain';
+      }
+    };
+    image.src = match[1];
+  }
 };
 
 function createSlideElement () {
@@ -4584,7 +4613,7 @@ function hide (element) {
 require.define("/src/remark/resources.js",function(require,module,exports,__dirname,__filename,process,global){/* Automatically generated */
 
 module.exports = {
-  documentStyles: "kbd,.key{display:inline;display:inline-block;min-width:1em;padding:.2em .3em;font:normal 0.85em/1 \"Lucida Grande\",Lucida,Arial,sans-serif;text-align:center;text-decoration:none;-moz-border-radius:.3em;-webkit-border-radius:.3em;border-radius:.3em;border:none;cursor:default;-moz-user-select:none;-webkit-user-select:none;user-select:none;}kbd[title],.key[title]{cursor:help;}kbd,kbd.dark,.dark-keys kbd,.key,.key.dark,.dark-keys .key{background:#505050;background:-moz-linear-gradient(top, #3c3c3c, #505050);background:-webkit-gradient(linear, left top, left bottom, from(#3c3c3c), to(#505050));color:#fafafa;text-shadow:-1px -1px 0 #464646;-moz-box-shadow:inset 0 0 1px #969696,inset 0 -0.05em 0.4em #505050,0 0.1em 0 #1e1e1e,0 0.1em 0.1em rgba(0, 0, 0, 0.3);-webkit-box-shadow:inset 0 0 1px #969696,inset 0 -0.05em 0.4em #505050,0 0.1em 0 #1e1e1e,0 0.1em 0.1em rgba(0, 0, 0, 0.3);box-shadow:inset 0 0 1px #969696,inset 0 -0.05em 0.4em #505050,0 0.1em 0 #1e1e1e,0 0.1em 0.1em rgba(0, 0, 0, 0.3);}kbd.light,.light-keys kbd,.key.light,.light-keys .key{background:#fafafa;background:-moz-linear-gradient(top, #d2d2d2, #ffffff);background:-webkit-gradient(linear, left top, left bottom, from(#d2d2d2), to(#ffffff));color:#323232;text-shadow:0 0 2px #ffffff;-moz-box-shadow:inset 0 0 1px #ffffff,inset 0 0 0.4em #c8c8c8,0 0.1em 0 #828282,0 0.11em 0 rgba(0, 0, 0, 0.4),0 0.1em 0.11em rgba(0, 0, 0, 0.9);-webkit-box-shadow:inset 0 0 1px #ffffff,inset 0 0 0.4em #c8c8c8,0 0.1em 0 #828282,0 0.11em 0 rgba(0, 0, 0, 0.4),0 0.1em 0.11em rgba(0, 0, 0, 0.9);box-shadow:inset 0 0 1px #ffffff,inset 0 0 0.4em #c8c8c8,0 0.1em 0 #828282,0 0.11em 0 rgba(0, 0, 0, 0.4),0 0.1em 0.11em rgba(0, 0, 0, 0.9);}html,body{background:#d7d7d7;font-family:Georgia;font-size:20px;overflow:hidden;}#slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}#slideshow .slide{height:100%;width:100%;}#slideshow .slide>.left{text-align:left;}#slideshow .slide>.center{text-align:center;}#slideshow .slide>.right{text-align:right;}#slideshow .slide>.top{vertical-align:top;}#slideshow .slide>.middle{vertical-align:middle;}#slideshow .slide>.bottom{vertical-align:bottom;}#slideshow .slide .content{display:table-cell;padding:1em 4em 1em 4em;}#slideshow .slide .content .left{display:block;text-align:left;}#slideshow .slide .content .center{display:block;text-align:center;}#slideshow .slide .content .right{display:block;text-align:right;}#slideshow .slide .content pre,#slideshow .slide .content code{font-family:Monaco, monospace;font-size:16px;}#slideshow .slide .content h1 code{font-size:0.8em;}#slideshow .overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}#slideshow .overlay .content{color:white;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}#slideshow .overlay .content td{color:white;padding:10px;}#slideshow .overlay .content td:first-child{padding-left:0;}#slideshow .overlay .dismiss{top:85%;}#slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}li>code,p>code{padding:1px 4px;}",
+  documentStyles: "kbd,.key{display:inline;display:inline-block;min-width:1em;padding:.2em .3em;font:normal 0.85em/1 \"Lucida Grande\",Lucida,Arial,sans-serif;text-align:center;text-decoration:none;-moz-border-radius:.3em;-webkit-border-radius:.3em;border-radius:.3em;border:none;cursor:default;-moz-user-select:none;-webkit-user-select:none;user-select:none;}kbd[title],.key[title]{cursor:help;}kbd,kbd.dark,.dark-keys kbd,.key,.key.dark,.dark-keys .key{background:#505050;background:-moz-linear-gradient(top, #3c3c3c, #505050);background:-webkit-gradient(linear, left top, left bottom, from(#3c3c3c), to(#505050));color:#fafafa;text-shadow:-1px -1px 0 #464646;-moz-box-shadow:inset 0 0 1px #969696,inset 0 -0.05em 0.4em #505050,0 0.1em 0 #1e1e1e,0 0.1em 0.1em rgba(0, 0, 0, 0.3);-webkit-box-shadow:inset 0 0 1px #969696,inset 0 -0.05em 0.4em #505050,0 0.1em 0 #1e1e1e,0 0.1em 0.1em rgba(0, 0, 0, 0.3);box-shadow:inset 0 0 1px #969696,inset 0 -0.05em 0.4em #505050,0 0.1em 0 #1e1e1e,0 0.1em 0.1em rgba(0, 0, 0, 0.3);}kbd.light,.light-keys kbd,.key.light,.light-keys .key{background:#fafafa;background:-moz-linear-gradient(top, #d2d2d2, #ffffff);background:-webkit-gradient(linear, left top, left bottom, from(#d2d2d2), to(#ffffff));color:#323232;text-shadow:0 0 2px #ffffff;-moz-box-shadow:inset 0 0 1px #ffffff,inset 0 0 0.4em #c8c8c8,0 0.1em 0 #828282,0 0.11em 0 rgba(0, 0, 0, 0.4),0 0.1em 0.11em rgba(0, 0, 0, 0.9);-webkit-box-shadow:inset 0 0 1px #ffffff,inset 0 0 0.4em #c8c8c8,0 0.1em 0 #828282,0 0.11em 0 rgba(0, 0, 0, 0.4),0 0.1em 0.11em rgba(0, 0, 0, 0.9);box-shadow:inset 0 0 1px #ffffff,inset 0 0 0.4em #c8c8c8,0 0.1em 0 #828282,0 0.11em 0 rgba(0, 0, 0, 0.4),0 0.1em 0.11em rgba(0, 0, 0, 0.9);}html,body{background:#d7d7d7;font-family:Georgia;font-size:20px;overflow:hidden;}#slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}#slideshow .slide{height:100%;width:100%;}#slideshow .slide>.left{text-align:left;}#slideshow .slide>.center{text-align:center;}#slideshow .slide>.right{text-align:right;}#slideshow .slide>.top{vertical-align:top;}#slideshow .slide>.middle{vertical-align:middle;}#slideshow .slide>.bottom{vertical-align:bottom;}#slideshow .slide .content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}#slideshow .slide .content .left{display:block;text-align:left;}#slideshow .slide .content .center{display:block;text-align:center;}#slideshow .slide .content .right{display:block;text-align:right;}#slideshow .slide .content pre,#slideshow .slide .content code{font-family:Monaco, monospace;font-size:16px;}#slideshow .slide .content h1 code{font-size:0.8em;}#slideshow .overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}#slideshow .overlay .content{color:white;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}#slideshow .overlay .content td{color:white;padding:10px;}#slideshow .overlay .content td:first-child{padding-left:0;}#slideshow .overlay .dismiss{top:85%;}#slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}li>code,p>code{padding:1px 4px;}",
   overlay: "<div class=\"content help\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <kbd>&uarr;</kbd>,\n        <kbd>&larr;</kbd>,\n        <kbd>pg up</kbd>,\n        <kbd>k</kbd>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <kbd>&darr;</kbd>,\n        <kbd>&rarr;</kbd>,\n        <kbd>pg dn</kbd>,\n        <kbd>space</kbd>,\n        <kbd>j</kbd>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <kbd>home</kbd> / <kbd>end</kbd>\n      </td>\n      <td>Go to first / last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <kbd>?</kbd>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <kbd>esc</kbd>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
 };
 

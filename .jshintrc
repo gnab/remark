@@ -2,6 +2,7 @@
   "eqeqeq": true,
   "undef": true,
   "laxcomma": true,
+  "browser": true,
 
   "predef": [
     "require",
@@ -11,8 +12,6 @@
     "describe",
     "before",
     "it",
-    "document",
-    "window",
     "alert",
     "$"
   ]
