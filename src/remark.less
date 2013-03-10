@@ -1,5 +1,3 @@
-@import "../vendor/keyscss/keys.css.less";
-
 html, body {
   background: #d7d7d7;
   font-family: Georgia;
@@ -91,6 +89,8 @@ html, body {
 
     .content {
       color: white;
+      font-family: Helvetica, arial, freesans, clean, sans-serif;
+      font-size: 12pt;
       position: absolute;
       top: 10%;
       bottom: 10%;
@@ -99,10 +99,20 @@ html, body {
 
       td {
         color: white;
+        font-size: 12pt;
         padding: 10px;
       }
       td:first-child {
         padding-left: 0;
+      }
+      .key {
+        background: white;
+        color: black;
+        min-width: 1em;
+        display: inline-block;
+        padding: 3px 6px;
+        text-align: center;
+        border-radius: 4px;
       }
     }
 
