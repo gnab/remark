@@ -142,7 +142,7 @@ layout: false
 
 - Touch support for smart phones and pads, i.e. swipe to navigate slides
 
-.footnote[.red[*] At least browsers are trying their best]
+.footnote[.red[*] At least browsers try their best]
 ]
 ---
 .left-column[
@@ -350,170 +350,8 @@ Both indented code blocks and [GFM](http://github.github.com/github-flavored-mar
     ```
 ]
 
-Inline code is not automatically highlighted, and must be supplied a language to be highlighted:
-
-    .remark
-    Inline code: `.ruby a = 5`
-
-To disable syntax highlighting, use the class `.no-highlight no-highlight`.
-]
----
-.left-column[
-  ## Markdown extensions
-  ### - Slide properties
-  ### - Content classes
-  ### - Syntax Highlighting
-]
-.right-column[
 A number of highlighting [styles](https://github.com/gnab/remark/wiki/Configuration-Options#wiki-highlighting) are available, including several well-known themes from different editors and IDEs.
 
-You may specify a style other than the `default` style using the configuration option `highlightStyle`, like this:
-
-    <script src="remark.js" language="text/javascript">
-      { "highlightStyle": "sunburst" }
-    </script>
-
-If you're using some custom style, you might want to prevent any of the bundled styles from being included. This can be done by specifying `.javascript null` as the style:
-
-    .javascript
-    { "highlightStyle": null }
-]
----
-.left-column[
-  ## Slide properties
-  ### - Name
-]
-.right-column[
-The `name` property accepts a name used to identify the current slide:
-
-    .remark
-    name: agenda
-
-    # Agenda
-
-A slide name may be used to:
-
-* Link a slide directly using URL fragment, i.e. `slideshow.html#agenda`
-
-* Navigate to a slide using the [API](https://github.com/gnab/remark/wiki/API), i.e. `remark.gotoSlide('agenda')`
-
-* Identify slide DOM element, either for scripting or styling purposes:
-
-      <div id="slideshow">
-        <div class="slide">
-          <div id="slide-agenda" class="content">
-            <h1>Agenda</h1>
-
-* Reference slide when used as [template](#template) for some other slide
-]
----
-.left-column[
-  ## Slide properties
-  ### - Name
-  ### - Class
-]
-.right-column[
-The `class` property accepts a comma-separated list of class names, which are applied to the current slide:
-
-    .remark
-    class: center, middle
-
-    # Slide with content centered in both dimensions
-
-Resulting HTML extract:
-
-    <div id="slideshow">
-      <div class="slide">
-        <div class="content center middle">
-          <h1>Slide with content centered in both dimensions</h1>
-
-The `center` and `middle` classes are included along with a few other common case classes.
-]
----
-name: template
-.left-column[
-  ## Slide properties
-  ### - Name
-  ### - Class
-  ### - Template
-]
-.right-column[
-The `template` property names another slide to be used as a template for the current slide:
-
-    .remark
-    name: other-slide
-
-    Some content.
-
-    ---
-    template: other-slide
-
-    Content appended to other-slide's content.
-
-
-The final content of the current slide will then be this:
-
-    .remark
-    Some content.
-
-    Content appended to other-slide's content.
-
-Both template slide content and properties are prepended to the current slide, with the following exceptions:
-
-* `name` and `layout` properties are not inherited
-* `class` properties are merged, preserving class order
-]
----
-name: template
-.left-column[
-  ## Slide properties
-  ### - Name
-  ### - Class
-  ### - Template
-]
-.right-column[
-The `template` property may be used to (apparantly) add content to a slide incrementally, like bullet lists appearing a bullet at a time.
-
-Using only two dashes (`--`) to separate slides implicitly uses the preceding slide as a template:
-
-    .remark
-    # Agenda
-
-    --
-    1. Introduction
-
-    --
-    2. Markdown formatting
-
-Template slides may also contain a special `\{{content}}` expression to explicitly position the content of derived slides, instead of having it implicitly appended.
-]
----
-.left-column[
-  ## Slide properties
-  ### - Name
-  ### - Class
-  ### - Template
-  ### - Layout
-]
-.right-column[
-The `layout` property either makes the current slide a layout slide, which is omitted from the slideshow and serves as the default template used for all subsequent slides:
-
-    .remark
-    layout: true
-
-    # Section
-
-    ---
-
-    ## Sub section 1
-
-    ---
-
-    ## Sub section 2
-
-Or, when set to `false`, reverts to using no default template.
-
-Multiple layout slides may be defined throughout the slideshow to define a common template for a series of slides.
 ]
 ---
 template: inverse
@@ -528,10 +366,9 @@ Getting up and running is done in only a few steps:
 
 1. Visit the [project site](http://github.com/gnab/remark)
 
-2. Follow the steps in the Usage section
+2. Follow the steps in the Getting Started section
 
-
-This slideshow is of course created using remark, and serves as a live reference of use.
+For more information on using remark, please check out the [wiki](https://github.com/gnab/remark/wiki) pages.
 ]
 ---
 name: last-page
