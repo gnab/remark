@@ -80,6 +80,11 @@ Other interesting stuff:
 - [torgeir.github.com/busterjs-lightning-talk](http://torgeir.github.com/busterjs-lightning-talk)
 - [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
 
+### Other systems integrating with remark
+
+- [http://markdowner.com](http://markdowner.com)
+- [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
+
 ### Credits
 
 - [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
