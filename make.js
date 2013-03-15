@@ -80,10 +80,14 @@ function bundleHighlighter (target) {
 }
 
 function mapStyle (map, file) {
-  var key = path.basename(file, path.extname(file));
+  var key = path.basename(file, path.extname(file))
+    , tmpfile = path.join(tempdir(), 'remark.tmp')
+    ;
 
   if (ignoredStyles.indexOf(key) === -1) {
-    map[key] = less(file);
+    ('.hljs-' + key + ' {\n' + cat(file) + '\n}').to(tmpfile);
+    map[key] = less(tmpfile);
+    rm(tmpfile);
   }
 
   return map;

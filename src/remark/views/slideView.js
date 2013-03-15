@@ -1,14 +1,17 @@
 var converter = require('../converter')
   , highlighter = require('../highlighter')
+  , utils = require('../utils')
   ;
 
-exports.SlideView = SlideView;
+module.exports = SlideView;
 
-function SlideView (slide) {
+function SlideView (events, slideshow, slide) {
+  this.events = events;
+  this.slideshow = slideshow;
   this.slide = slide;
 
   this.element = createSlideElement();
-  this.contentElement = createContentElement(slide.source, slide.properties);
+  this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
 
   this.element.appendChild(this.contentElement);
 }
@@ -57,32 +60,44 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
 function createSlideElement () {
   var element = document.createElement('div');
 
-  element.className = 'slide';
+  element.className = 'remark-slide';
   element.style.display = 'none';
 
   return element;
 }
 
-function createContentElement (source, properties) {
+function createContentElement (events, slideshow, source, properties) {
   var element = document.createElement('div');
 
   if (properties.name) {
-    element.id = "slide-" + properties.name;
+    element.id = 'slide-' + properties.name;
   }
 
   element.innerHTML = source;
 
-  setBackgroundFromProperties(element, properties);
-  setClassFromProperties(element, properties);
+  events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('highlightStyle')) {
+      styleContentElement(slideshow, element, properties);
+    }
+  });
+
+  styleContentElement(slideshow, element, properties);
 
   converter.convertContentClasses(element);
   converter.convertMarkdown(element);
-  converter.convertCodeClasses(element);
   converter.trimEmptySpace(element);
 
-  highlightCodeBlocks(element);
+  highlightCodeBlocks(element, slideshow);
 
   return element;
+}
+
+function styleContentElement (slideshow, element, properties) {
+  element.className = '';
+
+  setClassFromProperties(element, properties);
+  setHighlightStyleFromProperties(element, properties, slideshow);
+  setBackgroundFromProperties(element, properties);
 }
 
 function setBackgroundFromProperties (element, properties) {
@@ -93,22 +108,36 @@ function setBackgroundFromProperties (element, properties) {
   }
 }
 
-function setClassFromProperties (element, properties) {
-  var classes = (properties['class'] || '').split(/,| /)
-        .filter(function (s) { return s !== ''; });
+function setHighlightStyleFromProperties (element, properties, slideshow) {
+  var highlightStyle = 
+    properties['highlight-style'] ||
+    slideshow.get('highlightStyle') ||
+    'default';
 
-  element.className = ['content'].concat(classes).join(' ');
+  if (highlightStyle) {
+    utils.addClass(element, 'hljs-' + highlightStyle);
+  }
 }
 
-function highlightCodeBlocks (content) {
+function setClassFromProperties (element, properties) {
+  utils.addClass(element, 'remark-slide-content');
+
+  (properties['class'] || '').split(/,| /)
+    .filter(function (s) { return s !== ''; })
+    .each(function (c) { utils.addClass(element, c); });
+}
+
+function highlightCodeBlocks (content, slideshow) {
   var codeBlocks = content.getElementsByTagName('code')
-    , block
-    , i
     ;
 
-  for (i = 0; i < codeBlocks.length; i++) {
-    block = codeBlocks[i];
+  codeBlocks.each(function (block) {
+    if (block.className === '') {
+      block.className = slideshow.get('highlightLanguage') || '';
+    }
 
-    highlighter.engine.highlightBlock(block, '  ');
-  }
+    if (block.className !== '') {
+      highlighter.engine.highlightBlock(block, '  ');
+    }
+  });
 }

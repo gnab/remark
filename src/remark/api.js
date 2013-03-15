@@ -1,38 +1,47 @@
 var EventEmitter = require('events').EventEmitter
-  , config = require('./config')
   , highlighter = require('./highlighter')
-  , events = require('./events')
-  , api = module.exports = new EventEmitter()
+  , Slideshow = require('./models/slideshow')
+  , SlideshowView = require('./views/slideshowView')
+  , Controller = require('./controller')
   ;
 
-api.config = config;
+// Expose highlighter to allow enumerating available styles and
+// including external language grammars
+module.exports.highlighter = highlighter;
 
-api.highlighter = {
-  engine: function() {
-    return highlighter.engine;
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
+  var events = new EventEmitter()
+    , slideshow
+    , slideshowView
+    , controller
+    ;
+
+  options = applyDefaults(options);
+  events = new EventEmitter();
+  slideshow = new Slideshow(events, options);
+  slideshowView = new SlideshowView(events, options.container, slideshow);
+  controller = new Controller(events, slideshowView);
+
+  return slideshow;
+};
+
+function applyDefaults (options) {
+  var sourceElement;
+
+  options = options || {};
+
+  if (!options.hasOwnProperty('source')) {
+    sourceElement = document.getElementById('source');
+    if (sourceElement) {
+      options.source = sourceElement.innerHTML;
+      sourceElement.style.display = 'none';
+    }
   }
-};
 
-api.loadFromString = function (source) {
-  events.emit('loadFromString', source);
-};
+  if (!(options.container instanceof window.HTMLElement)) {
+    options.container = document.body;
+  }
 
-api.gotoSlide = function (slideNoOrName) {
-  events.emit('gotoSlide', slideNoOrName);
-};
-
-api.gotoPreviousSlide = function () {
-  events.emit('gotoPreviousSlide');
-};
-
-api.gotoNextSlide = function () {
-  events.emit('gotoNextSlide');
-};
-
-api.gotoFirstSlide = function () {
-  events.emit('gotoFirstSlide');
-};
-
-api.gotoLastSlide = function () {
-  events.emit('gotoLastSlide');
-};
+  return options;
+}

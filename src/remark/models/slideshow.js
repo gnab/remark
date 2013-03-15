@@ -1,49 +1,87 @@
 var EventEmitter = require('events').EventEmitter
-  , Slide = require('./slide').Slide
-  , events = require('../events')
+  , Properties = require('./slideshow/properties')
+  , Navigation = require('./slideshow/navigation')
+  , utils = require('../utils')
+  , Slide = require('./slide')
   ;
 
-exports.Slideshow = Slideshow;
+module.exports = Slideshow;
 
 Slideshow.prototype = new EventEmitter();
 
-function Slideshow (source) {
-  var self = this;
-
-  self.loadFromString(source, true);
-
-  events.on('loadFromString', function (source) {
-    self.loadFromString(source);
-  });
-}
-
-Slideshow.prototype.loadFromString = function (source, initial) {
-  var slides = createSlides(source)
-    , names = mapNamedSlides(slides)
+function Slideshow (events, options) {
+  var self = this
+    , internal = {
+        slides: []
+      }
     ;
 
-  applyTemplates(slides, names);
+  // Extend slideshow functionality
+  Properties.call(self, events, options);
+  Navigation.call(self, events, internal);
 
-  slides = stripLayoutSlides(slides);
-  slides = indexSlides(slides);
+  self.getSlideCount = getSlideCount;
+  self.getSlideNo = getSlideNo;
+  self.getSlides = getSlides;
 
-  expandVariables(slides);
+  loadFromString(self.get('source'));
 
-  this.slides = slides;
-  this.slides.names = names;
+  events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('source')) {
+      loadFromString(changes.source);
+    }
+  });
 
-  if (!initial) {
-    this.emit('update');
+  function loadFromString (source) {
+    var names;
+
+    source = source || '';
+
+    internal.slides = createSlides(source);
+    names = mapNamedSlides(internal.slides);
+
+    applyTemplates(internal.slides, names);
+
+    internal.slides = stripLayoutSlides(internal.slides);
+    internal.slides = indexSlides(internal.slides);
+
+    expandVariables(internal.slides);
+
+    internal.slides.names = names;
+
+    events.emit('slidesChanged');
   }
-};
 
-Slideshow.prototype.getSlideByName = function (name) {
-  return this.slides.names[name];
-};
+  function getSlides () {
+    return internal.slides;
+  }
 
-Slideshow.prototype.getSlideCount = function () {
-  return this.slides.length;
-};
+  function getSlideCount () {
+    return internal.slides.length;
+  }
+
+  function getSlideNo (slideNoOrName) {
+    var slideNo
+      , slide
+      ;
+
+    if (typeof slideNoOrName === 'number') {
+      return slideNoOrName;
+    }
+
+    slideNo = parseInt(slideNoOrName, 10);
+    if (slideNo.toString() === slideNoOrName) {
+      return slideNo;
+    }
+
+    slide = internal.slides[slideNoOrName];
+    if (slide) {
+      return slide.index + 1;
+    }
+
+    return 1;
+  }
+}
 
 function createSlides (source) {
   var slides = []

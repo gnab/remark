@@ -1,29 +1,47 @@
-Array.prototype.each = Array.prototype.each || function (f) {
+exports.addClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .concat([className])
+    .join(' ');
+};
+
+exports.getClasses = function (element) {
+  return element.className
+    .split(' ')
+    .filter(function (s) { return s !== ''; });
+};
+
+each([Array.prototype, window.NodeList.prototype], function (prototype) {
+  prototype.each = prototype.each || function (f) {
+    each(this, f);
+  };
+
+  prototype.filter = prototype.filter || function (f) {
+    var result = [];
+
+    this.each(function (element) {
+      if (f(element, result.length)) {
+        result.push(element);
+      }
+    });
+
+    return result;
+  };
+
+  prototype.map = prototype.map || function (f) {
+    var result = [];
+
+    this.each(function (element) {
+      result.push(f(element, result.length));
+    });
+
+    return result;
+  };
+});
+
+function each (list, f) {
   var i;
 
-  for (i = 0; i < this.length; ++i) {
-    f(this[i], i);
+  for (i = 0; i < list.length; ++i) {
+    f(list[i], i);
   }
-};
-
-Array.prototype.filter = Array.prototype.filter || function (f) {
-  var result = [];
-
-  this.each(function (element) {
-    if (f(element, result.length)) {
-      result.push(element);
-    }
-  });
-
-  return result;
-};
-
-Array.prototype.map = Array.prototype.map || function (f) {
-  var result = [];
-
-  this.each(function (element) {
-    result.push(f(element, result.length));
-  });
-
-  return result;
-};
+}

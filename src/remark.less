@@ -1,11 +1,15 @@
-html, body {
-  background: #d7d7d7;
+.remark-container {
+  background: #d7d8d2;
   font-family: Georgia;
   font-size: 20px;
   overflow: hidden;
 }
+.remark-container:focus {
+  outline-style: solid;
+  outline-width: 1px;  
+}
 
-#slideshow {
+.remark-slideshow {
   background: #fff;
   overflow: hidden;
   position: absolute;
@@ -16,7 +20,7 @@ html, body {
   -webkit-box-shadow: 0 0 30px #888;
   box-shadow: 0 0 30px #888;
 
-  .slide {
+  .remark-slide {
     height: 100%;
     width: 100%;
 
@@ -44,7 +48,7 @@ html, body {
       vertical-align: bottom;
     }
 
-    .content {
+    .remark-slide-content {
       background-position: center;
       background-repeat: no-repeat;
       display: table-cell;
@@ -72,6 +76,10 @@ html, body {
 
       h1 code {
         font-size: 0.8em;
+      }
+
+      li > code, p > code {
+        padding: 1px 4px;
       }
     }
   }
@@ -127,8 +135,4 @@ html, body {
     position: absolute;
     right: 20px;
   }
-}
-
-li > code, p > code {
-  padding: 1px 4px;
 }

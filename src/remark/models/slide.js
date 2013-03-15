@@ -1,4 +1,4 @@
-exports.Slide = Slide;
+module.exports = Slide;
 
 Slide.create = function (source, properties) {
   return new Slide(source, properties);

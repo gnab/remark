@@ -1,31 +1,28 @@
-var events = require('../events')
-  , resources = require('../resources')
-  ;
+var resources = require('../resources');
 
 module.exports = OverlayView;
 
-function OverlayView (element) {
+function OverlayView (events) {
   var self = this;
 
   self.element = document.createElement('div');
-  self.element.className = 'overlay light-keys';
+
+  self.element.className = 'overlay';
   self.element.innerHTML = resources.overlay;
 
-  element.appendChild(self.element);
-
   events.on('hideOverlay', function () {
-    hide(self.element);
+    self.hide();
   });
 
   events.on('toggleHelp', function () {
-    show(self.element);
+    self.show();
   });
 }
 
-function show (element) {
-  element.style.display = 'block';
-}
+OverlayView.prototype.show = function () {
+  this.element.style.display = 'block';
+};
 
-function hide (element) {
-  element.style.display = 'none';
-}
+OverlayView.prototype.hide = function () {
+  this.element.style.display = 'none';
+};

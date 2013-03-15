@@ -1,7 +1,16 @@
 var marked = require('marked')
-  , config = require('./config')
   , converter = module.exports = {}
   ;
+
+marked.setOptions({
+  gfm: true,
+  tables: true,
+  breaks: false,
+  pedantic: false,
+  sanitize: false,
+  smartLists: true,
+  langPrefix: ''
+});
 
 converter.convertContentClasses = function (content) {
   var classFinder = /(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/ig
@@ -81,61 +90,6 @@ converter.convertMarkdown = function (content) {
 
   // ... and &amp;
   content.innerHTML = content.innerHTML.replace(/&amp;/g, '&');
-};
-
-converter.convertCodeClasses = function (content) {
-  var codeBlocks = content.getElementsByTagName('code')
-    , i
-    ;
-
-  for (i = 0; i < codeBlocks.length; i++) {
-    convertCodeClass(codeBlocks[i]);
-  }
-};
-
-var convertCodeClass = function (block) {
-  var defaultClass = config.get('highlightLanguage')
-    , highlightInline = config.get('highlightInline')
-    , isInlineCode = block.parentNode.nodeName.toUpperCase() !== 'PRE'
-    ;
-
-    if (setCodeClass(block) || transformCodeClass(block)) {
-      return;
-    }
-
-    if (isInlineCode && !highlightInline) {
-      block.className = 'no-highlight';
-    }
-    else if (defaultClass) {
-      block.className = defaultClass;
-    }
-};
-
-var setCodeClass = function (block) {
-  var classFinder = /^(\\)?\.([a-z_\-][a-z\-_0-9]*)(?:\n|\ )/i
-    , match
-    ;
-
-  if ((match = classFinder.exec(block.innerHTML)) !== null) {
-    if (match[1]) {
-      block.innerHTML = block.innerHTML.substr(match[1].length);
-    }
-    else {
-      block.innerHTML = block.innerHTML.substr(match[0].length);
-      block.className = match[2];
-      return true;
-    }
-  }
-
-  return false;
-};
-
-var transformCodeClass = function (block) {
-  var className = block.className || '';
-
-  block.className = className.replace('lang-', '');
-
-  return block.className !== className;
 };
 
 converter.trimEmptySpace = function (content) {

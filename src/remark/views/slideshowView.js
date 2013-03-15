@@ -1,119 +1,188 @@
-var api = require('../api')
-  , events = require('../events')
-  , SlideView = require('./slideView').SlideView
+var SlideView = require('./slideView')
   , OverlayView = require('./overlayView')
-  , config = require('../config')
+  , addClass = require('../utils').addClass
 
   , referenceWidth = 908
   , referenceHeight = 681
   , referenceRatio = referenceWidth / referenceHeight
   ;
 
-exports.SlideshowView = SlideshowView;
+module.exports = SlideshowView;
 
-function SlideshowView (slideshow, element) {
+function SlideshowView (events, containerElement, slideshow) {
   var self = this;
 
-  mapEvents(self);
-
-  self.element = element;
+  self.events = events;
+  self.slideshow = slideshow;
   self.dimensions = {};
 
-  self.slideViews = createSlideViews(slideshow.slides);
-  self.appendSlideViews();
-  self.updateDimensions();
+  self.configureContainerElement(containerElement);
+  self.configureSlideshowElement();
+  self.configurePositionElement();
+  self.configureOverlayView();
 
-  slideshow.on('update', function () {
-    self.removeSlideViews();
-    self.slideViews = createSlideViews(slideshow.slides);
-    self.appendSlideViews();
-    self.scaleSlideBackgroundImages();
+  self.updateSlideViews();
+
+  events.on('slidesChanged', function () {
+    self.updateSlideViews();
   });
 
-  self.positionElement = createPositionElement();
-  element.appendChild(self.positionElement);
-
-  self.overlayView = new OverlayView(element);
-}
-
-function createSlideViews (slides) {
-  return slides.map(function (slide) {
-    return new SlideView(slide);
-  });
-}
-
-function createPositionElement () {
-  var element = document.createElement('div');
-
-  element.className = 'position';
-
-  return element;
-}
-
-function mapEvents (slideshowView) {
   events.on('hideSlide', function (slideIndex) {
-    slideshowView.hideSlide(slideIndex);
+    self.hideSlide(slideIndex);
   });
 
   events.on('showSlide', function (slideIndex) {
-    slideshowView.showSlide(slideIndex);
-  });
-
-  events.on('config', function (changes) {
-    // We only care if the `ratio` configuration option
-    // changes, so simply bail out if it hasn't changed
-    if (!changes.hasOwnProperty('ratio')) {
-      return;
-    }
-
-    slideshowView.updateDimensions();
-  });
-
-  window.addEventListener('resize', function () {
-    slideshowView.updateSize();
+    self.showSlide(slideIndex);
   });
 }
 
-SlideshowView.prototype.scaleSlideBackgroundImages = function () {
+SlideshowView.prototype.isEmbedded = function () {
+  return this.containerElement !== document.body;
+};
+
+SlideshowView.prototype.configureContainerElement = function (element) {
   var self = this;
 
-  self.slideViews.each(function (slideView) {
-    slideView.scaleBackgroundImage(self.dimensions);
+  self.containerElement = element;
+
+  addClass(element, 'remark-container');
+
+  if (element === document.body) {
+    addClass(document.getElementsByTagName('html')[0], 'remark-container');
+
+    forwardEvents(self.events, window, [
+      'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel'
+    ]);
+    forwardEvents(self.events, document, [
+      'touchstart', 'touchmove', 'touchend'
+    ]);
+  }
+  else {
+    element.style.position = 'absolute';
+    element.tabIndex = -1;
+
+    forwardEvents(self.events, element, [
+      'keydown', 'keypress', 'mousewheel',
+      'touchstart', 'touchmove', 'touchend'
+    ]);
+  }
+
+  // Tap event is handled in slideshow view
+  // rather than controller as knowledge of
+  // container width is needed to determine
+  // whether to move backwards or forwards
+  self.events.on('tap', function (endX) {
+    if (endX < self.getContainerWidth() / 2) {
+      self.slideshow.gotoPreviousSlide();
+    }
+    else {
+      self.slideshow.gotoNextSlide();
+    }
   });
 };
 
-SlideshowView.prototype.appendSlideViews = function () {
+function forwardEvents (target, source, events) {
+  events.each(function (eventName) {
+    source.addEventListener(eventName, function () {
+      var args = Array.prototype.slice.call(arguments);
+      target.emit.apply(target, [eventName].concat(args));
+    });
+  });
+}
+
+SlideshowView.prototype.configureSlideshowElement = function () {
   var self = this;
+
+  self.element = document.createElement('div');
+  self.element.className = 'remark-slideshow';
+
+  self.containerElement.appendChild(self.element);
+
+  self.updateDimensions();
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.updateDimensions();
+    }
+  });
+
+  self.events.on('resize', onResize);
+
+  function onResize () {
+    self.scaleToFitContainer();
+  }
+};
+
+SlideshowView.prototype.configurePositionElement = function () {
+  var self = this;
+
+  self.positionElement = document.createElement('div');
+  self.positionElement.className = 'position';
+  self.element.appendChild(self.positionElement);
+};
+
+SlideshowView.prototype.configureOverlayView = function () {
+  var self = this;
+
+  self.overlayView = new OverlayView(self.events);
+  self.element.appendChild(self.overlayView.element);
+};
+
+SlideshowView.prototype.updateSlideViews = function () {
+  var self = this;
+
+  if (self.slideViews) {
+    self.slideViews.each(function (slideView) {
+      self.element.removeChild(slideView.element);
+    });
+  }
+
+  self.slideViews = self.slideshow.getSlides().map(function (slide) {
+    return new SlideView(self.events, self.slideshow, slide);
+  });
 
   self.slideViews.each(function (slideView) {
     self.element.appendChild(slideView.element);
   });
+
+  self.scaleSlideBackgroundImages();
+
+  if (self.slideshow.getCurrentSlideNo() > 0) {
+    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
+  }
 };
 
-SlideshowView.prototype.removeSlideViews = function () {
+SlideshowView.prototype.scaleSlideBackgroundImages = function () {
   var self = this;
 
-  self.slideViews.each(function (slideView) {
-    self.element.removeChild(slideView.element);
-  });
+  if (self.slideViews) {
+    self.slideViews.each(function (slideView) {
+      slideView.scaleBackgroundImage(self.dimensions);
+    });
+  }
 };
 
 SlideshowView.prototype.showSlide =  function (slideIndex) {
-  var slideView = this.slideViews[slideIndex];
-  api.emit('slidein', slideView.element, slideIndex);
+  var self = this
+    , slideView = self.slideViews[slideIndex];
+
+  self.slideshow.emit('slidein', slideView.element, slideIndex);
   slideView.show();
-  this.positionElement.innerHTML =
-    slideIndex + 1 + ' / ' + this.slideViews.length;
+  self.positionElement.innerHTML =
+    slideIndex + 1 + ' / ' + self.slideViews.length;
 };
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
-  var slideView = this.slideViews[slideIndex];
-  api.emit('slideout', slideView.element, slideIndex);
+  var self = this
+    , slideView = self.slideViews[slideIndex];
+
+  self.slideshow.emit('slideout', slideView.element, slideIndex);
   slideView.hide();
 };
 
 SlideshowView.prototype.updateDimensions = function () {
-  var ratio = getRatio()
+  var self = this
+    , ratio = getRatio(self.slideshow)
     , dimensions = getDimensions(ratio)
     ;
 
@@ -124,13 +193,14 @@ SlideshowView.prototype.updateDimensions = function () {
   this.element.style.width = this.dimensions.width + 'px';
   this.element.style.height = this.dimensions.height + 'px';
 
-  this.updateSize();
   this.scaleSlideBackgroundImages();
+  this.scaleToFitContainer();
 };
 
-SlideshowView.prototype.updateSize = function () {
-  var containerHeight = window.innerHeight
-    , containerWidth = window.innerWidth
+SlideshowView.prototype.scaleToFitContainer = function () {
+  var self = this
+    , containerHeight = this.getContainerHeight()
+    , containerWidth = this.getContainerWidth()
     , scale
     , scaledWidth
     , scaledHeight
@@ -154,8 +224,30 @@ SlideshowView.prototype.updateSize = function () {
   this.element.style.top = (containerHeight - scaledHeight) / 2 + 'px';
 };
 
-function getRatio () {
-  var ratioString = config.get('ratio') || '4:3'
+SlideshowView.prototype.getContainerHeight = function () {
+  var self = this;
+
+  if (self.containerElement === document.body) {
+    return window.innerHeight;
+  }
+  else {
+    return self.containerElement.clientHeight;
+  }
+};
+
+SlideshowView.prototype.getContainerWidth = function () {
+  var self = this;
+
+  if (self.containerElement === document.body) {
+    return window.innerWidth;
+  }
+  else {
+    return self.containerElement.clientWidth;
+  }
+};
+
+function getRatio (slideshow) {
+  var ratioString = slideshow.get('ratio') || '4:3'
     , ratioComponents = ratioString.split(':')
     , ratio
     ;

@@ -1,3 +1,11 @@
+### 0.5.0
+* Update API to allow creating and embedding multiple slideshows.
+* Prefix CSS class names with `remark-` to avoid collisions.
+* Add highlight-style slide property for setting highlight.js style.
+* Highlighting language is no longer automatically determined.
+  * Must be either configured for entire slideshow or specified per code block.
+* Code classes are DEPRECATED, use GFM fenced code blocks instead.
+
 ### 0.4.6
 * Add background-image slide property.
 * Make slide backgrounds centered, not repeated, and, if needed, down-scaled to fit slide.
