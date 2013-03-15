@@ -1,24 +1,23 @@
-@import url(http://fonts.googleapis.com/css?family=Droid+Serif);
-@import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+@import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+@import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
 @import url(https://fonts.googleapis.com/css?family=Anton);
 
 body { 
   font-family: 'Droid Serif'; 
   margin: 0;
 }
-.content {
-  margin: 0 auto;
-  width: 960px;
-}
 .header {
   background: #272822;
-  border-bottom: 4px solid #F92672;
+  border-bottom: 4px solid #DF7A5C;
 }
 .header .content {
   padding: 5em 0;
   text-shadow: 0 -1px 1px #262626;
   position: relative;
   text-align: center;
+}
+.header .content .gray {
+  color: #777872;
 }
 .header h1 {
   color: #f3f3f3;
@@ -35,7 +34,6 @@ body {
 }
 .header ul li {
   background: rgba(55,56,50, 0.75);
-  color: #fff;
   display: inline-block;
   font-family: 'Yanone Kaffeesatz';
   font-size: 1.8em; 
@@ -50,14 +48,31 @@ body {
 }
 .header ul li.active {
   background: #fff;
-  color: #000;
+  
   text-shadow: none;
+}
+.header ul li a {
+  color: #fff;
+  text-decoration: none;
+}
+.header ul li.active a {
+  color: #000;
+}
+.content, [data-tab] {
+  margin: 0 auto;
+  position: relative;
+  width: 960px;
+}
+[data-tab] {
+  display: none;
 }
 h1, h2, h3 {
   font-family: 'Yanone Kaffeesatz';
   font-weight: 400;
   margin-bottom: 0;
 }
-.gray {
-  color: #777872;
+
+#editor { 
+  width: 50%;
+  height: 300px;
 }

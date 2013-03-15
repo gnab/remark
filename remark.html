@@ -7,21 +7,51 @@
   </head>
   <body>
     <div class="header">
+      <a href="https://github.com/gnab/remark"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
       <div class="content">
         <h1>remark</h1> 
         <p class="gray">[ri-mahrk]</p>
-        <ul>
-          <li>Home</li>
-          <li class="active">Download</li>
-          <li>Documentation</li>
-          <li>Source</li>
+        <ul class="tabs">
+          <li><a href="#/">Home</a></li>
+          <li><a href="#/download">Download</a></li>
+          <li><a href="#/documentation">Documentation</a></li>
+          <li><a href="https://github.com/gnab/remark">Source</a></li>
         </ul>
       </div>
     </div>
-    <div class="content">
-      <a name="download"><h1>Downloads</h1></a>
-      <p>To get up and running you only need to do a few, simple
-      steps:</p>
+    <div data-tab="">
+      <h1>Home</h1>
+      <p>Slideshow Markdown:</p>
+      <div id="editor"># Slide 1
+
+This is slide 1.
+
+---
+
+# Slide 2
+
+This is slide 2.</div>      
     </div>
+    <div data-tab="download">
+      <h1>Download</h1>
+      <p>
+        All downloads:
+      </p>
+      <ul data-bind="foreach: downloads.items">
+        <li>
+          <a data-bind="text: name, attr: {href: '/' + path}"></a>
+        </li>
+      </ul>
+      <p>History:</p>
+      <pre data-bind="text: JSON.stringify(downloads.history())"></pre>
+    </div>
+    <div data-tab="documentation">
+      <h1>Documentation</h1>
+    </div>
+    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="sammy-0.7.4.min.js"></script>
+    <script type="text/javascript" src="knockout-2.2.1.min.js"></script>
+    <script src="https://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="app.js"></script>
   </body>
 </html>
