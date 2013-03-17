@@ -69,12 +69,17 @@
   var editor = ace.edit("editor");
   editor.setTheme("ace/theme/twilight");
   editor.getSession().setMode("ace/mode/markdown");  
-  editor.getSession().on('change', function(e) {
+  editor.on('change', function(e) {
     remark.loadFromString(editor.getValue());
+  });
+  editor.selection.on('changeCursor', function(e) {
+    var value = editor.getValue(),
+        line = editor.selection.getCursor().row;
   });
 
   // Slideshow
-  remark.createSlideshow(document.getElementById('slideshow'));
+  remark.createSlideshow(document.getElementById('slideshow'),
+    editor.getValue());
   setTimeout(function () {
     remark.resizeSlideshow();
   }, 0);
