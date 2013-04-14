@@ -70,7 +70,7 @@
   editor.setTheme("ace/theme/twilight");
   editor.getSession().setMode("ace/mode/markdown");
   editor.on('change', function(e) {
-    remark.loadFromString(editor.getValue());
+    slideshow.loadFromString(editor.getValue());
   });
   editor.selection.on('changeCursor', function(e) {
     var value = editor.getValue(),
@@ -78,11 +78,14 @@
   });
 
   // Slideshow
-  remark.createSlideshow(document.getElementById('slideshow'),
-    editor.getValue());
-  setTimeout(function () {
-    remark.resizeSlideshow();
-  }, 0);
+  var slideshow;
+  remark.on('ready', function () {
+    slideshow = remark.create(document.getElementById('slideshow'),
+      editor.getValue());
+  });
+  //setTimeout(function () {
+    //remark.resizeSlideshow();
+  //}, 0);
 
   ko.applyBindings(app);
   app.router.run('#/');
