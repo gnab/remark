@@ -1,621 +1,36 @@
-(function(){var require = function (file, cwd) {
-    var resolved = require.resolve(file, cwd || '/');
-    var mod = require.modules[resolved];
-    if (!mod) throw new Error(
-        'Failed to resolve module ' + file + ', tried ' + resolved
-    );
-    var cached = require.cache[resolved];
-    var res = cached? cached.exports : mod();
-    return res;
-};
-
-require.paths = [];
-require.modules = {};
-require.cache = {};
-require.extensions = [".js",".coffee",".json"];
-
-require._core = {
-    'assert': true,
-    'events': true,
-    'fs': true,
-    'path': true,
-    'vm': true
-};
-
-require.resolve = (function () {
-    return function (x, cwd) {
-        if (!cwd) cwd = '/';
-        
-        if (require._core[x]) return x;
-        var path = require.modules.path();
-        cwd = path.resolve('/', cwd);
-        var y = cwd || '/';
-        
-        if (x.match(/^(?:\.\.?\/|\/)/)) {
-            var m = loadAsFileSync(path.resolve(y, x))
-                || loadAsDirectorySync(path.resolve(y, x));
-            if (m) return m;
-        }
-        
-        var n = loadNodeModulesSync(x, y);
-        if (n) return n;
-        
-        throw new Error("Cannot find module '" + x + "'");
-        
-        function loadAsFileSync (x) {
-            x = path.normalize(x);
-            if (require.modules[x]) {
-                return x;
-            }
-            
-            for (var i = 0; i < require.extensions.length; i++) {
-                var ext = require.extensions[i];
-                if (require.modules[x + ext]) return x + ext;
-            }
-        }
-        
-        function loadAsDirectorySync (x) {
-            x = x.replace(/\/+$/, '');
-            var pkgfile = path.normalize(x + '/package.json');
-            if (require.modules[pkgfile]) {
-                var pkg = require.modules[pkgfile]();
-                var b = pkg.browserify;
-                if (typeof b === 'object' && b.main) {
-                    var m = loadAsFileSync(path.resolve(x, b.main));
-                    if (m) return m;
-                }
-                else if (typeof b === 'string') {
-                    var m = loadAsFileSync(path.resolve(x, b));
-                    if (m) return m;
-                }
-                else if (pkg.main) {
-                    var m = loadAsFileSync(path.resolve(x, pkg.main));
-                    if (m) return m;
-                }
-            }
-            
-            return loadAsFileSync(x + '/index');
-        }
-        
-        function loadNodeModulesSync (x, start) {
-            var dirs = nodeModulesPathsSync(start);
-            for (var i = 0; i < dirs.length; i++) {
-                var dir = dirs[i];
-                var m = loadAsFileSync(dir + '/' + x);
-                if (m) return m;
-                var n = loadAsDirectorySync(dir + '/' + x);
-                if (n) return n;
-            }
-            
-            var m = loadAsFileSync(x);
-            if (m) return m;
-        }
-        
-        function nodeModulesPathsSync (start) {
-            var parts;
-            if (start === '/') parts = [ '' ];
-            else parts = path.normalize(start).split('/');
-            
-            var dirs = [];
-            for (var i = parts.length - 1; i >= 0; i--) {
-                if (parts[i] === 'node_modules') continue;
-                var dir = parts.slice(0, i + 1).join('/') + '/node_modules';
-                dirs.push(dir);
-            }
-            
-            return dirs;
-        }
-    };
-})();
-
-require.alias = function (from, to) {
-    var path = require.modules.path();
-    var res = null;
-    try {
-        res = require.resolve(from + '/package.json', '/');
-    }
-    catch (err) {
-        res = require.resolve(from, '/');
-    }
-    var basedir = path.dirname(res);
-    
-    var keys = (Object.keys || function (obj) {
-        var res = [];
-        for (var key in obj) res.push(key);
-        return res;
-    })(require.modules);
-    
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        if (key.slice(0, basedir.length + 1) === basedir + '/') {
-            var f = key.slice(basedir.length);
-            require.modules[to + f] = require.modules[basedir + f];
-        }
-        else if (key === basedir) {
-            require.modules[to] = require.modules[basedir];
-        }
-    }
-};
-
-(function () {
-    var process = {};
-    var global = typeof window !== 'undefined' ? window : {};
-    var definedProcess = false;
-    
-    require.define = function (filename, fn) {
-        if (!definedProcess && require.modules.__browserify_process) {
-            process = require.modules.__browserify_process();
-            definedProcess = true;
-        }
-        
-        var dirname = require._core[filename]
-            ? ''
-            : require.modules.path().dirname(filename)
-        ;
-        
-        var require_ = function (file) {
-            var requiredModule = require(file, dirname);
-            var cached = require.cache[require.resolve(file, dirname)];
-
-            if (cached && cached.parent === null) {
-                cached.parent = module_;
-            }
-
-            return requiredModule;
-        };
-        require_.resolve = function (name) {
-            return require.resolve(name, dirname);
-        };
-        require_.modules = require.modules;
-        require_.define = require.define;
-        require_.cache = require.cache;
-        var module_ = {
-            id : filename,
-            filename: filename,
-            exports : {},
-            loaded : false,
-            parent: null
-        };
-        
-        require.modules[filename] = function () {
-            require.cache[filename] = module_;
-            fn.call(
-                module_.exports,
-                require_,
-                module_,
-                module_.exports,
-                dirname,
-                filename,
-                process,
-                global
-            );
-            module_.loaded = true;
-            return module_.exports;
-        };
-    };
-})();
-
-
-require.define("path",function(require,module,exports,__dirname,__filename,process,global){function filter (xs, fn) {
-    var res = [];
-    for (var i = 0; i < xs.length; i++) {
-        if (fn(xs[i], i, xs)) res.push(xs[i]);
-    }
-    return res;
-}
-
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-  for (var i = parts.length; i >= 0; i--) {
-    var last = parts[i];
-    if (last == '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  }
-
-  // if the path is allowed to go above the root, restore leading ..s
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-}
-
-// Regex to split a filename into [*, dir, basename, ext]
-// posix version
-var splitPathRe = /^(.+\/(?!$)|\/)?((?:.+?)?(\.[^.]*)?)$/;
-
-// path.resolve([from ...], to)
-// posix version
-exports.resolve = function() {
-var resolvedPath = '',
-    resolvedAbsolute = false;
-
-for (var i = arguments.length; i >= -1 && !resolvedAbsolute; i--) {
-  var path = (i >= 0)
-      ? arguments[i]
-      : process.cwd();
-
-  // Skip empty and invalid entries
-  if (typeof path !== 'string' || !path) {
-    continue;
-  }
-
-  resolvedPath = path + '/' + resolvedPath;
-  resolvedAbsolute = path.charAt(0) === '/';
-}
-
-// At this point the path should be resolved to a full absolute path, but
-// handle relative paths to be safe (might happen when process.cwd() fails)
-
-// Normalize the path
-resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-
-  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
-};
-
-// path.normalize(path)
-// posix version
-exports.normalize = function(path) {
-var isAbsolute = path.charAt(0) === '/',
-    trailingSlash = path.slice(-1) === '/';
-
-// Normalize the path
-path = normalizeArray(filter(path.split('/'), function(p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-  if (path && trailingSlash) {
-    path += '/';
-  }
-  
-  return (isAbsolute ? '/' : '') + path;
-};
-
-
-// posix version
-exports.join = function() {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
-    return p && typeof p === 'string';
-  }).join('/'));
-};
-
-
-exports.dirname = function(path) {
-  var dir = splitPathRe.exec(path)[1] || '';
-  var isWindows = false;
-  if (!dir) {
-    // No dirname
-    return '.';
-  } else if (dir.length === 1 ||
-      (isWindows && dir.length <= 3 && dir.charAt(1) === ':')) {
-    // It is just a slash or a drive letter with a slash
-    return dir;
-  } else {
-    // It is a full dirname, strip trailing slash
-    return dir.substring(0, dir.length - 1);
-  }
-};
-
-
-exports.basename = function(path, ext) {
-  var f = splitPathRe.exec(path)[2] || '';
-  // TODO: make this comparison case-insensitive on windows?
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-  return f;
-};
-
-
-exports.extname = function(path) {
-  return splitPathRe.exec(path)[3] || '';
-};
-
-});
-
-require.define("__browserify_process",function(require,module,exports,__dirname,__filename,process,global){var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-        && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-        && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return window.setImmediate;
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'browserify-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('browserify-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-process.binding = function (name) {
-    if (name === 'evals') return (require)('vm')
-    else throw new Error('No such module. (Possibly not yet loaded)')
-};
-
-(function () {
-    var cwd = '/';
-    var path;
-    process.cwd = function () { return cwd };
-    process.chdir = function (dir) {
-        if (!path) path = require('path');
-        cwd = path.resolve(dir, cwd);
-    };
-})();
-
-});
-
-require.define("/src/remark/api.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
-  , highlighter = require('./highlighter')
-  , Slideshow = require('./models/slideshow')
-  , SlideshowView = require('./views/slideshowView')
-  , Controller = require('./controller')
+;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+var api = require('./remark/api')
+  , highlighter = require('./remark/highlighter')
+  , resources = require('./remark/resources')
   ;
 
-// Expose highlighter to allow enumerating available styles and
-// including external language grammars
-module.exports.highlighter = highlighter;
+// Expose API as `remark`
+window.remark = api;
 
-// Creates slideshow initialized from options
-module.exports.create = function (options) {
-  var events = new EventEmitter()
-    , slideshow
-    , slideshowView
-    , controller
+// Apply embedded styles to document
+styleDocument();
+
+function styleDocument () {
+  var styleElement = document.createElement('style')
+    , headElement = document.getElementsByTagName('head')[0]
+    , style
     ;
 
-  options = applyDefaults(options);
-  events = new EventEmitter();
-  slideshow = new Slideshow(events, options);
-  slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = new Controller(events, slideshowView);
+  styleElement.type = 'text/css';
+  headElement.insertBefore(styleElement, headElement.firstChild);
 
-  return slideshow;
-};
+  styleElement.innerHTML = resources.documentStyles;
 
-function applyDefaults (options) {
-  var sourceElement;
-
-  options = options || {};
-
-  if (!options.hasOwnProperty('source')) {
-    sourceElement = document.getElementById('source');
-    if (sourceElement) {
-      options.source = sourceElement.innerHTML;
-      sourceElement.style.display = 'none';
+  for (style in highlighter.styles) {
+    if (highlighter.styles.hasOwnProperty(style)) {
+      styleElement.innerHTML = styleElement.innerHTML +
+        highlighter.styles[style];
     }
   }
-
-  if (!(options.container instanceof window.HTMLElement)) {
-    options.container = document.body;
-  }
-
-  return options;
 }
 
-});
-
-require.define("events",function(require,module,exports,__dirname,__filename,process,global){if (!process.EventEmitter) process.EventEmitter = function () {};
-
-var EventEmitter = exports.EventEmitter = process.EventEmitter;
-var isArray = typeof Array.isArray === 'function'
-    ? Array.isArray
-    : function (xs) {
-        return Object.prototype.toString.call(xs) === '[object Array]'
-    }
-;
-
-// By default EventEmitters will print a warning if more than
-// 10 listeners are added to it. This is a useful default which
-// helps finding memory leaks.
-//
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-var defaultMaxListeners = 10;
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!this._events) this._events = {};
-  this._events.maxListeners = n;
-};
-
-
-EventEmitter.prototype.emit = function(type) {
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events || !this._events.error ||
-        (isArray(this._events.error) && !this._events.error.length))
-    {
-      if (arguments[1] instanceof Error) {
-        throw arguments[1]; // Unhandled 'error' event
-      } else {
-        throw new Error("Uncaught, unspecified 'error' event.");
-      }
-      return false;
-    }
-  }
-
-  if (!this._events) return false;
-  var handler = this._events[type];
-  if (!handler) return false;
-
-  if (typeof handler == 'function') {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        var args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-    return true;
-
-  } else if (isArray(handler)) {
-    var args = Array.prototype.slice.call(arguments, 1);
-
-    var listeners = handler.slice();
-    for (var i = 0, l = listeners.length; i < l; i++) {
-      listeners[i].apply(this, args);
-    }
-    return true;
-
-  } else {
-    return false;
-  }
-};
-
-// EventEmitter is defined in src/node_events.cc
-// EventEmitter.prototype.emit() is also defined there.
-EventEmitter.prototype.addListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('addListener only takes instances of Function');
-  }
-
-  if (!this._events) this._events = {};
-
-  // To avoid recursion in the case that type == "newListeners"! Before
-  // adding it to the listeners, first emit "newListeners".
-  this.emit('newListener', type, listener);
-
-  if (!this._events[type]) {
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  } else if (isArray(this._events[type])) {
-
-    // Check for listener leak
-    if (!this._events[type].warned) {
-      var m;
-      if (this._events.maxListeners !== undefined) {
-        m = this._events.maxListeners;
-      } else {
-        m = defaultMaxListeners;
-      }
-
-      if (m && m > 0 && this._events[type].length > m) {
-        this._events[type].warned = true;
-        console.error('(node) warning: possible EventEmitter memory ' +
-                      'leak detected. %d listeners added. ' +
-                      'Use emitter.setMaxListeners() to increase limit.',
-                      this._events[type].length);
-        console.trace();
-      }
-    }
-
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  } else {
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  var self = this;
-  self.on(type, function g() {
-    self.removeListener(type, g);
-    listener.apply(this, arguments);
-  });
-
-  return this;
-};
-
-EventEmitter.prototype.removeListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('removeListener only takes instances of Function');
-  }
-
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (!this._events || !this._events[type]) return this;
-
-  var list = this._events[type];
-
-  if (isArray(list)) {
-    var i = list.indexOf(listener);
-    if (i < 0) return this;
-    list.splice(i, 1);
-    if (list.length == 0)
-      delete this._events[type];
-  } else if (this._events[type] === listener) {
-    delete this._events[type];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (type && this._events && this._events[type]) this._events[type] = null;
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  if (!this._events) this._events = {};
-  if (!this._events[type]) this._events[type] = [];
-  if (!isArray(this._events[type])) {
-    this._events[type] = [this._events[type]];
-  }
-  return this._events[type];
-};
-
-});
-
-require.define("/src/remark/highlighter.js",function(require,module,exports,__dirname,__filename,process,global){/* Automatically generated */
+},{"./remark/api":2,"./remark/highlighter":3,"./remark/resources":4}],3:[function(require,module,exports){
+(function(){/* Automatically generated */
 
 var hljs = new (/*
 Syntax highlighting with language autodetection.
@@ -2781,9 +2196,438 @@ module.exports = {
   engine: hljs
 };
 
-});
+})()
+},{}],4:[function(require,module,exports){
+/* Automatically generated */
 
-require.define("/src/remark/models/slideshow.js",function(require,module,exports,__dirname,__filename,process,global){var EventEmitter = require('events').EventEmitter
+module.exports = {
+  documentStyles: ".remark-container{background:#d7d8d2;font-family:Georgia;font-size:20px;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slideshow .remark-slide{height:100%;width:100%;}.remark-slideshow .remark-slide>.left{text-align:left;}.remark-slideshow .remark-slide>.center{text-align:center;}.remark-slideshow .remark-slide>.right{text-align:right;}.remark-slideshow .remark-slide>.top{vertical-align:top;}.remark-slideshow .remark-slide>.middle{vertical-align:middle;}.remark-slideshow .remark-slide>.bottom{vertical-align:bottom;}.remark-slideshow .remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slideshow .remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slideshow .remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slideshow .remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slideshow .remark-slide .remark-slide-content pre,.remark-slideshow .remark-slide .remark-slide-content code{font-family:Monaco, monospace;font-size:16px;}.remark-slideshow .remark-slide .remark-slide-content h1 code{font-size:0.8em;}.remark-slideshow .remark-slide .remark-slide-content li>code,.remark-slideshow .remark-slide .remark-slide-content p>code{padding:1px 4px;}.remark-slideshow .overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-slideshow .overlay .content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-slideshow .overlay .content td{color:white;font-size:12pt;padding:10px;}.remark-slideshow .overlay .content td:first-child{padding-left:0;}.remark-slideshow .overlay .content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-slideshow .overlay .dismiss{top:85%;}.remark-slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}",
+  overlay: "<div class=\"content help\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\"><b>&uarr;</b></span>,\n        <span class=\"key\"><b>&larr;</b></span>,\n        <span class=\"key\">Pg Up</span>,\n        <span class=\"key\">K</span>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\"><b>&darr;</b></span>,\n        <span class=\"key\"><b>&rarr;</b></span>,\n        <span class=\"key\">Pg Dn</span>,\n        <span class=\"key\">Space</span>,\n        <span class=\"key\">J</span>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">Home</span>\n      </td>\n      <td>Go to first slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">End</span>\n      </td>\n      <td>Go to last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">?</span>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\">Esc</span>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
+};
+
+},{}],5:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            if (ev.source === window && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],6:[function(require,module,exports){
+(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+
+var EventEmitter = exports.EventEmitter = process.EventEmitter;
+var isArray = typeof Array.isArray === 'function'
+    ? Array.isArray
+    : function (xs) {
+        return Object.prototype.toString.call(xs) === '[object Array]'
+    }
+;
+function indexOf (xs, x) {
+    if (xs.indexOf) return xs.indexOf(x);
+    for (var i = 0; i < xs.length; i++) {
+        if (x === xs[i]) return i;
+    }
+    return -1;
+}
+
+// By default EventEmitters will print a warning if more than
+// 10 listeners are added to it. This is a useful default which
+// helps finding memory leaks.
+//
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+var defaultMaxListeners = 10;
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!this._events) this._events = {};
+  this._events.maxListeners = n;
+};
+
+
+EventEmitter.prototype.emit = function(type) {
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events || !this._events.error ||
+        (isArray(this._events.error) && !this._events.error.length))
+    {
+      if (arguments[1] instanceof Error) {
+        throw arguments[1]; // Unhandled 'error' event
+      } else {
+        throw new Error("Uncaught, unspecified 'error' event.");
+      }
+      return false;
+    }
+  }
+
+  if (!this._events) return false;
+  var handler = this._events[type];
+  if (!handler) return false;
+
+  if (typeof handler == 'function') {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        var args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+    return true;
+
+  } else if (isArray(handler)) {
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    var listeners = handler.slice();
+    for (var i = 0, l = listeners.length; i < l; i++) {
+      listeners[i].apply(this, args);
+    }
+    return true;
+
+  } else {
+    return false;
+  }
+};
+
+// EventEmitter is defined in src/node_events.cc
+// EventEmitter.prototype.emit() is also defined there.
+EventEmitter.prototype.addListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('addListener only takes instances of Function');
+  }
+
+  if (!this._events) this._events = {};
+
+  // To avoid recursion in the case that type == "newListeners"! Before
+  // adding it to the listeners, first emit "newListeners".
+  this.emit('newListener', type, listener);
+
+  if (!this._events[type]) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  } else if (isArray(this._events[type])) {
+
+    // Check for listener leak
+    if (!this._events[type].warned) {
+      var m;
+      if (this._events.maxListeners !== undefined) {
+        m = this._events.maxListeners;
+      } else {
+        m = defaultMaxListeners;
+      }
+
+      if (m && m > 0 && this._events[type].length > m) {
+        this._events[type].warned = true;
+        console.error('(node) warning: possible EventEmitter memory ' +
+                      'leak detected. %d listeners added. ' +
+                      'Use emitter.setMaxListeners() to increase limit.',
+                      this._events[type].length);
+        console.trace();
+      }
+    }
+
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  } else {
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  var self = this;
+  self.on(type, function g() {
+    self.removeListener(type, g);
+    listener.apply(this, arguments);
+  });
+
+  return this;
+};
+
+EventEmitter.prototype.removeListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('removeListener only takes instances of Function');
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (!this._events || !this._events[type]) return this;
+
+  var list = this._events[type];
+
+  if (isArray(list)) {
+    var i = indexOf(list, listener);
+    if (i < 0) return this;
+    list.splice(i, 1);
+    if (list.length == 0)
+      delete this._events[type];
+  } else if (this._events[type] === listener) {
+    delete this._events[type];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  if (arguments.length === 0) {
+    this._events = {};
+    return this;
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (type && this._events && this._events[type]) this._events[type] = null;
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  if (!this._events) this._events = {};
+  if (!this._events[type]) this._events[type] = [];
+  if (!isArray(this._events[type])) {
+    this._events[type] = [this._events[type]];
+  }
+  return this._events[type];
+};
+
+})(require("__browserify_process"))
+},{"__browserify_process":5}],2:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , highlighter = require('./highlighter')
+  , Slideshow = require('./models/slideshow')
+  , SlideshowView = require('./views/slideshowView')
+  , Controller = require('./controller')
+  ;
+
+// Expose highlighter to allow enumerating available styles and
+// including external language grammars
+module.exports.highlighter = highlighter;
+
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
+  var events = new EventEmitter()
+    , slideshow
+    , slideshowView
+    , controller
+    ;
+
+  options = applyDefaults(options);
+  events = new EventEmitter();
+  slideshow = new Slideshow(events, options);
+  slideshowView = new SlideshowView(events, options.container, slideshow);
+  controller = new Controller(events, slideshowView);
+
+  return slideshow;
+};
+
+function applyDefaults (options) {
+  var sourceElement;
+
+  options = options || {};
+
+  if (!options.hasOwnProperty('source')) {
+    sourceElement = document.getElementById('source');
+    if (sourceElement) {
+      options.source = sourceElement.innerHTML;
+      sourceElement.style.display = 'none';
+    }
+  }
+
+  if (!(options.container instanceof window.HTMLElement)) {
+    options.container = document.body;
+  }
+
+  return options;
+}
+
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
+module.exports = Controller;
+
+function Controller (events, slideshowView) {
+  addNavigationEventListeners(events, slideshowView);
+  addKeyboardEventListeners(events);
+  addMouseEventListeners(events);
+  addTouchEventListeners(events);
+}
+
+function addNavigationEventListeners (events, slideshowView) {
+  if (slideshowView.isEmbedded()) {
+    events.emit('gotoSlide', 1);
+  }
+  else {
+    events.on('hashchange', navigateByHash);
+    events.on('slideChanged', updateHash);
+
+    navigateByHash();
+  }
+
+  function navigateByHash () {
+    var slideNoOrName = (window.location.hash || '').substr(1);
+    events.emit('gotoSlide', slideNoOrName);
+  }
+
+  function updateHash (slideNoOrName) {
+    window.location.hash = '#' + slideNoOrName;
+  }
+}
+
+function addKeyboardEventListeners (events) {
+  events.on('keydown', function (event) {
+    switch (event.keyCode) {
+      case 33: // Page up
+      case 37: // Left
+      case 38: // Up
+        events.emit('gotoPreviousSlide');
+        break;
+      case 32: // Space
+      case 34: // Page down
+      case 39: // Right
+      case 40: // Down
+        events.emit('gotoNextSlide');
+        break;
+      case 36: // Home
+        events.emit('gotoFirstSlide');
+        break;
+      case 35: // End
+        events.emit('gotoLastSlide');
+        break;
+      case 27: // Escape
+        events.emit('hideOverlay');
+        break;
+    }
+  });
+
+  events.on('keypress', function (event) {
+    switch (String.fromCharCode(event.which)) {
+      case 'j':
+        events.emit('gotoNextSlide');
+        break;
+      case 'k':
+        events.emit('gotoPreviousSlide');
+        break;
+      case '?':
+        events.emit('toggleHelp');
+        break;
+    }
+  });
+}
+
+function addMouseEventListeners (events) {
+  events.on('mousewheel', function (event) {
+    if (event.wheelDeltaY > 0) {
+      events.emit('gotoPreviousSlide');
+    }
+    else if (event.wheelDeltaY < 0) {
+      events.emit('gotoNextSlide');
+    }
+  });
+}
+
+function addTouchEventListeners (events) {
+  var touch
+    , startX
+    , endX
+    ;
+
+  var isTap = function () {
+    return Math.abs(startX - endX) < 10;
+  };
+
+  var handleTap = function () {
+    events.emit('tap', endX);
+  };
+
+  var handleSwipe = function () {
+    if (startX > endX) {
+      events.emit('gotoNextSlide');
+    }
+    else {
+      events.emit('gotoPreviousSlide');
+    }
+  };
+
+  events.on('touchstart', function (event) {
+    touch = event.touches[0];
+    startX = touch.clientX;
+  });
+
+  events.on('touchend', function (event) {
+    if (event.target.nodeName.toUpperCase() === 'A') {
+      return;
+    }
+
+    touch = event.changedTouches[0];
+    endX = touch.clientX;
+
+    if (isTap()) {
+      handleTap();
+    }
+    else {
+      handleSwipe();
+    }
+  });
+
+  events.on('touchmove', function (event) {
+    event.preventDefault();
+  });
+}
+
+},{}],7:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
   , Properties = require('./slideshow/properties')
   , Navigation = require('./slideshow/navigation')
   , utils = require('../utils')
@@ -2947,279 +2791,8 @@ function expandVariables (slides) {
   });
 }
 
-});
-
-require.define("/src/remark/models/slideshow/properties.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = Properties;
-
-function Properties (events, defaults) {
-  var self = this
-    , properties = {};
-
-  copyProperties(defaults || {}, properties);
-
-  self.get = function (property) {
-    return properties[property];
-  };
-
-  self.set = function (stringOrObject, value) {
-    var changes = {};
-
-    if (typeof stringOrObject === 'string') {
-      changes[stringOrObject] = value;
-    }
-    else {
-      changes = stringOrObject;
-    }
-
-    copyProperties(changes, properties);
-
-    events.emit('propertiesChanged', changes);
-  };
-
-  function copyProperties (source, target) {
-    var property;
-
-    for (property in source) {
-      if (source.hasOwnProperty(property)) {
-        target[property] = source[property];
-      }
-    }
-  }
-}
-
-});
-
-require.define("/src/remark/models/slideshow/navigation.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = Navigation;
-
-function Navigation (events) {
-  var self = this
-    , currentSlideNo = 0
-    ;
-
-  self.getCurrentSlideNo = getCurrentSlideNo;
-  self.gotoSlide = gotoSlide;
-  self.gotoPreviousSlide = gotoPreviousSlide;
-  self.gotoNextSlide = gotoNextSlide;
-  self.gotoFirstSlide = gotoFirstSlide;
-  self.gotoLastSlide = gotoLastSlide;
-
-  events.on('gotoSlide', gotoSlide);
-  events.on('gotoPreviousSlide', gotoPreviousSlide);
-  events.on('gotoNextSlide', gotoNextSlide);
-  events.on('gotoFirstSlide', gotoFirstSlide);
-  events.on('gotoLastSlide', gotoLastSlide);
-
-  events.on('slidesChanged', function () {
-    if (currentSlideNo > self.getSlideCount()) {
-      currentSlideNo = self.getSlideCount();
-    }
-  });
-
-  function getCurrentSlideNo () {
-    return currentSlideNo;
-  }
-
-  function gotoSlide (slideNoOrName) {
-    var slideNo = self.getSlideNo(slideNoOrName)
-      , alreadyOnSlide = slideNo === currentSlideNo
-      , slideOutOfRange = slideNo < 1 || slideNo > self.getSlideCount()
-      ;
-
-    if (alreadyOnSlide || slideOutOfRange) {
-      return;
-    }
-
-    if (currentSlideNo !== 0) {
-      events.emit('hideSlide', currentSlideNo - 1);
-    }
-
-    events.emit('showSlide', slideNo - 1);
-
-    currentSlideNo = slideNo;
-
-    events.emit('slideChanged', slideNoOrName || slideNo);
-  }
-
-  function gotoPreviousSlide() {
-    self.gotoSlide(currentSlideNo - 1);
-  }
-  
-  function gotoNextSlide() {
-    self.gotoSlide(currentSlideNo + 1);
-  }
-  
-  function gotoFirstSlide () {
-    self.gotoSlide(1);
-  }
-  
-  function gotoLastSlide () {
-    self.gotoSlide(self.getSlideCount());
-  }
-}
-
-});
-
-require.define("/src/remark/utils.js",function(require,module,exports,__dirname,__filename,process,global){exports.addClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .concat([className])
-    .join(' ');
-};
-
-exports.getClasses = function (element) {
-  return element.className
-    .split(' ')
-    .filter(function (s) { return s !== ''; });
-};
-
-each([Array.prototype, window.NodeList.prototype], function (prototype) {
-  prototype.each = prototype.each || function (f) {
-    each(this, f);
-  };
-
-  prototype.filter = prototype.filter || function (f) {
-    var result = [];
-
-    this.each(function (element) {
-      if (f(element, result.length)) {
-        result.push(element);
-      }
-    });
-
-    return result;
-  };
-
-  prototype.map = prototype.map || function (f) {
-    var result = [];
-
-    this.each(function (element) {
-      result.push(f(element, result.length));
-    });
-
-    return result;
-  };
-});
-
-function each (list, f) {
-  var i;
-
-  for (i = 0; i < list.length; ++i) {
-    f(list[i], i);
-  }
-}
-
-});
-
-require.define("/src/remark/models/slide.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = Slide;
-
-Slide.create = function (source, properties) {
-  return new Slide(source, properties);
-};
-
-function Slide (source, properties) {
-  this.properties = properties || {};
-  this.source = extractProperties(source, this.properties);
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
-}
-
-Slide.prototype.inherit = function (template) {
-  inheritProperties(this, template);
-  inheritSource(this, template);
-};
-
-function inheritProperties (slide, template) {
-  var property
-    , value
-    ;
-
-  for (property in template.properties) {
-    if (!template.properties.hasOwnProperty(property) ||
-        ignoreProperty(property)) {
-      continue;
-    }
-
-    value = [template.properties[property]];
-
-    if (property === 'class' && slide.properties[property]) {
-      value.push(slide.properties[property]);
-    }
-
-    if (property === 'class' || slide.properties[property] === undefined) {
-      slide.properties[property] = value.join(', ');
-    }
-  }
-}
-
-function ignoreProperty (property) {
-  return property === 'name' ||
-    property === 'layout';
-}
-
-function inheritSource (slide, template) {
-  var expandedVariables;
-
-  slide.properties.content = slide.source;
-  slide.source = template.source;
-
-  expandedVariables = slide.expandVariables(/* contentOnly: */ true);
-
-  if (expandedVariables.content === undefined) {
-    slide.source += slide.properties.content;
-  }
-
-  delete slide.properties.content;
-}
-
-Slide.prototype.expandVariables = function (contentOnly) {
-  var properties = this.properties
-    , expandResult = {}
-    ;
-
-  this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
-    function (match, escaped, unescapedMatch, property) {
-      var propertyName = property.trim()
-        , propertyValue
-        ;
-
-      if (escaped) {
-        return contentOnly ? match[0] : unescapedMatch;
-      }
-
-      if (contentOnly && propertyName !== 'content') {
-        return match;
-      }
-
-      propertyValue = properties[propertyName];
-
-      if (propertyValue !== undefined) {
-        expandResult[propertyName] = propertyValue;
-        return propertyValue;
-      }
-
-      return propertyName === 'content' ? '' : unescapedMatch;
-    });
-
-  return expandResult;
-};
-
-});
-
-require.define("/src/remark/views/slideshowView.js",function(require,module,exports,__dirname,__filename,process,global){var SlideView = require('./slideView')
+},{"events":6,"./slideshow/properties":10,"./slideshow/navigation":11,"../utils":12,"./slide":13}],8:[function(require,module,exports){
+var SlideView = require('./slideView')
   , OverlayView = require('./overlayView')
   , addClass = require('../utils').addClass
 
@@ -3490,9 +3063,274 @@ function getDimensions (ratio) {
   };
 }
 
+},{"./slideView":14,"./overlayView":15,"../utils":12}],10:[function(require,module,exports){
+module.exports = Properties;
+
+function Properties (events, defaults) {
+  var self = this
+    , properties = {};
+
+  copyProperties(defaults || {}, properties);
+
+  self.get = function (property) {
+    return properties[property];
+  };
+
+  self.set = function (stringOrObject, value) {
+    var changes = {};
+
+    if (typeof stringOrObject === 'string') {
+      changes[stringOrObject] = value;
+    }
+    else {
+      changes = stringOrObject;
+    }
+
+    copyProperties(changes, properties);
+
+    events.emit('propertiesChanged', changes);
+  };
+
+  function copyProperties (source, target) {
+    var property;
+
+    for (property in source) {
+      if (source.hasOwnProperty(property)) {
+        target[property] = source[property];
+      }
+    }
+  }
+}
+
+},{}],11:[function(require,module,exports){
+module.exports = Navigation;
+
+function Navigation (events) {
+  var self = this
+    , currentSlideNo = 0
+    ;
+
+  self.getCurrentSlideNo = getCurrentSlideNo;
+  self.gotoSlide = gotoSlide;
+  self.gotoPreviousSlide = gotoPreviousSlide;
+  self.gotoNextSlide = gotoNextSlide;
+  self.gotoFirstSlide = gotoFirstSlide;
+  self.gotoLastSlide = gotoLastSlide;
+
+  events.on('gotoSlide', gotoSlide);
+  events.on('gotoPreviousSlide', gotoPreviousSlide);
+  events.on('gotoNextSlide', gotoNextSlide);
+  events.on('gotoFirstSlide', gotoFirstSlide);
+  events.on('gotoLastSlide', gotoLastSlide);
+
+  events.on('slidesChanged', function () {
+    if (currentSlideNo > self.getSlideCount()) {
+      currentSlideNo = self.getSlideCount();
+    }
+  });
+
+  function getCurrentSlideNo () {
+    return currentSlideNo;
+  }
+
+  function gotoSlide (slideNoOrName) {
+    var slideNo = self.getSlideNo(slideNoOrName)
+      , alreadyOnSlide = slideNo === currentSlideNo
+      , slideOutOfRange = slideNo < 1 || slideNo > self.getSlideCount()
+      ;
+
+    if (alreadyOnSlide || slideOutOfRange) {
+      return;
+    }
+
+    if (currentSlideNo !== 0) {
+      events.emit('hideSlide', currentSlideNo - 1);
+    }
+
+    events.emit('showSlide', slideNo - 1);
+
+    currentSlideNo = slideNo;
+
+    events.emit('slideChanged', slideNoOrName || slideNo);
+  }
+
+  function gotoPreviousSlide() {
+    self.gotoSlide(currentSlideNo - 1);
+  }
+  
+  function gotoNextSlide() {
+    self.gotoSlide(currentSlideNo + 1);
+  }
+  
+  function gotoFirstSlide () {
+    self.gotoSlide(1);
+  }
+  
+  function gotoLastSlide () {
+    self.gotoSlide(self.getSlideCount());
+  }
+}
+
+},{}],12:[function(require,module,exports){
+exports.addClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .concat([className])
+    .join(' ');
+};
+
+exports.getClasses = function (element) {
+  return element.className
+    .split(' ')
+    .filter(function (s) { return s !== ''; });
+};
+
+each([Array.prototype, window.NodeList.prototype], function (prototype) {
+  prototype.each = prototype.each || function (f) {
+    each(this, f);
+  };
+
+  prototype.filter = prototype.filter || function (f) {
+    var result = [];
+
+    this.each(function (element) {
+      if (f(element, result.length)) {
+        result.push(element);
+      }
+    });
+
+    return result;
+  };
+
+  prototype.map = prototype.map || function (f) {
+    var result = [];
+
+    this.each(function (element) {
+      result.push(f(element, result.length));
+    });
+
+    return result;
+  };
 });
 
-require.define("/src/remark/views/slideView.js",function(require,module,exports,__dirname,__filename,process,global){var converter = require('../converter')
+function each (list, f) {
+  var i;
+
+  for (i = 0; i < list.length; ++i) {
+    f(list[i], i);
+  }
+}
+
+},{}],13:[function(require,module,exports){
+module.exports = Slide;
+
+Slide.create = function (source, properties) {
+  return new Slide(source, properties);
+};
+
+function Slide (source, properties) {
+  this.properties = properties || {};
+  this.source = extractProperties(source, this.properties);
+}
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}
+
+Slide.prototype.inherit = function (template) {
+  inheritProperties(this, template);
+  inheritSource(this, template);
+};
+
+function inheritProperties (slide, template) {
+  var property
+    , value
+    ;
+
+  for (property in template.properties) {
+    if (!template.properties.hasOwnProperty(property) ||
+        ignoreProperty(property)) {
+      continue;
+    }
+
+    value = [template.properties[property]];
+
+    if (property === 'class' && slide.properties[property]) {
+      value.push(slide.properties[property]);
+    }
+
+    if (property === 'class' || slide.properties[property] === undefined) {
+      slide.properties[property] = value.join(', ');
+    }
+  }
+}
+
+function ignoreProperty (property) {
+  return property === 'name' ||
+    property === 'layout';
+}
+
+function inheritSource (slide, template) {
+  var expandedVariables;
+
+  slide.properties.content = slide.source;
+  slide.source = template.source;
+
+  expandedVariables = slide.expandVariables(/* contentOnly: */ true);
+
+  if (expandedVariables.content === undefined) {
+    slide.source += slide.properties.content;
+  }
+
+  delete slide.properties.content;
+}
+
+Slide.prototype.expandVariables = function (contentOnly) {
+  var properties = this.properties
+    , expandResult = {}
+    ;
+
+  this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
+    function (match, escaped, unescapedMatch, property) {
+      var propertyName = property.trim()
+        , propertyValue
+        ;
+
+      if (escaped) {
+        return contentOnly ? match[0] : unescapedMatch;
+      }
+
+      if (contentOnly && propertyName !== 'content') {
+        return match;
+      }
+
+      propertyValue = properties[propertyName];
+
+      if (propertyValue !== undefined) {
+        expandResult[propertyName] = propertyValue;
+        return propertyValue;
+      }
+
+      return propertyName === 'content' ? '' : unescapedMatch;
+    });
+
+  return expandResult;
+};
+
+},{}],14:[function(require,module,exports){
+var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
   ;
@@ -3636,9 +3474,38 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-});
+},{"../converter":16,"../highlighter":3,"../utils":12}],15:[function(require,module,exports){
+var resources = require('../resources');
 
-require.define("/src/remark/converter.js",function(require,module,exports,__dirname,__filename,process,global){var marked = require('marked')
+module.exports = OverlayView;
+
+function OverlayView (events) {
+  var self = this;
+
+  self.element = document.createElement('div');
+
+  self.element.className = 'overlay';
+  self.element.innerHTML = resources.overlay;
+
+  events.on('hideOverlay', function () {
+    self.hide();
+  });
+
+  events.on('toggleHelp', function () {
+    self.show();
+  });
+}
+
+OverlayView.prototype.show = function () {
+  this.element.style.display = 'block';
+};
+
+OverlayView.prototype.hide = function () {
+  this.element.style.display = 'none';
+};
+
+},{"../resources":4}],16:[function(require,module,exports){
+var marked = require('marked')
   , converter = module.exports = {}
   ;
 
@@ -3736,12 +3603,8 @@ converter.trimEmptySpace = function (content) {
   content.innerHTML = content.innerHTML.replace(/<p>\s*<\/p>/g, '');
 };
 
-});
-
-require.define("/node_modules/marked/package.json",function(require,module,exports,__dirname,__filename,process,global){module.exports = {"main":"./lib/marked.js"}
-});
-
-require.define("/node_modules/marked/lib/marked.js",function(require,module,exports,__dirname,__filename,process,global){/**
+},{"marked":17}],17:[function(require,module,exports){
+(function(global){/**
  * marked - a markdown parser
  * Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)
  * https://github.com/chjj/marked
@@ -4818,212 +4681,6 @@ if (typeof exports === 'object') {
   return this || (typeof window !== 'undefined' ? window : global);
 }());
 
-});
-
-require.define("/src/remark/views/overlayView.js",function(require,module,exports,__dirname,__filename,process,global){var resources = require('../resources');
-
-module.exports = OverlayView;
-
-function OverlayView (events) {
-  var self = this;
-
-  self.element = document.createElement('div');
-
-  self.element.className = 'overlay';
-  self.element.innerHTML = resources.overlay;
-
-  events.on('hideOverlay', function () {
-    self.hide();
-  });
-
-  events.on('toggleHelp', function () {
-    self.show();
-  });
-}
-
-OverlayView.prototype.show = function () {
-  this.element.style.display = 'block';
-};
-
-OverlayView.prototype.hide = function () {
-  this.element.style.display = 'none';
-};
-
-});
-
-require.define("/src/remark/resources.js",function(require,module,exports,__dirname,__filename,process,global){/* Automatically generated */
-
-module.exports = {
-  documentStyles: ".remark-container{background:#d7d8d2;font-family:Georgia;font-size:20px;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slideshow .remark-slide{height:100%;width:100%;}.remark-slideshow .remark-slide>.left{text-align:left;}.remark-slideshow .remark-slide>.center{text-align:center;}.remark-slideshow .remark-slide>.right{text-align:right;}.remark-slideshow .remark-slide>.top{vertical-align:top;}.remark-slideshow .remark-slide>.middle{vertical-align:middle;}.remark-slideshow .remark-slide>.bottom{vertical-align:bottom;}.remark-slideshow .remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slideshow .remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slideshow .remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slideshow .remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slideshow .remark-slide .remark-slide-content pre,.remark-slideshow .remark-slide .remark-slide-content code{font-family:Monaco, monospace;font-size:16px;}.remark-slideshow .remark-slide .remark-slide-content h1 code{font-size:0.8em;}.remark-slideshow .remark-slide .remark-slide-content li>code,.remark-slideshow .remark-slide .remark-slide-content p>code{padding:1px 4px;}.remark-slideshow .overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-slideshow .overlay .content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-slideshow .overlay .content td{color:white;font-size:12pt;padding:10px;}.remark-slideshow .overlay .content td:first-child{padding-left:0;}.remark-slideshow .overlay .content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-slideshow .overlay .dismiss{top:85%;}.remark-slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}",
-  overlay: "<div class=\"content help\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\"><b>&uarr;</b></span>,\n        <span class=\"key\"><b>&larr;</b></span>,\n        <span class=\"key\">Pg Up</span>,\n        <span class=\"key\">K</span>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\"><b>&darr;</b></span>,\n        <span class=\"key\"><b>&rarr;</b></span>,\n        <span class=\"key\">Pg Dn</span>,\n        <span class=\"key\">Space</span>,\n        <span class=\"key\">J</span>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">Home</span>\n      </td>\n      <td>Go to first slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">End</span>\n      </td>\n      <td>Go to last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">?</span>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\">Esc</span>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
-};
-
-});
-
-require.define("/src/remark/controller.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = Controller;
-
-function Controller (events, slideshowView) {
-  addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
-}
-
-function addNavigationEventListeners (events, slideshowView) {
-  if (slideshowView.isEmbedded()) {
-    events.emit('gotoSlide', 1);
-  }
-  else {
-    events.on('hashchange', navigateByHash);
-    events.on('slideChanged', updateHash);
-
-    navigateByHash();
-  }
-
-  function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
-    events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
-}
-
-function addKeyboardEventListeners (events) {
-  events.on('keydown', function (event) {
-    switch (event.keyCode) {
-      case 33: // Page up
-      case 37: // Left
-      case 38: // Up
-        events.emit('gotoPreviousSlide');
-        break;
-      case 32: // Space
-      case 34: // Page down
-      case 39: // Right
-      case 40: // Down
-        events.emit('gotoNextSlide');
-        break;
-      case 36: // Home
-        events.emit('gotoFirstSlide');
-        break;
-      case 35: // End
-        events.emit('gotoLastSlide');
-        break;
-      case 27: // Escape
-        events.emit('hideOverlay');
-        break;
-    }
-  });
-
-  events.on('keypress', function (event) {
-    switch (String.fromCharCode(event.which)) {
-      case 'j':
-        events.emit('gotoNextSlide');
-        break;
-      case 'k':
-        events.emit('gotoPreviousSlide');
-        break;
-      case '?':
-        events.emit('toggleHelp');
-        break;
-    }
-  });
-}
-
-function addMouseEventListeners (events) {
-  events.on('mousewheel', function (event) {
-    if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
-    }
-    else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
-    }
-  });
-}
-
-function addTouchEventListeners (events) {
-  var touch
-    , startX
-    , endX
-    ;
-
-  var isTap = function () {
-    return Math.abs(startX - endX) < 10;
-  };
-
-  var handleTap = function () {
-    events.emit('tap', endX);
-  };
-
-  var handleSwipe = function () {
-    if (startX > endX) {
-      events.emit('gotoNextSlide');
-    }
-    else {
-      events.emit('gotoPreviousSlide');
-    }
-  };
-
-  events.on('touchstart', function (event) {
-    touch = event.touches[0];
-    startX = touch.clientX;
-  });
-
-  events.on('touchend', function (event) {
-    if (event.target.nodeName.toUpperCase() === 'A') {
-      return;
-    }
-
-    touch = event.changedTouches[0];
-    endX = touch.clientX;
-
-    if (isTap()) {
-      handleTap();
-    }
-    else {
-      handleSwipe();
-    }
-  });
-
-  events.on('touchmove', function (event) {
-    event.preventDefault();
-  });
-}
-
-});
-
-require.define("/src/remark.js",function(require,module,exports,__dirname,__filename,process,global){var api = require('./remark/api')
-  , highlighter = require('./remark/highlighter')
-  , resources = require('./remark/resources')
-  ;
-
-// Expose API as `remark`
-window.remark = api;
-
-// Apply embedded styles to document
-styleDocument();
-
-function styleDocument () {
-  var styleElement = document.createElement('style')
-    , headElement = document.getElementsByTagName('head')[0]
-    , style
-    ;
-
-  styleElement.type = 'text/css';
-  headElement.insertBefore(styleElement, headElement.firstChild);
-
-  styleElement.innerHTML = resources.documentStyles;
-
-  for (style in highlighter.styles) {
-    if (highlighter.styles.hasOwnProperty(style)) {
-      styleElement.innerHTML = styleElement.innerHTML +
-        highlighter.styles[style];
-    }
-  }
-}
-
-});
-require("/src/remark.js");
-})();
-
+})(window)
+},{}]},{},[1])
+;
