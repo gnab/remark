@@ -8,7 +8,7 @@ var EventEmitter = require('events').EventEmitter
 describe('SlideView', function () {
   describe('background', function () {
     it('should be set from background slide property', function () {
-      var slide = new Slide('background-image: image.jpg')
+      var slide = new Slide(1, 'background-image: image.jpg')
         , slideView = new SlideView(new EventEmitter(), new Properties(), slide)
         ;
 
@@ -18,7 +18,7 @@ describe('SlideView', function () {
 
   describe('classes', function () {
     it('should contain "content" class by default', function () {
-      var slide = new Slide('')
+      var slide = new Slide(1, '')
         , slideView = new SlideView(new EventEmitter(), new Properties(), slide)
         , classes = utils.getClasses(slideView.contentElement)
         ;
@@ -27,7 +27,7 @@ describe('SlideView', function () {
     });
 
     it('should contain additional classes from slide properties', function () {
-      var slide = new Slide('class: middle, center')
+      var slide = new Slide(1, 'class: middle, center')
         , slideView = new SlideView(new EventEmitter(), new Properties(), slide)
         , classes = utils.getClasses(slideView.contentElement)
         ;

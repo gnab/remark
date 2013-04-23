@@ -1,12 +1,16 @@
 module.exports = Slide;
 
-Slide.create = function (source, properties) {
-  return new Slide(source, properties);
-};
+function Slide (slideNo, source, properties, template) {
+  var self = this;
 
-function Slide (source, properties) {
-  this.properties = properties || {};
-  this.source = extractProperties(source, this.properties);
+  self.properties = properties || {};
+  self.source = extractProperties(source, self.properties);
+
+  self.getSlideNo = function () { return slideNo; };
+
+  if (template) {
+    inherit(self, template);
+  }
 }
 
 function extractProperties (source, properties) {
@@ -26,10 +30,10 @@ function extractProperties (source, properties) {
   return source;
 }
 
-Slide.prototype.inherit = function (template) {
-  inheritProperties(this, template);
-  inheritSource(this, template);
-};
+function inherit (slide, template) {
+  inheritProperties(slide, template);
+  inheritSource(slide, template);
+}
 
 function inheritProperties (slide, template) {
   var property

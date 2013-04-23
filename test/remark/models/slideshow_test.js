@@ -36,7 +36,8 @@ describe('Slideshow', function () {
   describe('name mapping', function () {
     it('should map named slide', function () {
       slideshow.set('source', 'name: a\n---\nno name\n---\nname: b');
-      slideshow.getSlides().names.should.have.keys(['a', 'b']);
+      slideshow.getSlideByName('a').should.exist;
+      slideshow.getSlideByName('b').should.exist;
     });
   });
 
@@ -70,7 +71,7 @@ describe('Slideshow', function () {
 
     it('should still be mapped if named', function () {
       slideshow.set('source', 'name: a\nlayout: true'); 
-      slideshow.getSlides().names.should.have.keys(['a']);
+      slideshow.getSlideByName('a').should.exist;
     });
   });
 

@@ -29,7 +29,7 @@ function Navigation (events) {
   }
 
   function gotoSlide (slideNoOrName) {
-    var slideNo = self.getSlideNo(slideNoOrName)
+    var slideNo = getSlideNo(slideNoOrName)
       , alreadyOnSlide = slideNo === currentSlideNo
       , slideOutOfRange = slideNo < 1 || slideNo > self.getSlideCount()
       ;
@@ -63,5 +63,27 @@ function Navigation (events) {
   
   function gotoLastSlide () {
     self.gotoSlide(self.getSlideCount());
+  }
+
+  function getSlideNo (slideNoOrName) {
+    var slideNo
+      , slide
+      ;
+
+    if (typeof slideNoOrName === 'number') {
+      return slideNoOrName;
+    }
+
+    slideNo = parseInt(slideNoOrName, 10);
+    if (slideNo.toString() === slideNoOrName) {
+      return slideNo;
+    }
+
+    slide = self.getSlideByName(slideNoOrName);
+    if (slide) {
+      return slide.getSlideNo();
+    }
+
+    return 1;
   }
 }

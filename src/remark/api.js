@@ -11,14 +11,17 @@ module.exports.highlighter = highlighter;
 
 // Creates slideshow initialized from options
 module.exports.create = function (options) {
-  var events = new EventEmitter()
+  var events
     , slideshow
     , slideshowView
     , controller
     ;
 
   options = applyDefaults(options);
+
   events = new EventEmitter();
+  events.setMaxListeners(0);
+
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, options.container, slideshow);
   controller = new Controller(events, slideshowView);
