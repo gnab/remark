@@ -56,6 +56,7 @@ function Slideshow (events, options) {
 
 function createSlides (slideshowSource) {
   var slides = []
+    , byName = {}
     , layoutSlide
     ;
 
@@ -69,8 +70,8 @@ function createSlides (slideshowSource) {
     if (properties.continued === 'true' && slides.length > 0) {
       template = slides[slides.length - 1];
     }
-    else if (slides.byName[properties.template]) {
-      template = slides.byName[properties.template];
+    else if (byName[properties.template]) {
+      template = byName[properties.template];
     }
     else if (properties.layout === 'false') {
       layoutSlide = undefined;
@@ -86,11 +87,14 @@ function createSlides (slideshowSource) {
     }
 
     if (properties.name) {
-      slides.byName[properties.name] = slide;
+      byName[properties.name] = slide;
     }
 
     if (slide.properties.layout !== 'true') {
       slides.push(slide);
+      if (properties.name) {
+        slides.byName[properties.name] = slide;
+      }
     }
   });
 
