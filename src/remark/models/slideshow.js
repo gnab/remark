@@ -1,5 +1,4 @@
 var EventEmitter = require('events').EventEmitter
-  , Properties = require('./slideshow/properties')
   , Navigation = require('./slideshow/navigation')
   , utils = require('../utils')
   , Slide = require('./slide')
@@ -15,27 +14,26 @@ function Slideshow (events, options) {
     , slides = []
     ;
 
+  options = options || {};
+
   // Extend slideshow functionality
-  Properties.call(self, events, options);
   Navigation.call(self, events);
 
+  self.loadFromString = loadFromString;
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
 
-  loadFromString(self.get('source'));
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
 
-  events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('source')) {
-      loadFromString(changes.source);
-    }
-  });
+  loadFromString(options.source);
 
   function loadFromString (source) {
     source = source || '';
 
     slides = createSlides(source);
-
     expandVariables(slides);
 
     events.emit('slidesChanged');
@@ -51,6 +49,16 @@ function Slideshow (events, options) {
 
   function getSlideByName (name) {
     return slides.byName[name];
+  }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
   }
 }
 

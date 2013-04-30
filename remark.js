@@ -29,15 +29,7 @@ function styleDocument () {
   }
 }
 
-},{"./remark/api":2,"./remark/resources":3,"./remark/highlighter":4}],3:[function(require,module,exports){
-/* Automatically generated */
-
-module.exports = {
-  documentStyles: ".remark-container{background:#d7d8d2;font-family:Georgia;font-size:20px;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slideshow .remark-slide{height:100%;width:100%;}.remark-slideshow .remark-slide>.left{text-align:left;}.remark-slideshow .remark-slide>.center{text-align:center;}.remark-slideshow .remark-slide>.right{text-align:right;}.remark-slideshow .remark-slide>.top{vertical-align:top;}.remark-slideshow .remark-slide>.middle{vertical-align:middle;}.remark-slideshow .remark-slide>.bottom{vertical-align:bottom;}.remark-slideshow .remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slideshow .remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slideshow .remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slideshow .remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slideshow .remark-slide .remark-slide-content pre,.remark-slideshow .remark-slide .remark-slide-content code{font-family:Monaco, monospace;font-size:16px;}.remark-slideshow .remark-slide .remark-slide-content h1 code{font-size:0.8em;}.remark-slideshow .remark-slide .remark-slide-content li>code,.remark-slideshow .remark-slide .remark-slide-content p>code{padding:1px 4px;}.remark-slideshow .overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-slideshow .overlay .content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-slideshow .overlay .content td{color:white;font-size:12pt;padding:10px;}.remark-slideshow .overlay .content td:first-child{padding-left:0;}.remark-slideshow .overlay .content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-slideshow .overlay .dismiss{top:85%;}.remark-slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}",
-  overlay: "<div class=\"content help\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\"><b>&uarr;</b></span>,\n        <span class=\"key\"><b>&larr;</b></span>,\n        <span class=\"key\">Pg Up</span>,\n        <span class=\"key\">K</span>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\"><b>&darr;</b></span>,\n        <span class=\"key\"><b>&rarr;</b></span>,\n        <span class=\"key\">Pg Dn</span>,\n        <span class=\"key\">Space</span>,\n        <span class=\"key\">J</span>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">Home</span>\n      </td>\n      <td>Go to first slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">End</span>\n      </td>\n      <td>Go to last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">?</span>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\">Esc</span>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
-};
-
-},{}],4:[function(require,module,exports){
+},{"./remark/api":2,"./remark/highlighter":3,"./remark/resources":4}],3:[function(require,module,exports){
 (function(){/* Automatically generated */
 
 var hljs = new (/*
@@ -2205,6 +2197,14 @@ module.exports = {
 };
 
 })()
+},{}],4:[function(require,module,exports){
+/* Automatically generated */
+
+module.exports = {
+  documentStyles: ".remark-container{background:#d7d8d2;font-family:Georgia;font-size:20px;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slideshow .remark-slide{height:100%;width:100%;}.remark-slideshow .remark-slide>.left{text-align:left;}.remark-slideshow .remark-slide>.center{text-align:center;}.remark-slideshow .remark-slide>.right{text-align:right;}.remark-slideshow .remark-slide>.top{vertical-align:top;}.remark-slideshow .remark-slide>.middle{vertical-align:middle;}.remark-slideshow .remark-slide>.bottom{vertical-align:bottom;}.remark-slideshow .remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slideshow .remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slideshow .remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slideshow .remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slideshow .remark-slide .remark-slide-content pre,.remark-slideshow .remark-slide .remark-slide-content code{font-family:Monaco, monospace;font-size:16px;}.remark-slideshow .remark-slide .remark-slide-content h1 code{font-size:0.8em;}.remark-slideshow .remark-slide .remark-slide-content li>code,.remark-slideshow .remark-slide .remark-slide-content p>code{padding:1px 4px;}.remark-slideshow .overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-slideshow .overlay .content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-slideshow .overlay .content td{color:white;font-size:12pt;padding:10px;}.remark-slideshow .overlay .content td:first-child{padding-left:0;}.remark-slideshow .overlay .content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-slideshow .overlay .dismiss{top:85%;}.remark-slideshow .position{bottom:12px;opacity:0.5;position:absolute;right:20px;}",
+  overlay: "<div class=\"content help\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\"><b>&uarr;</b></span>,\n        <span class=\"key\"><b>&larr;</b></span>,\n        <span class=\"key\">Pg Up</span>,\n        <span class=\"key\">K</span>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\"><b>&darr;</b></span>,\n        <span class=\"key\"><b>&rarr;</b></span>,\n        <span class=\"key\">Pg Dn</span>,\n        <span class=\"key\">Space</span>,\n        <span class=\"key\">J</span>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">Home</span>\n      </td>\n      <td>Go to first slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">End</span>\n      </td>\n      <td>Go to last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">?</span>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\">Esc</span>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
+};
+
 },{}],5:[function(require,module,exports){
 // shim for using process in browser
 
@@ -2497,7 +2497,7 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./highlighter":4,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
@@ -2631,7 +2631,6 @@ function addTouchEventListeners (events) {
 
 },{}],7:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
-  , Properties = require('./slideshow/properties')
   , Navigation = require('./slideshow/navigation')
   , utils = require('../utils')
   , Slide = require('./slide')
@@ -2647,27 +2646,26 @@ function Slideshow (events, options) {
     , slides = []
     ;
 
+  options = options || {};
+
   // Extend slideshow functionality
-  Properties.call(self, events, options);
   Navigation.call(self, events);
 
+  self.loadFromString = loadFromString;
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
 
-  loadFromString(self.get('source'));
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
 
-  events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('source')) {
-      loadFromString(changes.source);
-    }
-  });
+  loadFromString(options.source);
 
   function loadFromString (source) {
     source = source || '';
 
     slides = createSlides(source);
-
     expandVariables(slides);
 
     events.emit('slidesChanged');
@@ -2684,10 +2682,21 @@ function Slideshow (events, options) {
   function getSlideByName (name) {
     return slides.byName[name];
   }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
+  }
 }
 
 function createSlides (slideshowSource) {
   var slides = []
+    , byName = {}
     , layoutSlide
     ;
 
@@ -2701,8 +2710,8 @@ function createSlides (slideshowSource) {
     if (properties.continued === 'true' && slides.length > 0) {
       template = slides[slides.length - 1];
     }
-    else if (slides.byName[properties.template]) {
-      template = slides.byName[properties.template];
+    else if (byName[properties.template]) {
+      template = byName[properties.template];
     }
     else if (properties.layout === 'false') {
       layoutSlide = undefined;
@@ -2718,11 +2727,14 @@ function createSlides (slideshowSource) {
     }
 
     if (properties.name) {
-      slides.byName[properties.name] = slide;
+      byName[properties.name] = slide;
     }
 
     if (slide.properties.layout !== 'true') {
       slides.push(slide);
+      if (properties.name) {
+        slides.byName[properties.name] = slide;
+      }
     }
   });
 
@@ -2778,7 +2790,7 @@ function expandVariables (slides) {
   });
 }
 
-},{"events":6,"./slideshow/properties":10,"./slideshow/navigation":11,"../utils":12,"./slide":13}],8:[function(require,module,exports){
+},{"events":6,"./slideshow/navigation":10,"../utils":11,"./slide":12}],8:[function(require,module,exports){
 var SlideView = require('./slideView')
   , OverlayView = require('./overlayView')
   , addClass = require('../utils').addClass
@@ -3028,8 +3040,7 @@ SlideshowView.prototype.getContainerWidth = function () {
 };
 
 function getRatio (slideshow) {
-  var ratioString = slideshow.get('ratio') || '4:3'
-    , ratioComponents = ratioString.split(':')
+  var ratioComponents = slideshow.getRatio().split(':')
     , ratio
     ;
 
@@ -3050,46 +3061,7 @@ function getDimensions (ratio) {
   };
 }
 
-},{"./slideView":14,"./overlayView":15,"../utils":12}],10:[function(require,module,exports){
-module.exports = Properties;
-
-function Properties (events, defaults) {
-  var self = this
-    , properties = {};
-
-  copyProperties(defaults || {}, properties);
-
-  self.get = function (property) {
-    return properties[property];
-  };
-
-  self.set = function (stringOrObject, value) {
-    var changes = {};
-
-    if (typeof stringOrObject === 'string') {
-      changes[stringOrObject] = value;
-    }
-    else {
-      changes = stringOrObject;
-    }
-
-    copyProperties(changes, properties);
-
-    events.emit('propertiesChanged', changes);
-  };
-
-  function copyProperties (source, target) {
-    var property;
-
-    for (property in source) {
-      if (source.hasOwnProperty(property)) {
-        target[property] = source[property];
-      }
-    }
-  }
-}
-
-},{}],11:[function(require,module,exports){
+},{"./slideView":13,"./overlayView":14,"../utils":11}],10:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3180,7 +3152,7 @@ function Navigation (events) {
   }
 }
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -3229,7 +3201,7 @@ function each (list, f) {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = Slide;
 
 function Slide (slideNo, source, properties, template) {
@@ -3342,7 +3314,7 @@ Slide.prototype.expandVariables = function (contentOnly) {
   return expandResult;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -3420,12 +3392,6 @@ function createContentElement (events, slideshow, source, properties) {
 
   element.innerHTML = source;
 
-  events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('highlightStyle')) {
-      styleContentElement(slideshow, element, properties);
-    }
-  });
-
   styleContentElement(slideshow, element, properties);
 
   converter.convertContentClasses(element);
@@ -3454,10 +3420,8 @@ function setBackgroundFromProperties (element, properties) {
 }
 
 function setHighlightStyleFromProperties (element, properties, slideshow) {
-  var highlightStyle = 
-    properties['highlight-style'] ||
-    slideshow.get('highlightStyle') ||
-    'default';
+  var highlightStyle = properties['highlight-style'] || 
+      slideshow.getHighlightStyle();
 
   if (highlightStyle) {
     utils.addClass(element, 'hljs-' + highlightStyle);
@@ -3478,7 +3442,7 @@ function highlightCodeBlocks (content, slideshow) {
 
   codeBlocks.each(function (block) {
     if (block.className === '') {
-      block.className = slideshow.get('highlightLanguage') || '';
+      block.className = slideshow.getHighlightLanguage();
     }
 
     if (block.className !== '') {
@@ -3487,7 +3451,7 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":16,"../highlighter":4,"../utils":12}],15:[function(require,module,exports){
+},{"../converter":15,"../utils":11,"../highlighter":3}],14:[function(require,module,exports){
 var resources = require('../resources');
 
 module.exports = OverlayView;
@@ -3517,7 +3481,7 @@ OverlayView.prototype.hide = function () {
   this.element.style.display = 'none';
 };
 
-},{"../resources":3}],16:[function(require,module,exports){
+},{"../resources":4}],15:[function(require,module,exports){
 var marked = require('marked')
   , converter = module.exports = {}
   ;
@@ -3616,7 +3580,7 @@ converter.trimEmptySpace = function (content) {
   content.innerHTML = content.innerHTML.replace(/<p>\s*<\/p>/g, '');
 };
 
-},{"marked":17}],17:[function(require,module,exports){
+},{"marked":16}],16:[function(require,module,exports){
 (function(global){/**
  * marked - a markdown parser
  * Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)

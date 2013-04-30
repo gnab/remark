@@ -13,7 +13,7 @@ describe('SlideshowView', function () {
   beforeEach(function () {
     events = new EventEmitter();
     model = new Slideshow(events);
-    containerElement = document.createElement('div')
+    containerElement = document.createElement('div');
   });
 
   describe('container element configuration', function () {
@@ -188,7 +188,7 @@ describe('SlideshowView', function () {
 
   describe('ratio calculation', function () {
     it('should calculate element size for 4:3', function () {
-      model.set({ratio: '4:3'});
+      model = new Slideshow(events, {ratio: '4:3'});
 
       view = new SlideshowView(events, containerElement, model);
 
@@ -197,20 +197,9 @@ describe('SlideshowView', function () {
     });
 
     it('should calculate element size for 16:9', function () {
-      model.set({ratio: '16:9'});
+      model = new Slideshow(events, {ratio: '16:9'});
 
       view = new SlideshowView(events, containerElement, model);
-
-      view.element.style.width.should.equal('1210px');
-      view.element.style.height.should.equal('681px');
-    });
-
-    it('should recalculate element size when reconfigured', function () {
-      model.set({ratio: '4:3'});
-
-      view = new SlideshowView(events, containerElement, model);
-
-      model.set({ratio: '16:9'});
 
       view.element.style.width.should.equal('1210px');
       view.element.style.height.should.equal('681px');
@@ -227,7 +216,7 @@ describe('SlideshowView', function () {
     });
 
     it('should replace slide views on slideshow update', function () {
-      model.set('source', 'a\n---\nb');
+      model.loadFromString('a\n---\nb');
 
       view.element.getElementsByClassName('remark-slide').length.should.equal(2);
     });

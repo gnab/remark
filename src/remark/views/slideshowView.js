@@ -247,8 +247,7 @@ SlideshowView.prototype.getContainerWidth = function () {
 };
 
 function getRatio (slideshow) {
-  var ratioString = slideshow.get('ratio') || '4:3'
-    , ratioComponents = ratioString.split(':')
+  var ratioComponents = slideshow.getRatio().split(':')
     , ratio
     ;
 

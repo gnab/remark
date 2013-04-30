@@ -75,12 +75,6 @@ function createContentElement (events, slideshow, source, properties) {
 
   element.innerHTML = source;
 
-  events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('highlightStyle')) {
-      styleContentElement(slideshow, element, properties);
-    }
-  });
-
   styleContentElement(slideshow, element, properties);
 
   converter.convertContentClasses(element);
@@ -109,10 +103,8 @@ function setBackgroundFromProperties (element, properties) {
 }
 
 function setHighlightStyleFromProperties (element, properties, slideshow) {
-  var highlightStyle = 
-    properties['highlight-style'] ||
-    slideshow.get('highlightStyle') ||
-    'default';
+  var highlightStyle = properties['highlight-style'] || 
+      slideshow.getHighlightStyle();
 
   if (highlightStyle) {
     utils.addClass(element, 'hljs-' + highlightStyle);
@@ -133,7 +125,7 @@ function highlightCodeBlocks (content, slideshow) {
 
   codeBlocks.each(function (block) {
     if (block.className === '') {
-      block.className = slideshow.get('highlightLanguage') || '';
+      block.className = slideshow.getHighlightLanguage();
     }
 
     if (block.className !== '') {
