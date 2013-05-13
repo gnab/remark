@@ -2,7 +2,7 @@ module.exports = Parser;
 
 var block = {
   code: /( {4}[^\n]+\n*)+/
-, fences: / *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\1 *(?:\n+|$)/
+, fences: / *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\2 *(?:\n+|$)/
 , separator: /(---?)(?:\n|$)/
 , element: /(?:^|\n)(?:code|fences|separator)/
 };
@@ -17,34 +17,39 @@ function Parser () { }
 
 Parser.prototype.parse = function (src) {
   var slides = []
-    , continued = false
+    , slide = {continued: false, source: ''}
     , cap
     ;
 
   while (cap = block.element.exec(src)) {
+
     // Code
     if (cap[1]) {
-      src = src.substring(cap.index + cap[0].length)
+      slide.source += src.substring(0, cap.index + cap[0].length);
+      src = src.substring(cap.index + cap[0].length);
       continue;
     }
 
     // Fences
     if (cap[2]) {
-      src = src.substring(cap.index + cap[0].length)
+      slide.source += src.substring(0, cap.index + cap[0].length);
+      src = src.substring(cap.index + cap[0].length);
       continue;
     }
 
     // Separator
     if (cap[3]) {
-      slides.push({continued: continued});
-      continued = cap[3] === '--';
-      src = src.substring(cap.index + cap[0].length)
+      slide.source += src.substring(0, cap.index);
+      slides.push(slide);
+      slide = {continued: cap[3] === '--', source: ''};
+      src = src.substring(cap.index + cap[0].length);
       continue;
     }
   }
 
   if (src || (!src && slides.length === 0)) {
-    slides.push({continued: continued});
+    slide.source += src;
+    slides.push(slide);
   }
 
   return slides;
