@@ -1,17 +1,10 @@
 module.exports = Parser;
 
-var block = {
-  code: /( {4}[^\n]+\n*)+/
-, fences: / *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\2 *(?:\n+|$)/
-, separator: /(---?)(?:\n|$)/
-, element: /(?:^|\n)(?:code|fences|separator)/
-};
-
-block.element = replace(block.element)
-  ('code', block.code)
-  ('fences', block.fences)
-  ('separator', block.separator)
-  ();
+var regex = replace(/(?:^|\n)(?:code|fences|separator)/, {
+    code: /( {4}[^\n]+\n*)+/
+  , fences: / *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\2 *(?:\n+|$)/
+  , separator: /(---?)(?:\n|$)/
+  });
 
 function Parser () { }
 
@@ -21,7 +14,7 @@ Parser.prototype.parse = function (src) {
     , cap
     ;
 
-  while (cap = block.element.exec(src)) {
+  while (cap = regex.exec(src)) {
 
     // Code
     if (cap[1]) {
@@ -55,15 +48,8 @@ Parser.prototype.parse = function (src) {
   return slides;
 };
 
-// Copied from `marked` package
-function replace(regex, opt) {
-  regex = regex.source;
-  opt = opt || '';
-  return function self(name, val) {
-    if (!name) return new RegExp(regex, opt);
-    val = val.source || val;
-    val = val.replace(/(^|[^\[])\^/g, '$1');
-    regex = regex.replace(name, val);
-    return self;
-  };
+function replace (regex, replacements) {
+  return new RegExp(regex.source.replace(/\w{2,}/g, function (key) {
+    return replacements[key].source;
+  }));
 }
