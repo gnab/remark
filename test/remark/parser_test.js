@@ -36,33 +36,19 @@ describe('Parser', function () {
     it('should handle empty source', function () {
       parser.parse('')[0].source.should.equal('');
     });
-    
-    describe('when slide contains code', function () {
-      it('should include leading code', function () {
-        parser.parse('    code\n\n1')[0].source.should.equal('    code\n\n1');
-      });
-      
-      it('should include intermediate code', function () {
-        parser.parse('a\n\n    code\n\nb')[0].source.should.equal('a\n\n    code\n\nb');
-      });
-      
-      it('should include trailing code', function () {
-        parser.parse('1\n\n    code')[0].source.should.equal('1\n\n    code');
-      });
+
+    it('should handle code', function () {
+      var slides = parser.parse('1\n    code\n2\n---\n3\n    code\n4');
+
+      slides[0].source.should.equal('1\n    code\n2');
+      slides[1].source.should.equal('3\n    code\n4');
     });
-    
-    describe('when slide contains fences', function () {
-      it('should include leading fences', function () {
-        parser.parse('```\n\n```\n\n1')[0].source.should.equal('```\n\n```\n\n1');
-      });
-      
-      it('should include intermediate fences', function () {
-        parser.parse('a\n\n```\n\n```\n\nb')[0].source.should.equal('a\n\n```\n\n```\n\nb');
-      });
-      
-      it('should include trailing fences', function () {
-        parser.parse('1\n\n```\n\n```')[0].source.should.equal('1\n\n```\n\n```');
-      });
+
+    it('should handle fences', function () {
+      var slides = parser.parse('1\n```\n\n```\n2\n---\n3\n```\n\n```\n4');
+
+      slides[0].source.should.equal('1\n```\n\n```\n2');
+      slides[1].source.should.equal('3\n```\n\n```\n4');
     });
   });
   
