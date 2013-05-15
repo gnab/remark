@@ -71,13 +71,13 @@ describe('Parser', function () {
 
   describe('parsing content classes', function () {
     it('should convert block content classes', function () {
-      parser.parse('.class[\nx\n]')[0].source
-        .should.equal('<div class="class">\nx\n</div>');
+      parser.parse('1 .class[\nx\n] 2')[0].source
+        .should.equal('1 <div class="class">\nx\n</div> 2');
     });
 
     it('should convert inline content classes', function () {
-      parser.parse('.class[x]')[0].source
-        .should.equal('<span class="class">x</span>');
+      parser.parse('1 .class[x] 2')[0].source
+        .should.equal('1 <span class="class">x</span> 2');
     });
   });
 

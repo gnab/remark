@@ -1,10 +1,10 @@
 module.exports = Parser;
 
-var regex = replace(/(?:^|\n)(?:content|code|fences|separator)/, {
-    content: /(?:\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/
-  , code: /( {4}[^\n]+\n*)+/
-  , fences: / *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/
-  , separator: /(---?)(?:\n|$)/
+var regex = replace(/code|content|fences|separator/, {
+    code: /(?:^|\n)( {4}[^\n]+\n*)+/
+  , content: /(?:\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/
+  , fences: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/
+  , separator: /(?:^|\n)(---?)(?:\n|$)/
   });
 
 function Parser () { }
@@ -18,19 +18,20 @@ Parser.prototype.parse = function (src) {
 
   while (cap = regex.exec(src)) {
 
-    // Content class
+    // Code
     if (cap[1]) {
-      text = getSquareBracketedText(src, cap.index + cap[0].length);
-      slide.source += surroundWithTag(text, cap[1].substring(1),
-        text.indexOf('\n') === -1 ? 'span' : 'div');
-      src = src.substring(cap.index + cap[0].length + text.length + 1);
+      slide.source += src.substring(0, cap.index + cap[0].length);
+      src = src.substring(cap.index + cap[0].length);
       continue;
     }
 
-    // Code
+    // Content class
     if (cap[2]) {
-      slide.source += src.substring(0, cap.index + cap[0].length);
-      src = src.substring(cap.index + cap[0].length);
+      text = getSquareBracketedText(src, cap.index + cap[0].length);
+      slide.source += src.substring(0, cap.index)
+        + surroundWithTag(text, cap[2].substring(1),
+          text.indexOf('\n') === -1 ? 'span' : 'div');
+      src = src.substring(cap.index + cap[0].length + text.length + 1);
       continue;
     }
 
