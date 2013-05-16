@@ -79,6 +79,14 @@ describe('Parser', function () {
       parser.parse('1 .class[x] 2')[0].source
         .should.equal('1 <span class="class">x</span> 2');
     });
+
+    it('should ignore unclosed inline content classes', function () {
+      parser.parse('1 .class[x 2')[0].source.should.equal('1 .class[x 2');
+    });
+
+    it('should ignore unclosed block content classes', function () {
+      parser.parse('1 .class[\n2')[0].source.should.equal('1 .class[\n2');
+    });
   });
 
   describe('identifying continued slides', function () {

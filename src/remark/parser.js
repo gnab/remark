@@ -28,10 +28,16 @@ Parser.prototype.parse = function (src) {
     // Content class
     if (cap[2]) {
       text = getSquareBracketedText(src, cap.index + cap[0].length);
-      slide.source += src.substring(0, cap.index)
-        + surroundWithTag(text, cap[2].substring(1),
-          text.indexOf('\n') === -1 ? 'span' : 'div');
-      src = src.substring(cap.index + cap[0].length + text.length + 1);
+      if (text === null) {
+        slide.source += src.substring(0, cap.index + cap[0].length);
+        src = src.substring(cap.index + cap[0].length);
+      }
+      else {
+        slide.source += src.substring(0, cap.index)
+          + surroundWithTag(text, cap[2].substring(1),
+            text.indexOf('\n') === -1 ? 'span' : 'div');
+        src = src.substring(cap.index + cap[0].length + text.length + 1);
+      }
       continue;
     }
 
