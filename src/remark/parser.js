@@ -28,7 +28,7 @@ Parser.prototype.parse = function (src) {
         break;
       case 'separator':
         slides.push(slide);
-        slide = {source: '', continued: token.text === '--'}
+        slide = {source: '', continued: token.text === '--'};
         break;
     }
   });
@@ -36,4 +36,4 @@ Parser.prototype.parse = function (src) {
   slides.push(slide);
 
   return slides;
-}
+};
