@@ -8,7 +8,12 @@ Parser.prototype.parse = function (src) {
   var lexer = new Lexer(),
       tokens = lexer.lex(src),
       slides = [],
-      slide = {source: '', continued: false},
+      slide = {
+        source: '', 
+        properties: { 
+          continued: false 
+        }
+      },
       tag;
 
   tokens.each(function (token) {
@@ -28,12 +33,38 @@ Parser.prototype.parse = function (src) {
         break;
       case 'separator':
         slides.push(slide);
-        slide = {source: '', continued: token.text === '--'};
+        slide = {
+          source: '', 
+          properties: {
+            continued: token.text === '--'
+          }
+        };
         break;
     }
   });
 
   slides.push(slide);
 
+  slides.each(function (slide) {
+    slide.source = extractProperties(slide.source, slide.properties);
+  });
+
   return slides;
 };
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}

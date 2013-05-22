@@ -96,15 +96,32 @@ describe('Parser', function () {
 
   describe('identifying continued slides', function () {
     it('should not identify normal, preceding slide as continued', function () {
-      parser.parse('1\n--\n2\n---\n3')[0].continued.should.be.false;
+      parser.parse('1\n--\n2\n---\n3')[0].properties.continued.should.be.false;
     });
 
     it('should identify continued slide as continued', function () {
-      parser.parse('1\n--\n2\n---\n3')[1].continued.should.be.true;
+      parser.parse('1\n--\n2\n---\n3')[1].properties.continued.should.be.true;
     });
 
     it('should not identify normal, succeeding slide as continued', function () {
-      parser.parse('1\n--\n2\n---\n3')[2].continued.should.be.false;
+      parser.parse('1\n--\n2\n---\n3')[2].properties.continued.should.be.false;
+    });
+  });
+
+  describe('parsing slide properties', function () {
+    it('should map single property', function () {
+      parser.parse('name: a\n1')[0].properties.name.should.equal('a');
+    });
+
+    it('should map multiple properties', function () {
+      var slides = parser.parse('name: a\nclass:b\n1');
+
+      slides[0].properties.name.should.equal('a');
+      slides[0].properties['class'].should.equal('b');
+    });
+
+    it('should extract properties from source', function () {
+      parser.parse('name: a\nclass:b\n1')[0].source.should.equal('\n1');
     });
   });
 
