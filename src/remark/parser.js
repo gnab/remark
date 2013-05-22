@@ -1,4 +1,5 @@
-var Lexer = require('./lexer');
+var Lexer = require('./lexer'),
+    converter = require('./converter');
 
 module.exports = Parser;
 
@@ -11,7 +12,7 @@ Parser.prototype.parse = function (src) {
       slide = {
         source: '', 
         properties: { 
-          continued: false 
+          continued: 'false'
         }
       },
       tag;
@@ -25,18 +26,18 @@ Parser.prototype.parse = function (src) {
         break;
       case 'content_start':
         tag = token.block ? 'div' : 'span';
-        slide.source += '<' + tag + ' class="' + token['class'] + '">';
+        slide.source += '&lt;' + tag + ' class="' + token['class'] + '"&gt;';
         break;
       case 'content_end':
         tag = token.block ? 'div' : 'span';
-        slide.source += '</' + tag + '>';
+        slide.source += '&lt;/' + tag + '&gt;';
         break;
       case 'separator':
         slides.push(slide);
         slide = {
           source: '', 
           properties: {
-            continued: token.text === '--'
+            continued: (token.text === '--').toString()
           }
         };
         break;

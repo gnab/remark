@@ -2,6 +2,7 @@ var EventEmitter = require('events').EventEmitter
   , Navigation = require('./slideshow/navigation')
   , utils = require('../utils')
   , Slide = require('./slide')
+  , Parser = require('../parser')
   ;
 
 module.exports = Slideshow;
@@ -63,93 +64,50 @@ function Slideshow (events, options) {
 }
 
 function createSlides (slideshowSource) {
-  var slides = []
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
     , byName = {}
     , layoutSlide
     ;
 
   slides.byName = {};
 
-  splitForEach(slideshowSource, function (source, properties) {
-    var slide
-      , template
-      ;
-
-    if (properties.continued === 'true' && slides.length > 0) {
+  parsedSlides.each(function (slide, i) {
+    var template, slideViewModel;
+    
+    if (slide.properties.continued === 'true' && i > 0) {
       template = slides[slides.length - 1];
     }
-    else if (byName[properties.template]) {
-      template = byName[properties.template];
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
     }
-    else if (properties.layout === 'false') {
+    else if (slide.properties.layout === 'false') {
       layoutSlide = undefined;
     }
-    else if (layoutSlide && properties.layout !== 'true') {
+    else if (layoutSlide && slide.properties.layout !== 'true') {
       template = layoutSlide;
     }
 
-    slide = new Slide(slides.length + 1, source, properties, template);
+    slideViewModel = new Slide(i + 1, slide.source, slide.properties, template);
 
-    if (properties.layout === 'true') {
-      layoutSlide = slide;
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
     }
 
-    if (properties.name) {
-      byName[properties.name] = slide;
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
     }
 
     if (slide.properties.layout !== 'true') {
-      slides.push(slide);
-      if (properties.name) {
-        slides.byName[properties.name] = slide;
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
       }
     }
   });
 
   return slides;
-}
-
-function splitForEach (source, callback) {
-  var separatorFinder = /\n---?\n/
-    , match
-    , isContinuedSlide = false
-    ;
-
-  while ((match = separatorFinder.exec(source)) !== null) {
-    mapSlide(source.substr(0, match.index));
-
-    source = source.substr(match.index + match[0].length); 
-    isContinuedSlide = match[0] === '\n--\n';
-  }
-
-  if (source !== '') {
-    mapSlide(source);
-  }
-
-  function mapSlide(source) {
-    var properties = {
-      continued: isContinuedSlide.toString()
-    };
-    source = extractProperties(source, properties);
-    callback(source, properties);
-  }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
 }
 
 function expandVariables (slides) {

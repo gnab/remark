@@ -73,13 +73,9 @@ function createContentElement (events, slideshow, source, properties) {
     element.id = 'slide-' + properties.name;
   }
 
-  element.innerHTML = source;
-
   styleContentElement(slideshow, element, properties);
 
-  converter.convertContentClasses(element);
-  converter.convertMarkdown(element);
-  converter.trimEmptySpace(element);
+  element.innerHTML = converter.convertMarkdown(source);
 
   highlightCodeBlocks(element, slideshow);
 

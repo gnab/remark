@@ -72,12 +72,12 @@ describe('Parser', function () {
   describe('parsing content classes', function () {
     it('should convert block content classes', function () {
       parser.parse('1 .class[\nx\n] 2')[0].source
-        .should.equal('1 <div class="class">\nx\n</div> 2');
+        .should.equal('1 &lt;div class="class"&gt;\nx\n&lt;/div&gt; 2');
     });
 
     it('should convert inline content classes', function () {
       parser.parse('1 .class[x] 2')[0].source
-        .should.equal('1 <span class="class">x</span> 2');
+        .should.equal('1 &lt;span class="class"&gt;x&lt;/span&gt; 2');
     });
 
     it('should ignore unclosed inline content classes', function () {
@@ -90,21 +90,21 @@ describe('Parser', function () {
 
     it('should parse source in content classes', function () {
       parser.parse('.c1[.c2[x]]')[0].source
-        .should.equal('<span class="c1"><span class="c2">x</span></span>');
+        .should.equal('&lt;span class="c1"&gt;&lt;span class="c2"&gt;x&lt;/span&gt;&lt;/span&gt;');
     });
   });
 
   describe('identifying continued slides', function () {
     it('should not identify normal, preceding slide as continued', function () {
-      parser.parse('1\n--\n2\n---\n3')[0].properties.continued.should.be.false;
+      parser.parse('1\n--\n2\n---\n3')[0].properties.continued.should.equal('false');
     });
 
     it('should identify continued slide as continued', function () {
-      parser.parse('1\n--\n2\n---\n3')[1].properties.continued.should.be.true;
+      parser.parse('1\n--\n2\n---\n3')[1].properties.continued.should.equal('true');
     });
 
     it('should not identify normal, succeeding slide as continued', function () {
-      parser.parse('1\n--\n2\n---\n3')[2].properties.continued.should.be.false;
+      parser.parse('1\n--\n2\n---\n3')[2].properties.continued.should.equal('false');
     });
   });
 
