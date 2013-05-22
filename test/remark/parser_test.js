@@ -87,6 +87,11 @@ describe('Parser', function () {
     it('should ignore unclosed block content classes', function () {
       parser.parse('1 .class[\n2')[0].source.should.equal('1 .class[\n2');
     });
+
+    it('should parse source in content classes', function () {
+      parser.parse('.c1[.c2[x]]')[0].source
+        .should.equal('<span class="c1"><span class="c2">x</span></span>');
+    });
   });
 
   describe('identifying continued slides', function () {

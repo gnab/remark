@@ -68,17 +68,19 @@ function lex (src, regex, tokens) {
         src = src.substring(text.length + 1);
         tokens.push({
           type: 'content_start',
-          'class': cap[CONTENT].substring(1)
+          'class': cap[CONTENT].substring(1),
+          block: text.indexOf('\n') !== -1
         });
         lex(text, inline, tokens);
         tokens.push({
-          type: 'content_end'
+          type: 'content_end',
+          block: text.indexOf('\n') !== -1
         });
       }
       else {
         tokens.push({
           type: 'text', 
-          text: src.substring(0, cap.index + cap[0].length)
+          text: cap[0]
         });
       }
     }
