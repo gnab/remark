@@ -78,10 +78,9 @@
   });
 
   // Slideshow
-  var slideshow;
-  remark.on('ready', function () {
-    slideshow = remark.create(document.getElementById('slideshow'),
-      editor.getValue());
+  var slideshow = remark.create({
+    container: document.getElementById('slideshow'),
+    source: editor.getValue()
   });
   //setTimeout(function () {
     //remark.resizeSlideshow();
