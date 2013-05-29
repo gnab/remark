@@ -2497,7 +2497,7 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
+},{"events":6,"./models/slideshow":7,"./highlighter":3,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
@@ -2634,6 +2634,7 @@ var EventEmitter = require('events').EventEmitter
   , Navigation = require('./slideshow/navigation')
   , utils = require('../utils')
   , Slide = require('./slide')
+  , Parser = require('../parser')
   ;
 
 module.exports = Slideshow;
@@ -2695,93 +2696,50 @@ function Slideshow (events, options) {
 }
 
 function createSlides (slideshowSource) {
-  var slides = []
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
     , byName = {}
     , layoutSlide
     ;
 
   slides.byName = {};
 
-  splitForEach(slideshowSource, function (source, properties) {
-    var slide
-      , template
-      ;
-
-    if (properties.continued === 'true' && slides.length > 0) {
+  parsedSlides.each(function (slide, i) {
+    var template, slideViewModel;
+    
+    if (slide.properties.continued === 'true' && i > 0) {
       template = slides[slides.length - 1];
     }
-    else if (byName[properties.template]) {
-      template = byName[properties.template];
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
     }
-    else if (properties.layout === 'false') {
+    else if (slide.properties.layout === 'false') {
       layoutSlide = undefined;
     }
-    else if (layoutSlide && properties.layout !== 'true') {
+    else if (layoutSlide && slide.properties.layout !== 'true') {
       template = layoutSlide;
     }
 
-    slide = new Slide(slides.length + 1, source, properties, template);
+    slideViewModel = new Slide(i + 1, slide.source, slide.properties, template);
 
-    if (properties.layout === 'true') {
-      layoutSlide = slide;
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
     }
 
-    if (properties.name) {
-      byName[properties.name] = slide;
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
     }
 
     if (slide.properties.layout !== 'true') {
-      slides.push(slide);
-      if (properties.name) {
-        slides.byName[properties.name] = slide;
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
       }
     }
   });
 
   return slides;
-}
-
-function splitForEach (source, callback) {
-  var separatorFinder = /\n---?\n/
-    , match
-    , isContinuedSlide = false
-    ;
-
-  while ((match = separatorFinder.exec(source)) !== null) {
-    mapSlide(source.substr(0, match.index));
-
-    source = source.substr(match.index + match[0].length); 
-    isContinuedSlide = match[0] === '\n--\n';
-  }
-
-  if (source !== '') {
-    mapSlide(source);
-  }
-
-  function mapSlide(source) {
-    var properties = {
-      continued: isContinuedSlide.toString()
-    };
-    source = extractProperties(source, properties);
-    callback(source, properties);
-  }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
 }
 
 function expandVariables (slides) {
@@ -2790,7 +2748,7 @@ function expandVariables (slides) {
   });
 }
 
-},{"events":6,"./slideshow/navigation":10,"../utils":11,"./slide":12}],8:[function(require,module,exports){
+},{"events":6,"./slideshow/navigation":10,"../utils":11,"./slide":12,"../parser":13}],8:[function(require,module,exports){
 var SlideView = require('./slideView')
   , OverlayView = require('./overlayView')
   , addClass = require('../utils').addClass
@@ -3061,7 +3019,7 @@ function getDimensions (ratio) {
   };
 }
 
-},{"./slideView":13,"./overlayView":14,"../utils":11}],10:[function(require,module,exports){
+},{"./slideView":14,"./overlayView":15,"../utils":11}],10:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3315,6 +3273,79 @@ Slide.prototype.expandVariables = function (contentOnly) {
 };
 
 },{}],13:[function(require,module,exports){
+var Lexer = require('./lexer'),
+    converter = require('./converter');
+
+module.exports = Parser;
+
+function Parser () { }
+
+Parser.prototype.parse = function (src) {
+  var lexer = new Lexer(),
+      tokens = lexer.lex(src),
+      slides = [],
+      slide = {
+        source: '', 
+        properties: { 
+          continued: 'false'
+        }
+      },
+      tag;
+
+  tokens.each(function (token) {
+    switch (token.type) {
+      case 'text':
+      case 'code':
+      case 'fences':
+        slide.source += token.text;
+        break;
+      case 'content_start':
+        tag = token.block ? 'div' : 'span';
+        slide.source += '&lt;' + tag + ' class="' + token['class'] + '"&gt;';
+        break;
+      case 'content_end':
+        tag = token.block ? 'div' : 'span';
+        slide.source += '&lt;/' + tag + '&gt;';
+        break;
+      case 'separator':
+        slides.push(slide);
+        slide = {
+          source: '', 
+          properties: {
+            continued: (token.text === '--').toString()
+          }
+        };
+        break;
+    }
+  });
+
+  slides.push(slide);
+
+  slides.each(function (slide) {
+    slide.source = extractProperties(slide.source, slide.properties);
+  });
+
+  return slides;
+};
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}
+
+},{"./lexer":16,"./converter":17}],14:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -3390,13 +3421,9 @@ function createContentElement (events, slideshow, source, properties) {
     element.id = 'slide-' + properties.name;
   }
 
-  element.innerHTML = source;
-
   styleContentElement(slideshow, element, properties);
 
-  converter.convertContentClasses(element);
-  converter.convertMarkdown(element);
-  converter.trimEmptySpace(element);
+  element.innerHTML = converter.convertMarkdown(source);
 
   highlightCodeBlocks(element, slideshow);
 
@@ -3451,7 +3478,7 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":15,"../utils":11,"../highlighter":3}],14:[function(require,module,exports){
+},{"../converter":17,"../highlighter":3,"../utils":11}],15:[function(require,module,exports){
 var resources = require('../resources');
 
 module.exports = OverlayView;
@@ -3481,7 +3508,130 @@ OverlayView.prototype.hide = function () {
   this.element.style.display = 'none';
 };
 
-},{"../resources":4}],15:[function(require,module,exports){
+},{"../resources":4}],16:[function(require,module,exports){
+module.exports = Lexer;
+
+var CODE = 1, 
+    CONTENT = 2, 
+    FENCES = 3, 
+    SEPARATOR = 4;
+
+var regexByName = {
+    CODE: /(?:^|\n)( {4}[^\n]+\n*)+/, 
+    CONTENT: /(?:\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/, 
+    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/, 
+    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/
+  };
+
+var block = replace(/CODE|CONTENT|FENCES|SEPARATOR/, regexByName), 
+    inline = replace(/CODE|CONTENT|FENCES/, regexByName);
+
+function Lexer () { }
+
+Lexer.prototype.lex = function (src) {
+  var tokens = lex(src, block), 
+      i;
+
+  for (i = tokens.length - 2; i >= 0; i--) {
+    if (tokens[i].type === 'text' && tokens[i+1].type === 'text') {
+      tokens[i].text += tokens[i+1].text;
+      tokens.splice(i+1, 1);
+    }
+  }
+
+  return tokens;
+};
+
+function lex (src, regex, tokens) {
+  var cap, text;
+
+  tokens = tokens || [];
+
+  while ((cap = regex.exec(src)) !== null) {
+    if (cap.index > 0) {
+      tokens.push({
+        type: 'text', 
+        text: src.substring(0, cap.index)
+      });
+    }
+
+    if (cap[CODE]) {
+      tokens.push({
+        type: 'code',
+        text: cap[0]
+      });
+    }
+    else if (cap[FENCES]) {
+      tokens.push({
+        type: 'fences',
+        text: cap[0]
+      });
+    }
+    else if (cap[SEPARATOR]) {
+      tokens.push({
+        type: 'separator',
+        text: cap[SEPARATOR]
+      });
+    }
+    else if (cap[CONTENT]) {
+      text = getTextInBrackets(src, cap.index + cap[0].length);
+      if (text !== undefined) {
+        src = src.substring(text.length + 1);
+        tokens.push({
+          type: 'content_start',
+          'class': cap[CONTENT].substring(1),
+          block: text.indexOf('\n') !== -1
+        });
+        lex(text, inline, tokens);
+        tokens.push({
+          type: 'content_end',
+          block: text.indexOf('\n') !== -1
+        });
+      }
+      else {
+        tokens.push({
+          type: 'text', 
+          text: cap[0]
+        });
+      }
+    }
+
+    src = src.substring(cap.index + cap[0].length);
+  }
+
+  if (src || (!src && tokens.length === 0)) {
+    tokens.push({
+      type: 'text', 
+      text: src
+    });
+  }
+
+  return tokens;
+}
+
+function replace (regex, replacements) {
+  return new RegExp(regex.source.replace(/\w{2,}/g, function (key) {
+    return replacements[key].source;
+  }));
+}
+
+function getTextInBrackets (src, offset) {
+  var depth = 1, 
+      pos = offset, 
+      chr;
+
+  while (depth > 0 && pos < src.length) {
+    chr = src[pos++];
+    depth += (chr === '[' && 1) || (chr === ']' && -1) || 0;
+  }
+
+  if (depth === 0) {
+    src = src.substr(offset, pos - offset - 1);
+    return src;
+  }
+}
+
+},{}],17:[function(require,module,exports){
 var marked = require('marked')
   , converter = module.exports = {}
   ;
@@ -3496,91 +3646,32 @@ marked.setOptions({
   langPrefix: ''
 });
 
-converter.convertContentClasses = function (content) {
-  var classFinder = /(\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/ig
-    , match
-    , classes
-    , text
-    , replacement
-    , tag
-    , after
-    ;
-
-  while ((match = classFinder.exec(content.innerHTML)) !== null) {
-    text = getSquareBracketedText(content.innerHTML.substr(
-          match.index + match[0].length));
-
-    if (text === null) {
-      continue;
-    }
-
-    if (match[1]) {
-      // Simply remove escape slash
-      replacement = match[2] + '[' + text + ']';
-      classFinder.lastIndex = match.index + replacement.length;
-    }
-    else {
-      classes = match[2].substr(1).split('.');
-      tag = text.indexOf('\n') === -1 ? 'span' : 'div';
-
-      replacement = "&lt;" + tag + " class=\"" +
-        classes.join(' ') +
-        "\"&gt;" +
-        text +
-        "&lt;/" + tag + "&gt;";
-
-      classFinder.lastIndex = match.index +
-        ("&lt;" + tag + " class=\"" + classes.join(' ') + "\"&gt;").length;
-    }
-
-    after = content.innerHTML.substr(
-        match.index + match[0].length + text.length + 1);
-
-    content.innerHTML = content.innerHTML.substr(0, match.index) +
-      replacement + after;
-  }
-};
-
-var getSquareBracketedText = function (text) {
-  var count = 1
-    , pos = 0
-    , chr
-    ;
-
-  while (count > 0 && pos < text.length) {
-    chr = text[pos++];
-    count += (chr === '[' && 1) || (chr === ']' && -1) || 0;
-  }
-
-  return count === 0 && text.substr(0, pos - 1) || null;
-};
-
-converter.convertMarkdown = function (content) {
-  // Store innerHTML in variable to allow intermediate conversion
-  // into invalid HTML to handle block-quotes
-  var source = content.innerHTML;
-
+converter.convertMarkdown = function (source) {
   // Unescape block-quotes before conversion (&gt; => >)
   source = source.replace(/(^|\n)( *)&gt;/g, '$1$2>');
 
   // Perform the actual Markdown conversion
-  content.innerHTML = marked(source.replace(/^\s+/, ''));
+  source = marked(source.replace(/^\s+/, ''));
 
   // Unescape HTML escaped by the browser; &lt;, &gt;, ...
-  content.innerHTML = content.innerHTML.replace(/&[l|g]t;/g,
+  source = source.replace(/&[l|g]t;/g,
     function (match) {
       return match === '&lt;' ? '<' : '>';
     });
 
   // ... and &amp;
-  content.innerHTML = content.innerHTML.replace(/&amp;/g, '&');
+  source = source.replace(/&amp;/g, '&');
+  
+  // ... and &quot;
+  source = source.replace(/&quot;/g, '"');
+
+  // Trim empty paragraphs
+  source = source.replace(/<p>\s*<\/p>/g, '');
+
+  return source;
 };
 
-converter.trimEmptySpace = function (content) {
-  content.innerHTML = content.innerHTML.replace(/<p>\s*<\/p>/g, '');
-};
-
-},{"marked":16}],16:[function(require,module,exports){
+},{"marked":18}],18:[function(require,module,exports){
 (function(global){/**
  * marked - a markdown parser
  * Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)
