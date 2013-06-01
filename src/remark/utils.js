@@ -10,7 +10,13 @@ exports.getClasses = function (element) {
     .filter(function (s) { return s !== ''; });
 };
 
-each([Array.prototype, window.NodeList.prototype], function (prototype) {
+each([Array, window.NodeList], function (object) {
+  var prototype = object && object.prototype;
+
+  if (!prototype) {
+    return;
+  }
+
   prototype.each = prototype.each || function (f) {
     each(this, f);
   };

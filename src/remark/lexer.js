@@ -68,7 +68,7 @@ function lex (src, regex, tokens) {
         src = src.substring(text.length + 1);
         tokens.push({
           type: 'content_start',
-          'class': cap[CONTENT].substring(1),
+          classes: cap[CONTENT].substring(1).split('.'),
           block: text.indexOf('\n') !== -1
         });
         lex(text, inline, tokens);

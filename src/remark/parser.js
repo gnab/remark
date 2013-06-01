@@ -15,7 +15,8 @@ Parser.prototype.parse = function (src) {
           continued: 'false'
         }
       },
-      tag;
+      tag,
+      classes;
 
   tokens.each(function (token) {
     switch (token.type) {
@@ -26,7 +27,8 @@ Parser.prototype.parse = function (src) {
         break;
       case 'content_start':
         tag = token.block ? 'div' : 'span';
-        slide.source += '&lt;' + tag + ' class="' + token['class'] + '"&gt;';
+        classes = token.classes.join(' ');
+        slide.source += '&lt;' + tag + ' class="' + classes + '"&gt;';
         break;
       case 'content_end':
         tag = token.block ? 'div' : 'span';

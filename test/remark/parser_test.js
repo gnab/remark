@@ -80,6 +80,11 @@ describe('Parser', function () {
         .should.equal('1 &lt;span class="class"&gt;x&lt;/span&gt; 2');
     });
 
+    it('should convert multiple classes', function () {
+      parser.parse('1 .c1.c2[x]')[0].source
+        .should.equal('1 &lt;span class="c1 c2"&gt;x&lt;/span&gt;');
+    });
+
     it('should ignore unclosed inline content classes', function () {
       parser.parse('1 .class[x 2')[0].source.should.equal('1 .class[x 2');
     });

@@ -41,7 +41,15 @@ describe('Lexer', function () {
     
     it('should recognize content class', function () {
       lexer.lex('.class[content]').should.eql([
-        {type: 'content_start', 'class': 'class', block: false},
+        {type: 'content_start', classes: ['class'], block: false},
+        {type: 'text', text: 'content'},
+        {type: 'content_end', block: false}
+      ]);
+    });
+
+    it('should recignize multiple content classes', function () {
+      lexer.lex('.c1.c2[content]').should.eql([
+        {type: 'content_start', classes: ['c1', 'c2'], block: false},
         {type: 'text', text: 'content'},
         {type: 'content_end', block: false}
       ]);
@@ -61,7 +69,7 @@ describe('Lexer', function () {
 
     it('should leave separator inside content class as-is', function () {
       lexer.lex('.class[\n---\n]').should.eql([
-        {type: 'content_start', 'class': 'class', block: true}, 
+        {type: 'content_start', classes: ['class'], block: true}, 
         {type: 'text', text: '\n---\n'},
         {type: 'content_end', block: true}
       ]);
@@ -81,8 +89,8 @@ describe('Lexer', function () {
     
     it('should lex content classes recursively', function () {
       lexer.lex('.c1[.c2[x]]').should.eql([
-        {type: 'content_start', 'class': 'c1', block: false},
-        {type: 'content_start', 'class': 'c2', block: false},
+        {type: 'content_start', classes: ['c1'], block: false},
+        {type: 'content_start', classes: ['c2'], block: false},
         {type: 'text', text: 'x'},
         {type: 'content_end', block: false},
         {type: 'content_end', block: false}
