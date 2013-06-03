@@ -7,7 +7,7 @@ function OverlayView (events) {
 
   self.element = document.createElement('div');
 
-  self.element.className = 'overlay';
+  self.element.className = 'remark-overlay';
   self.element.innerHTML = resources.overlay;
 
   events.on('hideOverlay', function () {

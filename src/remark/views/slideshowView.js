@@ -117,7 +117,7 @@ SlideshowView.prototype.configurePositionElement = function () {
   var self = this;
 
   self.positionElement = document.createElement('div');
-  self.positionElement.className = 'position';
+  self.positionElement.className = 'remark-position';
   self.element.appendChild(self.positionElement);
 };
 

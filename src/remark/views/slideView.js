@@ -128,5 +128,7 @@ function highlightCodeBlocks (content, slideshow) {
     if (block.className !== '') {
       highlighter.engine.highlightBlock(block, '  ');
     }
+
+    utils.addClass(block, 'remark-code');
   });
 }

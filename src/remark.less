@@ -1,7 +1,5 @@
 .remark-container {
   background: #d7d8d2;
-  font-family: Georgia;
-  font-size: 20px;
   overflow: hidden;
 }
 .remark-container:focus {
@@ -19,120 +17,107 @@
   -moz-box-shadow: 0 0 30px #888;
   -webkit-box-shadow: 0 0 30px #888;
   box-shadow: 0 0 30px #888;
+}
 
-  .remark-slide {
-    height: 100%;
-    width: 100%;
+.remark-slide {
+  height: 100%;
+  width: 100%;
 
-    > .left {
+  > .left {
+    text-align: left;
+  }
+
+  > .center {
+    text-align: center;
+  }
+
+  > .right {
+    text-align: right;
+  }
+
+  > .top {
+    vertical-align: top;
+  }
+
+  > .middle {
+    vertical-align: middle;
+  }
+
+  > .bottom {
+    vertical-align: bottom;
+  }
+
+  .remark-slide-content {
+    background-position: center;
+    background-repeat: no-repeat;
+    display: table-cell;
+    padding: 1em 4em 1em 4em;
+
+    .left {
+      display: block;
       text-align: left;
     }
 
-    > .center {
+    .center {
+      display: block;
       text-align: center;
     }
 
-    > .right {
+    .right {
+      display: block;
       text-align: right;
     }
-
-    > .top {
-      vertical-align: top;
-    }
-
-    > .middle {
-      vertical-align: middle;
-    }
-
-    > .bottom {
-      vertical-align: bottom;
-    }
-
-    .remark-slide-content {
-      background-position: center;
-      background-repeat: no-repeat;
-      display: table-cell;
-      padding: 1em 4em 1em 4em;
-
-      .left {
-        display: block;
-        text-align: left;
-      }
-
-      .center {
-        display: block;
-        text-align: center;
-      }
-
-      .right {
-        display: block;
-        text-align: right;
-      }
-
-      pre, code {
-        font-family: Monaco, monospace;
-        font-size: 16px;
-      }
-
-      h1 code {
-        font-size: 0.8em;
-      }
-
-      li > code, p > code {
-        padding: 1px 4px;
-      }
-    }
   }
+}
 
-  .overlay {
-    bottom: 0;
-    top: 0;
-    right: 0;
-    left: 0;
-    opacity: 0.95;
-    background: #000;
-    display: none;
+.remark-overlay {
+  bottom: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  opacity: 0.95;
+  background: #000;
+  display: none;
+  position: absolute;
+  z-index: 1000;
+
+  .remark-overlay-content {
+    color: white;
+    font-family: Helvetica, arial, freesans, clean, sans-serif;
+    font-size: 12pt;
     position: absolute;
-    z-index: 1000;
+    top: 10%;
+    bottom: 10%;
+    left: 10%;
+    height: 10%;
 
-    .content {
+    td {
       color: white;
-      font-family: Helvetica, arial, freesans, clean, sans-serif;
       font-size: 12pt;
-      position: absolute;
-      top: 10%;
-      bottom: 10%;
-      left: 10%;
-      height: 10%;
-
-      td {
-        color: white;
-        font-size: 12pt;
-        padding: 10px;
-      }
-      td:first-child {
-        padding-left: 0;
-      }
-      .key {
-        background: white;
-        color: black;
-        min-width: 1em;
-        display: inline-block;
-        padding: 3px 6px;
-        text-align: center;
-        border-radius: 4px;
-      }
+      padding: 10px;
     }
-
-    .dismiss {
-      top: 85%;
+    td:first-child {
+      padding-left: 0;
+    }
+    .key {
+      background: white;
+      color: black;
+      min-width: 1em;
+      display: inline-block;
+      padding: 3px 6px;
+      text-align: center;
+      border-radius: 4px;
     }
   }
 
-  .position {
-    bottom: 12px;
-    opacity: 0.5;
-    position: absolute;
-    right: 20px;
+  .dismiss {
+    top: 85%;
   }
+}
+
+.remark-position {
+  bottom: 12px;
+  opacity: 0.5;
+  position: absolute;
+  right: 20px;
 }
