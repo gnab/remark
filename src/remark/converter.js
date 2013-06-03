@@ -31,8 +31,5 @@ converter.convertMarkdown = function (source) {
   // ... and &quot;
   source = source.replace(/&quot;/g, '"');
 
-  // Trim empty paragraphs
-  source = source.replace(/<p>\s*<\/p>/g, '');
-
   return source;
 };

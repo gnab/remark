@@ -76,6 +76,7 @@ function createContentElement (events, slideshow, source, properties) {
   styleContentElement(slideshow, element, properties);
 
   element.innerHTML = converter.convertMarkdown(source);
+  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);
 
