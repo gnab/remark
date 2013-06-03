@@ -40,4 +40,13 @@ describe('SlideView', function () {
       classes.should.include('center');
     });
   });
+
+  describe('empty paragraph removal', function () {
+    it('should have empty paragraphs removed', function () {
+      var slide = new Slide(1, '&lt;p&gt; &lt;/p&gt;')
+        , slideView = new SlideView(new EventEmitter(), slideshow, slide);
+
+      slideView.contentElement.innerHTML.should.equal('\n');
+    });
+  });
 });
