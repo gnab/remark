@@ -1,0 +1,16 @@
+---
+layout: default
+title: remark
+---
+
+<h1>Download</h1>
+<p>
+  All downloads:
+</p>
+<ul data-bind="foreach: downloads.items">
+  <li>
+    <a data-bind="text: name, attr: {href: '/' + path}"></a>
+  </li>
+</ul>
+<p>History:</p>
+<pre data-bind="text: JSON.stringify(downloads.history())"></pre>
