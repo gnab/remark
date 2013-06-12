@@ -3,18 +3,14 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Remark</title>
-    <script src="http://gnab.github.com/remark/downloads/remark-0.4.6.min.js" type="text/javascript">
-      {"highlightStyle": "monokai"}
-    </script>
-    <script type="text/javascript">
-      var hljs = remark.highlighter.engine();
-    </script>
-    <script src="/js/remark.language.js" type="text/javascript"></script>
     <style type="text/css" media="screen">
       @import url(http://fonts.googleapis.com/css?family=Droid+Serif);
       @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
 
-      body { font-family: 'Droid Serif'; }
+      body { 
+        font-family: 'Droid Serif'; 
+        font-size: 20px;
+      }
       h1, h2, h3 {
         font-family: 'Yanone Kaffeesatz';
         font-weight: 400;
@@ -39,6 +35,7 @@
         -web-border-radius: 5px;
         background: #e7e8e2;
         border-radius: 5px;
+        font-size: 16px;
       }
       .pull-left {
         float: left;
@@ -141,7 +138,7 @@ layout: false
 
 - Markdown formatting, with smart extensions
 
-- Automatic syntax highlighting, with optional language hinting
+- Syntax highlighting, for a range of languages
 
 - Slide scaling, thus similar appearance on all devices / resolutions .red[*]
 
@@ -207,13 +204,15 @@ name: how
 .right-column[
 A Markdown-formatted chunk of text is transformed into individual slides by JavaScript running in the browser:
 
-    # Slide 1
-    This is slide 1
+```remark
+# Slide 1
+This is slide 1
 
-    ---
+---
 
-    # Slide 2
-    This is slide 2
+# Slide 2
+This is slide 2
+```
 
 .slides[
   .first[
@@ -242,21 +241,26 @@ Have a look at the [Markdown website](http://daringfireball.net/projects/markdow
 .right-column[
 A simple HTML document is needed for hosting the styles, Markdown and the generated slides themselves:
 
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <script src="remark.js" type="text/javascript"></script>
-        <style type="text/css">
-          /* Slideshow styles */
-        </style>
-      </head>
-      <body>
-        <textarea id="source">
-          <!-- Slideshow Markdown -->
-        &lt;/textarea&gt;
-        <div id="slideshow"><div>
-      </body>
-    </html>
+```xml
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      /* Slideshow styles */
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+      <!-- Slideshow Markdown -->
+    &lt;/textarea&gt;
+    <script type="text/javascript" src="remark.js">
+    </script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
+```
 
 You may download remark to have your slideshow not depend on any online resources, or reference the latest version online directly.
 ]
@@ -275,7 +279,7 @@ To help out with slide layout and formatting, a few Markdown extensions have bee
 
 - Content classes, for styling specific content
 
-- Syntax highlighting, with language hinting
+- Syntax highlighting, for a range of languages
 ]
 
 ---
@@ -286,13 +290,14 @@ To help out with slide layout and formatting, a few Markdown extensions have bee
 .right-column[
 Initial lines containing key-value pairs are extracted as slide properties:
 
-    .remark
-    name: agenda
-    class: middle, center
+```remark
+name: agenda
+class: middle, center
 
-    # Agenda
+# Agenda
 
-    The name of this slide is {{ name }}.
+The name of this slide is {{ name }}.
+```
 
 Slide properties serve multiple purposes:
 
@@ -311,14 +316,17 @@ Slide properties serve multiple purposes:
 .right-column[
 Any occurences of one or more dotted CSS class names followed by square brackets are replaced with the contents of the brackets with the specified classes applied:
 
-    .remark
-    \.footnote[.red.bold[*] Important footnote]
+```remark
+.footnote[.red.bold[*] Important footnote]
+```
 
 Resulting HTML extract:
 
-    <span class="footnote">
-      <span class="red bold">*</span> Important footnote
-    </span>
+```xml
+<span class="footnote">
+  <span class="red bold">*</span> Important footnote
+</span>
+```
 ]
 ---
 .left-column[
@@ -328,25 +336,19 @@ Resulting HTML extract:
   ### - Syntax Highlighting
 ]
 .right-column[
-Code blocks are automatically syntax highlighted, based on the number of recognized keywords from a set of [supported languages](https://github.com/gnab/remark/wiki/Configuration-Options#wiki-highlighting).
+Code blocks can be syntax highlighted by specifying a language from the set of [supported languages](https://github.com/gnab/remark/wiki/Configuration-Options#wiki-highlighting).
 
-Both indented code blocks and [GFM](http://github.github.com/github-flavored-markdown/) fenced code blocks are supported, optionally overriding the automatically detected language:
+Using [GFM](http://github.github.com/github-flavored-markdown/) fenced code blocks you can easily specify highlighting language:
 
 .pull-left[
 
-    .no-highlight
-    Code:
-
-        .ruby
-        def add(a, b)
-          a + b
-        end
-        &nbsp;
+    ```javascript
+    function add(a, b)
+      return a + b
+    end
+    ```
 ]
 .pull-right[
-
-    .no-highlight
-    Code:
 
     ```ruby
     def add(a, b)
@@ -383,6 +385,16 @@ template: inverse
 
 Slideshow created using [remark](http://github.com/gnab/remark).
     </textarea>
-    <div id="slideshow"></div>
+    <script src="http://gnab.github.com/remark/downloads/remark-0.5.0.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var hljs = remark.highlighter.engine;
+    </script>
+    <script src="js/remark.language.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var slideshow = remark.create({
+          highlightStyle: 'monokai',
+          highlightLanguage: 'remark'
+        }) ;
+    </script>
   </body>
 </html>

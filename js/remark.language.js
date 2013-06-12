@@ -26,6 +26,10 @@ hljs.LANGUAGES.remark = function(){
       {
         className: 'string',
         begin: '\\.\\w+'
+      },
+      {
+        className: 'string',
+        begin: '```'
       }
     ]
   };
