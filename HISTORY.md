@@ -3,8 +3,9 @@
 * Prefix CSS class names with `remark-` to avoid collisions.
 * Add highlight-style slide property for setting highlight.js style.
 * Highlighting language is no longer automatically determined.
-  * Must be either configured for entire slideshow or specified per code block.
+  * Must either be configured for entire slideshow or specified per code block.
 * Code classes are DEPRECATED, use GFM fenced code blocks instead.
+* Fix content classes being expanded inside code blocks bug.
 
 ### 0.4.6
 * Add background-image slide property.
