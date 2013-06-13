@@ -78,9 +78,6 @@ function createContentElement (events, slideshow, source, properties) {
   element.innerHTML = converter.convertMarkdown(source);
   element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
-  // Trim empty paragraphs
-  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
-
   highlightCodeBlocks(element, slideshow);
 
   return element;
