@@ -1,5 +1,6 @@
 ### 0.5.1
 * Fix Firefox issue (#47) by extending HTMLCollection with forEach.
+
 ### 0.5.0
 * Update API to allow creating and embedding multiple slideshows.
 * Prefix CSS class names with `remark-` to avoid collisions.
