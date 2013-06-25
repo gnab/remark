@@ -29,7 +29,7 @@ describe('Lexer', function () {
 
     it('should recognize notes separator', function () {
       lexer.lex('\n???\n').should.eql([
-        {type: 'notes', text: '???'}
+        {type: 'notes_separator', text: '???'}
       ]);
     });
 

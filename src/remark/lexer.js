@@ -66,7 +66,7 @@ function lex (src, regex, tokens) {
     }
     else if (cap[NOTES_SEPARATOR]) {
       tokens.push({
-        type: 'notes',
+        type: 'notes_separator',
         text: cap[NOTES_SEPARATOR]
       });
     }

@@ -42,6 +42,16 @@ describe('Parser', function () {
     });
   });
 
+  describe('parsing notes', function () {
+    it('should map notes', function () {
+      parser.parse('content\n???\nnotes')[0].notes.should.equal('notes');
+    });
+
+    it('should extract notes from source', function () {
+      parser.parse('content\n???\nnotes')[0].source.should.equal('content');
+    });
+  });
+
   describe('parsing code', function () {
     it('should include code', function () {
       var slides = parser.parse('1\n    code\n2\n---\n3\n    code\n4');

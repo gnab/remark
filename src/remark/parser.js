@@ -9,12 +9,7 @@ Parser.prototype.parse = function (src) {
   var lexer = new Lexer(),
       tokens = lexer.lex(src),
       slides = [],
-      slide = {
-        source: '', 
-        properties: { 
-          continued: 'false'
-        }
-      },
+      slide = createSlide(),
       tag,
       classes;
 
@@ -23,25 +18,24 @@ Parser.prototype.parse = function (src) {
       case 'text':
       case 'code':
       case 'fences':
-        slide.source += token.text;
+        appendTo(slide, token.text);
         break;
       case 'content_start':
         tag = token.block ? 'div' : 'span';
         classes = token.classes.join(' ');
-        slide.source += '&lt;' + tag + ' class="' + classes + '"&gt;';
+        appendTo(slide, '&lt;' + tag + ' class="' + classes + '"&gt;');
         break;
       case 'content_end':
         tag = token.block ? 'div' : 'span';
-        slide.source += '&lt;/' + tag + '&gt;';
+        appendTo(slide, '&lt;/' + tag + '&gt;');
         break;
       case 'separator':
         slides.push(slide);
-        slide = {
-          source: '', 
-          properties: {
-            continued: (token.text === '--').toString()
-          }
-        };
+        slide = createSlide();
+        slide.properties.continued = (token.text === '--').toString();
+        break;
+      case 'notes_separator':
+        slide.notes = '';
         break;
     }
   });
@@ -54,6 +48,24 @@ Parser.prototype.parse = function (src) {
 
   return slides;
 };
+
+function createSlide () {
+  return {
+    source: '', 
+    properties: { 
+      continued: 'false'
+    }
+  };
+}
+
+function appendTo (slide, content) {
+  if (slide.notes !== undefined) {
+    slide.notes += content;
+  }
+  else {
+    slide.source += content;
+  }
+}
 
 function extractProperties (source, properties) {
   var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
