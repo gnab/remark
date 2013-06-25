@@ -2205,1081 +2205,7 @@ module.exports = {
   overlay: "<div class=\"remark-overlay-content\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\"><b>&uarr;</b></span>,\n        <span class=\"key\"><b>&larr;</b></span>,\n        <span class=\"key\">Pg Up</span>,\n        <span class=\"key\">K</span>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\"><b>&darr;</b></span>,\n        <span class=\"key\"><b>&rarr;</b></span>,\n        <span class=\"key\">Pg Dn</span>,\n        <span class=\"key\">Space</span>,\n        <span class=\"key\">J</span>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">Home</span>\n      </td>\n      <td>Go to first slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">End</span>\n      </td>\n      <td>Go to last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">?</span>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\">Esc</span>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
 };
 
-},{}],2:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , highlighter = require('./highlighter')
-  , Slideshow = require('./models/slideshow')
-  , SlideshowView = require('./views/slideshowView')
-  , Controller = require('./controller')
-  ;
-
-// Expose highlighter to allow enumerating available styles and
-// including external language grammars
-module.exports.highlighter = highlighter;
-
-// Creates slideshow initialized from options
-module.exports.create = function (options) {
-  var events
-    , slideshow
-    , slideshowView
-    , controller
-    ;
-
-  options = applyDefaults(options);
-
-  events = new EventEmitter();
-  events.setMaxListeners(0);
-
-  slideshow = new Slideshow(events, options);
-  slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = new Controller(events, slideshowView);
-
-  return slideshow;
-};
-
-function applyDefaults (options) {
-  var sourceElement;
-
-  options = options || {};
-
-  if (!options.hasOwnProperty('source')) {
-    sourceElement = document.getElementById('source');
-    if (sourceElement) {
-      options.source = sourceElement.innerHTML;
-      sourceElement.style.display = 'none';
-    }
-  }
-
-  if (!(options.container instanceof window.HTMLElement)) {
-    options.container = document.body;
-  }
-
-  return options;
-}
-
-},{"events":5,"./highlighter":3,"./models/slideshow":6,"./views/slideshowView":7,"./controller":8}],8:[function(require,module,exports){
-module.exports = Controller;
-
-function Controller (events, slideshowView) {
-  addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
-}
-
-function addNavigationEventListeners (events, slideshowView) {
-  if (slideshowView.isEmbedded()) {
-    events.emit('gotoSlide', 1);
-  }
-  else {
-    events.on('hashchange', navigateByHash);
-    events.on('slideChanged', updateHash);
-
-    navigateByHash();
-  }
-
-  function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
-    events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
-}
-
-function addKeyboardEventListeners (events) {
-  events.on('keydown', function (event) {
-    switch (event.keyCode) {
-      case 33: // Page up
-      case 37: // Left
-      case 38: // Up
-        events.emit('gotoPreviousSlide');
-        break;
-      case 32: // Space
-      case 34: // Page down
-      case 39: // Right
-      case 40: // Down
-        events.emit('gotoNextSlide');
-        break;
-      case 36: // Home
-        events.emit('gotoFirstSlide');
-        break;
-      case 35: // End
-        events.emit('gotoLastSlide');
-        break;
-      case 27: // Escape
-        events.emit('hideOverlay');
-        break;
-    }
-  });
-
-  events.on('keypress', function (event) {
-    switch (String.fromCharCode(event.which)) {
-      case 'j':
-        events.emit('gotoNextSlide');
-        break;
-      case 'k':
-        events.emit('gotoPreviousSlide');
-        break;
-      case '?':
-        events.emit('toggleHelp');
-        break;
-    }
-  });
-}
-
-function addMouseEventListeners (events) {
-  events.on('mousewheel', function (event) {
-    if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
-    }
-    else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
-    }
-  });
-}
-
-function addTouchEventListeners (events) {
-  var touch
-    , startX
-    , endX
-    ;
-
-  var isTap = function () {
-    return Math.abs(startX - endX) < 10;
-  };
-
-  var handleTap = function () {
-    events.emit('tap', endX);
-  };
-
-  var handleSwipe = function () {
-    if (startX > endX) {
-      events.emit('gotoNextSlide');
-    }
-    else {
-      events.emit('gotoPreviousSlide');
-    }
-  };
-
-  events.on('touchstart', function (event) {
-    touch = event.touches[0];
-    startX = touch.clientX;
-  });
-
-  events.on('touchend', function (event) {
-    if (event.target.nodeName.toUpperCase() === 'A') {
-      return;
-    }
-
-    touch = event.changedTouches[0];
-    endX = touch.clientX;
-
-    if (isTap()) {
-      handleTap();
-    }
-    else {
-      handleSwipe();
-    }
-  });
-
-  events.on('touchmove', function (event) {
-    event.preventDefault();
-  });
-}
-
-},{}],6:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , Navigation = require('./slideshow/navigation')
-  , utils = require('../utils')
-  , Slide = require('./slide')
-  , Parser = require('../parser')
-  ;
-
-module.exports = Slideshow;
-
-Slideshow.prototype = new EventEmitter();
-Slideshow.prototype.setMaxListeners(0);
-
-function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
-
-  options = options || {};
-
-  // Extend slideshow functionality
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-
-  self.getRatio = getOrDefault('ratio', '4:3');
-  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
-  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
-
-  function getOrDefault (key, defaultValue) {
-    return function () {
-      if (options[key] === undefined) {
-        return defaultValue;
-      }
-
-      return options[key];
-    };
-  }
-}
-
-function createSlides (slideshowSource) {
-  var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource)
-    , slides = []
-    , byName = {}
-    , layoutSlide
-    ;
-
-  slides.byName = {};
-
-  parsedSlides.each(function (slide, i) {
-    var template, slideViewModel;
-    
-    if (slide.properties.continued === 'true' && i > 0) {
-      template = slides[slides.length - 1];
-    }
-    else if (byName[slide.properties.template]) {
-      template = byName[slide.properties.template];
-    }
-    else if (slide.properties.layout === 'false') {
-      layoutSlide = undefined;
-    }
-    else if (layoutSlide && slide.properties.layout !== 'true') {
-      template = layoutSlide;
-    }
-
-    slideViewModel = new Slide(i + 1, slide.source, slide.properties, template);
-
-    if (slide.properties.layout === 'true') {
-      layoutSlide = slideViewModel;
-    }
-
-    if (slide.properties.name) {
-      byName[slide.properties.name] = slideViewModel;
-    }
-
-    if (slide.properties.layout !== 'true') {
-      slides.push(slideViewModel);
-      if (slide.properties.name) {
-        slides.byName[slide.properties.name] = slideViewModel;
-      }
-    }
-  });
-
-  return slides;
-}
-
-function expandVariables (slides) {
-  slides.each(function (slide) {
-    slide.expandVariables();
-  });
-}
-
-},{"events":5,"./slideshow/navigation":9,"../utils":10,"./slide":11,"../parser":12}],7:[function(require,module,exports){
-var SlideView = require('./slideView')
-  , OverlayView = require('./overlayView')
-  , addClass = require('../utils').addClass
-
-  , referenceWidth = 908
-  , referenceHeight = 681
-  , referenceRatio = referenceWidth / referenceHeight
-  ;
-
-module.exports = SlideshowView;
-
-function SlideshowView (events, containerElement, slideshow) {
-  var self = this;
-
-  self.events = events;
-  self.slideshow = slideshow;
-  self.dimensions = {};
-
-  self.configureContainerElement(containerElement);
-  self.configureSlideshowElement();
-  self.configurePositionElement();
-  self.configureOverlayView();
-
-  self.updateSlideViews();
-
-  events.on('slidesChanged', function () {
-    self.updateSlideViews();
-  });
-
-  events.on('hideSlide', function (slideIndex) {
-    self.hideSlide(slideIndex);
-  });
-
-  events.on('showSlide', function (slideIndex) {
-    self.showSlide(slideIndex);
-  });
-}
-
-SlideshowView.prototype.isEmbedded = function () {
-  return this.containerElement !== document.body;
-};
-
-SlideshowView.prototype.configureContainerElement = function (element) {
-  var self = this;
-
-  self.containerElement = element;
-
-  addClass(element, 'remark-container');
-
-  if (element === document.body) {
-    addClass(document.getElementsByTagName('html')[0], 'remark-container');
-
-    forwardEvents(self.events, window, [
-      'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel'
-    ]);
-    forwardEvents(self.events, document, [
-      'touchstart', 'touchmove', 'touchend'
-    ]);
-  }
-  else {
-    element.style.position = 'absolute';
-    element.tabIndex = -1;
-
-    forwardEvents(self.events, element, [
-      'keydown', 'keypress', 'mousewheel',
-      'touchstart', 'touchmove', 'touchend'
-    ]);
-  }
-
-  // Tap event is handled in slideshow view
-  // rather than controller as knowledge of
-  // container width is needed to determine
-  // whether to move backwards or forwards
-  self.events.on('tap', function (endX) {
-    if (endX < self.getContainerWidth() / 2) {
-      self.slideshow.gotoPreviousSlide();
-    }
-    else {
-      self.slideshow.gotoNextSlide();
-    }
-  });
-};
-
-function forwardEvents (target, source, events) {
-  events.each(function (eventName) {
-    source.addEventListener(eventName, function () {
-      var args = Array.prototype.slice.call(arguments);
-      target.emit.apply(target, [eventName].concat(args));
-    });
-  });
-}
-
-SlideshowView.prototype.configureSlideshowElement = function () {
-  var self = this;
-
-  self.element = document.createElement('div');
-  self.element.className = 'remark-slideshow';
-
-  self.containerElement.appendChild(self.element);
-
-  self.updateDimensions();
-
-  self.events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('ratio')) {
-      self.updateDimensions();
-    }
-  });
-
-  self.events.on('resize', onResize);
-
-  function onResize () {
-    self.scaleToFitContainer();
-  }
-};
-
-SlideshowView.prototype.configurePositionElement = function () {
-  var self = this;
-
-  self.positionElement = document.createElement('div');
-  self.positionElement.className = 'remark-position';
-  self.element.appendChild(self.positionElement);
-};
-
-SlideshowView.prototype.configureOverlayView = function () {
-  var self = this;
-
-  self.overlayView = new OverlayView(self.events);
-  self.element.appendChild(self.overlayView.element);
-};
-
-SlideshowView.prototype.updateSlideViews = function () {
-  var self = this;
-
-  if (self.slideViews) {
-    self.slideViews.each(function (slideView) {
-      self.element.removeChild(slideView.element);
-    });
-  }
-
-  self.slideViews = self.slideshow.getSlides().map(function (slide) {
-    return new SlideView(self.events, self.slideshow, slide);
-  });
-
-  self.slideViews.each(function (slideView) {
-    self.element.appendChild(slideView.element);
-  });
-
-  self.scaleSlideBackgroundImages();
-
-  if (self.slideshow.getCurrentSlideNo() > 0) {
-    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
-  }
-};
-
-SlideshowView.prototype.scaleSlideBackgroundImages = function () {
-  var self = this;
-
-  if (self.slideViews) {
-    self.slideViews.each(function (slideView) {
-      slideView.scaleBackgroundImage(self.dimensions);
-    });
-  }
-};
-
-SlideshowView.prototype.showSlide =  function (slideIndex) {
-  var self = this
-    , slideView = self.slideViews[slideIndex];
-
-  self.slideshow.emit('slidein', slideView.element, slideIndex);
-  slideView.show();
-  self.positionElement.innerHTML =
-    slideIndex + 1 + ' / ' + self.slideViews.length;
-};
-
-SlideshowView.prototype.hideSlide = function (slideIndex) {
-  var self = this
-    , slideView = self.slideViews[slideIndex];
-
-  self.slideshow.emit('slideout', slideView.element, slideIndex);
-  slideView.hide();
-};
-
-SlideshowView.prototype.updateDimensions = function () {
-  var self = this
-    , ratio = getRatio(self.slideshow)
-    , dimensions = getDimensions(ratio)
-    ;
-
-  this.ratio = ratio;
-  this.dimensions.width = dimensions.width;
-  this.dimensions.height = dimensions.height;
-
-  this.element.style.width = this.dimensions.width + 'px';
-  this.element.style.height = this.dimensions.height + 'px';
-
-  this.scaleSlideBackgroundImages();
-  this.scaleToFitContainer();
-};
-
-SlideshowView.prototype.scaleToFitContainer = function () {
-  var self = this
-    , containerHeight = this.getContainerHeight()
-    , containerWidth = this.getContainerWidth()
-    , scale
-    , scaledWidth
-    , scaledHeight
-    , ratio = this.ratio
-    , dimensions = this.dimensions
-    ;
-
-  if (containerWidth / ratio.width > containerHeight / ratio.height) {
-    scale = containerHeight / dimensions.height;
-  }
-  else {
-    scale = containerWidth / dimensions.width;
-  }
-
-  scaledWidth = dimensions.width * scale;
-  scaledHeight = dimensions.height * scale;
-
-  this.element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  this.element.style.MozTransform = 'scale(' + scale + ')';
-  this.element.style.left = (containerWidth - scaledWidth) / 2 + 'px';
-  this.element.style.top = (containerHeight - scaledHeight) / 2 + 'px';
-};
-
-SlideshowView.prototype.getContainerHeight = function () {
-  var self = this;
-
-  if (self.containerElement === document.body) {
-    return window.innerHeight;
-  }
-  else {
-    return self.containerElement.clientHeight;
-  }
-};
-
-SlideshowView.prototype.getContainerWidth = function () {
-  var self = this;
-
-  if (self.containerElement === document.body) {
-    return window.innerWidth;
-  }
-  else {
-    return self.containerElement.clientWidth;
-  }
-};
-
-function getRatio (slideshow) {
-  var ratioComponents = slideshow.getRatio().split(':')
-    , ratio
-    ;
-
-  ratio = {
-    width: parseInt(ratioComponents[0], 10)
-  , height: parseInt(ratioComponents[1], 10)
-  };
-
-  ratio.ratio = ratio.width / ratio.height;
-
-  return ratio;
-}
-
-function getDimensions (ratio) {
-  return {
-    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
-  , height: referenceHeight
-  };
-}
-
-},{"./slideView":13,"./overlayView":14,"../utils":10}],9:[function(require,module,exports){
-module.exports = Navigation;
-
-function Navigation (events) {
-  var self = this
-    , currentSlideNo = 0
-    ;
-
-  self.getCurrentSlideNo = getCurrentSlideNo;
-  self.gotoSlide = gotoSlide;
-  self.gotoPreviousSlide = gotoPreviousSlide;
-  self.gotoNextSlide = gotoNextSlide;
-  self.gotoFirstSlide = gotoFirstSlide;
-  self.gotoLastSlide = gotoLastSlide;
-
-  events.on('gotoSlide', gotoSlide);
-  events.on('gotoPreviousSlide', gotoPreviousSlide);
-  events.on('gotoNextSlide', gotoNextSlide);
-  events.on('gotoFirstSlide', gotoFirstSlide);
-  events.on('gotoLastSlide', gotoLastSlide);
-
-  events.on('slidesChanged', function () {
-    if (currentSlideNo > self.getSlideCount()) {
-      currentSlideNo = self.getSlideCount();
-    }
-  });
-
-  function getCurrentSlideNo () {
-    return currentSlideNo;
-  }
-
-  function gotoSlide (slideNoOrName) {
-    var slideNo = getSlideNo(slideNoOrName)
-      , alreadyOnSlide = slideNo === currentSlideNo
-      , slideOutOfRange = slideNo < 1 || slideNo > self.getSlideCount()
-      ;
-
-    if (alreadyOnSlide || slideOutOfRange) {
-      return;
-    }
-
-    if (currentSlideNo !== 0) {
-      events.emit('hideSlide', currentSlideNo - 1);
-    }
-
-    events.emit('showSlide', slideNo - 1);
-
-    currentSlideNo = slideNo;
-
-    events.emit('slideChanged', slideNoOrName || slideNo);
-  }
-
-  function gotoPreviousSlide() {
-    self.gotoSlide(currentSlideNo - 1);
-  }
-  
-  function gotoNextSlide() {
-    self.gotoSlide(currentSlideNo + 1);
-  }
-  
-  function gotoFirstSlide () {
-    self.gotoSlide(1);
-  }
-  
-  function gotoLastSlide () {
-    self.gotoSlide(self.getSlideCount());
-  }
-
-  function getSlideNo (slideNoOrName) {
-    var slideNo
-      , slide
-      ;
-
-    if (typeof slideNoOrName === 'number') {
-      return slideNoOrName;
-    }
-
-    slideNo = parseInt(slideNoOrName, 10);
-    if (slideNo.toString() === slideNoOrName) {
-      return slideNo;
-    }
-
-    slide = self.getSlideByName(slideNoOrName);
-    if (slide) {
-      return slide.getSlideNo();
-    }
-
-    return 1;
-  }
-}
-
-},{}],10:[function(require,module,exports){
-exports.addClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .concat([className])
-    .join(' ');
-};
-
-exports.getClasses = function (element) {
-  return element.className
-    .split(' ')
-    .filter(function (s) { return s !== ''; });
-};
-
-each([Array, window.NodeList], function (object) {
-  var prototype = object && object.prototype;
-
-  if (!prototype) {
-    return;
-  }
-
-  prototype.each = prototype.each || function (f) {
-    each(this, f);
-  };
-
-  prototype.filter = prototype.filter || function (f) {
-    var result = [];
-
-    this.each(function (element) {
-      if (f(element, result.length)) {
-        result.push(element);
-      }
-    });
-
-    return result;
-  };
-
-  prototype.map = prototype.map || function (f) {
-    var result = [];
-
-    this.each(function (element) {
-      result.push(f(element, result.length));
-    });
-
-    return result;
-  };
-});
-
-function each (list, f) {
-  var i;
-
-  for (i = 0; i < list.length; ++i) {
-    f(list[i], i);
-  }
-}
-
-},{}],11:[function(require,module,exports){
-module.exports = Slide;
-
-function Slide (slideNo, source, properties, template) {
-  var self = this;
-
-  self.properties = properties || {};
-  self.source = extractProperties(source, self.properties);
-
-  self.getSlideNo = function () { return slideNo; };
-
-  if (template) {
-    inherit(self, template);
-  }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
-}
-
-function inherit (slide, template) {
-  inheritProperties(slide, template);
-  inheritSource(slide, template);
-}
-
-function inheritProperties (slide, template) {
-  var property
-    , value
-    ;
-
-  for (property in template.properties) {
-    if (!template.properties.hasOwnProperty(property) ||
-        ignoreProperty(property)) {
-      continue;
-    }
-
-    value = [template.properties[property]];
-
-    if (property === 'class' && slide.properties[property]) {
-      value.push(slide.properties[property]);
-    }
-
-    if (property === 'class' || slide.properties[property] === undefined) {
-      slide.properties[property] = value.join(', ');
-    }
-  }
-}
-
-function ignoreProperty (property) {
-  return property === 'name' ||
-    property === 'layout';
-}
-
-function inheritSource (slide, template) {
-  var expandedVariables;
-
-  slide.properties.content = slide.source;
-  slide.source = template.source;
-
-  expandedVariables = slide.expandVariables(/* contentOnly: */ true);
-
-  if (expandedVariables.content === undefined) {
-    slide.source += slide.properties.content;
-  }
-
-  delete slide.properties.content;
-}
-
-Slide.prototype.expandVariables = function (contentOnly) {
-  var properties = this.properties
-    , expandResult = {}
-    ;
-
-  this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
-    function (match, escaped, unescapedMatch, property) {
-      var propertyName = property.trim()
-        , propertyValue
-        ;
-
-      if (escaped) {
-        return contentOnly ? match[0] : unescapedMatch;
-      }
-
-      if (contentOnly && propertyName !== 'content') {
-        return match;
-      }
-
-      propertyValue = properties[propertyName];
-
-      if (propertyValue !== undefined) {
-        expandResult[propertyName] = propertyValue;
-        return propertyValue;
-      }
-
-      return propertyName === 'content' ? '' : unescapedMatch;
-    });
-
-  return expandResult;
-};
-
-},{}],12:[function(require,module,exports){
-var Lexer = require('./lexer'),
-    converter = require('./converter');
-
-module.exports = Parser;
-
-function Parser () { }
-
-Parser.prototype.parse = function (src) {
-  var lexer = new Lexer(),
-      tokens = lexer.lex(src),
-      slides = [],
-      slide = {
-        source: '', 
-        properties: { 
-          continued: 'false'
-        }
-      },
-      tag,
-      classes;
-
-  tokens.each(function (token) {
-    switch (token.type) {
-      case 'text':
-      case 'code':
-      case 'fences':
-        slide.source += token.text;
-        break;
-      case 'content_start':
-        tag = token.block ? 'div' : 'span';
-        classes = token.classes.join(' ');
-        slide.source += '&lt;' + tag + ' class="' + classes + '"&gt;';
-        break;
-      case 'content_end':
-        tag = token.block ? 'div' : 'span';
-        slide.source += '&lt;/' + tag + '&gt;';
-        break;
-      case 'separator':
-        slides.push(slide);
-        slide = {
-          source: '', 
-          properties: {
-            continued: (token.text === '--').toString()
-          }
-        };
-        break;
-    }
-  });
-
-  slides.push(slide);
-
-  slides.each(function (slide) {
-    slide.source = extractProperties(slide.source, slide.properties);
-  });
-
-  return slides;
-};
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
-}
-
-},{"./lexer":15,"./converter":16}],13:[function(require,module,exports){
-var converter = require('../converter')
-  , highlighter = require('../highlighter')
-  , utils = require('../utils')
-  ;
-
-module.exports = SlideView;
-
-function SlideView (events, slideshow, slide) {
-  this.events = events;
-  this.slideshow = slideshow;
-  this.slide = slide;
-
-  this.element = createSlideElement();
-  this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
-
-  this.element.appendChild(this.contentElement);
-}
-
-SlideView.prototype.show = function () {
-  this.element.style.display = 'table';
-};
-
-SlideView.prototype.hide = function () {
-  this.element.style.display = 'none';
-};
-
-SlideView.prototype.scaleBackgroundImage = function (dimensions) {
-  var self = this
-    , styles = window.getComputedStyle(this.contentElement)
-    , backgroundImage = styles.backgroundImage
-    , match
-    , image
-    ;
-
-  if ((match = /^url\(([^\)]+?)\)/.exec(backgroundImage)) !== null) {
-    image = new Image();
-    image.onload = function () {
-      if (image.width > dimensions.width || 
-          image.height > dimensions.height) {
-        // Background image is larger than slide
-        if (!self.originalBackgroundSize) {
-          // No custom background size has been set
-          self.originalBackgroundSize = self.contentElement.style.backgroundSize;
-          self.backgroundSizeSet = true;
-          self.contentElement.style.backgroundSize = 'contain';
-        }
-      }
-      else {
-        // Revert to previous background size setting
-        if (self.backgroundSizeSet) {
-          self.contentElement.style.backgroundSize = self.originalBackgroundSize;
-          self.backgroundSizeSet = false;
-        }
-      }
-    };
-    image.src = match[1];
-  }
-};
-
-function createSlideElement () {
-  var element = document.createElement('div');
-
-  element.className = 'remark-slide';
-  element.style.display = 'none';
-
-  return element;
-}
-
-function createContentElement (events, slideshow, source, properties) {
-  var element = document.createElement('div');
-
-  if (properties.name) {
-    element.id = 'slide-' + properties.name;
-  }
-
-  styleContentElement(slideshow, element, properties);
-
-  element.innerHTML = converter.convertMarkdown(source);
-  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
-
-  highlightCodeBlocks(element, slideshow);
-
-  return element;
-}
-
-function styleContentElement (slideshow, element, properties) {
-  element.className = '';
-
-  setClassFromProperties(element, properties);
-  setHighlightStyleFromProperties(element, properties, slideshow);
-  setBackgroundFromProperties(element, properties);
-}
-
-function setBackgroundFromProperties (element, properties) {
-  var backgroundImage = properties['background-image'];
-
-  if (backgroundImage) {
-    element.style.backgroundImage = backgroundImage;
-  }
-}
-
-function setHighlightStyleFromProperties (element, properties, slideshow) {
-  var highlightStyle = properties['highlight-style'] || 
-      slideshow.getHighlightStyle();
-
-  if (highlightStyle) {
-    utils.addClass(element, 'hljs-' + highlightStyle);
-  }
-}
-
-function setClassFromProperties (element, properties) {
-  utils.addClass(element, 'remark-slide-content');
-
-  (properties['class'] || '').split(/,| /)
-    .filter(function (s) { return s !== ''; })
-    .each(function (c) { utils.addClass(element, c); });
-}
-
-function highlightCodeBlocks (content, slideshow) {
-  var codeBlocks = content.getElementsByTagName('code')
-    ;
-
-  codeBlocks.each(function (block) {
-    if (block.className === '') {
-      block.className = slideshow.getHighlightLanguage();
-    }
-
-    if (block.className !== '') {
-      highlighter.engine.highlightBlock(block, '  ');
-    }
-
-    utils.addClass(block, 'remark-code');
-  });
-}
-
-},{"../converter":16,"../highlighter":3,"../utils":10}],14:[function(require,module,exports){
-var resources = require('../resources');
-
-module.exports = OverlayView;
-
-function OverlayView (events) {
-  var self = this;
-
-  self.element = document.createElement('div');
-
-  self.element.className = 'remark-overlay';
-  self.element.innerHTML = resources.overlay;
-
-  events.on('hideOverlay', function () {
-    self.hide();
-  });
-
-  events.on('toggleHelp', function () {
-    self.show();
-  });
-}
-
-OverlayView.prototype.show = function () {
-  this.element.style.display = 'block';
-};
-
-OverlayView.prototype.hide = function () {
-  this.element.style.display = 'none';
-};
-
-},{"../resources":4}],17:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -3333,7 +2259,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -3519,7 +2445,1083 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":17}],15:[function(require,module,exports){
+},{"__browserify_process":5}],2:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , highlighter = require('./highlighter')
+  , Slideshow = require('./models/slideshow')
+  , SlideshowView = require('./views/slideshowView')
+  , Controller = require('./controller')
+  ;
+
+// Expose highlighter to allow enumerating available styles and
+// including external language grammars
+module.exports.highlighter = highlighter;
+
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
+  var events
+    , slideshow
+    , slideshowView
+    , controller
+    ;
+
+  options = applyDefaults(options);
+
+  events = new EventEmitter();
+  events.setMaxListeners(0);
+
+  slideshow = new Slideshow(events, options);
+  slideshowView = new SlideshowView(events, options.container, slideshow);
+  controller = new Controller(events, slideshowView);
+
+  return slideshow;
+};
+
+function applyDefaults (options) {
+  var sourceElement;
+
+  options = options || {};
+
+  if (!options.hasOwnProperty('source')) {
+    sourceElement = document.getElementById('source');
+    if (sourceElement) {
+      options.source = sourceElement.innerHTML;
+      sourceElement.style.display = 'none';
+    }
+  }
+
+  if (!(options.container instanceof window.HTMLElement)) {
+    options.container = document.body;
+  }
+
+  return options;
+}
+
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
+module.exports = Controller;
+
+function Controller (events, slideshowView) {
+  addNavigationEventListeners(events, slideshowView);
+  addKeyboardEventListeners(events);
+  addMouseEventListeners(events);
+  addTouchEventListeners(events);
+}
+
+function addNavigationEventListeners (events, slideshowView) {
+  if (slideshowView.isEmbedded()) {
+    events.emit('gotoSlide', 1);
+  }
+  else {
+    events.on('hashchange', navigateByHash);
+    events.on('slideChanged', updateHash);
+
+    navigateByHash();
+  }
+
+  function navigateByHash () {
+    var slideNoOrName = (window.location.hash || '').substr(1);
+    events.emit('gotoSlide', slideNoOrName);
+  }
+
+  function updateHash (slideNoOrName) {
+    window.location.hash = '#' + slideNoOrName;
+  }
+}
+
+function addKeyboardEventListeners (events) {
+  events.on('keydown', function (event) {
+    switch (event.keyCode) {
+      case 33: // Page up
+      case 37: // Left
+      case 38: // Up
+        events.emit('gotoPreviousSlide');
+        break;
+      case 32: // Space
+      case 34: // Page down
+      case 39: // Right
+      case 40: // Down
+        events.emit('gotoNextSlide');
+        break;
+      case 36: // Home
+        events.emit('gotoFirstSlide');
+        break;
+      case 35: // End
+        events.emit('gotoLastSlide');
+        break;
+      case 27: // Escape
+        events.emit('hideOverlay');
+        break;
+    }
+  });
+
+  events.on('keypress', function (event) {
+    switch (String.fromCharCode(event.which)) {
+      case 'j':
+        events.emit('gotoNextSlide');
+        break;
+      case 'k':
+        events.emit('gotoPreviousSlide');
+        break;
+      case '?':
+        events.emit('toggleHelp');
+        break;
+    }
+  });
+}
+
+function addMouseEventListeners (events) {
+  events.on('mousewheel', function (event) {
+    if (event.wheelDeltaY > 0) {
+      events.emit('gotoPreviousSlide');
+    }
+    else if (event.wheelDeltaY < 0) {
+      events.emit('gotoNextSlide');
+    }
+  });
+}
+
+function addTouchEventListeners (events) {
+  var touch
+    , startX
+    , endX
+    ;
+
+  var isTap = function () {
+    return Math.abs(startX - endX) < 10;
+  };
+
+  var handleTap = function () {
+    events.emit('tap', endX);
+  };
+
+  var handleSwipe = function () {
+    if (startX > endX) {
+      events.emit('gotoNextSlide');
+    }
+    else {
+      events.emit('gotoPreviousSlide');
+    }
+  };
+
+  events.on('touchstart', function (event) {
+    touch = event.touches[0];
+    startX = touch.clientX;
+  });
+
+  events.on('touchend', function (event) {
+    if (event.target.nodeName.toUpperCase() === 'A') {
+      return;
+    }
+
+    touch = event.changedTouches[0];
+    endX = touch.clientX;
+
+    if (isTap()) {
+      handleTap();
+    }
+    else {
+      handleSwipe();
+    }
+  });
+
+  events.on('touchmove', function (event) {
+    event.preventDefault();
+  });
+}
+
+},{}],7:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , Navigation = require('./slideshow/navigation')
+  , utils = require('../utils')
+  , Slide = require('./slide')
+  , Parser = require('../parser')
+  ;
+
+module.exports = Slideshow;
+
+Slideshow.prototype = new EventEmitter();
+Slideshow.prototype.setMaxListeners(0);
+
+function Slideshow (events, options) {
+  var self = this
+    , slides = []
+    ;
+
+  options = options || {};
+
+  // Extend slideshow functionality
+  Navigation.call(self, events);
+
+  self.loadFromString = loadFromString;
+  self.getSlides = getSlides;
+  self.getSlideCount = getSlideCount;
+  self.getSlideByName = getSlideByName;
+
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
+
+  loadFromString(options.source);
+
+  function loadFromString (source) {
+    source = source || '';
+
+    slides = createSlides(source);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  }
+
+  function getSlides () {
+    return slides.map(function (slide) { return slide; });
+  }
+
+  function getSlideCount () {
+    return slides.length;
+  }
+
+  function getSlideByName (name) {
+    return slides.byName[name];
+  }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
+  }
+}
+
+function createSlides (slideshowSource) {
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
+    , byName = {}
+    , layoutSlide
+    ;
+
+  slides.byName = {};
+
+  parsedSlides.forEach(function (slide, i) {
+    var template, slideViewModel;
+    
+    if (slide.properties.continued === 'true' && i > 0) {
+      template = slides[slides.length - 1];
+    }
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
+    }
+    else if (slide.properties.layout === 'false') {
+      layoutSlide = undefined;
+    }
+    else if (layoutSlide && slide.properties.layout !== 'true') {
+      template = layoutSlide;
+    }
+
+    slideViewModel = new Slide(i + 1, slide.source, slide.properties, template);
+
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
+    }
+
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
+    }
+
+    if (slide.properties.layout !== 'true') {
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
+      }
+    }
+  });
+
+  return slides;
+}
+
+function expandVariables (slides) {
+  slides.forEach(function (slide) {
+    slide.expandVariables();
+  });
+}
+
+},{"events":6,"./slideshow/navigation":10,"../utils":11,"./slide":12,"../parser":13}],8:[function(require,module,exports){
+var SlideView = require('./slideView')
+  , OverlayView = require('./overlayView')
+  , addClass = require('../utils').addClass
+
+  , referenceWidth = 908
+  , referenceHeight = 681
+  , referenceRatio = referenceWidth / referenceHeight
+  ;
+
+module.exports = SlideshowView;
+
+function SlideshowView (events, containerElement, slideshow) {
+  var self = this;
+
+  self.events = events;
+  self.slideshow = slideshow;
+  self.dimensions = {};
+
+  self.configureContainerElement(containerElement);
+  self.configureSlideshowElement();
+  self.configurePositionElement();
+  self.configureOverlayView();
+
+  self.updateSlideViews();
+
+  events.on('slidesChanged', function () {
+    self.updateSlideViews();
+  });
+
+  events.on('hideSlide', function (slideIndex) {
+    self.hideSlide(slideIndex);
+  });
+
+  events.on('showSlide', function (slideIndex) {
+    self.showSlide(slideIndex);
+  });
+}
+
+SlideshowView.prototype.isEmbedded = function () {
+  return this.containerElement !== document.body;
+};
+
+SlideshowView.prototype.configureContainerElement = function (element) {
+  var self = this;
+
+  self.containerElement = element;
+
+  addClass(element, 'remark-container');
+
+  if (element === document.body) {
+    addClass(document.getElementsByTagName('html')[0], 'remark-container');
+
+    forwardEvents(self.events, window, [
+      'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel'
+    ]);
+    forwardEvents(self.events, document, [
+      'touchstart', 'touchmove', 'touchend'
+    ]);
+  }
+  else {
+    element.style.position = 'absolute';
+    element.tabIndex = -1;
+
+    forwardEvents(self.events, element, [
+      'keydown', 'keypress', 'mousewheel',
+      'touchstart', 'touchmove', 'touchend'
+    ]);
+  }
+
+  // Tap event is handled in slideshow view
+  // rather than controller as knowledge of
+  // container width is needed to determine
+  // whether to move backwards or forwards
+  self.events.on('tap', function (endX) {
+    if (endX < self.getContainerWidth() / 2) {
+      self.slideshow.gotoPreviousSlide();
+    }
+    else {
+      self.slideshow.gotoNextSlide();
+    }
+  });
+};
+
+function forwardEvents (target, source, events) {
+  events.forEach(function (eventName) {
+    source.addEventListener(eventName, function () {
+      var args = Array.prototype.slice.call(arguments);
+      target.emit.apply(target, [eventName].concat(args));
+    });
+  });
+}
+
+SlideshowView.prototype.configureSlideshowElement = function () {
+  var self = this;
+
+  self.element = document.createElement('div');
+  self.element.className = 'remark-slideshow';
+
+  self.containerElement.appendChild(self.element);
+
+  self.updateDimensions();
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.updateDimensions();
+    }
+  });
+
+  self.events.on('resize', onResize);
+
+  function onResize () {
+    self.scaleToFitContainer();
+  }
+};
+
+SlideshowView.prototype.configurePositionElement = function () {
+  var self = this;
+
+  self.positionElement = document.createElement('div');
+  self.positionElement.className = 'remark-position';
+  self.element.appendChild(self.positionElement);
+};
+
+SlideshowView.prototype.configureOverlayView = function () {
+  var self = this;
+
+  self.overlayView = new OverlayView(self.events);
+  self.element.appendChild(self.overlayView.element);
+};
+
+SlideshowView.prototype.updateSlideViews = function () {
+  var self = this;
+
+  if (self.slideViews) {
+    self.slideViews.forEach(function (slideView) {
+      self.element.removeChild(slideView.element);
+    });
+  }
+
+  self.slideViews = self.slideshow.getSlides().map(function (slide) {
+    return new SlideView(self.events, self.slideshow, slide);
+  });
+
+  self.slideViews.forEach(function (slideView) {
+    self.element.appendChild(slideView.element);
+  });
+
+  self.scaleSlideBackgroundImages();
+
+  if (self.slideshow.getCurrentSlideNo() > 0) {
+    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
+  }
+};
+
+SlideshowView.prototype.scaleSlideBackgroundImages = function () {
+  var self = this;
+
+  if (self.slideViews) {
+    self.slideViews.forEach(function (slideView) {
+      slideView.scaleBackgroundImage(self.dimensions);
+    });
+  }
+};
+
+SlideshowView.prototype.showSlide =  function (slideIndex) {
+  var self = this
+    , slideView = self.slideViews[slideIndex];
+
+  self.slideshow.emit('slidein', slideView.element, slideIndex);
+  slideView.show();
+  self.positionElement.innerHTML =
+    slideIndex + 1 + ' / ' + self.slideViews.length;
+};
+
+SlideshowView.prototype.hideSlide = function (slideIndex) {
+  var self = this
+    , slideView = self.slideViews[slideIndex];
+
+  self.slideshow.emit('slideout', slideView.element, slideIndex);
+  slideView.hide();
+};
+
+SlideshowView.prototype.updateDimensions = function () {
+  var self = this
+    , ratio = getRatio(self.slideshow)
+    , dimensions = getDimensions(ratio)
+    ;
+
+  this.ratio = ratio;
+  this.dimensions.width = dimensions.width;
+  this.dimensions.height = dimensions.height;
+
+  this.element.style.width = this.dimensions.width + 'px';
+  this.element.style.height = this.dimensions.height + 'px';
+
+  this.scaleSlideBackgroundImages();
+  this.scaleToFitContainer();
+};
+
+SlideshowView.prototype.scaleToFitContainer = function () {
+  var self = this
+    , containerHeight = this.getContainerHeight()
+    , containerWidth = this.getContainerWidth()
+    , scale
+    , scaledWidth
+    , scaledHeight
+    , ratio = this.ratio
+    , dimensions = this.dimensions
+    ;
+
+  if (containerWidth / ratio.width > containerHeight / ratio.height) {
+    scale = containerHeight / dimensions.height;
+  }
+  else {
+    scale = containerWidth / dimensions.width;
+  }
+
+  scaledWidth = dimensions.width * scale;
+  scaledHeight = dimensions.height * scale;
+
+  this.element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  this.element.style.MozTransform = 'scale(' + scale + ')';
+  this.element.style.left = (containerWidth - scaledWidth) / 2 + 'px';
+  this.element.style.top = (containerHeight - scaledHeight) / 2 + 'px';
+};
+
+SlideshowView.prototype.getContainerHeight = function () {
+  var self = this;
+
+  if (self.containerElement === document.body) {
+    return window.innerHeight;
+  }
+  else {
+    return self.containerElement.clientHeight;
+  }
+};
+
+SlideshowView.prototype.getContainerWidth = function () {
+  var self = this;
+
+  if (self.containerElement === document.body) {
+    return window.innerWidth;
+  }
+  else {
+    return self.containerElement.clientWidth;
+  }
+};
+
+function getRatio (slideshow) {
+  var ratioComponents = slideshow.getRatio().split(':')
+    , ratio
+    ;
+
+  ratio = {
+    width: parseInt(ratioComponents[0], 10)
+  , height: parseInt(ratioComponents[1], 10)
+  };
+
+  ratio.ratio = ratio.width / ratio.height;
+
+  return ratio;
+}
+
+function getDimensions (ratio) {
+  return {
+    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
+  , height: referenceHeight
+  };
+}
+
+},{"./slideView":14,"./overlayView":15,"../utils":11}],10:[function(require,module,exports){
+module.exports = Navigation;
+
+function Navigation (events) {
+  var self = this
+    , currentSlideNo = 0
+    ;
+
+  self.getCurrentSlideNo = getCurrentSlideNo;
+  self.gotoSlide = gotoSlide;
+  self.gotoPreviousSlide = gotoPreviousSlide;
+  self.gotoNextSlide = gotoNextSlide;
+  self.gotoFirstSlide = gotoFirstSlide;
+  self.gotoLastSlide = gotoLastSlide;
+
+  events.on('gotoSlide', gotoSlide);
+  events.on('gotoPreviousSlide', gotoPreviousSlide);
+  events.on('gotoNextSlide', gotoNextSlide);
+  events.on('gotoFirstSlide', gotoFirstSlide);
+  events.on('gotoLastSlide', gotoLastSlide);
+
+  events.on('slidesChanged', function () {
+    if (currentSlideNo > self.getSlideCount()) {
+      currentSlideNo = self.getSlideCount();
+    }
+  });
+
+  function getCurrentSlideNo () {
+    return currentSlideNo;
+  }
+
+  function gotoSlide (slideNoOrName) {
+    var slideNo = getSlideNo(slideNoOrName)
+      , alreadyOnSlide = slideNo === currentSlideNo
+      , slideOutOfRange = slideNo < 1 || slideNo > self.getSlideCount()
+      ;
+
+    if (alreadyOnSlide || slideOutOfRange) {
+      return;
+    }
+
+    if (currentSlideNo !== 0) {
+      events.emit('hideSlide', currentSlideNo - 1);
+    }
+
+    events.emit('showSlide', slideNo - 1);
+
+    currentSlideNo = slideNo;
+
+    events.emit('slideChanged', slideNoOrName || slideNo);
+  }
+
+  function gotoPreviousSlide() {
+    self.gotoSlide(currentSlideNo - 1);
+  }
+  
+  function gotoNextSlide() {
+    self.gotoSlide(currentSlideNo + 1);
+  }
+  
+  function gotoFirstSlide () {
+    self.gotoSlide(1);
+  }
+  
+  function gotoLastSlide () {
+    self.gotoSlide(self.getSlideCount());
+  }
+
+  function getSlideNo (slideNoOrName) {
+    var slideNo
+      , slide
+      ;
+
+    if (typeof slideNoOrName === 'number') {
+      return slideNoOrName;
+    }
+
+    slideNo = parseInt(slideNoOrName, 10);
+    if (slideNo.toString() === slideNoOrName) {
+      return slideNo;
+    }
+
+    slide = self.getSlideByName(slideNoOrName);
+    if (slide) {
+      return slide.getSlideNo();
+    }
+
+    return 1;
+  }
+}
+
+},{}],11:[function(require,module,exports){
+exports.addClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .concat([className])
+    .join(' ');
+};
+
+exports.getClasses = function (element) {
+  return element.className
+    .split(' ')
+    .filter(function (s) { return s !== ''; });
+};
+
+forEach([Array, window.NodeList, window.HTMLCollection], extend);
+
+function extend (object) {
+  var prototype = object && object.prototype;
+
+  if (!prototype) {
+    return;
+  }
+
+  prototype.forEach = prototype.forEach || function (f) {
+    forEach(this, f);
+  };
+
+  prototype.filter = prototype.filter || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      if (f(element, result.length)) {
+        result.push(element);
+      }
+    });
+
+    return result;
+  };
+
+  prototype.map = prototype.map || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      result.push(f(element, result.length));
+    });
+
+    return result;
+  };
+}
+
+function forEach (list, f) {
+  var i;
+
+  for (i = 0; i < list.length; ++i) {
+    f(list[i], i);
+  }
+}
+
+},{}],12:[function(require,module,exports){
+module.exports = Slide;
+
+function Slide (slideNo, source, properties, template) {
+  var self = this;
+
+  self.properties = properties || {};
+  self.source = extractProperties(source, self.properties);
+
+  self.getSlideNo = function () { return slideNo; };
+
+  if (template) {
+    inherit(self, template);
+  }
+}
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}
+
+function inherit (slide, template) {
+  inheritProperties(slide, template);
+  inheritSource(slide, template);
+}
+
+function inheritProperties (slide, template) {
+  var property
+    , value
+    ;
+
+  for (property in template.properties) {
+    if (!template.properties.hasOwnProperty(property) ||
+        ignoreProperty(property)) {
+      continue;
+    }
+
+    value = [template.properties[property]];
+
+    if (property === 'class' && slide.properties[property]) {
+      value.push(slide.properties[property]);
+    }
+
+    if (property === 'class' || slide.properties[property] === undefined) {
+      slide.properties[property] = value.join(', ');
+    }
+  }
+}
+
+function ignoreProperty (property) {
+  return property === 'name' ||
+    property === 'layout';
+}
+
+function inheritSource (slide, template) {
+  var expandedVariables;
+
+  slide.properties.content = slide.source;
+  slide.source = template.source;
+
+  expandedVariables = slide.expandVariables(/* contentOnly: */ true);
+
+  if (expandedVariables.content === undefined) {
+    slide.source += slide.properties.content;
+  }
+
+  delete slide.properties.content;
+}
+
+Slide.prototype.expandVariables = function (contentOnly) {
+  var properties = this.properties
+    , expandResult = {}
+    ;
+
+  this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
+    function (match, escaped, unescapedMatch, property) {
+      var propertyName = property.trim()
+        , propertyValue
+        ;
+
+      if (escaped) {
+        return contentOnly ? match[0] : unescapedMatch;
+      }
+
+      if (contentOnly && propertyName !== 'content') {
+        return match;
+      }
+
+      propertyValue = properties[propertyName];
+
+      if (propertyValue !== undefined) {
+        expandResult[propertyName] = propertyValue;
+        return propertyValue;
+      }
+
+      return propertyName === 'content' ? '' : unescapedMatch;
+    });
+
+  return expandResult;
+};
+
+},{}],13:[function(require,module,exports){
+var Lexer = require('./lexer'),
+    converter = require('./converter');
+
+module.exports = Parser;
+
+function Parser () { }
+
+Parser.prototype.parse = function (src) {
+  var lexer = new Lexer(),
+      tokens = lexer.lex(src),
+      slides = [],
+      slide = {
+        source: '', 
+        properties: { 
+          continued: 'false'
+        }
+      },
+      tag,
+      classes;
+
+  tokens.forEach(function (token) {
+    switch (token.type) {
+      case 'text':
+      case 'code':
+      case 'fences':
+        slide.source += token.text;
+        break;
+      case 'content_start':
+        tag = token.block ? 'div' : 'span';
+        classes = token.classes.join(' ');
+        slide.source += '&lt;' + tag + ' class="' + classes + '"&gt;';
+        break;
+      case 'content_end':
+        tag = token.block ? 'div' : 'span';
+        slide.source += '&lt;/' + tag + '&gt;';
+        break;
+      case 'separator':
+        slides.push(slide);
+        slide = {
+          source: '', 
+          properties: {
+            continued: (token.text === '--').toString()
+          }
+        };
+        break;
+    }
+  });
+
+  slides.push(slide);
+
+  slides.forEach(function (slide) {
+    slide.source = extractProperties(slide.source, slide.properties);
+  });
+
+  return slides;
+};
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}
+
+},{"./lexer":16,"./converter":17}],14:[function(require,module,exports){
+var converter = require('../converter')
+  , highlighter = require('../highlighter')
+  , utils = require('../utils')
+  ;
+
+module.exports = SlideView;
+
+function SlideView (events, slideshow, slide) {
+  this.events = events;
+  this.slideshow = slideshow;
+  this.slide = slide;
+
+  this.element = createSlideElement();
+  this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
+
+  this.element.appendChild(this.contentElement);
+}
+
+SlideView.prototype.show = function () {
+  this.element.style.display = 'table';
+};
+
+SlideView.prototype.hide = function () {
+  this.element.style.display = 'none';
+};
+
+SlideView.prototype.scaleBackgroundImage = function (dimensions) {
+  var self = this
+    , styles = window.getComputedStyle(this.contentElement)
+    , backgroundImage = styles.backgroundImage
+    , match
+    , image
+    ;
+
+  if ((match = /^url\(([^\)]+?)\)/.exec(backgroundImage)) !== null) {
+    image = new Image();
+    image.onload = function () {
+      if (image.width > dimensions.width || 
+          image.height > dimensions.height) {
+        // Background image is larger than slide
+        if (!self.originalBackgroundSize) {
+          // No custom background size has been set
+          self.originalBackgroundSize = self.contentElement.style.backgroundSize;
+          self.backgroundSizeSet = true;
+          self.contentElement.style.backgroundSize = 'contain';
+        }
+      }
+      else {
+        // Revert to previous background size setting
+        if (self.backgroundSizeSet) {
+          self.contentElement.style.backgroundSize = self.originalBackgroundSize;
+          self.backgroundSizeSet = false;
+        }
+      }
+    };
+    image.src = match[1];
+  }
+};
+
+function createSlideElement () {
+  var element = document.createElement('div');
+
+  element.className = 'remark-slide';
+  element.style.display = 'none';
+
+  return element;
+}
+
+function createContentElement (events, slideshow, source, properties) {
+  var element = document.createElement('div');
+
+  if (properties.name) {
+    element.id = 'slide-' + properties.name;
+  }
+
+  styleContentElement(slideshow, element, properties);
+
+  element.innerHTML = converter.convertMarkdown(source);
+  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
+
+  highlightCodeBlocks(element, slideshow);
+
+  return element;
+}
+
+function styleContentElement (slideshow, element, properties) {
+  element.className = '';
+
+  setClassFromProperties(element, properties);
+  setHighlightStyleFromProperties(element, properties, slideshow);
+  setBackgroundFromProperties(element, properties);
+}
+
+function setBackgroundFromProperties (element, properties) {
+  var backgroundImage = properties['background-image'];
+
+  if (backgroundImage) {
+    element.style.backgroundImage = backgroundImage;
+  }
+}
+
+function setHighlightStyleFromProperties (element, properties, slideshow) {
+  var highlightStyle = properties['highlight-style'] || 
+      slideshow.getHighlightStyle();
+
+  if (highlightStyle) {
+    utils.addClass(element, 'hljs-' + highlightStyle);
+  }
+}
+
+function setClassFromProperties (element, properties) {
+  utils.addClass(element, 'remark-slide-content');
+
+  (properties['class'] || '').split(/,| /)
+    .filter(function (s) { return s !== ''; })
+    .forEach(function (c) { utils.addClass(element, c); });
+}
+
+function highlightCodeBlocks (content, slideshow) {
+  var codeBlocks = content.getElementsByTagName('code')
+    ;
+
+  codeBlocks.forEach(function (block) {
+    if (block.className === '') {
+      block.className = slideshow.getHighlightLanguage();
+    }
+
+    if (block.className !== '') {
+      highlighter.engine.highlightBlock(block, '  ');
+    }
+
+    utils.addClass(block, 'remark-code');
+  });
+}
+
+},{"../converter":17,"../highlighter":3,"../utils":11}],15:[function(require,module,exports){
+var resources = require('../resources');
+
+module.exports = OverlayView;
+
+function OverlayView (events) {
+  var self = this;
+
+  self.element = document.createElement('div');
+
+  self.element.className = 'remark-overlay';
+  self.element.innerHTML = resources.overlay;
+
+  events.on('hideOverlay', function () {
+    self.hide();
+  });
+
+  events.on('toggleHelp', function () {
+    self.show();
+  });
+}
+
+OverlayView.prototype.show = function () {
+  this.element.style.display = 'block';
+};
+
+OverlayView.prototype.hide = function () {
+  this.element.style.display = 'none';
+};
+
+},{"../resources":4}],16:[function(require,module,exports){
 module.exports = Lexer;
 
 var CODE = 1, 
@@ -3642,7 +3644,7 @@ function getTextInBrackets (src, offset) {
   }
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var marked = require('marked')
   , converter = module.exports = {}
   ;

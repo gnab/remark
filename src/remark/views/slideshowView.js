@@ -82,7 +82,7 @@ SlideshowView.prototype.configureContainerElement = function (element) {
 };
 
 function forwardEvents (target, source, events) {
-  events.each(function (eventName) {
+  events.forEach(function (eventName) {
     source.addEventListener(eventName, function () {
       var args = Array.prototype.slice.call(arguments);
       target.emit.apply(target, [eventName].concat(args));
@@ -132,7 +132,7 @@ SlideshowView.prototype.updateSlideViews = function () {
   var self = this;
 
   if (self.slideViews) {
-    self.slideViews.each(function (slideView) {
+    self.slideViews.forEach(function (slideView) {
       self.element.removeChild(slideView.element);
     });
   }
@@ -141,7 +141,7 @@ SlideshowView.prototype.updateSlideViews = function () {
     return new SlideView(self.events, self.slideshow, slide);
   });
 
-  self.slideViews.each(function (slideView) {
+  self.slideViews.forEach(function (slideView) {
     self.element.appendChild(slideView.element);
   });
 
@@ -156,7 +156,7 @@ SlideshowView.prototype.scaleSlideBackgroundImages = function () {
   var self = this;
 
   if (self.slideViews) {
-    self.slideViews.each(function (slideView) {
+    self.slideViews.forEach(function (slideView) {
       slideView.scaleBackgroundImage(self.dimensions);
     });
   }
