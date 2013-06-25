@@ -1,33 +1,16 @@
 module.exports = Slide;
 
-function Slide (slideNo, source, properties, template) {
+function Slide (slideNo, slide, template) {
   var self = this;
 
-  self.properties = properties || {};
-  self.source = extractProperties(source, self.properties);
+  self.properties = slide.properties || {};
+  self.source = slide.source;
 
   self.getSlideNo = function () { return slideNo; };
 
   if (template) {
     inherit(self, template);
   }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
 }
 
 function inherit (slide, template) {

@@ -11,7 +11,10 @@ describe('SlideView', function () {
 
   describe('background', function () {
     it('should be set from background slide property', function () {
-      var slide = new Slide(1, 'background-image: image.jpg')
+      var slide = new Slide(1, {
+            source: '',
+            properties: {'background-image': 'image.jpg'}
+          })
         , slideView = new SlideView(new EventEmitter(), slideshow, slide)
         ;
 
@@ -21,7 +24,7 @@ describe('SlideView', function () {
 
   describe('classes', function () {
     it('should contain "content" class by default', function () {
-      var slide = new Slide(1, '')
+      var slide = new Slide(1, {source: ''})
         , slideView = new SlideView(new EventEmitter(), slideshow, slide)
         , classes = utils.getClasses(slideView.contentElement)
         ;
@@ -30,7 +33,10 @@ describe('SlideView', function () {
     });
 
     it('should contain additional classes from slide properties', function () {
-      var slide = new Slide(1, 'class: middle, center')
+      var slide = new Slide(1, {
+            source: '',
+            properties: {'class': 'middle, center'}
+          })
         , slideView = new SlideView(new EventEmitter(), slideshow, slide)
         , classes = utils.getClasses(slideView.contentElement)
         ;
@@ -43,7 +49,7 @@ describe('SlideView', function () {
 
   describe('empty paragraph removal', function () {
     it('should have empty paragraphs removed', function () {
-      var slide = new Slide(1, '&lt;p&gt; &lt;/p&gt;')
+      var slide = new Slide(1, {source: '&lt;p&gt; &lt;/p&gt;'})
         , slideView = new SlideView(new EventEmitter(), slideshow, slide);
 
       slideView.contentElement.innerHTML.should.equal('\n');

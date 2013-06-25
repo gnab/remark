@@ -135,6 +135,11 @@ describe('Parser', function () {
       slides[0].properties['class'].should.equal('b');
     });
 
+    it('should allow properties with no value', function () {
+      var slides = parser.parse('a:   \n\nContent.');
+      slides[0].properties.should.have.property('a', '');
+    });
+
     it('should extract properties from source', function () {
       parser.parse('name: a\nclass:b\n1')[0].source.should.equal('\n1');
     });

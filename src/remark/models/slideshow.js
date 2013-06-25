@@ -89,7 +89,7 @@ function createSlides (slideshowSource) {
       template = layoutSlide;
     }
 
-    slideViewModel = new Slide(i + 1, slide.source, slide.properties, template);
+    slideViewModel = new Slide(i + 1, slide, template);
 
     if (slide.properties.layout === 'true') {
       layoutSlide = slideViewModel;
