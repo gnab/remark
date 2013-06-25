@@ -27,6 +27,12 @@ describe('Lexer', function () {
       ]);
     });
 
+    it('should recognize notes separator', function () {
+      lexer.lex('\n???\n').should.eql([
+        {type: 'notes', text: '???'}
+      ]);
+    });
+
     it('should recognize code', function () {
       lexer.lex('    code').should.eql([
         {type: 'code', text: '    code'}

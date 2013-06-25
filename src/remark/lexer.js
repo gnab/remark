@@ -3,16 +3,18 @@ module.exports = Lexer;
 var CODE = 1, 
     CONTENT = 2, 
     FENCES = 3, 
-    SEPARATOR = 4;
+    SEPARATOR = 4,
+    NOTES_SEPARATOR = 5;
 
 var regexByName = {
     CODE: /(?:^|\n)( {4}[^\n]+\n*)+/, 
     CONTENT: /(?:\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/, 
     FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/, 
-    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/
+    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
+    NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
   };
 
-var block = replace(/CODE|CONTENT|FENCES|SEPARATOR/, regexByName), 
+var block = replace(/CODE|CONTENT|FENCES|SEPARATOR|NOTES_SEPARATOR/, regexByName), 
     inline = replace(/CODE|CONTENT|FENCES/, regexByName);
 
 function Lexer () { }
@@ -60,6 +62,12 @@ function lex (src, regex, tokens) {
       tokens.push({
         type: 'separator',
         text: cap[SEPARATOR]
+      });
+    }
+    else if (cap[NOTES_SEPARATOR]) {
+      tokens.push({
+        type: 'notes',
+        text: cap[NOTES_SEPARATOR]
       });
     }
     else if (cap[CONTENT]) {
