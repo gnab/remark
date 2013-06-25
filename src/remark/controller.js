@@ -62,6 +62,9 @@ function addKeyboardEventListeners (events) {
       case 'k':
         events.emit('gotoPreviousSlide');
         break;
+      case 'n':
+        events.emit('toggleNotes');
+        break;
       case '?':
         events.emit('toggleHelp');
         break;

@@ -2201,7 +2201,7 @@ module.exports = {
 /* Automatically generated */
 
 module.exports = {
-  documentStyles: ".remark-container{background:#d7d8d2;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-overlay .remark-overlay-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-overlay .remark-overlay-content td{color:white;font-size:12pt;padding:10px;}.remark-overlay .remark-overlay-content td:first-child{padding-left:0;}.remark-overlay .remark-overlay-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-overlay .dismiss{top:85%;}.remark-position{bottom:12px;opacity:0.5;position:absolute;right:20px;}",
+  documentStyles: ".remark-container{background:#d7d8d2;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-overlay .remark-overlay-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-overlay .remark-overlay-content td{color:white;font-size:12pt;padding:10px;}.remark-overlay .remark-overlay-content td:first-child{padding-left:0;}.remark-overlay .remark-overlay-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-overlay .dismiss{top:85%;}.remark-position{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-notes{background:#e7e8e2;overflow:hidden;position:absolute;display:none;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-notes-content{display:table-cell;padding:1em 4em 1em 4em;}",
   overlay: "<div class=\"remark-overlay-content\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\"><b>&uarr;</b></span>,\n        <span class=\"key\"><b>&larr;</b></span>,\n        <span class=\"key\">Pg Up</span>,\n        <span class=\"key\">K</span>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\"><b>&darr;</b></span>,\n        <span class=\"key\"><b>&rarr;</b></span>,\n        <span class=\"key\">Pg Dn</span>,\n        <span class=\"key\">Space</span>,\n        <span class=\"key\">J</span>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">Home</span>\n      </td>\n      <td>Go to first slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">End</span>\n      </td>\n      <td>Go to last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">?</span>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\">Esc</span>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
 };
 
@@ -2562,6 +2562,9 @@ function addKeyboardEventListeners (events) {
       case 'k':
         events.emit('gotoPreviousSlide');
         break;
+      case 'n':
+        events.emit('toggleNotes');
+        break;
       case '?':
         events.emit('toggleHelp');
         break;
@@ -2721,7 +2724,7 @@ function createSlides (slideshowSource) {
       template = layoutSlide;
     }
 
-    slideViewModel = new Slide(i + 1, slide.source, slide.properties, template);
+    slideViewModel = new Slide(i + 1, slide, template);
 
     if (slide.properties.layout === 'true') {
       layoutSlide = slideViewModel;
@@ -2748,7 +2751,7 @@ function expandVariables (slides) {
   });
 }
 
-},{"events":6,"./slideshow/navigation":10,"../utils":11,"./slide":12,"../parser":13}],8:[function(require,module,exports){
+},{"events":6,"./slideshow/navigation":10,"./slide":11,"../parser":12,"../utils":13}],8:[function(require,module,exports){
 var SlideView = require('./slideView')
   , OverlayView = require('./overlayView')
   , addClass = require('../utils').addClass
@@ -2768,6 +2771,7 @@ function SlideshowView (events, containerElement, slideshow) {
   self.dimensions = {};
 
   self.configureContainerElement(containerElement);
+  self.configureNotesElement();
   self.configureSlideshowElement();
   self.configurePositionElement();
   self.configureOverlayView();
@@ -2784,6 +2788,17 @@ function SlideshowView (events, containerElement, slideshow) {
 
   events.on('showSlide', function (slideIndex) {
     self.showSlide(slideIndex);
+  });
+
+  events.on('toggleNotes', function () {
+    self.notesVisible = !!!self.notesVisible;
+    if (self.notesVisible) {
+      self.notesElement.style.display = 'table';
+    }
+    else {
+      self.notesElement.style.display = 'none';
+    }
+    self.updateDimensions();
   });
 }
 
@@ -2879,6 +2894,14 @@ SlideshowView.prototype.configureOverlayView = function () {
   self.element.appendChild(self.overlayView.element);
 };
 
+SlideshowView.prototype.configureNotesElement = function () {
+  var self = this;
+
+  self.notesElement = document.createElement('div');
+  self.notesElement.className = 'remark-notes';
+  self.containerElement.appendChild(self.notesElement);
+};
+
 SlideshowView.prototype.updateSlideViews = function () {
   var self = this;
 
@@ -2921,6 +2944,7 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
   slideView.show();
   self.positionElement.innerHTML =
     slideIndex + 1 + ' / ' + self.slideViews.length;
+  self.notesElement.innerHTML = slideView.notesMarkup;
 };
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
@@ -2944,6 +2968,11 @@ SlideshowView.prototype.updateDimensions = function () {
   this.element.style.width = this.dimensions.width + 'px';
   this.element.style.height = this.dimensions.height + 'px';
 
+  if (this.notesVisible) {
+    this.notesElement.style.width = this.element.style.width;
+    this.notesElement.style.height = this.element.style.height;
+  }
+
   this.scaleSlideBackgroundImages();
   this.scaleToFitContainer();
 };
@@ -2957,7 +2986,21 @@ SlideshowView.prototype.scaleToFitContainer = function () {
     , scaledHeight
     , ratio = this.ratio
     , dimensions = this.dimensions
+    , direction
+    , left
+    , top
     ;
+
+  if (self.notesVisible) {
+    if (containerWidth / ratio.width > containerHeight / ratio.height) {
+      containerWidth /= 2;
+      direction = 'horizontal';
+    }
+    else {
+      containerHeight /= 2;
+      direction = 'vertical';
+    }
+  }
 
   if (containerWidth / ratio.width > containerHeight / ratio.height) {
     scale = containerHeight / dimensions.height;
@@ -2969,10 +3012,27 @@ SlideshowView.prototype.scaleToFitContainer = function () {
   scaledWidth = dimensions.width * scale;
   scaledHeight = dimensions.height * scale;
 
+  left = (containerWidth - scaledWidth) / 2;
+  top = (containerHeight - scaledHeight) / 2;
+
   this.element.style['-webkit-transform'] = 'scale(' + scale + ')';
   this.element.style.MozTransform = 'scale(' + scale + ')';
-  this.element.style.left = (containerWidth - scaledWidth) / 2 + 'px';
-  this.element.style.top = (containerHeight - scaledHeight) / 2 + 'px';
+  this.element.style.left = left + 'px';
+  this.element.style.top = top + 'px';
+
+  if (self.notesVisible) {
+    this.notesElement.style['-webkit-transform'] = 'scale(' + scale + ')';
+    this.notesElement.style.MozTransform = 'scale(' + scale + ')';
+      
+    if (direction === 'horizontal') {
+      this.notesElement.style.left = left * 3 + scaledWidth + 'px';
+      this.notesElement.style.top = top + 'px';
+    }
+    else {
+      this.notesElement.style.left = left + 'px';
+      this.notesElement.style.top = top * 3 + scaledHeight + 'px';
+    }
+  }
 };
 
 SlideshowView.prototype.getContainerHeight = function () {
@@ -3019,7 +3079,7 @@ function getDimensions (ratio) {
   };
 }
 
-},{"./slideView":14,"./overlayView":15,"../utils":11}],10:[function(require,module,exports){
+},{"./slideView":14,"./overlayView":15,"../utils":13}],10:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3111,93 +3171,20 @@ function Navigation (events) {
 }
 
 },{}],11:[function(require,module,exports){
-exports.addClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .concat([className])
-    .join(' ');
-};
-
-exports.getClasses = function (element) {
-  return element.className
-    .split(' ')
-    .filter(function (s) { return s !== ''; });
-};
-
-forEach([Array, window.NodeList, window.HTMLCollection], extend);
-
-function extend (object) {
-  var prototype = object && object.prototype;
-
-  if (!prototype) {
-    return;
-  }
-
-  prototype.forEach = prototype.forEach || function (f) {
-    forEach(this, f);
-  };
-
-  prototype.filter = prototype.filter || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      if (f(element, result.length)) {
-        result.push(element);
-      }
-    });
-
-    return result;
-  };
-
-  prototype.map = prototype.map || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      result.push(f(element, result.length));
-    });
-
-    return result;
-  };
-}
-
-function forEach (list, f) {
-  var i;
-
-  for (i = 0; i < list.length; ++i) {
-    f(list[i], i);
-  }
-}
-
-},{}],12:[function(require,module,exports){
 module.exports = Slide;
 
-function Slide (slideNo, source, properties, template) {
+function Slide (slideNo, slide, template) {
   var self = this;
 
-  self.properties = properties || {};
-  self.source = extractProperties(source, self.properties);
+  self.properties = slide.properties || {};
+  self.source = slide.source || '';
+  self.notes = slide.notes || '';
 
   self.getSlideNo = function () { return slideNo; };
 
   if (template) {
     inherit(self, template);
   }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
 }
 
 function inherit (slide, template) {
@@ -3281,6 +3268,63 @@ Slide.prototype.expandVariables = function (contentOnly) {
 };
 
 },{}],13:[function(require,module,exports){
+exports.addClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .concat([className])
+    .join(' ');
+};
+
+exports.getClasses = function (element) {
+  return element.className
+    .split(' ')
+    .filter(function (s) { return s !== ''; });
+};
+
+forEach([Array, window.NodeList, window.HTMLCollection], extend);
+
+function extend (object) {
+  var prototype = object && object.prototype;
+
+  if (!prototype) {
+    return;
+  }
+
+  prototype.forEach = prototype.forEach || function (f) {
+    forEach(this, f);
+  };
+
+  prototype.filter = prototype.filter || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      if (f(element, result.length)) {
+        result.push(element);
+      }
+    });
+
+    return result;
+  };
+
+  prototype.map = prototype.map || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      result.push(f(element, result.length));
+    });
+
+    return result;
+  };
+}
+
+function forEach (list, f) {
+  var i;
+
+  for (i = 0; i < list.length; ++i) {
+    f(list[i], i);
+  }
+}
+
+},{}],12:[function(require,module,exports){
 var Lexer = require('./lexer'),
     converter = require('./converter');
 
@@ -3292,12 +3336,7 @@ Parser.prototype.parse = function (src) {
   var lexer = new Lexer(),
       tokens = lexer.lex(src),
       slides = [],
-      slide = {
-        source: '', 
-        properties: { 
-          continued: 'false'
-        }
-      },
+      slide = createSlide(),
       tag,
       classes;
 
@@ -3306,25 +3345,24 @@ Parser.prototype.parse = function (src) {
       case 'text':
       case 'code':
       case 'fences':
-        slide.source += token.text;
+        appendTo(slide, token.text);
         break;
       case 'content_start':
         tag = token.block ? 'div' : 'span';
         classes = token.classes.join(' ');
-        slide.source += '&lt;' + tag + ' class="' + classes + '"&gt;';
+        appendTo(slide, '&lt;' + tag + ' class="' + classes + '"&gt;');
         break;
       case 'content_end':
         tag = token.block ? 'div' : 'span';
-        slide.source += '&lt;/' + tag + '&gt;';
+        appendTo(slide, '&lt;/' + tag + '&gt;');
         break;
       case 'separator':
         slides.push(slide);
-        slide = {
-          source: '', 
-          properties: {
-            continued: (token.text === '--').toString()
-          }
-        };
+        slide = createSlide();
+        slide.properties.continued = (token.text === '--').toString();
+        break;
+      case 'notes_separator':
+        slide.notes = '';
         break;
     }
   });
@@ -3337,6 +3375,24 @@ Parser.prototype.parse = function (src) {
 
   return slides;
 };
+
+function createSlide () {
+  return {
+    source: '', 
+    properties: { 
+      continued: 'false'
+    }
+  };
+}
+
+function appendTo (slide, content) {
+  if (slide.notes !== undefined) {
+    slide.notes += content;
+  }
+  else {
+    slide.source += content;
+  }
+}
 
 function extractProperties (source, properties) {
   var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
@@ -3370,6 +3426,7 @@ function SlideView (events, slideshow, slide) {
 
   this.element = createSlideElement();
   this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
+  this.notesMarkup = createNotesMarkup(slideshow, slide.notes);
 
   this.element.appendChild(this.contentElement);
 }
@@ -3449,6 +3506,18 @@ function styleContentElement (slideshow, element, properties) {
   setBackgroundFromProperties(element, properties);
 }
 
+function createNotesMarkup (slideshow, notes) {
+  var element = document.createElement('div');
+  element.className = 'remark-notes-content';
+
+  element.innerHTML = converter.convertMarkdown(notes);
+  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
+
+  highlightCodeBlocks(element, slideshow);
+
+  return element.outerHTML;
+}
+
 function setBackgroundFromProperties (element, properties) {
   var backgroundImage = properties['background-image'];
 
@@ -3491,7 +3560,7 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":17,"../highlighter":3,"../utils":11}],15:[function(require,module,exports){
+},{"../converter":17,"../highlighter":3,"../utils":13}],15:[function(require,module,exports){
 var resources = require('../resources');
 
 module.exports = OverlayView;
@@ -3527,16 +3596,18 @@ module.exports = Lexer;
 var CODE = 1, 
     CONTENT = 2, 
     FENCES = 3, 
-    SEPARATOR = 4;
+    SEPARATOR = 4,
+    NOTES_SEPARATOR = 5;
 
 var regexByName = {
     CODE: /(?:^|\n)( {4}[^\n]+\n*)+/, 
     CONTENT: /(?:\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/, 
     FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/, 
-    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/
+    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
+    NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
   };
 
-var block = replace(/CODE|CONTENT|FENCES|SEPARATOR/, regexByName), 
+var block = replace(/CODE|CONTENT|FENCES|SEPARATOR|NOTES_SEPARATOR/, regexByName), 
     inline = replace(/CODE|CONTENT|FENCES/, regexByName);
 
 function Lexer () { }
@@ -3584,6 +3655,12 @@ function lex (src, regex, tokens) {
       tokens.push({
         type: 'separator',
         text: cap[SEPARATOR]
+      });
+    }
+    else if (cap[NOTES_SEPARATOR]) {
+      tokens.push({
+        type: 'notes_separator',
+        text: cap[NOTES_SEPARATOR]
       });
     }
     else if (cap[CONTENT]) {

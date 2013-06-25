@@ -4,7 +4,8 @@ function Slide (slideNo, slide, template) {
   var self = this;
 
   self.properties = slide.properties || {};
-  self.source = slide.source;
+  self.source = slide.source || '';
+  self.notes = slide.notes || '';
 
   self.getSlideNo = function () { return slideNo; };
 

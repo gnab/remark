@@ -12,6 +12,7 @@ function SlideView (events, slideshow, slide) {
 
   this.element = createSlideElement();
   this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
+  this.notesMarkup = createNotesMarkup(slideshow, slide.notes);
 
   this.element.appendChild(this.contentElement);
 }
@@ -89,6 +90,18 @@ function styleContentElement (slideshow, element, properties) {
   setClassFromProperties(element, properties);
   setHighlightStyleFromProperties(element, properties, slideshow);
   setBackgroundFromProperties(element, properties);
+}
+
+function createNotesMarkup (slideshow, notes) {
+  var element = document.createElement('div');
+  element.className = 'remark-notes-content';
+
+  element.innerHTML = converter.convertMarkdown(notes);
+  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
+
+  highlightCodeBlocks(element, slideshow);
+
+  return element.outerHTML;
 }
 
 function setBackgroundFromProperties (element, properties) {
