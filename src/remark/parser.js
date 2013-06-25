@@ -18,7 +18,7 @@ Parser.prototype.parse = function (src) {
       tag,
       classes;
 
-  tokens.each(function (token) {
+  tokens.forEach(function (token) {
     switch (token.type) {
       case 'text':
       case 'code':
@@ -48,7 +48,7 @@ Parser.prototype.parse = function (src) {
 
   slides.push(slide);
 
-  slides.each(function (slide) {
+  slides.forEach(function (slide) {
     slide.source = extractProperties(slide.source, slide.properties);
   });
 

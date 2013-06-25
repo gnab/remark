@@ -113,14 +113,14 @@ function setClassFromProperties (element, properties) {
 
   (properties['class'] || '').split(/,| /)
     .filter(function (s) { return s !== ''; })
-    .each(function (c) { utils.addClass(element, c); });
+    .forEach(function (c) { utils.addClass(element, c); });
 }
 
 function highlightCodeBlocks (content, slideshow) {
   var codeBlocks = content.getElementsByTagName('code')
     ;
 
-  codeBlocks.each(function (block) {
+  codeBlocks.forEach(function (block) {
     if (block.className === '') {
       block.className = slideshow.getHighlightLanguage();
     }

@@ -73,7 +73,7 @@ function createSlides (slideshowSource) {
 
   slides.byName = {};
 
-  parsedSlides.each(function (slide, i) {
+  parsedSlides.forEach(function (slide, i) {
     var template, slideViewModel;
     
     if (slide.properties.continued === 'true' && i > 0) {
@@ -111,7 +111,7 @@ function createSlides (slideshowSource) {
 }
 
 function expandVariables (slides) {
-  slides.each(function (slide) {
+  slides.forEach(function (slide) {
     slide.expandVariables();
   });
 }
