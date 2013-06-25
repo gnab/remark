@@ -24,6 +24,15 @@ function Navigation (events) {
     }
   });
 
+  events.on('createClone', function () {
+    if (!self.clone || self.clone.closed) {
+      self.clone = window.open(location.href, '_blank', 'location=no');
+    }
+    else {
+      self.clone.focus();
+    }
+  });
+
   function getCurrentSlideNo () {
     return currentSlideNo;
   }
@@ -47,6 +56,10 @@ function Navigation (events) {
     currentSlideNo = slideNo;
 
     events.emit('slideChanged', slideNoOrName || slideNo);
+
+    if (self.clone && !self.clone.closed) {
+      self.clone.postMessage('gotoSlide:' + currentSlideNo, '*');
+    }
   }
 
   function gotoPreviousSlide() {

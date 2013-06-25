@@ -18,6 +18,8 @@ function addNavigationEventListeners (events, slideshowView) {
     navigateByHash();
   }
 
+  events.on('message', navigateByMessage);
+
   function navigateByHash () {
     var slideNoOrName = (window.location.hash || '').substr(1);
     events.emit('gotoSlide', slideNoOrName);
@@ -25,6 +27,14 @@ function addNavigationEventListeners (events, slideshowView) {
 
   function updateHash (slideNoOrName) {
     window.location.hash = '#' + slideNoOrName;
+  }
+
+  function navigateByMessage(message) {
+    var cap;
+
+    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
+      events.emit('gotoSlide', parseInt(cap[1], 10));
+    }
   }
 }
 
@@ -61,6 +71,9 @@ function addKeyboardEventListeners (events) {
         break;
       case 'k':
         events.emit('gotoPreviousSlide');
+        break;
+      case 'c':
+        events.emit('createClone');
         break;
       case 'n':
         events.emit('toggleNotes');
