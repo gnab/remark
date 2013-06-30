@@ -39,7 +39,7 @@ function SlideshowView (events, containerElement, slideshow) {
   events.on('toggleNotes', function () {
     self.notesVisible = !!!self.notesVisible;
     if (self.notesVisible) {
-      self.notesElement.style.display = 'table';
+      self.notesElement.style.display = 'block';
     }
     else {
       self.notesElement.style.display = 'none';
@@ -214,11 +214,6 @@ SlideshowView.prototype.updateDimensions = function () {
   this.element.style.width = this.dimensions.width + 'px';
   this.element.style.height = this.dimensions.height + 'px';
 
-  if (this.notesVisible) {
-    this.notesElement.style.width = this.element.style.width;
-    this.notesElement.style.height = this.element.style.height;
-  }
-
   this.scaleSlideBackgroundImages();
   this.scaleToFitContainer();
 };
@@ -238,14 +233,7 @@ SlideshowView.prototype.scaleToFitContainer = function () {
     ;
 
   if (self.notesVisible) {
-    if (containerWidth / ratio.width > containerHeight / ratio.height) {
       containerWidth /= 2;
-      direction = 'horizontal';
-    }
-    else {
-      containerHeight /= 2;
-      direction = 'vertical';
-    }
   }
 
   if (containerWidth / ratio.width > containerHeight / ratio.height) {
@@ -265,20 +253,6 @@ SlideshowView.prototype.scaleToFitContainer = function () {
   this.element.style.MozTransform = 'scale(' + scale + ')';
   this.element.style.left = left + 'px';
   this.element.style.top = top + 'px';
-
-  if (self.notesVisible) {
-    this.notesElement.style['-webkit-transform'] = 'scale(' + scale + ')';
-    this.notesElement.style.MozTransform = 'scale(' + scale + ')';
-      
-    if (direction === 'horizontal') {
-      this.notesElement.style.left = left * 3 + scaledWidth + 'px';
-      this.notesElement.style.top = top + 'px';
-    }
-    else {
-      this.notesElement.style.left = left + 'px';
-      this.notesElement.style.top = top * 3 + scaledHeight + 'px';
-    }
-  }
 };
 
 SlideshowView.prototype.getContainerHeight = function () {

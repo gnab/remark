@@ -94,14 +94,13 @@ function styleContentElement (slideshow, element, properties) {
 
 function createNotesMarkup (slideshow, notes) {
   var element = document.createElement('div');
-  element.className = 'remark-notes-content';
 
   element.innerHTML = converter.convertMarkdown(notes);
   element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);
 
-  return element.outerHTML;
+  return element.innerHTML;
 }
 
 function setBackgroundFromProperties (element, properties) {
