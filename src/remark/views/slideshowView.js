@@ -39,7 +39,7 @@ function SlideshowView (events, containerElement, slideshow) {
     self.showSlide(slideIndex);
   });
 
-  events.on('toggleNotes', function () {
+  events.on('togglePresenterMode', function () {
     toggleClass(self.containerElement, 'remark-presenter-mode');
 
     self.presenterMode = !!!self.presenterMode;

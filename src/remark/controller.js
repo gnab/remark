@@ -75,8 +75,8 @@ function addKeyboardEventListeners (events) {
       case 'c':
         events.emit('createClone');
         break;
-      case 'n':
-        events.emit('toggleNotes');
+      case 'p':
+        events.emit('togglePresenterMode');
         break;
       case '?':
         events.emit('toggleHelp');
