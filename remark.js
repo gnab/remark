@@ -2201,7 +2201,7 @@ module.exports = {
 /* Automatically generated */
 
 module.exports = {
-  documentStyles: ".remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-overlay .remark-overlay-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-overlay .remark-overlay-content td{color:white;font-size:12pt;padding:10px;}.remark-overlay .remark-overlay-content td:first-child{padding-left:0;}.remark-overlay .remark-overlay-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-overlay .dismiss{top:85%;}.remark-position{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-notes{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}",
+  documentStyles: "html.remark-container,body.remark-container{height:100%;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}.remark-slideshow-area{position:absolute;height:100%;width:100%;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-overlay{bottom:0;top:0;right:0;left:0;opacity:0.95;background:#000;display:none;position:absolute;z-index:1000;}.remark-overlay .remark-overlay-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-overlay .remark-overlay-content td{color:white;font-size:12pt;padding:10px;}.remark-overlay .remark-overlay-content td:first-child{padding-left:0;}.remark-overlay .remark-overlay-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-overlay .dismiss{top:85%;}.remark-position{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-preview-area{bottom:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:50%;}.remark-preview-area .remark-slideshow:empty{display:none;}.remark-notes{background:#e7e8e2;bottom:0;display:none;left:50.5%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-container.remark-presenter-mode .remark-slideshow-area{top:2%;height:47.25%;width:50%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes{display:block;}",
   overlay: "<div class=\"remark-overlay-content\">\n  <h1>Help</h1>\n  <p><b>Keyboard shortcuts</b></p>\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\"><b>&uarr;</b></span>,\n        <span class=\"key\"><b>&larr;</b></span>,\n        <span class=\"key\">Pg Up</span>,\n        <span class=\"key\">K</span>\n      </td>\n      <td>Go to previous slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\"><b>&darr;</b></span>,\n        <span class=\"key\"><b>&rarr;</b></span>,\n        <span class=\"key\">Pg Dn</span>,\n        <span class=\"key\">Space</span>,\n        <span class=\"key\">J</span>\n      </td>\n      <td>Go to next slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">Home</span>\n      </td>\n      <td>Go to first slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">End</span>\n      </td>\n      <td>Go to last slide</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">C</span>\n      </td>\n      <td>Clone slideshow</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">N</span>\n      </td>\n      <td>Toggle notes</td>\n    </tr>\n    <tr>\n      <td>\n        <span class=\"key\">?</span>\n      </td>\n      <td>Show help</td>\n    </tr>\n  </table>\n</div>\n<div class=\"content dismiss\">\n  <table class=\"light-keys\">\n    <tr>\n      <td>\n        <span class=\"key\">Esc</span>\n      </td>\n      <td>Back to slideshow</td>\n    </tr>\n  </table>\n</div>\n"
 };
 
@@ -2768,6 +2768,7 @@ function expandVariables (slides) {
 var SlideView = require('./slideView')
   , OverlayView = require('./overlayView')
   , addClass = require('../utils').addClass
+  , toggleClass = require('../utils').toggleClass
 
   , referenceWidth = 908
   , referenceHeight = 681
@@ -2786,9 +2787,11 @@ function SlideshowView (events, containerElement, slideshow) {
   self.configureContainerElement(containerElement);
   self.configureNotesElement();
   self.configureSlideshowElement();
+  self.configurePreviewElement();
   self.configurePositionElement();
   self.configureOverlayView();
 
+  self.updateDimensions();
   self.updateSlideViews();
 
   events.on('slidesChanged', function () {
@@ -2804,13 +2807,9 @@ function SlideshowView (events, containerElement, slideshow) {
   });
 
   events.on('toggleNotes', function () {
-    self.notesVisible = !!!self.notesVisible;
-    if (self.notesVisible) {
-      self.notesElement.style.display = 'block';
-    }
-    else {
-      self.notesElement.style.display = 'none';
-    }
+    toggleClass(self.containerElement, 'remark-presenter-mode');
+
+    self.presenterMode = !!!self.presenterMode;
     self.updateDimensions();
   });
 }
@@ -2875,9 +2874,11 @@ SlideshowView.prototype.configureSlideshowElement = function () {
   self.element = document.createElement('div');
   self.element.className = 'remark-slideshow';
 
-  self.containerElement.appendChild(self.element);
+  self.elementArea = document.createElement('div');
+  self.elementArea.className = 'remark-slideshow-area';
 
-  self.updateDimensions();
+  self.elementArea.appendChild(self.element);
+  self.containerElement.appendChild(self.elementArea);
 
   self.events.on('propertiesChanged', function (changes) {
     if (changes.hasOwnProperty('ratio')) {
@@ -2888,7 +2889,8 @@ SlideshowView.prototype.configureSlideshowElement = function () {
   self.events.on('resize', onResize);
 
   function onResize () {
-    self.scaleToFitContainer();
+    self.scaleToFit(self.element, self.elementArea);
+    self.scaleToFit(self.previewElement, self.previewArea);
   }
 };
 
@@ -2913,6 +2915,19 @@ SlideshowView.prototype.configureNotesElement = function () {
   self.notesElement = document.createElement('div');
   self.notesElement.className = 'remark-notes';
   self.containerElement.appendChild(self.notesElement);
+};
+
+SlideshowView.prototype.configurePreviewElement = function () {
+  var self = this;
+
+  self.previewElement = document.createElement('div');
+  self.previewElement.className = 'remark-slideshow remark-slideshow-preview';
+
+  self.previewArea = document.createElement('div');
+  self.previewArea.className = 'remark-preview-area';
+
+  self.previewArea.appendChild(self.previewElement);
+  self.containerElement.appendChild(self.previewArea);
 };
 
 SlideshowView.prototype.updateSlideViews = function () {
@@ -2951,13 +2966,22 @@ SlideshowView.prototype.scaleSlideBackgroundImages = function () {
 
 SlideshowView.prototype.showSlide =  function (slideIndex) {
   var self = this
-    , slideView = self.slideViews[slideIndex];
+    , slideView = self.slideViews[slideIndex]
+    , nextSlideView = self.slideViews[slideIndex + 1];
 
   self.slideshow.emit('slidein', slideView.element, slideIndex);
   slideView.show();
   self.positionElement.innerHTML =
     slideIndex + 1 + ' / ' + self.slideViews.length;
   self.notesElement.innerHTML = slideView.notesMarkup;
+
+  if (nextSlideView) {
+    self.previewElement.innerHTML = nextSlideView.element.outerHTML;
+    self.previewElement.childNodes[0].style.display = 'block';
+  }
+  else {
+    self.previewElement.innerHTML = '';
+  }
 };
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
@@ -2981,14 +3005,18 @@ SlideshowView.prototype.updateDimensions = function () {
   this.element.style.width = this.dimensions.width + 'px';
   this.element.style.height = this.dimensions.height + 'px';
 
+  this.previewElement.style.width = this.dimensions.width + 'px';
+  this.previewElement.style.height = this.dimensions.height + 'px';
+
   this.scaleSlideBackgroundImages();
-  this.scaleToFitContainer();
+  this.scaleToFit(this.element, this.elementArea);
+  this.scaleToFit(this.previewElement, this.previewArea);
 };
 
-SlideshowView.prototype.scaleToFitContainer = function () {
+SlideshowView.prototype.scaleToFit = function (element, container) {
   var self = this
-    , containerHeight = this.getContainerHeight()
-    , containerWidth = this.getContainerWidth()
+    , containerHeight = container.clientHeight
+    , containerWidth = container.clientWidth
     , scale
     , scaledWidth
     , scaledHeight
@@ -2998,10 +3026,6 @@ SlideshowView.prototype.scaleToFitContainer = function () {
     , left
     , top
     ;
-
-  if (self.notesVisible) {
-      containerWidth /= 2;
-  }
 
   if (containerWidth / ratio.width > containerHeight / ratio.height) {
     scale = containerHeight / dimensions.height;
@@ -3016,32 +3040,10 @@ SlideshowView.prototype.scaleToFitContainer = function () {
   left = (containerWidth - scaledWidth) / 2;
   top = (containerHeight - scaledHeight) / 2;
 
-  this.element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  this.element.style.MozTransform = 'scale(' + scale + ')';
-  this.element.style.left = left + 'px';
-  this.element.style.top = top + 'px';
-};
-
-SlideshowView.prototype.getContainerHeight = function () {
-  var self = this;
-
-  if (self.containerElement === document.body) {
-    return window.innerHeight;
-  }
-  else {
-    return self.containerElement.clientHeight;
-  }
-};
-
-SlideshowView.prototype.getContainerWidth = function () {
-  var self = this;
-
-  if (self.containerElement === document.body) {
-    return window.innerWidth;
-  }
-  else {
-    return self.containerElement.clientWidth;
-  }
+  element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  element.style.MozTransform = 'scale(' + scale + ')';
+  element.style.left = left + 'px';
+  element.style.top = top + 'px';
 };
 
 function getRatio (slideshow) {
@@ -3066,7 +3068,7 @@ function getDimensions (ratio) {
   };
 }
 
-},{"./slideView":14,"../utils":12,"./overlayView":15}],10:[function(require,module,exports){
+},{"./slideView":14,"./overlayView":15,"../utils":12}],10:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3170,63 +3172,6 @@ function Navigation (events) {
   }
 }
 
-},{}],12:[function(require,module,exports){
-exports.addClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .concat([className])
-    .join(' ');
-};
-
-exports.getClasses = function (element) {
-  return element.className
-    .split(' ')
-    .filter(function (s) { return s !== ''; });
-};
-
-forEach([Array, window.NodeList, window.HTMLCollection], extend);
-
-function extend (object) {
-  var prototype = object && object.prototype;
-
-  if (!prototype) {
-    return;
-  }
-
-  prototype.forEach = prototype.forEach || function (f) {
-    forEach(this, f);
-  };
-
-  prototype.filter = prototype.filter || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      if (f(element, result.length)) {
-        result.push(element);
-      }
-    });
-
-    return result;
-  };
-
-  prototype.map = prototype.map || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      result.push(f(element, result.length));
-    });
-
-    return result;
-  };
-}
-
-function forEach (list, f) {
-  var i;
-
-  for (i = 0; i < list.length; ++i) {
-    f(list[i], i);
-  }
-}
-
 },{}],11:[function(require,module,exports){
 module.exports = Slide;
 
@@ -3323,6 +3268,77 @@ Slide.prototype.expandVariables = function (contentOnly) {
 
   return expandResult;
 };
+
+},{}],12:[function(require,module,exports){
+exports.addClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .concat([className])
+    .join(' ');
+};
+
+exports.toggleClass = function (element, className) {
+  var classes = exports.getClasses(element),
+      index = classes.indexOf(className);
+
+  if (index !== -1) {
+    classes.splice(index, 1);
+  }
+  else {
+    classes.push(className);
+  }
+
+  element.className = classes.join(' ');
+};
+
+exports.getClasses = function (element) {
+  return element.className
+    .split(' ')
+    .filter(function (s) { return s !== ''; });
+};
+
+forEach([Array, window.NodeList, window.HTMLCollection], extend);
+
+function extend (object) {
+  var prototype = object && object.prototype;
+
+  if (!prototype) {
+    return;
+  }
+
+  prototype.forEach = prototype.forEach || function (f) {
+    forEach(this, f);
+  };
+
+  prototype.filter = prototype.filter || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      if (f(element, result.length)) {
+        result.push(element);
+      }
+    });
+
+    return result;
+  };
+
+  prototype.map = prototype.map || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      result.push(f(element, result.length));
+    });
+
+    return result;
+  };
+}
+
+function forEach (list, f) {
+  var i;
+
+  for (i = 0; i < list.length; ++i) {
+    f(list[i], i);
+  }
+}
 
 },{}],13:[function(require,module,exports){
 var Lexer = require('./lexer'),

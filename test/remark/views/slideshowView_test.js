@@ -33,14 +33,6 @@ describe('SlideshowView', function () {
       containerElement.tabIndex.should.equal(-1);
     });
 
-    it('should use element width and height', function () {
-      containerElement.clientWidth = 16;
-      containerElement.clientHeight = 9;
-
-      view.getContainerWidth().should.equal(containerElement.clientWidth);
-      view.getContainerHeight().should.equal(containerElement.clientHeight);
-    });
-
     describe('proxying of element events', function () {
       it('should proxy keydown event', function (done) {
         events.on('keydown', function () {
@@ -109,14 +101,6 @@ describe('SlideshowView', function () {
 
     it('should not make element focusable', function () {
       containerElement.should.not.have.property('tabIndex');
-    });
-
-    it('should use window width and height', function () {
-      window.innerWidth = 4;
-      window.innerHeight = 3;
-
-      view.getContainerWidth().should.equal(window.innerWidth);
-      view.getContainerHeight().should.equal(window.innerHeight);
     });
 
     describe('proxying of element events', function () {

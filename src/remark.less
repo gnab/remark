@@ -1,3 +1,10 @@
+/*************/
+/* Container */
+/*************/
+
+html.remark-container, body.remark-container {
+  height: 100%;
+}
 .remark-container {
   background: #d7d8d2;
   margin: 0;
@@ -5,8 +12,22 @@
 }
 .remark-container:focus {
   outline-style: solid;
-  outline-width: 1px;  
+  outline-width: 1px;
 }
+
+/******************/
+/* Slideshow area */
+/******************/
+
+.remark-slideshow-area {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+/*************/
+/* Slideshow */
+/*************/
 
 .remark-slideshow {
   background: #fff;
@@ -19,6 +40,10 @@
   -webkit-box-shadow: 0 0 30px #888;
   box-shadow: 0 0 30px #888;
 }
+
+/*********/
+/* Slide */
+/*********/
 
 .remark-slide {
   height: 100%;
@@ -71,6 +96,10 @@
   }
 }
 
+/***********/
+/* Overlay */
+/***********/
+
 .remark-overlay {
   bottom: 0;
   top: 0;
@@ -116,6 +145,10 @@
   }
 }
 
+/************/
+/* Position */
+/************/
+
 .remark-position {
   bottom: 12px;
   opacity: 0.5;
@@ -123,14 +156,46 @@
   right: 20px;
 }
 
+
+/* ************** */
+/* Presenter mode */
+/* ************** */
+
+.remark-preview-area {
+  bottom: 2%;
+  display: none;
+  opacity: 0.5;
+  position: absolute;
+  height: 47.25%;
+  width: 50%;
+
+  .remark-slideshow:empty {
+    display: none;
+  }
+}
+
 .remark-notes {
   background: #e7e8e2;
   bottom: 0;
   display: none;
-  left: 52%;
+  left: 50.5%;
   overflow: hidden;
   padding: 1.5em;
   position: absolute;
   right: 0;
   top: 0;
+}
+
+.remark-container.remark-presenter-mode {
+  .remark-slideshow-area {
+    top: 2%;
+    height: 47.25%;
+    width: 50%;
+  }
+  .remark-preview-area {
+    display: block;
+  }
+  .remark-notes {
+    display: block;
+  }
 }

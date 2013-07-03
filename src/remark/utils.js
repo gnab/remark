@@ -4,6 +4,20 @@ exports.addClass = function (element, className) {
     .join(' ');
 };
 
+exports.toggleClass = function (element, className) {
+  var classes = exports.getClasses(element),
+      index = classes.indexOf(className);
+
+  if (index !== -1) {
+    classes.splice(index, 1);
+  }
+  else {
+    classes.push(className);
+  }
+
+  element.className = classes.join(' ');
+};
+
 exports.getClasses = function (element) {
   return element.className
     .split(' ')

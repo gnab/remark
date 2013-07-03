@@ -1,6 +1,7 @@
 var SlideView = require('./slideView')
   , OverlayView = require('./overlayView')
   , addClass = require('../utils').addClass
+  , toggleClass = require('../utils').toggleClass
 
   , referenceWidth = 908
   , referenceHeight = 681
@@ -19,9 +20,11 @@ function SlideshowView (events, containerElement, slideshow) {
   self.configureContainerElement(containerElement);
   self.configureNotesElement();
   self.configureSlideshowElement();
+  self.configurePreviewElement();
   self.configurePositionElement();
   self.configureOverlayView();
 
+  self.updateDimensions();
   self.updateSlideViews();
 
   events.on('slidesChanged', function () {
@@ -37,13 +40,9 @@ function SlideshowView (events, containerElement, slideshow) {
   });
 
   events.on('toggleNotes', function () {
-    self.notesVisible = !!!self.notesVisible;
-    if (self.notesVisible) {
-      self.notesElement.style.display = 'block';
-    }
-    else {
-      self.notesElement.style.display = 'none';
-    }
+    toggleClass(self.containerElement, 'remark-presenter-mode');
+
+    self.presenterMode = !!!self.presenterMode;
     self.updateDimensions();
   });
 }
@@ -108,9 +107,11 @@ SlideshowView.prototype.configureSlideshowElement = function () {
   self.element = document.createElement('div');
   self.element.className = 'remark-slideshow';
 
-  self.containerElement.appendChild(self.element);
+  self.elementArea = document.createElement('div');
+  self.elementArea.className = 'remark-slideshow-area';
 
-  self.updateDimensions();
+  self.elementArea.appendChild(self.element);
+  self.containerElement.appendChild(self.elementArea);
 
   self.events.on('propertiesChanged', function (changes) {
     if (changes.hasOwnProperty('ratio')) {
@@ -121,7 +122,8 @@ SlideshowView.prototype.configureSlideshowElement = function () {
   self.events.on('resize', onResize);
 
   function onResize () {
-    self.scaleToFitContainer();
+    self.scaleToFit(self.element, self.elementArea);
+    self.scaleToFit(self.previewElement, self.previewArea);
   }
 };
 
@@ -146,6 +148,19 @@ SlideshowView.prototype.configureNotesElement = function () {
   self.notesElement = document.createElement('div');
   self.notesElement.className = 'remark-notes';
   self.containerElement.appendChild(self.notesElement);
+};
+
+SlideshowView.prototype.configurePreviewElement = function () {
+  var self = this;
+
+  self.previewElement = document.createElement('div');
+  self.previewElement.className = 'remark-slideshow remark-slideshow-preview';
+
+  self.previewArea = document.createElement('div');
+  self.previewArea.className = 'remark-preview-area';
+
+  self.previewArea.appendChild(self.previewElement);
+  self.containerElement.appendChild(self.previewArea);
 };
 
 SlideshowView.prototype.updateSlideViews = function () {
@@ -184,13 +199,22 @@ SlideshowView.prototype.scaleSlideBackgroundImages = function () {
 
 SlideshowView.prototype.showSlide =  function (slideIndex) {
   var self = this
-    , slideView = self.slideViews[slideIndex];
+    , slideView = self.slideViews[slideIndex]
+    , nextSlideView = self.slideViews[slideIndex + 1];
 
   self.slideshow.emit('slidein', slideView.element, slideIndex);
   slideView.show();
   self.positionElement.innerHTML =
     slideIndex + 1 + ' / ' + self.slideViews.length;
   self.notesElement.innerHTML = slideView.notesMarkup;
+
+  if (nextSlideView) {
+    self.previewElement.innerHTML = nextSlideView.element.outerHTML;
+    self.previewElement.childNodes[0].style.display = 'block';
+  }
+  else {
+    self.previewElement.innerHTML = '';
+  }
 };
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
@@ -214,14 +238,18 @@ SlideshowView.prototype.updateDimensions = function () {
   this.element.style.width = this.dimensions.width + 'px';
   this.element.style.height = this.dimensions.height + 'px';
 
+  this.previewElement.style.width = this.dimensions.width + 'px';
+  this.previewElement.style.height = this.dimensions.height + 'px';
+
   this.scaleSlideBackgroundImages();
-  this.scaleToFitContainer();
+  this.scaleToFit(this.element, this.elementArea);
+  this.scaleToFit(this.previewElement, this.previewArea);
 };
 
-SlideshowView.prototype.scaleToFitContainer = function () {
+SlideshowView.prototype.scaleToFit = function (element, container) {
   var self = this
-    , containerHeight = this.getContainerHeight()
-    , containerWidth = this.getContainerWidth()
+    , containerHeight = container.clientHeight
+    , containerWidth = container.clientWidth
     , scale
     , scaledWidth
     , scaledHeight
@@ -231,10 +259,6 @@ SlideshowView.prototype.scaleToFitContainer = function () {
     , left
     , top
     ;
-
-  if (self.notesVisible) {
-      containerWidth /= 2;
-  }
 
   if (containerWidth / ratio.width > containerHeight / ratio.height) {
     scale = containerHeight / dimensions.height;
@@ -249,32 +273,10 @@ SlideshowView.prototype.scaleToFitContainer = function () {
   left = (containerWidth - scaledWidth) / 2;
   top = (containerHeight - scaledHeight) / 2;
 
-  this.element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  this.element.style.MozTransform = 'scale(' + scale + ')';
-  this.element.style.left = left + 'px';
-  this.element.style.top = top + 'px';
-};
-
-SlideshowView.prototype.getContainerHeight = function () {
-  var self = this;
-
-  if (self.containerElement === document.body) {
-    return window.innerHeight;
-  }
-  else {
-    return self.containerElement.clientHeight;
-  }
-};
-
-SlideshowView.prototype.getContainerWidth = function () {
-  var self = this;
-
-  if (self.containerElement === document.body) {
-    return window.innerWidth;
-  }
-  else {
-    return self.containerElement.clientWidth;
-  }
+  element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  element.style.MozTransform = 'scale(' + scale + ')';
+  element.style.left = left + 'px';
+  element.style.top = top + 'px';
 };
 
 function getRatio (slideshow) {
