@@ -22,7 +22,8 @@ function SlideshowView (events, containerElement, slideshow) {
   self.configureSlideshowElement();
   self.configurePreviewElement();
   self.configurePositionElement();
-  self.configureHelpView();
+  self.configureBackdropElement();
+  self.configureHelpElement();
 
   self.updateDimensions();
   self.updateSlideViews();
@@ -140,7 +141,15 @@ SlideshowView.prototype.configurePositionElement = function () {
   self.element.appendChild(self.positionElement);
 };
 
-SlideshowView.prototype.configureHelpView = function () {
+SlideshowView.prototype.configureBackdropElement = function () {
+  var self = this;
+
+  self.backdropElement = document.createElement('div');
+  self.backdropElement.className = 'remark-backdrop';
+  self.containerElement.appendChild(self.backdropElement);
+};
+
+SlideshowView.prototype.configureHelpElement = function () {
   var self = this;
 
   self.helpElement = document.createElement('div');

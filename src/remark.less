@@ -96,17 +96,42 @@ html.remark-container, body.remark-container {
   }
 }
 
-/***********/
-/* Overlay */
-/***********/
+/************/
+/* Position */
+/************/
+
+.remark-position {
+  bottom: 12px;
+  opacity: 0.5;
+  position: absolute;
+  right: 20px;
+}
+
+
+/************/
+/* Backdrop */
+/************/
+
+.remark-backdrop {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: none;
+  opacity: 0.95;
+  background: #000;
+}
+
+/********/
+/* Help */
+/********/
 
 .remark-help {
   bottom: 0;
   top: 0;
   right: 0;
   left: 0;
-  opacity: 0.95;
-  background: #000;
   display: none;
   position: absolute;
   z-index: 1000;
@@ -152,19 +177,10 @@ html.remark-container, body.remark-container {
   .remark-help {
     display: block;
   }
+  .remark-backdrop {
+    display: block
+  }
 }
-
-/************/
-/* Position */
-/************/
-
-.remark-position {
-  bottom: 12px;
-  opacity: 0.5;
-  position: absolute;
-  right: 20px;
-}
-
 
 /* ************** */
 /* Presenter mode */
