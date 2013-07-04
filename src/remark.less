@@ -100,7 +100,7 @@ html.remark-container, body.remark-container {
 /* Overlay */
 /***********/
 
-.remark-overlay {
+.remark-help {
   bottom: 0;
   top: 0;
   right: 0;
@@ -110,8 +110,11 @@ html.remark-container, body.remark-container {
   display: none;
   position: absolute;
   z-index: 1000;
+  -webkit-transform-origin: top left;
+  -moz-transform-origin: top left;
+  transform-origin: top-left;
 
-  .remark-overlay-content {
+  .remark-help-content {
     color: white;
     font-family: Helvetica, arial, freesans, clean, sans-serif;
     font-size: 12pt;
@@ -142,6 +145,12 @@ html.remark-container, body.remark-container {
 
   .dismiss {
     top: 85%;
+  }
+}
+
+.remark-container.remark-help-mode {
+  .remark-help {
+    display: block;
   }
 }
 

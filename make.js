@@ -47,8 +47,8 @@ function bundleResources (target) {
   var resources = {
         DOCUMENT_STYLES: JSON.stringify(
           less('src/remark.less'))
-      , OVERLAY: JSON.stringify(
-          cat('src/overlay.html'))
+      , HELP: JSON.stringify(
+          cat('src/help.html'))
       };
 
   cat('src/resources.js.template')
@@ -63,7 +63,7 @@ function bundleHighlighter (target) {
     , resources = {
         HIGHLIGHTER_STYLES: JSON.stringify(
           ls(highlightjs + 'styles/*.css').reduce(mapStyle, {}))
-      , HIGHLIGHTER_ENGINE: 
+      , HIGHLIGHTER_ENGINE:
           cat(highlightjs + 'highlight.js')
       , HIGHLIGHTER_LANGUAGES:
           config.highlighter.languages.map(function (language) {

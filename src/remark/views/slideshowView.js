@@ -1,5 +1,5 @@
 var SlideView = require('./slideView')
-  , OverlayView = require('./overlayView')
+  , resources = require('../resources')
   , addClass = require('../utils').addClass
   , toggleClass = require('../utils').toggleClass
 
@@ -22,7 +22,7 @@ function SlideshowView (events, containerElement, slideshow) {
   self.configureSlideshowElement();
   self.configurePreviewElement();
   self.configurePositionElement();
-  self.configureOverlayView();
+  self.configureHelpView();
 
   self.updateDimensions();
   self.updateSlideViews();
@@ -44,6 +44,10 @@ function SlideshowView (events, containerElement, slideshow) {
 
     self.presenterMode = !!!self.presenterMode;
     self.updateDimensions();
+  });
+
+  events.on('toggleHelp', function () {
+    toggleClass(self.containerElement, 'remark-help-mode');
   });
 }
 
@@ -124,6 +128,7 @@ SlideshowView.prototype.configureSlideshowElement = function () {
   function onResize () {
     self.scaleToFit(self.element, self.elementArea);
     self.scaleToFit(self.previewElement, self.previewArea);
+    self.scaleToFit(self.helpElement, self.containerElement);
   }
 };
 
@@ -135,11 +140,13 @@ SlideshowView.prototype.configurePositionElement = function () {
   self.element.appendChild(self.positionElement);
 };
 
-SlideshowView.prototype.configureOverlayView = function () {
+SlideshowView.prototype.configureHelpView = function () {
   var self = this;
 
-  self.overlayView = new OverlayView(self.events);
-  self.element.appendChild(self.overlayView.element);
+  self.helpElement = document.createElement('div');
+  self.helpElement.className = 'remark-help';
+  self.helpElement.innerHTML = resources.help;
+  self.containerElement.appendChild(self.helpElement);
 };
 
 SlideshowView.prototype.configureNotesElement = function () {
@@ -237,13 +244,15 @@ SlideshowView.prototype.updateDimensions = function () {
 
   this.element.style.width = this.dimensions.width + 'px';
   this.element.style.height = this.dimensions.height + 'px';
-
   this.previewElement.style.width = this.dimensions.width + 'px';
   this.previewElement.style.height = this.dimensions.height + 'px';
+  this.helpElement.style.width = this.dimensions.width + 'px';
+  this.helpElement.style.height = this.dimensions.height + 'px';
 
   this.scaleSlideBackgroundImages();
   this.scaleToFit(this.element, this.elementArea);
   this.scaleToFit(this.previewElement, this.previewArea);
+  this.scaleToFit(this.helpElement, this.containerElement);
 };
 
 SlideshowView.prototype.scaleToFit = function (element, container) {

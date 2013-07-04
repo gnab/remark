@@ -2,5 +2,5 @@
 
 module.exports = {
   documentStyles: %DOCUMENT_STYLES%,
-  overlay: %OVERLAY%
+  help: %HELP%
 };
