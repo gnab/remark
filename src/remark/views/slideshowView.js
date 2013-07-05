@@ -18,12 +18,7 @@ function SlideshowView (events, containerElement, slideshow) {
   self.dimensions = {};
 
   self.configureContainerElement(containerElement);
-  self.configureNotesElement();
-  self.configureSlideshowElement();
-  self.configurePreviewElement();
-  self.configurePositionElement();
-  self.configureBackdropElement();
-  self.configureHelpElement();
+  self.configureChildElements();
 
   self.updateDimensions();
   self.updateSlideViews();
@@ -106,17 +101,22 @@ function forwardEvents (target, source, events) {
   });
 }
 
-SlideshowView.prototype.configureSlideshowElement = function () {
+SlideshowView.prototype.configureChildElements = function () {
   var self = this;
 
-  self.element = document.createElement('div');
-  self.element.className = 'remark-slideshow';
+  self.containerElement.innerHTML += resources.containerLayout;
 
-  self.elementArea = document.createElement('div');
-  self.elementArea.className = 'remark-slideshow-area';
+  self.elementArea = self.containerElement.getElementsByClassName('remark-slideshow-area')[0];
+  self.element = self.elementArea.getElementsByClassName('remark-slideshow')[0];
+  self.positionElement = self.element.getElementsByClassName('remark-position')[0];
 
-  self.elementArea.appendChild(self.element);
-  self.containerElement.appendChild(self.elementArea);
+  self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
+  self.previewElement = self.previewArea.getElementsByClassName('remark-slideshow')[0];
+  self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
+  self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
+
+  self.backdropElement = self.containerElement.getElementsByClassName('remark-backdrop')[0];
+  self.helpElement = self.containerElement.getElementsByClassName('remark-help')[0];
 
   self.events.on('propertiesChanged', function (changes) {
     if (changes.hasOwnProperty('ratio')) {
@@ -139,44 +139,6 @@ SlideshowView.prototype.configurePositionElement = function () {
   self.positionElement = document.createElement('div');
   self.positionElement.className = 'remark-position';
   self.element.appendChild(self.positionElement);
-};
-
-SlideshowView.prototype.configureBackdropElement = function () {
-  var self = this;
-
-  self.backdropElement = document.createElement('div');
-  self.backdropElement.className = 'remark-backdrop';
-  self.containerElement.appendChild(self.backdropElement);
-};
-
-SlideshowView.prototype.configureHelpElement = function () {
-  var self = this;
-
-  self.helpElement = document.createElement('div');
-  self.helpElement.className = 'remark-help';
-  self.helpElement.innerHTML = resources.help;
-  self.containerElement.appendChild(self.helpElement);
-};
-
-SlideshowView.prototype.configureNotesElement = function () {
-  var self = this;
-
-  self.notesElement = document.createElement('div');
-  self.notesElement.className = 'remark-notes';
-  self.containerElement.appendChild(self.notesElement);
-};
-
-SlideshowView.prototype.configurePreviewElement = function () {
-  var self = this;
-
-  self.previewElement = document.createElement('div');
-  self.previewElement.className = 'remark-slideshow remark-slideshow-preview';
-
-  self.previewArea = document.createElement('div');
-  self.previewArea.className = 'remark-preview-area';
-
-  self.previewArea.appendChild(self.previewElement);
-  self.containerElement.appendChild(self.previewArea);
 };
 
 SlideshowView.prototype.updateSlideViews = function () {

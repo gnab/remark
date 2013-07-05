@@ -47,8 +47,8 @@ function bundleResources (target) {
   var resources = {
         DOCUMENT_STYLES: JSON.stringify(
           less('src/remark.less'))
-      , HELP: JSON.stringify(
-          cat('src/help.html'))
+      , CONTAINER_LAYOUT: JSON.stringify(
+          cat('src/remark.html'))
       };
 
   cat('src/resources.js.template')
