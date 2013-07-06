@@ -103,7 +103,6 @@ html.remark-container, body.remark-container {
   right: 20px;
 }
 
-
 /************/
 /* Backdrop */
 /************/
@@ -178,9 +177,9 @@ html.remark-container, body.remark-container {
   }
 }
 
-/* ************** */
+/******************/
 /* Presenter mode */
-/* ************** */
+/******************/
 
 .remark-preview-area {
   bottom: 2%;
@@ -206,6 +205,26 @@ html.remark-container, body.remark-container {
   position: absolute;
   right: 0;
   top: 0;
+}
+
+.remark-toolbar {
+  color: #979892;
+  padding-bottom: 1em;
+
+  .remark-toolbar-link {
+    border: 2px solid #d7d8d2;
+    color: #979892;
+    display: inline-block;
+    padding: 2px 2px;
+    text-decoration: none;
+    text-align: center;
+    min-width: 20px;
+
+    &:hover {
+      border-color: #979892;
+      color: #676862;
+    }
+  }
 }
 
 .remark-container.remark-presenter-mode {

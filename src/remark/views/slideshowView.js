@@ -114,6 +114,24 @@ SlideshowView.prototype.configureChildElements = function () {
   self.previewElement = self.previewArea.getElementsByClassName('remark-slideshow')[0];
   self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
   self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
+  self.toolbarElement = self.notesArea.getElementsByClassName('remark-toolbar')[0];
+
+  var commands = {
+    increase: function () {
+      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) + 0.1 + 'em';
+    },
+    decrease: function () {
+      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) - 0.1 + 'em';
+    }
+  };
+
+  self.toolbarElement.getElementsByTagName('a').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      var command = e.target.hash.substr(1);
+      commands[command]();
+      e.preventDefault();
+    });
+  });
 
   self.backdropElement = self.containerElement.getElementsByClassName('remark-backdrop')[0];
   self.helpElement = self.containerElement.getElementsByClassName('remark-help')[0];
