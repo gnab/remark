@@ -1,5 +1,8 @@
 ### 0.5.1
 * Fix Firefox issue (#47) by extending HTMLCollection with forEach.
+* Fix empty paragraphs regression.
+* Flatten CSS class hierarchy to ease styling.
+* Remove default font size and family styles.
 
 ### 0.5.0
 * Update API to allow creating and embedding multiple slideshows.
