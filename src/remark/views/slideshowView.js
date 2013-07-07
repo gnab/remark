@@ -206,7 +206,7 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
   if (nextSlideView) {
     self.previewElement.innerHTML = nextSlideView.element.outerHTML;
-    self.previewElement.childNodes[0].style.display = 'block';
+    self.previewElement.childNodes[0].style.display = 'table';
   }
   else {
     self.previewElement.innerHTML = '';
