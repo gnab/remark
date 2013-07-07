@@ -1,3 +1,6 @@
+### 0.5.2
+* Add presenter mode and support functionality for cloning slideshow.
+
 ### 0.5.1
 * Fix Firefox issue (#47) by extending HTMLCollection with forEach.
 * Fix empty paragraphs regression.
