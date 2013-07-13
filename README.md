@@ -3,6 +3,7 @@
 A simple, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
 
 - Markdown formatting, with smart extensions
+- Presenter mode, with cloned slideshow view
 - Syntax highlighting, supporting a range of languages
 - Slide scaling, thus similar appearance on all devices / resolutions
 - Touch support for smart phones and pads, i.e. swipe to navigate slides
