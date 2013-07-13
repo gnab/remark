@@ -138,6 +138,8 @@ layout: false
 
 - Markdown formatting, with smart extensions
 
+- Presenter mode, with cloned slideshow view
+
 - Syntax highlighting, supporting a range of languages
 
 - Slide scaling, thus similar appearance on all devices / resolutions .red[*]
@@ -306,6 +308,8 @@ Slide properties serve multiple purposes:
 * Using slides as templates using properties `template` and `layout`
 
 * Expansion of `{{ property }}` expressions to property values
+
+See the [complete list](https://github.com/gnab/remark/wiki/Slide-Properties) of slide properties.
 ]
 ---
 .left-column[
@@ -359,6 +363,75 @@ Using [GFM](http://github.github.com/github-flavored-markdown/) fenced code bloc
 
 A number of highlighting [styles](https://github.com/gnab/remark/wiki/Configuration-Options#wiki-highlighting) are available, including several well-known themes from different editors and IDEs.
 
+]
+---
+.left-column[
+  ## Presenter mode
+]
+.right-column[
+To help out with giving presentations, a presenter mode comprising the
+following features is provided:
+
+- Display of slide notes for the current slide, to help you remember
+  key points
+
+- Display of upcoming slide, to let you know what's coming
+
+- Cloning of slideshow for viewing on extended display
+]
+---
+.left-column[
+  ## Presenter mode
+  ### - Inline notes
+]
+.right-column[
+Just like three dashes separate slides,
+three question marks separate slide content from slide notes:
+
+```
+Slide 1 content
+
+???
+
+Slide 1 notes
+
+---
+
+Slide 2 content
+
+???
+
+Slide 2 notes
+```
+
+Slide notes are also treated as Markdown, and will be converted in the
+same manner slide content is.
+
+Pressing __P__ will toggle presenter mode.
+]
+???
+Congratulations, you just toggled presenter mode!
+
+Now press __P__ to toggle it back off.
+---
+.left-column[
+  ## Presenter mode
+  ### - Inline notes
+  ### - Cloned view
+]
+.right-column[
+Presenter mode of course makes no sense to the audience.
+
+Creating a cloned view of your slideshow lets you:
+
+- Move the cloned view to the extended display visible to the audience
+
+- Put the original slideshow in presenter mode
+
+- Navigate as usual, and the cloned view will automatically keep up with the original
+
+Pressing __C__ will open a cloned view of the current slideshow in a new
+browser window.
 ]
 ---
 template: inverse

@@ -15,11 +15,11 @@ hljs.LANGUAGES.remark = function(){
         className: 'comment',
         begin: '^---?'
       },
-      { 
+      {
         className: 'string',
         begin: '^\\w+:'
       },
-      { 
+      {
         className: 'literal',
         begin: '\\{\\{', end: '\\}\\}'
       },
@@ -30,6 +30,10 @@ hljs.LANGUAGES.remark = function(){
       {
         className: 'string',
         begin: '```'
+      },
+      {
+        className: 'string',
+        begin: '\\?\\?\\?'
       }
     ]
   };
