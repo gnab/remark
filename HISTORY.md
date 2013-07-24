@@ -1,3 +1,6 @@
+### 0.5.3
+* Fix Firefox issue (#47) by handling quoted CSS URLs.
+
 ### 0.5.2
 * Add presenter mode and support functionality for cloning slideshow.
 
