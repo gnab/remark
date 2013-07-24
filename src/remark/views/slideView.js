@@ -33,10 +33,10 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
     , image
     ;
 
-  if ((match = /^url\(([^\)]+?)\)/.exec(backgroundImage)) !== null) {
+  if ((match = /^url\(("?)([^\)]+?)\1\)/.exec(backgroundImage)) !== null) {
     image = new Image();
     image.onload = function () {
-      if (image.width > dimensions.width || 
+      if (image.width > dimensions.width ||
           image.height > dimensions.height) {
         // Background image is larger than slide
         if (!self.originalBackgroundSize) {
@@ -54,7 +54,7 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
         }
       }
     };
-    image.src = match[1];
+    image.src = match[2];
   }
 };
 
@@ -112,7 +112,7 @@ function setBackgroundFromProperties (element, properties) {
 }
 
 function setHighlightStyleFromProperties (element, properties, slideshow) {
-  var highlightStyle = properties['highlight-style'] || 
+  var highlightStyle = properties['highlight-style'] ||
       slideshow.getHighlightStyle();
 
   if (highlightStyle) {
