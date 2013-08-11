@@ -47,3 +47,11 @@ h1, h2, h3 {
   background: #eee;
   border: none;
 }
+
+.dropbox-chooser {
+  width: 152px;
+  height: 25px;
+  cursor: pointer;
+  background-image: url('https://www.dropbox.com/static/images/widgets/chooser-button-sprites.png');
+  margin-top: 0.7em;
+}
