@@ -1,0 +1,49 @@
+@import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+@import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+@import url(https://fonts.googleapis.com/css?family=Anton);
+
+body {
+  font-family: 'Droid Serif';
+  margin: 0;
+}
+.header {
+  background: #272822;
+}
+.header .content {
+  text-shadow: 0 -1px 1px #262626;
+  padding: 0.5em 1em;
+  position: relative;
+}
+.header h1 {
+  color: #f3f3f3;
+  font-size: 3em;
+  margin-top: 0;
+  margin-bottom. 0.5em;
+  line-height: 1em;
+}
+
+h1, h2, h3 {
+  font-family: 'Yanone Kaffeesatz';
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+#editor {
+  font-size: 14px;
+  bottom: 0;
+  right: 50%;
+  left: 0;
+  top: 64px;
+}
+#slideshow {
+  font-size: 20px;
+  overflow: hidden;
+  top: 64px;
+  right: 0;
+  left: 50%;
+  bottom: 0;
+}
+.remark-container {
+  background: #eee;
+  border: none;
+}

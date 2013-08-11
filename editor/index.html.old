@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>remark</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width"/>
+    <link rel="stylesheet" href="css/default.css"/>
+  </head>
+  <body>
+    <div class="header">
+      <a href="https://github.com/gnab/remark"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+      <div class="content">
+        <h1>remark</h1>
+        <p class="gray">[ri-mahrk]</p>
+      </div>
+    </div>
+    <div class="content">
+      <p>Slideshow Markdown:</p>
+      <div id="editor"># Slide 1
+
+This is slide 1.
+
+---
+
+# Slide 2
+
+This is slide 2.</div>
+      <div id="slideshow"></div>
+    </div>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="https://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>
+    <script type="text/javascript" src="http://gnab.github.io/remark/downloads/remark-0.5.3.min.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
+  </body>
+</html>
