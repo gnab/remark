@@ -72,6 +72,7 @@ SlideshowView.prototype.configureContainerElement = function (element) {
     element.style.position = 'absolute';
     element.tabIndex = -1;
 
+    forwardEvents(self.events, window, ['resize']);
     forwardEvents(self.events, element, [
       'keydown', 'keypress', 'mousewheel',
       'touchstart', 'touchmove', 'touchend'
