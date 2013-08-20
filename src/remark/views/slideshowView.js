@@ -37,8 +37,6 @@ function SlideshowView (events, containerElement, slideshow) {
 
   events.on('togglePresenterMode', function () {
     toggleClass(self.containerElement, 'remark-presenter-mode');
-
-    self.presenterMode = !!!self.presenterMode;
     self.updateDimensions();
   });
 
@@ -144,6 +142,15 @@ SlideshowView.prototype.configureChildElements = function () {
   });
 
   self.events.on('resize', onResize);
+
+  window.matchMedia('print').addListener(function (e) {
+    if (e.matches) {
+      self.scaleToFit(self.element, {
+        clientWidth: document.documentElement.clientWidth * 1.25,
+        clientHeight: document.documentElement.clientHeight
+      });
+    }
+  });
 
   function onResize () {
     self.scaleToFit(self.element, self.elementArea);
