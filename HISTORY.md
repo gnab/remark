@@ -1,3 +1,6 @@
+### 0.5.4
+* Fix content class issue (#52) capital letters to break parsing.
+
 ### 0.5.3
 * Fix Firefox issue (#47) by handling quoted CSS URLs.
 
