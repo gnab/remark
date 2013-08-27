@@ -143,14 +143,16 @@ SlideshowView.prototype.configureChildElements = function () {
 
   self.events.on('resize', onResize);
 
-  window.matchMedia('print').addListener(function (e) {
-    if (e.matches) {
-      self.scaleToFit(self.element, {
-        clientWidth: document.documentElement.clientWidth * 1.25,
-        clientHeight: document.documentElement.clientHeight
-      });
-    }
-  });
+  if (window.matchMedia) {
+    window.matchMedia('print').addListener(function (e) {
+      if (e.matches) {
+        self.scaleToFit(self.element, {
+          clientWidth: document.documentElement.clientWidth * 1.25,
+          clientHeight: document.documentElement.clientHeight
+        });
+      }
+    });
+  }
 
   function onResize () {
     self.scaleToFit(self.element, self.elementArea);
