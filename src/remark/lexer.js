@@ -1,26 +1,26 @@
 module.exports = Lexer;
 
-var CODE = 1, 
-    CONTENT = 2, 
-    FENCES = 3, 
+var CODE = 1,
+    CONTENT = 2,
+    FENCES = 3,
     SEPARATOR = 4,
     NOTES_SEPARATOR = 5;
 
 var regexByName = {
-    CODE: /(?:^|\n)( {4}[^\n]+\n*)+/, 
-    CONTENT: /(?:\\)?((?:\.[a-z_\-][a-z\-_0-9]*)+)\[/, 
-    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/, 
+    CODE: /(?:^|\n)( {4}[^\n]+\n*)+/,
+    CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
+    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/,
     SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
     NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
   };
 
-var block = replace(/CODE|CONTENT|FENCES|SEPARATOR|NOTES_SEPARATOR/, regexByName), 
+var block = replace(/CODE|CONTENT|FENCES|SEPARATOR|NOTES_SEPARATOR/, regexByName),
     inline = replace(/CODE|CONTENT|FENCES/, regexByName);
 
 function Lexer () { }
 
 Lexer.prototype.lex = function (src) {
-  var tokens = lex(src, block), 
+  var tokens = lex(src, block),
       i;
 
   for (i = tokens.length - 2; i >= 0; i--) {
@@ -41,7 +41,7 @@ function lex (src, regex, tokens) {
   while ((cap = regex.exec(src)) !== null) {
     if (cap.index > 0) {
       tokens.push({
-        type: 'text', 
+        type: 'text',
         text: src.substring(0, cap.index)
       });
     }
@@ -87,7 +87,7 @@ function lex (src, regex, tokens) {
       }
       else {
         tokens.push({
-          type: 'text', 
+          type: 'text',
           text: cap[0]
         });
       }
@@ -98,7 +98,7 @@ function lex (src, regex, tokens) {
 
   if (src || (!src && tokens.length === 0)) {
     tokens.push({
-      type: 'text', 
+      type: 'text',
       text: src
     });
   }
@@ -113,8 +113,8 @@ function replace (regex, replacements) {
 }
 
 function getTextInBrackets (src, offset) {
-  var depth = 1, 
-      pos = offset, 
+  var depth = 1,
+      pos = offset,
       chr;
 
   while (depth > 0 && pos < src.length) {
