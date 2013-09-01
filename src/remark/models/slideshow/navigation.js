@@ -60,6 +60,10 @@ function Navigation (events) {
     if (self.clone && !self.clone.closed) {
       self.clone.postMessage('gotoSlide:' + currentSlideNo, '*');
     }
+
+    if (window.opener) {
+      window.opener.postMessage('gotoSlide:' + currentSlideNo, '*');
+    }
   }
 
   function gotoPreviousSlide() {
