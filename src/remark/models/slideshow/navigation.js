@@ -65,15 +65,15 @@ function Navigation (events) {
   function gotoPreviousSlide() {
     self.gotoSlide(currentSlideNo - 1);
   }
-  
+
   function gotoNextSlide() {
     self.gotoSlide(currentSlideNo + 1);
   }
-  
+
   function gotoFirstSlide () {
     self.gotoSlide(1);
   }
-  
+
   function gotoLastSlide () {
     self.gotoSlide(self.getSlideCount());
   }

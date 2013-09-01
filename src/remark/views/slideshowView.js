@@ -208,8 +208,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
     , slideView = self.slideViews[slideIndex]
     , nextSlideView = self.slideViews[slideIndex + 1];
 
-  self.slideshow.emit('slidein', slideView.element, slideIndex);
   slideView.show();
+
   self.positionElement.innerHTML =
     slideIndex + 1 + ' / ' + self.slideViews.length;
   self.notesElement.innerHTML = slideView.notesMarkup;
@@ -227,7 +227,6 @@ SlideshowView.prototype.hideSlide = function (slideIndex) {
   var self = this
     , slideView = self.slideViews[slideIndex];
 
-  self.slideshow.emit('slideout', slideView.element, slideIndex);
   slideView.hide();
 };
 

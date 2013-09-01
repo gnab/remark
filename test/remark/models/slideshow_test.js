@@ -9,7 +9,7 @@ describe('Slideshow', function () {
     ;
 
   beforeEach(function () {
-    events = new EventEmitter(); 
+    events = new EventEmitter();
     slideshow = new Slideshow(events);
   });
 
@@ -27,7 +27,7 @@ describe('Slideshow', function () {
 
   describe('continued slides', function () {
     it('should be created when using only two dashes', function () {
-      slideshow.loadFromString('a\n--\nb'); 
+      slideshow.loadFromString('a\n--\nb');
 
       slideshow.getSlides()[1].properties.should.have.property('continued', 'true');
     });
@@ -55,17 +55,17 @@ describe('Slideshow', function () {
 
   describe('layout slides', function () {
     it('should be default template for subsequent slides', function () {
-      slideshow.loadFromString('layout: true\na\n---\nb'); 
+      slideshow.loadFromString('layout: true\na\n---\nb');
       slideshow.getSlides()[0].source.should.equal('\nab');
     });
 
     it('should not be default template for subsequent layout slide', function () {
-      slideshow.loadFromString('layout: true\na\n---\nlayout: true\nb\n---\nc'); 
+      slideshow.loadFromString('layout: true\na\n---\nlayout: true\nb\n---\nc');
       slideshow.getSlides()[0].source.should.equal('\nbc');
     });
 
     it('should be omitted from list of slides', function () {
-      slideshow.loadFromString('name: a\nlayout: true\n---\nname: b'); 
+      slideshow.loadFromString('name: a\nlayout: true\n---\nname: b');
       slideshow.getSlides().length.should.equal(1);
     });
   });

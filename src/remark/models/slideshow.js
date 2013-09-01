@@ -1,14 +1,11 @@
-var EventEmitter = require('events').EventEmitter
-  , Navigation = require('./slideshow/navigation')
+var Navigation = require('./slideshow/navigation')
+  , Events = require('./slideshow/events')
   , utils = require('../utils')
   , Slide = require('./slide')
   , Parser = require('../parser')
   ;
 
 module.exports = Slideshow;
-
-Slideshow.prototype = new EventEmitter();
-Slideshow.prototype.setMaxListeners(0);
 
 function Slideshow (events, options) {
   var self = this
@@ -18,6 +15,7 @@ function Slideshow (events, options) {
   options = options || {};
 
   // Extend slideshow functionality
+  Events.call(self, events);
   Navigation.call(self, events);
 
   self.loadFromString = loadFromString;
@@ -75,7 +73,7 @@ function createSlides (slideshowSource) {
 
   parsedSlides.forEach(function (slide, i) {
     var template, slideViewModel;
-    
+
     if (slide.properties.continued === 'true' && i > 0) {
       template = slides[slides.length - 1];
     }
