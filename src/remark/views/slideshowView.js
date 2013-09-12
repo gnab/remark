@@ -2,6 +2,7 @@ var SlideView = require('./slideView')
   , resources = require('../resources')
   , addClass = require('../utils').addClass
   , toggleClass = require('../utils').toggleClass
+  , getPrefixedProperty = require('../utils').getPrefixedProperty
 
   , referenceWidth = 908
   , referenceHeight = 681
@@ -42,6 +43,27 @@ function SlideshowView (events, containerElement, slideshow) {
 
   events.on('toggleHelp', function () {
     toggleClass(self.containerElement, 'remark-help-mode');
+  });
+
+  handleFullscreen(self);
+}
+
+function handleFullscreen(self) {
+  var requestFullscreen = getPrefixedProperty(self.containerElement, 'requestFullScreen')
+    , cancelFullscreen = getPrefixedProperty(document, 'cancelFullScreen')
+    ;
+
+  self.events.on('toggleFullscreen', function () {
+    var fullscreenElement = getPrefixedProperty(document, 'fullscreenElement') ||
+      getPrefixedProperty(document, 'fullScreenElement');
+
+    if (!fullscreenElement && requestFullscreen) {
+      requestFullscreen.call(self.containerElement, Element.ALLOW_KEYBOARD_INPUT);
+    }
+    else if (cancelFullscreen) {
+      cancelFullscreen.call(document);
+    }
+    self.updateDimensions();
   });
 }
 

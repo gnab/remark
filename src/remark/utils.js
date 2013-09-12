@@ -24,6 +24,14 @@ exports.getClasses = function (element) {
     .filter(function (s) { return s !== ''; });
 };
 
+exports.getPrefixedProperty = function (element, propertyName) {
+  var capitalizedPropertName = propertyName[0].toUpperCase() +
+    propertyName.slice(1);
+
+  return element[propertyName] || element['moz' + capitalizedPropertName] ||
+    element['webkit' + capitalizedPropertName];
+};
+
 forEach([Array, window.NodeList, window.HTMLCollection], extend);
 
 function extend (object) {

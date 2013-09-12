@@ -4,6 +4,7 @@
 
 html.remark-container, body.remark-container {
   height: 100%;
+  width: 100%;
 }
 .remark-container {
   background: #d7d8d2;
@@ -13,6 +14,10 @@ html.remark-container, body.remark-container {
 .remark-container:focus {
   outline-style: solid;
   outline-width: 1px;
+}
+:-webkit-full-screen .remark-container {
+  width: 100%;
+  height: 100%;
 }
 @media print {
   .remark-container {

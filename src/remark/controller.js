@@ -78,6 +78,9 @@ function addKeyboardEventListeners (events) {
       case 'p':
         events.emit('togglePresenterMode');
         break;
+      case 'f':
+        events.emit('toggleFullscreen');
+        break;
       case '?':
         events.emit('toggleHelp');
         break;
