@@ -1,3 +1,8 @@
+### 0.5.5
+* #53: Use highlight.js fork that fixes Scala multiline string issue.
+* #54: Expose slide object in showSlide and hideSlide events.
+* Add fullscreen mode toggle.
+
 ### 0.5.4
 * Fix content class issue (#52) by allowing capital letters.
 
