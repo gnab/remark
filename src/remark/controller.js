@@ -1,10 +1,25 @@
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
+  addApiEventListeners(events, slideshowView);
   addNavigationEventListeners(events, slideshowView);
   addKeyboardEventListeners(events);
   addMouseEventListeners(events);
   addTouchEventListeners(events);
+}
+
+function addApiEventListeners(events, slideshowView) {
+  events.on('pause', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+  });
+
+  events.on('resume',  function(event) {
+    addKeyboardEventListeners(events);
+    addMouseEventListeners(events);
+    addTouchEventListeners(events);
+  });
 }
 
 function addNavigationEventListeners (events, slideshowView) {
@@ -36,6 +51,11 @@ function addNavigationEventListeners (events, slideshowView) {
       events.emit('gotoSlide', parseInt(cap[1], 10));
     }
   }
+}
+
+function removeKeyboardEventListeners(events) {
+  events.removeAllListeners("keydown");
+  events.removeAllListeners("keypress");
 }
 
 function addKeyboardEventListeners (events) {
@@ -88,6 +108,10 @@ function addKeyboardEventListeners (events) {
   });
 }
 
+function removeMouseEventListeners(events) {
+  events.removeAllListeners("mousewheel");
+}
+
 function addMouseEventListeners (events) {
   events.on('mousewheel', function (event) {
     if (event.wheelDeltaY > 0) {
@@ -98,6 +122,14 @@ function addMouseEventListeners (events) {
     }
   });
 }
+
+
+function removeTouchEventListeners(events) {
+  events.removeAllListeners("touchstart");
+  events.removeAllListeners("touchend");
+  events.removeAllListeners("touchmove");
+}
+
 
 function addTouchEventListeners (events) {
   var touch
