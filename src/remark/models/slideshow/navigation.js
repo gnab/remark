@@ -11,6 +11,8 @@ function Navigation (events) {
   self.gotoNextSlide = gotoNextSlide;
   self.gotoFirstSlide = gotoFirstSlide;
   self.gotoLastSlide = gotoLastSlide;
+  self.pause = pause;
+  self.resume = resume;
 
   events.on('gotoSlide', gotoSlide);
   events.on('gotoPreviousSlide', gotoPreviousSlide);
@@ -32,6 +34,14 @@ function Navigation (events) {
       self.clone.focus();
     }
   });
+
+  function pause () {
+    events.emit('pause');
+  }
+
+  function resume () {
+    events.emit('resume');
+  }
 
   function getCurrentSlideNo () {
     return currentSlideNo;

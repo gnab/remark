@@ -2592,14 +2592,29 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./models/slideshow":7,"./views/slideshowView":8,"./highlighter":3,"./controller":9}],9:[function(require,module,exports){
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
+  addApiEventListeners(events, slideshowView);
   addNavigationEventListeners(events, slideshowView);
   addKeyboardEventListeners(events);
   addMouseEventListeners(events);
   addTouchEventListeners(events);
+}
+
+function addApiEventListeners(events, slideshowView) {
+  events.on('pause', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+  });
+
+  events.on('resume',  function(event) {
+    addKeyboardEventListeners(events);
+    addMouseEventListeners(events);
+    addTouchEventListeners(events);
+  });
 }
 
 function addNavigationEventListeners (events, slideshowView) {
@@ -2631,6 +2646,11 @@ function addNavigationEventListeners (events, slideshowView) {
       events.emit('gotoSlide', parseInt(cap[1], 10));
     }
   }
+}
+
+function removeKeyboardEventListeners(events) {
+  events.removeAllListeners("keydown");
+  events.removeAllListeners("keypress");
 }
 
 function addKeyboardEventListeners (events) {
@@ -2683,6 +2703,10 @@ function addKeyboardEventListeners (events) {
   });
 }
 
+function removeMouseEventListeners(events) {
+  events.removeAllListeners("mousewheel");
+}
+
 function addMouseEventListeners (events) {
   events.on('mousewheel', function (event) {
     if (event.wheelDeltaY > 0) {
@@ -2693,6 +2717,14 @@ function addMouseEventListeners (events) {
     }
   });
 }
+
+
+function removeTouchEventListeners(events) {
+  events.removeAllListeners("touchstart");
+  events.removeAllListeners("touchend");
+  events.removeAllListeners("touchmove");
+}
+
 
 function addTouchEventListeners (events) {
   var touch
@@ -3093,6 +3125,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
     , slideView = self.slideViews[slideIndex]
     , nextSlideView = self.slideViews[slideIndex + 1];
 
+  self.events.emit("beforeShowSlide", slideIndex);
+
   slideView.show();
 
   self.positionElement.innerHTML =
@@ -3106,13 +3140,18 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
   else {
     self.previewElement.innerHTML = '';
   }
+
+  self.events.emit("afterShowSlide", slideIndex);
 };
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
   var self = this
     , slideView = self.slideViews[slideIndex];
 
+  self.events.emit("beforeHideSlide", slideIndex);
   slideView.hide();
+  self.events.emit("afterHideSlide", slideIndex);
+
 };
 
 SlideshowView.prototype.updateDimensions = function () {
@@ -3207,6 +3246,8 @@ function Navigation (events) {
   self.gotoNextSlide = gotoNextSlide;
   self.gotoFirstSlide = gotoFirstSlide;
   self.gotoLastSlide = gotoLastSlide;
+  self.pause = pause;
+  self.resume = resume;
 
   events.on('gotoSlide', gotoSlide);
   events.on('gotoPreviousSlide', gotoPreviousSlide);
@@ -3228,6 +3269,14 @@ function Navigation (events) {
       self.clone.focus();
     }
   });
+
+  function pause () {
+    events.emit('pause');
+  }
+
+  function resume () {
+    events.emit('resume');
+  }
 
   function getCurrentSlideNo () {
     return currentSlideNo;
@@ -3301,7 +3350,32 @@ function Navigation (events) {
   }
 }
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+
+module.exports = Events;
+
+function Events (events) {
+  var self = this
+    , externalEvents = new EventEmitter()
+    ;
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
+}
+
+},{"events":6}],12:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -3477,32 +3551,7 @@ Slide.prototype.expandVariables = function (contentOnly) {
   return expandResult;
 };
 
-},{}],11:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":6}],14:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var Lexer = require('./lexer'),
     converter = require('./converter');
 
