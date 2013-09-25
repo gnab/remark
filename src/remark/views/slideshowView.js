@@ -230,6 +230,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
     , slideView = self.slideViews[slideIndex]
     , nextSlideView = self.slideViews[slideIndex + 1];
 
+  self.events.emit("beforeShowSlide", slideIndex);
+
   slideView.show();
 
   self.positionElement.innerHTML =
@@ -243,13 +245,18 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
   else {
     self.previewElement.innerHTML = '';
   }
+
+  self.events.emit("afterShowSlide", slideIndex);
 };
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
   var self = this
     , slideView = self.slideViews[slideIndex];
 
+  self.events.emit("beforeHideSlide", slideIndex);
   slideView.hide();
+  self.events.emit("afterHideSlide", slideIndex);
+
 };
 
 SlideshowView.prototype.updateDimensions = function () {
