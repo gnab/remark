@@ -2592,7 +2592,7 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./controller":8,"./views/slideshowView":9}],8:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
@@ -2807,8 +2807,7 @@ Controller.prototype.addTouchEventListeners = function () {
 };
 
 },{}],7:[function(require,module,exports){
-var Navigation = require('./slideshow/navigation')
-  , Events = require('./slideshow/events')
+var EventEmitter = require('events').EventEmitter
   , utils = require('../utils')
   , Slide = require('./slide')
   , Parser = require('../parser')
@@ -2817,60 +2816,18 @@ var Navigation = require('./slideshow/navigation')
 module.exports = Slideshow;
 
 function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
+  var self = this;
 
-  self.events = events;
+  /**
+   * Configuration
+   * =============
+   */
+
   options = options || {};
-
-  // Extend slideshow functionality
-  Events.call(self, events);
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-  self.slide = slide;
-  self.start = start;
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source, events);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function slide(nameOrNumber) {
-    var slideNo = self.getSlideNo(nameOrNumber);
-    return slides[slideNo-1];
-  }
-
-  function start() {
-    events.emit('resume');
-    return self;
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
 
   function getOrDefault (key, defaultValue) {
     return function () {
@@ -2881,6 +2838,198 @@ function Slideshow (events, options) {
       return options[key];
     };
   }
+
+  /**
+   * Slides
+   * ======
+   */
+
+  var slides = [];
+
+  /**
+   * Loads slideshow from Markdown string.
+   *
+   * @param  {String} source Markdown string.
+   */
+  self.load = function (source) {
+    source = source || '';
+
+    slides = createSlides(source, events);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  };
+
+  /**
+   * Returns list of slides.
+   *
+   * @return  {Slide[]} List of slides.
+   */
+  self.slides = function () {
+    return slides.map(function (slide) { return slide; });
+  };
+
+  /**
+   * Returns current slide, or slide by name or number.
+   *
+   * @param  {String|Number} nameOrNumber [optional]
+   *
+   * @return {Slide} Slide identified by `nameOrNumber`, or the current
+   *         slide if not given.
+   */
+  self.slide = function (nameOrNumber) {
+    if (nameOrNumber === undefined) {
+      return slides[currentSlideNo - 1];
+    }
+
+    return slides.byName[nameOrNumber] || slides[parseInt(nameOrNumber, 11) - 1];
+  };
+
+  // Load slides from source
+  self.load(options.source);
+
+  /**
+   * Control
+   * =======
+   */
+
+  /**
+   * Starts slideshow navigation.
+   *
+   * Navigation is initially disabled to allow customizations to take place
+   * before navigation starts and the initial slide is shown.
+   */
+  self.start = function () {
+    events.emit('resume');
+    return self;
+  };
+
+  /**
+   * Pauses slideshow navigation.
+   *
+   * Special customization may require
+   */
+  self.pause = function () {
+    events.emit('pause');
+    return self;
+  };
+
+  /**
+   * Resumes slideshow navigation.
+   */
+  self.resume = function () {
+    events.emit('resume');
+    return self;
+  };
+
+  /**
+   * Navigation
+   * ==========
+   */
+
+  var currentSlideNo = 1;
+
+  self.forward = function () {
+    if (self.slide().hasMoreSteps()) {
+      self.slide().forward();
+    }
+    else {
+      self.gotoSlide(currentSlideNo + 1);
+    }
+  };
+
+  self.backward = function () {
+    self.gotoSlide(currentSlideNo - 1);
+  };
+
+  self.gotoSlide = function (slideNoOrName) {
+    var slide = self.slide(slideNoOrName)
+      , slideNo
+      ;
+
+    if (slide) {
+      slideNo = slide.number();
+    }
+    else {
+      if (currentSlideNo === 0 && self.slides().length) {
+        slideNo = 1;
+      }
+      else {
+        return;
+      }
+    }
+
+    if (currentSlideNo !== 0) {
+      events.emit('hideSlide', currentSlideNo - 1);
+    }
+
+    events.emit('showSlide', slideNo - 1);
+
+    currentSlideNo = slideNo;
+
+    events.emit('slideChanged', slide && slideNoOrName || slideNo);
+
+    if (self.clone && !self.clone.closed) {
+      self.clone.postMessage('gotoSlide:' + currentSlideNo, '*');
+    }
+
+    if (window.opener) {
+      window.opener.postMessage('gotoSlide:' + currentSlideNo, '*');
+    }
+  };
+
+  events.on('gotoSlide', self.gotoSlide);
+  events.on('backward', self.backward);
+  events.on('forward', self.forward);
+  events.on('gotoFirstSlide', function () {
+    self.gotoSlide(1);
+  });
+  events.on('gotoLastSlide', function () {
+    self.gotoSlide(self.slides().length);
+  });
+
+  events.on('slidesChanged', function () {
+    if (currentSlideNo > self.slides().length) {
+      currentSlideNo = self.slides().length;
+    }
+  });
+
+  /**
+   * Clone
+   * =====
+   */
+
+  var clone;
+
+  events.on('createClone', function () {
+    if (!clone || clone.closed) {
+      clone = window.open(location.href, '_blank', 'location=no');
+    }
+    else {
+      clone.focus();
+    }
+  });
+
+  /**
+   * Eventing
+   * ========
+   */
+
+  var externalEvents = new EventEmitter();
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.slides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
 }
 
 function createSlides (slideshowSource, events) {
@@ -2909,7 +3058,7 @@ function createSlides (slideshowSource, events) {
       template = layoutSlide;
     }
 
-    slideViewModel = new Slide(slides.length + 1, slide, template, events);
+    slideViewModel = new Slide(slides.length + 1, slide, template);
 
     if (slide.properties.layout === 'true') {
       layoutSlide = slideViewModel;
@@ -2936,7 +3085,7 @@ function expandVariables (slides) {
   });
 }
 
-},{"./slideshow/navigation":10,"./slideshow/events":11,"../utils":12,"./slide":13,"../parser":14}],8:[function(require,module,exports){
+},{"events":6,"../utils":10,"./slide":11,"../parser":12}],9:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -3124,7 +3273,7 @@ SlideshowView.prototype.updateSlideViews = function () {
     self.elementArea.removeChild(slideView.containerElement);
   });
 
-  self.slideViews = self.slideshow.getSlides().map(function (slide) {
+  self.slideViews = self.slideshow.slides().map(function (slide) {
     return new SlideView(self.events, self.slideshow, self.scaler, slide);
   });
 
@@ -3134,8 +3283,8 @@ SlideshowView.prototype.updateSlideViews = function () {
 
   self.updateDimensions();
 
-  if (self.slideshow.getCurrentSlideNo() > 0) {
-    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
+  if (self.slideshow.slide()) {
+    self.showSlide(self.slideshow.slide().number() - 1);
   }
 };
 
@@ -3205,156 +3354,7 @@ SlideshowView.prototype.scaleElements = function () {
   self.scaler.scaleToFit(self.helpElement, self.containerElement);
 };
 
-},{"./slideView":15,"../scaler":16,"../resources":4,"../utils":12}],11:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":6}],10:[function(require,module,exports){
-module.exports = Navigation;
-
-function Navigation (events) {
-  var self = this
-    , currentSlideNo = 0
-    ;
-
-  self.getCurrentSlideNo = getCurrentSlideNo;
-  self.gotoSlide = gotoSlide;
-  self.backward = backward;
-  self.forward = forward;
-  self.gotoFirstSlide = gotoFirstSlide;
-  self.gotoLastSlide = gotoLastSlide;
-  self.getSlideNo = getSlideNo;
-  self.pause = pause;
-  self.resume = resume;
-
-  events.on('gotoSlide', gotoSlide);
-  events.on('backward', backward);
-  events.on('forward', forward);
-  events.on('gotoFirstSlide', gotoFirstSlide);
-  events.on('gotoLastSlide', gotoLastSlide);
-
-  events.on('slidesChanged', function () {
-    if (currentSlideNo > self.getSlideCount()) {
-      currentSlideNo = self.getSlideCount();
-    }
-  });
-
-  events.on('createClone', function () {
-    if (!self.clone || self.clone.closed) {
-      self.clone = window.open(location.href, '_blank', 'location=no');
-    }
-    else {
-      self.clone.focus();
-    }
-  });
-
-  function pause () {
-    events.emit('pause');
-  }
-
-  function resume () {
-    events.emit('resume');
-  }
-
-  function getCurrentSlideNo () {
-    return currentSlideNo;
-  }
-
-  function gotoSlide (slideNoOrName) {
-    var slideNo = getSlideNo(slideNoOrName)
-      , alreadyOnSlide = slideNo === currentSlideNo
-      , slideOutOfRange = slideNo < 1 || slideNo > self.getSlideCount()
-      ;
-
-    if (alreadyOnSlide || slideOutOfRange) {
-      return;
-    }
-
-    if (currentSlideNo !== 0) {
-      events.emit('hideSlide', currentSlideNo - 1);
-    }
-
-    events.emit('showSlide', slideNo - 1);
-
-    currentSlideNo = slideNo;
-
-    events.emit('slideChanged', slideNoOrName || slideNo);
-
-    if (self.clone && !self.clone.closed) {
-      self.clone.postMessage('gotoSlide:' + currentSlideNo, '*');
-    }
-
-    if (window.opener) {
-      window.opener.postMessage('gotoSlide:' + currentSlideNo, '*');
-    }
-  }
-
-  function backward() {
-    self.gotoSlide(currentSlideNo - 1);
-  }
-
-  function forward() {
-    if (self.slide().hasMoreSteps()) {
-      self.slide().forward();
-    }
-    else {
-      self.gotoSlide(currentSlideNo + 1);
-    }
-  }
-
-  function gotoFirstSlide () {
-    self.gotoSlide(1);
-  }
-
-  function gotoLastSlide () {
-    self.gotoSlide(self.getSlideCount());
-  }
-
-  function getSlideNo (slideNoOrName) {
-    var slideNo
-      , slide
-      ;
-
-    if (typeof slideNoOrName === 'number') {
-      return slideNoOrName;
-    }
-
-    slideNo = parseInt(slideNoOrName, 10);
-    if (slideNo.toString() === slideNoOrName) {
-      return slideNo;
-    }
-
-    slide = self.getSlideByName(slideNoOrName);
-    if (slide) {
-      return slide.getSlideNo();
-    }
-
-    return 1;
-  }
-}
-
-},{}],12:[function(require,module,exports){
+},{"./slideView":13,"../scaler":14,"../resources":4,"../utils":10}],10:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -3439,18 +3439,18 @@ function forEach (list, f) {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = Slide;
 
-function Slide (slideNo, slide, template, events) {
+function Slide (number, slide, template) {
   var self = this;
 
-  self.events = events;
   self.properties = slide.properties || {};
   self.source = slide.source || '';
   self.notes = slide.notes || '';
-  self.number = slideNo;
-  self.slideNo = slideNo;
+  self.number = function () {
+    return number;
+  };
 
   self.currentstep = -1;
   self.loopcount = 0;
@@ -3463,8 +3463,6 @@ function Slide (slideNo, slide, template, events) {
   self.setup = setup;
   self.step = step;
   self.loop = loop;
-
-  self.getSlideNo = function () { return slideNo; };
 
   if (template) {
     inherit(self, template);
@@ -3606,7 +3604,7 @@ Slide.prototype.expandVariables = function (contentOnly) {
   return expandResult;
 };
 
-},{}],16:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var referenceWidth = 908
   , referenceHeight = 681
   , referenceRatio = referenceWidth / referenceHeight
@@ -3685,7 +3683,7 @@ function getDimensions (ratio) {
   };
 }
 
-},{}],14:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var Lexer = require('./lexer'),
     converter = require('./converter');
 
@@ -3772,7 +3770,7 @@ function extractProperties (source, properties) {
   return source;
 }
 
-},{"./lexer":17,"./converter":18}],15:[function(require,module,exports){
+},{"./lexer":15,"./converter":16}],13:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -3839,7 +3837,7 @@ SlideView.prototype.configureElements = function () {
 
   self.numberElement = document.createElement('div');
   self.numberElement.className = 'remark-slide-number';
-  self.numberElement.innerHTML = self.slide.number + ' / ' + self.slideshow.getSlides().length;
+  self.numberElement.innerHTML = self.slide.number() + ' / ' + self.slideshow.slides().length;
 
   self.contentElement.appendChild(self.numberElement);
   self.element.appendChild(self.contentElement);
@@ -3962,7 +3960,7 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":18,"../highlighter":3,"../utils":12}],17:[function(require,module,exports){
+},{"../converter":16,"../highlighter":3,"../utils":10}],15:[function(require,module,exports){
 module.exports = Lexer;
 
 var CODE = 1,
@@ -4093,7 +4091,7 @@ function getTextInBrackets (src, offset) {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var marked = require('marked')
   , converter = module.exports = {}
   ;
@@ -4130,7 +4128,7 @@ converter.convertMarkdown = function (source) {
   return source;
 };
 
-},{"marked":19}],19:[function(require,module,exports){
+},{"marked":17}],17:[function(require,module,exports){
 (function(global){/**
  * marked - a markdown parser
  * Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)

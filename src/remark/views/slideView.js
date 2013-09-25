@@ -64,7 +64,7 @@ SlideView.prototype.configureElements = function () {
 
   self.numberElement = document.createElement('div');
   self.numberElement.className = 'remark-slide-number';
-  self.numberElement.innerHTML = self.slide.number + ' / ' + self.slideshow.getSlides().length;
+  self.numberElement.innerHTML = self.slide.number() + ' / ' + self.slideshow.slides().length;
 
   self.contentElement.appendChild(self.numberElement);
   self.element.appendChild(self.contentElement);

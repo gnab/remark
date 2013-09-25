@@ -1,14 +1,14 @@
 module.exports = Slide;
 
-function Slide (slideNo, slide, template, events) {
+function Slide (number, slide, template) {
   var self = this;
 
-  self.events = events;
   self.properties = slide.properties || {};
   self.source = slide.source || '';
   self.notes = slide.notes || '';
-  self.number = slideNo;
-  self.slideNo = slideNo;
+  self.number = function () {
+    return number;
+  };
 
   self.currentstep = -1;
   self.loopcount = 0;
@@ -21,8 +21,6 @@ function Slide (slideNo, slide, template, events) {
   self.setup = setup;
   self.step = step;
   self.loop = loop;
-
-  self.getSlideNo = function () { return slideNo; };
 
   if (template) {
     inherit(self, template);

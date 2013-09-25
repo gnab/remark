@@ -200,7 +200,7 @@ describe('SlideshowView', function () {
     });
 
     it('should replace slide views on slideshow update', function () {
-      model.loadFromString('a\n---\nb');
+      model.load('a\n---\nb');
 
       view.slideViews.length.should.equal(2);
     });

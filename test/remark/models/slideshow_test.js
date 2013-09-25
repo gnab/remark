@@ -15,58 +15,58 @@ describe('Slideshow', function () {
 
   describe('loading from source', function () {
     it('should create slides', function () {
-      slideshow.loadFromString('a\n---\nb');
-      slideshow.getSlides().length.should.equal(2);
+      slideshow.load('a\n---\nb');
+      slideshow.slides().length.should.equal(2);
     });
 
     it('should replace slides', function () {
-      slideshow.loadFromString('a\n---\nb\n---\nc');
-      slideshow.getSlides().length.should.equal(3);
+      slideshow.load('a\n---\nb\n---\nc');
+      slideshow.slides().length.should.equal(3);
     });
   });
 
   describe('continued slides', function () {
     it('should be created when using only two dashes', function () {
-      slideshow.loadFromString('a\n--\nb');
+      slideshow.load('a\n--\nb');
 
-      slideshow.getSlides()[1].properties.should.have.property('continued', 'true');
+      slideshow.slides()[1].properties.should.have.property('continued', 'true');
     });
   });
 
   describe('name mapping', function () {
     it('should map named slide', function () {
-      slideshow.loadFromString('name: a\n---\nno name\n---\nname: b');
-      slideshow.getSlideByName('a').should.exist;
-      slideshow.getSlideByName('b').should.exist;
+      slideshow.load('name: a\n---\nno name\n---\nname: b');
+      slideshow.slide('a').should.exist;
+      slideshow.slide('b').should.exist;
     });
   });
 
   describe('templates', function () {
     it('should have properties inherited by referenced slide', function () {
-      slideshow.loadFromString('name: a\na\n---\ntemplate: a\nb');
-      slideshow.getSlides()[1].source.should.equal('\na\nb');
+      slideshow.load('name: a\na\n---\ntemplate: a\nb');
+      slideshow.slides()[1].source.should.equal('\na\nb');
     });
 
     it('should have source inherited by referenced slide', function () {
-      slideshow.loadFromString('name: a\na\n---\ntemplate: a\nb');
-      slideshow.getSlides()[1].source.should.equal('\na\nb');
+      slideshow.load('name: a\na\n---\ntemplate: a\nb');
+      slideshow.slides()[1].source.should.equal('\na\nb');
     });
   });
 
   describe('layout slides', function () {
     it('should be default template for subsequent slides', function () {
-      slideshow.loadFromString('layout: true\na\n---\nb');
-      slideshow.getSlides()[0].source.should.equal('\nab');
+      slideshow.load('layout: true\na\n---\nb');
+      slideshow.slides()[0].source.should.equal('\nab');
     });
 
     it('should not be default template for subsequent layout slide', function () {
-      slideshow.loadFromString('layout: true\na\n---\nlayout: true\nb\n---\nc');
-      slideshow.getSlides()[0].source.should.equal('\nbc');
+      slideshow.load('layout: true\na\n---\nlayout: true\nb\n---\nc');
+      slideshow.slides()[0].source.should.equal('\nbc');
     });
 
     it('should be omitted from list of slides', function () {
-      slideshow.loadFromString('name: a\nlayout: true\n---\nname: b');
-      slideshow.getSlides().length.should.equal(1);
+      slideshow.load('name: a\nlayout: true\n---\nname: b');
+      slideshow.slides().length.should.equal(1);
     });
   });
 
@@ -76,7 +76,7 @@ describe('Slideshow', function () {
         done();
       });
 
-      slideshow.loadFromString('a\n---\nb');
+      slideshow.load('a\n---\nb');
     });
   });
 });

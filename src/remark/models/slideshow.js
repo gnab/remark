@@ -1,5 +1,4 @@
-var Navigation = require('./slideshow/navigation')
-  , Events = require('./slideshow/events')
+var EventEmitter = require('events').EventEmitter
   , utils = require('../utils')
   , Slide = require('./slide')
   , Parser = require('../parser')
@@ -8,60 +7,18 @@ var Navigation = require('./slideshow/navigation')
 module.exports = Slideshow;
 
 function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
+  var self = this;
 
-  self.events = events;
+  /**
+   * Configuration
+   * =============
+   */
+
   options = options || {};
-
-  // Extend slideshow functionality
-  Events.call(self, events);
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-  self.slide = slide;
-  self.start = start;
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source, events);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function slide(nameOrNumber) {
-    var slideNo = self.getSlideNo(nameOrNumber);
-    return slides[slideNo-1];
-  }
-
-  function start() {
-    events.emit('resume');
-    return self;
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
 
   function getOrDefault (key, defaultValue) {
     return function () {
@@ -72,6 +29,198 @@ function Slideshow (events, options) {
       return options[key];
     };
   }
+
+  /**
+   * Slides
+   * ======
+   */
+
+  var slides = [];
+
+  /**
+   * Loads slideshow from Markdown string.
+   *
+   * @param  {String} source Markdown string.
+   */
+  self.load = function (source) {
+    source = source || '';
+
+    slides = createSlides(source, events);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  };
+
+  /**
+   * Returns list of slides.
+   *
+   * @return  {Slide[]} List of slides.
+   */
+  self.slides = function () {
+    return slides.map(function (slide) { return slide; });
+  };
+
+  /**
+   * Returns current slide, or slide by name or number.
+   *
+   * @param  {String|Number} nameOrNumber [optional]
+   *
+   * @return {Slide} Slide identified by `nameOrNumber`, or the current
+   *         slide if not given.
+   */
+  self.slide = function (nameOrNumber) {
+    if (nameOrNumber === undefined) {
+      return slides[currentSlideNo - 1];
+    }
+
+    return slides.byName[nameOrNumber] || slides[parseInt(nameOrNumber, 11) - 1];
+  };
+
+  // Load slides from source
+  self.load(options.source);
+
+  /**
+   * Control
+   * =======
+   */
+
+  /**
+   * Starts slideshow navigation.
+   *
+   * Navigation is initially disabled to allow customizations to take place
+   * before navigation starts and the initial slide is shown.
+   */
+  self.start = function () {
+    events.emit('resume');
+    return self;
+  };
+
+  /**
+   * Pauses slideshow navigation.
+   *
+   * Special customization may require
+   */
+  self.pause = function () {
+    events.emit('pause');
+    return self;
+  };
+
+  /**
+   * Resumes slideshow navigation.
+   */
+  self.resume = function () {
+    events.emit('resume');
+    return self;
+  };
+
+  /**
+   * Navigation
+   * ==========
+   */
+
+  var currentSlideNo = 1;
+
+  self.forward = function () {
+    if (self.slide().hasMoreSteps()) {
+      self.slide().forward();
+    }
+    else {
+      self.gotoSlide(currentSlideNo + 1);
+    }
+  };
+
+  self.backward = function () {
+    self.gotoSlide(currentSlideNo - 1);
+  };
+
+  self.gotoSlide = function (slideNoOrName) {
+    var slide = self.slide(slideNoOrName)
+      , slideNo
+      ;
+
+    if (slide) {
+      slideNo = slide.number();
+    }
+    else {
+      if (currentSlideNo === 0 && self.slides().length) {
+        slideNo = 1;
+      }
+      else {
+        return;
+      }
+    }
+
+    if (currentSlideNo !== 0) {
+      events.emit('hideSlide', currentSlideNo - 1);
+    }
+
+    events.emit('showSlide', slideNo - 1);
+
+    currentSlideNo = slideNo;
+
+    events.emit('slideChanged', slide && slideNoOrName || slideNo);
+
+    if (self.clone && !self.clone.closed) {
+      self.clone.postMessage('gotoSlide:' + currentSlideNo, '*');
+    }
+
+    if (window.opener) {
+      window.opener.postMessage('gotoSlide:' + currentSlideNo, '*');
+    }
+  };
+
+  events.on('gotoSlide', self.gotoSlide);
+  events.on('backward', self.backward);
+  events.on('forward', self.forward);
+  events.on('gotoFirstSlide', function () {
+    self.gotoSlide(1);
+  });
+  events.on('gotoLastSlide', function () {
+    self.gotoSlide(self.slides().length);
+  });
+
+  events.on('slidesChanged', function () {
+    if (currentSlideNo > self.slides().length) {
+      currentSlideNo = self.slides().length;
+    }
+  });
+
+  /**
+   * Clone
+   * =====
+   */
+
+  var clone;
+
+  events.on('createClone', function () {
+    if (!clone || clone.closed) {
+      clone = window.open(location.href, '_blank', 'location=no');
+    }
+    else {
+      clone.focus();
+    }
+  });
+
+  /**
+   * Eventing
+   * ========
+   */
+
+  var externalEvents = new EventEmitter();
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.slides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
 }
 
 function createSlides (slideshowSource, events) {
@@ -100,7 +249,7 @@ function createSlides (slideshowSource, events) {
       template = layoutSlide;
     }
 
-    slideViewModel = new Slide(slides.length + 1, slide, template, events);
+    slideViewModel = new Slide(slides.length + 1, slide, template);
 
     if (slide.properties.layout === 'true') {
       layoutSlide = slideViewModel;

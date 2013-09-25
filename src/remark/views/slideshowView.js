@@ -185,7 +185,7 @@ SlideshowView.prototype.updateSlideViews = function () {
     self.elementArea.removeChild(slideView.containerElement);
   });
 
-  self.slideViews = self.slideshow.getSlides().map(function (slide) {
+  self.slideViews = self.slideshow.slides().map(function (slide) {
     return new SlideView(self.events, self.slideshow, self.scaler, slide);
   });
 
@@ -195,8 +195,8 @@ SlideshowView.prototype.updateSlideViews = function () {
 
   self.updateDimensions();
 
-  if (self.slideshow.getCurrentSlideNo() > 0) {
-    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
+  if (self.slideshow.slide()) {
+    self.showSlide(self.slideshow.slide().number() - 1);
   }
 };
 

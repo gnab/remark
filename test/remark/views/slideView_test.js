@@ -7,7 +7,7 @@ var EventEmitter = require('events').EventEmitter
 describe('SlideView', function () {
   var slideshow = {
         getHighlightStyle: function () { return 'default'; }
-      , getSlides: function () { return []; }
+      , slides: function () { return []; }
       }
     , scaler = {
         dimensions: {width: 10, height: 10}
