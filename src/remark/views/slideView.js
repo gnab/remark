@@ -25,6 +25,10 @@ SlideView.prototype.hide = function () {
   this.element.style.display = 'none';
 };
 
+SlideView.prototype.run = function () {
+  this.slide.run();
+};
+
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   var self = this
     , styles = window.getComputedStyle(this.contentElement)

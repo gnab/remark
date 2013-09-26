@@ -2552,8 +2552,9 @@ var EventEmitter = require('events').EventEmitter
 // including external language grammars
 module.exports.highlighter = highlighter;
 
-// Creates slideshow initialized from options
-module.exports.create = function (options) {
+
+// Allocates slideshow initialized from options
+module.exports.alloc = function (options) {
   var events
     , slideshow
     , slideshowView
@@ -2568,9 +2569,18 @@ module.exports.create = function (options) {
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, options.container, slideshow);
   controller = new Controller(events, slideshowView);
-
   return slideshow;
 };
+
+
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
+  var slideshow = this.alloc(options);
+  slideshow.begin();
+  return slideshow;
+};
+
+
 
 function applyDefaults (options) {
   var sourceElement;
@@ -2598,12 +2608,13 @@ module.exports = Controller;
 function Controller (events, slideshowView) {
   addApiEventListeners(events, slideshowView);
   addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
+  addKeyboardEventListeners(events, 'gotoNextSlide');
+  addMouseEventListeners(events, 'gotoNextSlide');
+  addTouchEventListeners(events, 'gotoNextSlide');
 }
 
 function addApiEventListeners(events, slideshowView) {
+
   events.on('pause', function(event) {
     removeKeyboardEventListeners(events);
     removeMouseEventListeners(events);
@@ -2611,33 +2622,34 @@ function addApiEventListeners(events, slideshowView) {
   });
 
   events.on('resume',  function(event) {
-    addKeyboardEventListeners(events);
-    addMouseEventListeners(events);
-    addTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlide');
+    addMouseEventListeners(events, 'gotoNextSlide');
+    addTouchEventListeners(events, 'gotoNextSlide');
+  });
+
+  events.on('beginStepWithinSlide', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlideStep');
+    addMouseEventListeners(events, 'gotoNextSlideStep');
+    addTouchEventListeners(events, 'gotoNextSlideStep');
+  });
+
+  events.on('endStepWithinSlide', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlide');
+    addMouseEventListeners(events, 'gotoNextSlide');
+    addTouchEventListeners(events, 'gotoNextSlide');
   });
 }
 
-function addNavigationEventListeners (events, slideshowView) {
-  if (slideshowView.isEmbedded()) {
-    events.emit('gotoSlide', 1);
-  }
-  else {
-    events.on('hashchange', navigateByHash);
-    events.on('slideChanged', updateHash);
 
-    navigateByHash();
-  }
+function addNavigationEventListeners (events, slideshowView) {
 
   events.on('message', navigateByMessage);
-
-  function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
-    events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
 
   function navigateByMessage(message) {
     var cap;
@@ -2653,7 +2665,10 @@ function removeKeyboardEventListeners(events) {
   events.removeAllListeners("keypress");
 }
 
-function addKeyboardEventListeners (events) {
+
+
+
+function addKeyboardEventListeners (events, forwardEvent) {
   events.on('keydown', function (event) {
     switch (event.keyCode) {
       case 33: // Page up
@@ -2665,7 +2680,7 @@ function addKeyboardEventListeners (events) {
       case 34: // Page down
       case 39: // Right
       case 40: // Down
-        events.emit('gotoNextSlide');
+        events.emit(forwardEvent);
         break;
       case 36: // Home
         events.emit('gotoFirstSlide');
@@ -2682,7 +2697,7 @@ function addKeyboardEventListeners (events) {
   events.on('keypress', function (event) {
     switch (String.fromCharCode(event.which)) {
       case 'j':
-        events.emit('gotoNextSlide');
+        events.emit(forwardEvent);
         break;
       case 'k':
         events.emit('gotoPreviousSlide');
@@ -2703,21 +2718,21 @@ function addKeyboardEventListeners (events) {
   });
 }
 
+
 function removeMouseEventListeners(events) {
   events.removeAllListeners("mousewheel");
 }
 
-function addMouseEventListeners (events) {
+function addMouseEventListeners (events, forwardEvent) {
   events.on('mousewheel', function (event) {
     if (event.wheelDeltaY > 0) {
       events.emit('gotoPreviousSlide');
     }
     else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
+      events.emit(forwardEvent);
     }
   });
 }
-
 
 function removeTouchEventListeners(events) {
   events.removeAllListeners("touchstart");
@@ -2726,7 +2741,7 @@ function removeTouchEventListeners(events) {
 }
 
 
-function addTouchEventListeners (events) {
+function addTouchEventListeners (events, forwardEvent) {
   var touch
     , startX
     , endX
@@ -2742,7 +2757,7 @@ function addTouchEventListeners (events) {
 
   var handleSwipe = function () {
     if (startX > endX) {
-      events.emit('gotoNextSlide');
+      events.emit(forwardEvent);
     }
     else {
       events.emit('gotoPreviousSlide');
@@ -2790,6 +2805,7 @@ function Slideshow (events, options) {
     , slides = []
     ;
 
+  self.events = events;
   options = options || {};
 
   // Extend slideshow functionality
@@ -2800,6 +2816,8 @@ function Slideshow (events, options) {
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
+  self.slide = slide;
+  self.begin = begin;
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
@@ -2810,10 +2828,19 @@ function Slideshow (events, options) {
   function loadFromString (source) {
     source = source || '';
 
-    slides = createSlides(source);
+    slides = createSlides(source, events);
     expandVariables(slides);
 
     events.emit('slidesChanged');
+  }
+
+  function slide(nameOrNumber) {
+    var slideNo = self.getSlideNo(nameOrNumber);
+    return slides[slideNo-1];
+  }
+
+  function begin() {
+    this.events.emit('beginSlideShow');
   }
 
   function getSlides () {
@@ -2839,7 +2866,7 @@ function Slideshow (events, options) {
   }
 }
 
-function createSlides (slideshowSource) {
+function createSlides (slideshowSource, events) {
   var parser = new Parser()
    ,  parsedSlides = parser.parse(slideshowSource)
     , slides = []
@@ -2865,7 +2892,7 @@ function createSlides (slideshowSource) {
       template = layoutSlide;
     }
 
-    slideViewModel = new Slide(i + 1, slide, template);
+    slideViewModel = new Slide(i + 1, slide, template, events);
 
     if (slide.properties.layout === 'true') {
       layoutSlide = slideViewModel;
@@ -2919,6 +2946,10 @@ function SlideshowView (events, containerElement, slideshow) {
   self.updateDimensions();
   self.updateSlideViews();
 
+  events.on('beginSlideShow', function () {
+    self.beginSlideShow();
+  });
+
   events.on('slidesChanged', function () {
     self.updateSlideViews();
   });
@@ -2961,6 +2992,29 @@ function handleFullscreen(self) {
     self.updateDimensions();
   });
 }
+
+SlideshowView.prototype.beginSlideShow = function() {
+  var self = this;
+
+  if (self.isEmbedded()) {
+    self.events.emit('gotoSlide', 1);
+  }
+  else {
+    self.events.on('hashchange', navigateByHash);
+    self.events.on('slideChanged', updateHash);
+
+    navigateByHash();
+  }
+
+  function navigateByHash () {
+    var slideNoOrName = (window.location.hash || '').substr(1);
+    self.events.emit('gotoSlide', slideNoOrName);
+  }
+
+  function updateHash (slideNoOrName) {
+    window.location.hash = '#' + slideNoOrName;
+  }
+};
 
 SlideshowView.prototype.isEmbedded = function () {
   return this.containerElement !== document.body;
@@ -3141,6 +3195,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
     self.previewElement.innerHTML = '';
   }
 
+  slideView.run();
+  
   self.events.emit("afterShowSlide", slideIndex);
 };
 
@@ -3246,6 +3302,7 @@ function Navigation (events) {
   self.gotoNextSlide = gotoNextSlide;
   self.gotoFirstSlide = gotoFirstSlide;
   self.gotoLastSlide = gotoLastSlide;
+  self.getSlideNo = getSlideNo;
   self.pause = pause;
   self.resume = resume;
 
@@ -3457,12 +3514,24 @@ function forEach (list, f) {
 },{}],13:[function(require,module,exports){
 module.exports = Slide;
 
-function Slide (slideNo, slide, template) {
+function Slide (slideNo, slide, template, events) {
   var self = this;
 
+  self.events = events;
   self.properties = slide.properties || {};
   self.source = slide.source || '';
   self.notes = slide.notes || '';
+  self.slideNo = slideNo;
+
+  self.currentstep = -1;
+  self.loopcount = 0;
+  self.stepQueue = [];
+
+  self.run = run;
+  self.executeStep = executeStep;
+  self.setup = setup;
+  self.step = step;
+  self.loop = loop;
 
   self.getSlideNo = function () { return slideNo; };
 
@@ -3471,6 +3540,60 @@ function Slide (slideNo, slide, template) {
   }
 }
 
+function run() {
+  var self = this;
+  // if this is the first time slide is being run
+  if (self.currentstep === -1 && self.userSetupFunction !== undefined) {
+    self.userSetupFunction();
+    self.currentstep += 1;
+  }
+
+  if (self.stepQueue.length > 0) {
+    self.events.emit('beginStepWithinSlide');  // raise event 'stepWithinSlide' which should disconnect event handlers for next slide
+    self.events.on('gotoNextSlideStep', function(event) { self.executeStep(); });  // add event handler for advancing slide
+  } else {
+    // return control back for next slide
+    self.events.emit('endStepWithinSlide'); // raise event 'stepBetweenSlides' which should return to between-slide control
+    self.events.removeAllListeners('gotoNextSlideStep');
+  }
+
+}
+
+function executeStep() {
+  var self = this;
+  // this is the function that will actually step through
+
+  var stepresult = self.stepQueue[0].apply(self, [self.loopcount]); // add optional argument which is the loop count for the current transition
+  if( stepresult === undefined || stepresult === true ) { // run the step
+    self.stepQueue.shift(); // remove step
+    self.currentstep += 1;
+    self.loopcount = 0;
+  } else {
+    // don't remove step or advance, track number within current step
+    self.loopcount += 1;
+  }
+  
+  if(self.stepQueue.length <= 0) {
+    self.events.emit('endStepWithinSlide');
+    self.events.removeAllListeners('gotoNextSlideStep');
+  }
+
+}
+
+function setup (userFunction) {
+  this.userSetupFunction = userFunction;
+  return this;
+}
+
+function step (userFunction) {
+  this.stepQueue.push(userFunction);
+  return this;
+}
+
+function loop (userFunction) {
+  return this.step(userFunction);
+}
+ 
 function inherit (slide, template) {
   inheritProperties(slide, template);
   inheritSource(slide, template);
@@ -3664,6 +3787,10 @@ SlideView.prototype.show = function () {
 
 SlideView.prototype.hide = function () {
   this.element.style.display = 'none';
+};
+
+SlideView.prototype.run = function () {
+  this.slide.run();
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
