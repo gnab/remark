@@ -12,6 +12,7 @@ function Slideshow (events, options) {
     , slides = []
     ;
 
+  self.events = events;
   options = options || {};
 
   // Extend slideshow functionality
@@ -22,6 +23,7 @@ function Slideshow (events, options) {
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
+  self.begin = begin;
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
@@ -36,6 +38,10 @@ function Slideshow (events, options) {
     expandVariables(slides);
 
     events.emit('slidesChanged');
+  }
+
+  function begin() {
+    this.events.emit('beginSlideShow');
   }
 
   function getSlides () {

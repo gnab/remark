@@ -5,41 +5,41 @@ var sinon = require('sinon')
 
 describe('Controller', function () {
 
-  describe('initial navigation', function () {
-    it('should naviate to first slide when slideshow is embedded ', function () {
-      createController({embedded: true});
+  // describe('initial navigation', function () {
+  //   it('should naviate to first slide when slideshow is embedded ', function () {
+  //     createController({embedded: true});
 
-      events.emit.should.be.calledWithExactly('gotoSlide', 1);
-    });
+  //     events.emit.should.be.calledWithExactly('gotoSlide', 1);
+  //   });
 
-    it('should naviate by hash when slideshow is not embedded', function () {
-      window.location.hash = '#2';
+  //   it('should naviate by hash when slideshow is not embedded', function () {
+  //     window.location.hash = '#2';
 
-      createController({embedded: false});
+  //     createController({embedded: false});
 
-      events.emit.should.be.calledWithExactly('gotoSlide', '2');
-    });
-  });
+  //     events.emit.should.be.calledWithExactly('gotoSlide', '2');
+  //   });
+  // });
 
-  describe('hash change', function () {
-    it('should not navigate by hash when slideshow is embedded', function () {
-      createController({embedded: true});
+  // describe('hash change', function () {
+  //   it('should not navigate by hash when slideshow is embedded', function () {
+  //     createController({embedded: true});
 
-      window.location.hash = '#3';
-      events.emit('hashchange');
+  //     window.location.hash = '#3';
+  //     events.emit('hashchange');
 
-      events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
-    });
+  //     events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
+  //   });
 
-    it('should navigate by hash when slideshow is not embedded', function () {
-      createController({embedded: false});
+  //   it('should navigate by hash when slideshow is not embedded', function () {
+  //     createController({embedded: false});
 
-      window.location.hash = '#3';
-      events.emit('hashchange');
+  //     window.location.hash = '#3';
+  //     events.emit('hashchange');
 
-      events.emit.should.be.calledWithExactly('gotoSlide', '3');
-    });
-  });
+  //     events.emit.should.be.calledWithExactly('gotoSlide', '3');
+  //   });
+  // });
 
   describe('keyboard navigation', function () {
     it('should navigate to previous slide when pressing page up', function () {

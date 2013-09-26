@@ -22,27 +22,10 @@ function addApiEventListeners(events, slideshowView) {
   });
 }
 
-function addNavigationEventListeners (events, slideshowView) {
-  if (slideshowView.isEmbedded()) {
-    events.emit('gotoSlide', 1);
-  }
-  else {
-    events.on('hashchange', navigateByHash);
-    events.on('slideChanged', updateHash);
 
-    navigateByHash();
-  }
+function addNavigationEventListeners (events, slideshowView) {
 
   events.on('message', navigateByMessage);
-
-  function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
-    events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
 
   function navigateByMessage(message) {
     var cap;
