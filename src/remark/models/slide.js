@@ -32,13 +32,8 @@ function run() {
   // if this is the first time slide is being run
   if (self.currentstep === -1 && self.userSetupFunction !== undefined) {
     self.userSetupFunction();
-<<<<<<< HEAD
-    self.currentstep += 1;
-  }
-=======
   }
   self.currentstep = 0;
->>>>>>> implements slide steps (forward direction only)
 
   if (self.stepQueue.length > 0) {
     self.events.emit('beginStepWithinSlide');  // raise event 'stepWithinSlide' which should disconnect event handlers for next slide
