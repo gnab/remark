@@ -1,18 +1,84 @@
 module.exports = Slide;
 
-function Slide (slideNo, slide, template) {
+function Slide (slideNo, slide, template, events) {
   var self = this;
 
+  self.events = events;
   self.properties = slide.properties || {};
   self.source = slide.source || '';
   self.notes = slide.notes || '';
   self.number = slideNo;
+  self.slideNo = slideNo;
+
+  self.currentstep = -1;
+  self.loopcount = 0;
+  self.stepQueue = [];
+
+  self.run = run;
+  self.executeStep = executeStep;
+  self.setup = setup;
+  self.step = step;
+  self.loop = loop;
 
   self.getSlideNo = function () { return slideNo; };
 
   if (template) {
     inherit(self, template);
   }
+}
+
+function run() {
+  var self = this;
+  // if this is the first time slide is being run
+  if (self.currentstep === -1 && self.userSetupFunction !== undefined) {
+    self.userSetupFunction();
+    self.currentstep += 1;
+  }
+
+  if (self.stepQueue.length > 0) {
+    self.events.emit('beginStepWithinSlide');  // raise event 'stepWithinSlide' which should disconnect event handlers for next slide
+    self.events.on('gotoNextSlideStep', function(event) { self.executeStep(); });  // add event handler for advancing slide
+  } else {
+    // return control back for next slide
+    self.events.emit('endStepWithinSlide'); // raise event 'stepBetweenSlides' which should return to between-slide control
+    self.events.removeAllListeners('gotoNextSlideStep');
+  }
+
+}
+
+function executeStep() {
+  var self = this;
+  // this is the function that will actually step through
+
+  var stepresult = self.stepQueue[0].apply(self, [self.loopcount]); // add optional argument which is the loop count for the current transition
+  if( stepresult === undefined || stepresult === true ) { // run the step
+    self.stepQueue.shift(); // remove step
+    self.currentstep += 1;
+    self.loopcount = 0;
+  } else {
+    // don't remove step or advance, track number within current step
+    self.loopcount += 1;
+  }
+
+  if(self.stepQueue.length <= 0) {
+    self.events.emit('endStepWithinSlide');
+    self.events.removeAllListeners('gotoNextSlideStep');
+  }
+
+}
+
+function setup (userFunction) {
+  this.userSetupFunction = userFunction;
+  return this;
+}
+
+function step (userFunction) {
+  this.stepQueue.push(userFunction);
+  return this;
+}
+
+function loop (userFunction) {
+  return this.step(userFunction);
 }
 
 function inherit (slide, template) {

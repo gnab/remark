@@ -29,7 +29,15 @@ function styleDocument () {
   }
 }
 
-},{"./remark/api":2,"./remark/highlighter":3,"./remark/resources":4}],3:[function(require,module,exports){
+},{"./remark/api":2,"./remark/highlighter":3,"./remark/resources":4}],4:[function(require,module,exports){
+/* Automatically generated */
+
+module.exports = {
+  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:relative;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slide .remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-visible{display:block;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;opacity:0.95;background:#000;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-toolbar{color:#979892;padding-bottom:1em;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;} .remark-slide-container{display:block;}}@page {size:908px 681px;margin:0;}",
+  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">K</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">J</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">F</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">C</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">P</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
+};
+
+},{}],3:[function(require,module,exports){
 (function(){/* Automatically generated */
 
 var hljs = new (/*
@@ -2292,15 +2300,262 @@ module.exports = {
 };
 
 })()
-},{}],4:[function(require,module,exports){
-/* Automatically generated */
+},{}],2:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , highlighter = require('./highlighter')
+  , Slideshow = require('./models/slideshow')
+  , SlideshowView = require('./views/slideshowView')
+  , Controller = require('./controller')
+  ;
 
-module.exports = {
-  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:relative;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slide .remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-visible{display:block;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;opacity:0.95;background:#000;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-toolbar{color:#979892;padding-bottom:1em;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;} .remark-slide-container{display:block;}}@page {size:908px 681px;margin:0;}",
-  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">K</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">J</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">F</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">C</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">P</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
+// Expose highlighter to allow enumerating available styles and
+// including external language grammars
+module.exports.highlighter = highlighter;
+
+
+// Allocates slideshow initialized from options
+module.exports.alloc = function (options) {
+  var events
+    , slideshow
+    , slideshowView
+    , controller
+    ;
+
+  options = applyDefaults(options);
+
+  events = new EventEmitter();
+  events.setMaxListeners(0);
+
+  slideshow = new Slideshow(events, options);
+  slideshowView = new SlideshowView(events, options.container, slideshow);
+  controller = new Controller(events, slideshowView);
+  return slideshow;
 };
 
-},{}],5:[function(require,module,exports){
+
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
+  var slideshow = this.alloc(options);
+  slideshow.begin();
+  return slideshow;
+};
+
+
+
+function applyDefaults (options) {
+  var sourceElement;
+
+  options = options || {};
+
+  if (!options.hasOwnProperty('source')) {
+    sourceElement = document.getElementById('source');
+    if (sourceElement) {
+      options.source = sourceElement.innerHTML;
+      sourceElement.style.display = 'none';
+    }
+  }
+
+  if (!(options.container instanceof window.HTMLElement)) {
+    options.container = document.body;
+  }
+
+  return options;
+}
+
+},{"events":5,"./highlighter":3,"./views/slideshowView":6,"./controller":7,"./models/slideshow":8}],7:[function(require,module,exports){
+module.exports = Controller;
+
+function Controller (events, slideshowView) {
+  addApiEventListeners(events, slideshowView);
+  addNavigationEventListeners(events, slideshowView);
+  addKeyboardEventListeners(events, 'gotoNextSlide');
+  addMouseEventListeners(events, 'gotoNextSlide');
+  addTouchEventListeners(events, 'gotoNextSlide');
+}
+
+function addApiEventListeners(events, slideshowView) {
+
+  events.on('pause', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+  });
+
+  events.on('resume',  function(event) {
+    addKeyboardEventListeners(events, 'gotoNextSlide');
+    addMouseEventListeners(events, 'gotoNextSlide');
+    addTouchEventListeners(events, 'gotoNextSlide');
+  });
+
+  events.on('beginStepWithinSlide', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlideStep');
+    addMouseEventListeners(events, 'gotoNextSlideStep');
+    addTouchEventListeners(events, 'gotoNextSlideStep');
+  });
+
+  events.on('endStepWithinSlide', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlide');
+    addMouseEventListeners(events, 'gotoNextSlide');
+    addTouchEventListeners(events, 'gotoNextSlide');
+  });
+}
+
+
+function addNavigationEventListeners (events, slideshowView) {
+
+  events.on('message', navigateByMessage);
+
+  function navigateByMessage(message) {
+    var cap;
+
+    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
+      events.emit('gotoSlide', parseInt(cap[1], 10));
+    }
+  }
+}
+
+function removeKeyboardEventListeners(events) {
+  events.removeAllListeners("keydown");
+  events.removeAllListeners("keypress");
+}
+
+
+
+
+function addKeyboardEventListeners (events, forwardEvent) {
+  events.on('keydown', function (event) {
+    switch (event.keyCode) {
+      case 33: // Page up
+      case 37: // Left
+      case 38: // Up
+        events.emit('gotoPreviousSlide');
+        break;
+      case 32: // Space
+      case 34: // Page down
+      case 39: // Right
+      case 40: // Down
+        events.emit(forwardEvent);
+        break;
+      case 36: // Home
+        events.emit('gotoFirstSlide');
+        break;
+      case 35: // End
+        events.emit('gotoLastSlide');
+        break;
+      case 27: // Escape
+        events.emit('hideOverlay');
+        break;
+    }
+  });
+
+  events.on('keypress', function (event) {
+    if (event.metaKey || event.ctrlKey) {
+      // Bail out if meta or ctrl key was pressed
+      return;
+    }
+
+    switch (String.fromCharCode(event.which)) {
+      case 'j':
+        events.emit(forwardEvent);
+        break;
+      case 'k':
+        events.emit('gotoPreviousSlide');
+        break;
+      case 'c':
+        events.emit('createClone');
+        break;
+      case 'p':
+        events.emit('togglePresenterMode');
+        break;
+      case 'f':
+        events.emit('toggleFullscreen');
+        break;
+      case '?':
+        events.emit('toggleHelp');
+        break;
+    }
+  });
+}
+
+
+function removeMouseEventListeners(events) {
+  events.removeAllListeners("mousewheel");
+}
+
+function addMouseEventListeners (events, forwardEvent) {
+  events.on('mousewheel', function (event) {
+    if (event.wheelDeltaY > 0) {
+      events.emit('gotoPreviousSlide');
+    }
+    else if (event.wheelDeltaY < 0) {
+      events.emit(forwardEvent);
+    }
+  });
+}
+
+function removeTouchEventListeners(events) {
+  events.removeAllListeners("touchstart");
+  events.removeAllListeners("touchend");
+  events.removeAllListeners("touchmove");
+}
+
+
+function addTouchEventListeners (events, forwardEvent) {
+  var touch
+    , startX
+    , endX
+    ;
+
+  var isTap = function () {
+    return Math.abs(startX - endX) < 10;
+  };
+
+  var handleTap = function () {
+    events.emit('tap', endX);
+  };
+
+  var handleSwipe = function () {
+    if (startX > endX) {
+      events.emit(forwardEvent);
+    }
+    else {
+      events.emit('gotoPreviousSlide');
+    }
+  };
+
+  events.on('touchstart', function (event) {
+    touch = event.touches[0];
+    startX = touch.clientX;
+  });
+
+  events.on('touchend', function (event) {
+    if (event.target.nodeName.toUpperCase() === 'A') {
+      return;
+    }
+
+    touch = event.changedTouches[0];
+    endX = touch.clientX;
+
+    if (isTap()) {
+      handleTap();
+    }
+    else {
+      handleSwipe();
+    }
+  });
+
+  events.on('touchmove', function (event) {
+    event.preventDefault();
+  });
+}
+
+},{}],9:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2354,7 +2609,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2540,364 +2795,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":5}],2:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , highlighter = require('./highlighter')
-  , Slideshow = require('./models/slideshow')
-  , SlideshowView = require('./views/slideshowView')
-  , Controller = require('./controller')
-  ;
-
-// Expose highlighter to allow enumerating available styles and
-// including external language grammars
-module.exports.highlighter = highlighter;
-
-// Creates slideshow initialized from options
-module.exports.create = function (options) {
-  var events
-    , slideshow
-    , slideshowView
-    , controller
-    ;
-
-  options = applyDefaults(options);
-
-  events = new EventEmitter();
-  events.setMaxListeners(0);
-
-  slideshow = new Slideshow(events, options);
-  slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = new Controller(events, slideshowView);
-
-  return slideshow;
-};
-
-function applyDefaults (options) {
-  var sourceElement;
-
-  options = options || {};
-
-  if (!options.hasOwnProperty('source')) {
-    sourceElement = document.getElementById('source');
-    if (sourceElement) {
-      options.source = sourceElement.innerHTML;
-      sourceElement.style.display = 'none';
-    }
-  }
-
-  if (!(options.container instanceof window.HTMLElement)) {
-    options.container = document.body;
-  }
-
-  return options;
-}
-
-},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
-module.exports = Controller;
-
-function Controller (events, slideshowView) {
-  addApiEventListeners(events, slideshowView);
-  addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
-}
-
-function addApiEventListeners(events, slideshowView) {
-  events.on('pause', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-  });
-
-  events.on('resume',  function(event) {
-    addKeyboardEventListeners(events);
-    addMouseEventListeners(events);
-    addTouchEventListeners(events);
-  });
-}
-
-function addNavigationEventListeners (events, slideshowView) {
-  if (slideshowView.isEmbedded()) {
-    events.emit('gotoSlide', 1);
-  }
-  else {
-    events.on('hashchange', navigateByHash);
-    events.on('slideChanged', updateHash);
-
-    navigateByHash();
-  }
-
-  events.on('message', navigateByMessage);
-
-  function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
-    events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
-
-  function navigateByMessage(message) {
-    var cap;
-
-    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
-      events.emit('gotoSlide', parseInt(cap[1], 10));
-    }
-  }
-}
-
-function removeKeyboardEventListeners(events) {
-  events.removeAllListeners("keydown");
-  events.removeAllListeners("keypress");
-}
-
-function addKeyboardEventListeners (events) {
-  events.on('keydown', function (event) {
-    switch (event.keyCode) {
-      case 33: // Page up
-      case 37: // Left
-      case 38: // Up
-        events.emit('gotoPreviousSlide');
-        break;
-      case 32: // Space
-      case 34: // Page down
-      case 39: // Right
-      case 40: // Down
-        events.emit('gotoNextSlide');
-        break;
-      case 36: // Home
-        events.emit('gotoFirstSlide');
-        break;
-      case 35: // End
-        events.emit('gotoLastSlide');
-        break;
-      case 27: // Escape
-        events.emit('hideOverlay');
-        break;
-    }
-  });
-
-  events.on('keypress', function (event) {
-    if (event.metaKey || event.ctrlKey) {
-      // Bail out if meta or ctrl key was pressed
-      return;
-    }
-
-    switch (String.fromCharCode(event.which)) {
-      case 'j':
-        events.emit('gotoNextSlide');
-        break;
-      case 'k':
-        events.emit('gotoPreviousSlide');
-        break;
-      case 'c':
-        events.emit('createClone');
-        break;
-      case 'p':
-        events.emit('togglePresenterMode');
-        break;
-      case 'f':
-        events.emit('toggleFullscreen');
-        break;
-      case '?':
-        events.emit('toggleHelp');
-        break;
-    }
-  });
-}
-
-function removeMouseEventListeners(events) {
-  events.removeAllListeners("mousewheel");
-}
-
-function addMouseEventListeners (events) {
-  events.on('mousewheel', function (event) {
-    if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
-    }
-    else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
-    }
-  });
-}
-
-
-function removeTouchEventListeners(events) {
-  events.removeAllListeners("touchstart");
-  events.removeAllListeners("touchend");
-  events.removeAllListeners("touchmove");
-}
-
-
-function addTouchEventListeners (events) {
-  var touch
-    , startX
-    , endX
-    ;
-
-  var isTap = function () {
-    return Math.abs(startX - endX) < 10;
-  };
-
-  var handleTap = function () {
-    events.emit('tap', endX);
-  };
-
-  var handleSwipe = function () {
-    if (startX > endX) {
-      events.emit('gotoNextSlide');
-    }
-    else {
-      events.emit('gotoPreviousSlide');
-    }
-  };
-
-  events.on('touchstart', function (event) {
-    touch = event.touches[0];
-    startX = touch.clientX;
-  });
-
-  events.on('touchend', function (event) {
-    if (event.target.nodeName.toUpperCase() === 'A') {
-      return;
-    }
-
-    touch = event.changedTouches[0];
-    endX = touch.clientX;
-
-    if (isTap()) {
-      handleTap();
-    }
-    else {
-      handleSwipe();
-    }
-  });
-
-  events.on('touchmove', function (event) {
-    event.preventDefault();
-  });
-}
-
-},{}],7:[function(require,module,exports){
-var Navigation = require('./slideshow/navigation')
-  , Events = require('./slideshow/events')
-  , utils = require('../utils')
-  , Slide = require('./slide')
-  , Parser = require('../parser')
-  ;
-
-module.exports = Slideshow;
-
-function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
-
-  options = options || {};
-
-  // Extend slideshow functionality
-  Events.call(self, events);
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-
-  self.getRatio = getOrDefault('ratio', '4:3');
-  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
-  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
-
-  function getOrDefault (key, defaultValue) {
-    return function () {
-      if (options[key] === undefined) {
-        return defaultValue;
-      }
-
-      return options[key];
-    };
-  }
-}
-
-function createSlides (slideshowSource) {
-  var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource)
-    , slides = []
-    , byName = {}
-    , layoutSlide
-    ;
-
-  slides.byName = {};
-
-  parsedSlides.forEach(function (slide, i) {
-    var template, slideViewModel;
-
-    if (slide.properties.continued === 'true' && i > 0) {
-      template = slides[slides.length - 1];
-    }
-    else if (byName[slide.properties.template]) {
-      template = byName[slide.properties.template];
-    }
-    else if (slide.properties.layout === 'false') {
-      layoutSlide = undefined;
-    }
-    else if (layoutSlide && slide.properties.layout !== 'true') {
-      template = layoutSlide;
-    }
-
-    slideViewModel = new Slide(slides.length + 1, slide, template);
-
-    if (slide.properties.layout === 'true') {
-      layoutSlide = slideViewModel;
-    }
-
-    if (slide.properties.name) {
-      byName[slide.properties.name] = slideViewModel;
-    }
-
-    if (slide.properties.layout !== 'true') {
-      slides.push(slideViewModel);
-      if (slide.properties.name) {
-        slides.byName[slide.properties.name] = slideViewModel;
-      }
-    }
-  });
-
-  return slides;
-}
-
-function expandVariables (slides) {
-  slides.forEach(function (slide) {
-    slide.expandVariables();
-  });
-}
-
-},{"./slideshow/navigation":10,"./slideshow/events":11,"../utils":12,"./slide":13,"../parser":14}],8:[function(require,module,exports){
+},{"__browserify_process":9}],6:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -2922,6 +2820,10 @@ function SlideshowView (events, containerElement, slideshow) {
   self.updateDimensions();
   self.scaleElements();
   self.updateSlideViews();
+
+  events.on('beginSlideShow', function () {
+    self.beginSlideShow();
+  });
 
   events.on('slidesChanged', function () {
     self.updateSlideViews();
@@ -2965,6 +2867,29 @@ function handleFullscreen(self) {
     self.scaleElements();
   });
 }
+
+SlideshowView.prototype.beginSlideShow = function() {
+  var self = this;
+
+  if (self.isEmbedded()) {
+    self.events.emit('gotoSlide', 1);
+  }
+  else {
+    self.events.on('hashchange', navigateByHash);
+    self.events.on('slideChanged', updateHash);
+
+    navigateByHash();
+  }
+
+  function navigateByHash () {
+    var slideNoOrName = (window.location.hash || '').substr(1);
+    self.events.emit('gotoSlide', slideNoOrName);
+  }
+
+  function updateHash (slideNoOrName) {
+    window.location.hash = '#' + slideNoOrName;
+  }
+};
 
 SlideshowView.prototype.isEmbedded = function () {
   return this.containerElement !== document.body;
@@ -3126,6 +3051,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
     self.previewArea.innerHTML = '';
   }
 
+  slideView.run();
+  
   self.events.emit("afterShowSlide", slideIndex);
 };
 
@@ -3164,7 +3091,300 @@ SlideshowView.prototype.scaleElements = function () {
   self.scaler.scaleToFit(self.helpElement, self.containerElement);
 };
 
-},{"./slideView":15,"../scaler":16,"../resources":4,"../utils":12}],10:[function(require,module,exports){
+},{"./slideView":10,"../scaler":11,"../resources":4,"../utils":12}],8:[function(require,module,exports){
+var Navigation = require('./slideshow/navigation')
+  , Events = require('./slideshow/events')
+  , utils = require('../utils')
+  , Slide = require('./slide')
+  , Parser = require('../parser')
+  ;
+
+module.exports = Slideshow;
+
+function Slideshow (events, options) {
+  var self = this
+    , slides = []
+    ;
+
+  self.events = events;
+  options = options || {};
+
+  // Extend slideshow functionality
+  Events.call(self, events);
+  Navigation.call(self, events);
+
+  self.loadFromString = loadFromString;
+  self.getSlides = getSlides;
+  self.getSlideCount = getSlideCount;
+  self.getSlideByName = getSlideByName;
+  self.slide = slide;
+  self.begin = begin;
+
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
+
+  loadFromString(options.source);
+
+  function loadFromString (source) {
+    source = source || '';
+
+    slides = createSlides(source, events);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  }
+
+  function slide(nameOrNumber) {
+    var slideNo = self.getSlideNo(nameOrNumber);
+    return slides[slideNo-1];
+  }
+
+  function begin() {
+    this.events.emit('beginSlideShow');
+  }
+
+  function getSlides () {
+    return slides.map(function (slide) { return slide; });
+  }
+
+  function getSlideCount () {
+    return slides.length;
+  }
+
+  function getSlideByName (name) {
+    return slides.byName[name];
+  }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
+  }
+}
+
+function createSlides (slideshowSource, events) {
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
+    , byName = {}
+    , layoutSlide
+    ;
+
+  slides.byName = {};
+
+  parsedSlides.forEach(function (slide, i) {
+    var template, slideViewModel;
+
+    if (slide.properties.continued === 'true' && i > 0) {
+      template = slides[slides.length - 1];
+    }
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
+    }
+    else if (slide.properties.layout === 'false') {
+      layoutSlide = undefined;
+    }
+    else if (layoutSlide && slide.properties.layout !== 'true') {
+      template = layoutSlide;
+    }
+
+    slideViewModel = new Slide(slides.length + 1, slide, template, events);
+
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
+    }
+
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
+    }
+
+    if (slide.properties.layout !== 'true') {
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
+      }
+    }
+  });
+
+  return slides;
+}
+
+function expandVariables (slides) {
+  slides.forEach(function (slide) {
+    slide.expandVariables();
+  });
+}
+
+},{"./slideshow/navigation":13,"./slideshow/events":14,"../utils":12,"./slide":15,"../parser":16}],11:[function(require,module,exports){
+var referenceWidth = 908
+  , referenceHeight = 681
+  , referenceRatio = referenceWidth / referenceHeight
+  ;
+
+module.exports = Scaler;
+
+function Scaler (events, slideshow) {
+  var self = this;
+
+  self.events = events;
+  self.slideshow = slideshow;
+  self.ratio = getRatio(slideshow);
+  self.dimensions = getDimensions(self.ratio);
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.ratio = getRatio(slideshow);
+      self.dimensions = getDimensions(self.ratio);
+    }
+  });
+}
+
+Scaler.prototype.scaleToFit = function (element, container) {
+  var self = this
+    , containerHeight = container.clientHeight
+    , containerWidth = container.clientWidth
+    , scale
+    , scaledWidth
+    , scaledHeight
+    , ratio = self.ratio
+    , dimensions = self.dimensions
+    , direction
+    , left
+    , top
+    ;
+
+  if (containerWidth / ratio.width > containerHeight / ratio.height) {
+    scale = containerHeight / dimensions.height;
+  }
+  else {
+    scale = containerWidth / dimensions.width;
+  }
+
+  scaledWidth = dimensions.width * scale;
+  scaledHeight = dimensions.height * scale;
+
+  left = (containerWidth - scaledWidth) / 2;
+  top = (containerHeight - scaledHeight) / 2;
+
+  element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  element.style.MozTransform = 'scale(' + scale + ')';
+  element.style.left = Math.max(left, 0) + 'px';
+  element.style.top = Math.max(top, 0) + 'px';
+};
+
+function getRatio (slideshow) {
+  var ratioComponents = slideshow.getRatio().split(':')
+    , ratio
+    ;
+
+  ratio = {
+    width: parseInt(ratioComponents[0], 10)
+  , height: parseInt(ratioComponents[1], 10)
+  };
+
+  ratio.ratio = ratio.width / ratio.height;
+
+  return ratio;
+}
+
+function getDimensions (ratio) {
+  return {
+    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
+  , height: referenceHeight
+  };
+}
+
+},{}],12:[function(require,module,exports){
+exports.addClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .concat([className])
+    .join(' ');
+};
+
+exports.removeClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .filter(function (klass) { return klass !== className; })
+    .join(' ');
+};
+
+exports.toggleClass = function (element, className) {
+  var classes = exports.getClasses(element),
+      index = classes.indexOf(className);
+
+  if (index !== -1) {
+    classes.splice(index, 1);
+  }
+  else {
+    classes.push(className);
+  }
+
+  element.className = classes.join(' ');
+};
+
+exports.getClasses = function (element) {
+  return element.className
+    .split(' ')
+    .filter(function (s) { return s !== ''; });
+};
+
+exports.getPrefixedProperty = function (element, propertyName) {
+  var capitalizedPropertName = propertyName[0].toUpperCase() +
+    propertyName.slice(1);
+
+  return element[propertyName] || element['moz' + capitalizedPropertName] ||
+    element['webkit' + capitalizedPropertName];
+};
+
+forEach([Array, window.NodeList, window.HTMLCollection], extend);
+
+function extend (object) {
+  var prototype = object && object.prototype;
+
+  if (!prototype) {
+    return;
+  }
+
+  prototype.forEach = prototype.forEach || function (f) {
+    forEach(this, f);
+  };
+
+  prototype.filter = prototype.filter || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      if (f(element, result.length)) {
+        result.push(element);
+      }
+    });
+
+    return result;
+  };
+
+  prototype.map = prototype.map || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      result.push(f(element, result.length));
+    });
+
+    return result;
+  };
+}
+
+function forEach (list, f) {
+  var i;
+
+  for (i = 0; i < list.length; ++i) {
+    f(list[i], i);
+  }
+}
+
+},{}],13:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3178,6 +3398,7 @@ function Navigation (events) {
   self.gotoNextSlide = gotoNextSlide;
   self.gotoFirstSlide = gotoFirstSlide;
   self.gotoLastSlide = gotoLastSlide;
+  self.getSlideNo = getSlideNo;
   self.pause = pause;
   self.resume = resume;
 
@@ -3282,7 +3503,7 @@ function Navigation (events) {
   }
 }
 
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 
 module.exports = Events;
@@ -3307,107 +3528,88 @@ function Events (events) {
   });
 }
 
-},{"events":6}],12:[function(require,module,exports){
-exports.addClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .concat([className])
-    .join(' ');
-};
-
-exports.removeClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .filter(function (klass) { return klass !== className; })
-    .join(' ');
-};
-
-exports.toggleClass = function (element, className) {
-  var classes = exports.getClasses(element),
-      index = classes.indexOf(className);
-
-  if (index !== -1) {
-    classes.splice(index, 1);
-  }
-  else {
-    classes.push(className);
-  }
-
-  element.className = classes.join(' ');
-};
-
-exports.getClasses = function (element) {
-  return element.className
-    .split(' ')
-    .filter(function (s) { return s !== ''; });
-};
-
-exports.getPrefixedProperty = function (element, propertyName) {
-  var capitalizedPropertName = propertyName[0].toUpperCase() +
-    propertyName.slice(1);
-
-  return element[propertyName] || element['moz' + capitalizedPropertName] ||
-    element['webkit' + capitalizedPropertName];
-};
-
-forEach([Array, window.NodeList, window.HTMLCollection], extend);
-
-function extend (object) {
-  var prototype = object && object.prototype;
-
-  if (!prototype) {
-    return;
-  }
-
-  prototype.forEach = prototype.forEach || function (f) {
-    forEach(this, f);
-  };
-
-  prototype.filter = prototype.filter || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      if (f(element, result.length)) {
-        result.push(element);
-      }
-    });
-
-    return result;
-  };
-
-  prototype.map = prototype.map || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      result.push(f(element, result.length));
-    });
-
-    return result;
-  };
-}
-
-function forEach (list, f) {
-  var i;
-
-  for (i = 0; i < list.length; ++i) {
-    f(list[i], i);
-  }
-}
-
-},{}],13:[function(require,module,exports){
+},{"events":5}],15:[function(require,module,exports){
 module.exports = Slide;
 
-function Slide (slideNo, slide, template) {
+function Slide (slideNo, slide, template, events) {
   var self = this;
 
+  self.events = events;
   self.properties = slide.properties || {};
   self.source = slide.source || '';
   self.notes = slide.notes || '';
   self.number = slideNo;
+  self.slideNo = slideNo;
+
+  self.currentstep = -1;
+  self.loopcount = 0;
+  self.stepQueue = [];
+
+  self.run = run;
+  self.executeStep = executeStep;
+  self.setup = setup;
+  self.step = step;
+  self.loop = loop;
 
   self.getSlideNo = function () { return slideNo; };
 
   if (template) {
     inherit(self, template);
   }
+}
+
+function run() {
+  var self = this;
+  // if this is the first time slide is being run
+  if (self.currentstep === -1 && self.userSetupFunction !== undefined) {
+    self.userSetupFunction();
+    self.currentstep += 1;
+  }
+
+  if (self.stepQueue.length > 0) {
+    self.events.emit('beginStepWithinSlide');  // raise event 'stepWithinSlide' which should disconnect event handlers for next slide
+    self.events.on('gotoNextSlideStep', function(event) { self.executeStep(); });  // add event handler for advancing slide
+  } else {
+    // return control back for next slide
+    self.events.emit('endStepWithinSlide'); // raise event 'stepBetweenSlides' which should return to between-slide control
+    self.events.removeAllListeners('gotoNextSlideStep');
+  }
+
+}
+
+function executeStep() {
+  var self = this;
+  // this is the function that will actually step through
+
+  var stepresult = self.stepQueue[0].apply(self, [self.loopcount]); // add optional argument which is the loop count for the current transition
+  if( stepresult === undefined || stepresult === true ) { // run the step
+    self.stepQueue.shift(); // remove step
+    self.currentstep += 1;
+    self.loopcount = 0;
+  } else {
+    // don't remove step or advance, track number within current step
+    self.loopcount += 1;
+  }
+
+  if(self.stepQueue.length <= 0) {
+    self.events.emit('endStepWithinSlide');
+    self.events.removeAllListeners('gotoNextSlideStep');
+  }
+
+}
+
+function setup (userFunction) {
+  this.userSetupFunction = userFunction;
+  return this;
+}
+
+function step (userFunction) {
+  this.stepQueue.push(userFunction);
+  return this;
+}
+
+function loop (userFunction) {
+  return this.step(userFunction);
 }
 
 function inherit (slide, template) {
@@ -3498,85 +3700,6 @@ Slide.prototype.expandVariables = function (contentOnly) {
 };
 
 },{}],16:[function(require,module,exports){
-var referenceWidth = 908
-  , referenceHeight = 681
-  , referenceRatio = referenceWidth / referenceHeight
-  ;
-
-module.exports = Scaler;
-
-function Scaler (events, slideshow) {
-  var self = this;
-
-  self.events = events;
-  self.slideshow = slideshow;
-  self.ratio = getRatio(slideshow);
-  self.dimensions = getDimensions(self.ratio);
-
-  self.events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('ratio')) {
-      self.ratio = getRatio(slideshow);
-      self.dimensions = getDimensions(self.ratio);
-    }
-  });
-}
-
-Scaler.prototype.scaleToFit = function (element, container) {
-  var self = this
-    , containerHeight = container.clientHeight
-    , containerWidth = container.clientWidth
-    , scale
-    , scaledWidth
-    , scaledHeight
-    , ratio = self.ratio
-    , dimensions = self.dimensions
-    , direction
-    , left
-    , top
-    ;
-
-  if (containerWidth / ratio.width > containerHeight / ratio.height) {
-    scale = containerHeight / dimensions.height;
-  }
-  else {
-    scale = containerWidth / dimensions.width;
-  }
-
-  scaledWidth = dimensions.width * scale;
-  scaledHeight = dimensions.height * scale;
-
-  left = (containerWidth - scaledWidth) / 2;
-  top = (containerHeight - scaledHeight) / 2;
-
-  element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  element.style.MozTransform = 'scale(' + scale + ')';
-  element.style.left = Math.max(left, 0) + 'px';
-  element.style.top = Math.max(top, 0) + 'px';
-};
-
-function getRatio (slideshow) {
-  var ratioComponents = slideshow.getRatio().split(':')
-    , ratio
-    ;
-
-  ratio = {
-    width: parseInt(ratioComponents[0], 10)
-  , height: parseInt(ratioComponents[1], 10)
-  };
-
-  ratio.ratio = ratio.width / ratio.height;
-
-  return ratio;
-}
-
-function getDimensions (ratio) {
-  return {
-    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
-  , height: referenceHeight
-  };
-}
-
-},{}],14:[function(require,module,exports){
 var Lexer = require('./lexer'),
     converter = require('./converter');
 
@@ -3663,7 +3786,7 @@ function extractProperties (source, properties) {
   return source;
 }
 
-},{"./lexer":17,"./converter":18}],15:[function(require,module,exports){
+},{"./lexer":17,"./converter":18}],10:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -3736,6 +3859,10 @@ SlideView.prototype.configureElements = function () {
   self.element.appendChild(self.contentElement);
   self.scalingElement.appendChild(self.element);
   self.containerElement.appendChild(self.scalingElement);
+};
+
+SlideView.prototype.run = function () {
+  this.slide.run();
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {

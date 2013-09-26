@@ -253,6 +253,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
     self.previewArea.innerHTML = '';
   }
 
+  slideView.run();
+  
   self.events.emit("afterShowSlide", slideIndex);
 };
 
