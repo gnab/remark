@@ -73,12 +73,13 @@ function setup (userFunction) {
 }
 
 function step (userFunction) {
-  this.stepQueue.push(userFunction);
+  this.stepQueue.push(function () { userFunction(); }); 
   return this;
 }
 
 function loop (userFunction) {
-  return this.step(userFunction);
+  this.stepQueue.push(userFunction);
+  return this;
 }
 
 function inherit (slide, template) {
