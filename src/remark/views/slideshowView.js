@@ -24,8 +24,8 @@ function SlideshowView (events, containerElement, slideshow) {
   self.updateDimensions();
   self.updateSlideViews();
 
-  events.on('beginSlideShow', function () {
-    self.beginSlideShow();
+  events.on('startSlideShow', function () {
+    self.startSlideShow();
   });
 
   events.on('slidesChanged', function () {
@@ -71,7 +71,7 @@ function handleFullscreen(self) {
   });
 }
 
-SlideshowView.prototype.beginSlideShow = function() {
+SlideshowView.prototype.startSlideShow = function() {
   var self = this;
 
   if (self.isEmbedded()) {

@@ -33,7 +33,7 @@ module.exports.alloc = function (options) {
 // Creates slideshow initialized from options
 module.exports.create = function (options) {
   var slideshow = this.alloc(options);
-  slideshow.begin();
+  slideshow.start();
   return slideshow;
 };
 
