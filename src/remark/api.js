@@ -9,9 +9,8 @@ var EventEmitter = require('events').EventEmitter
 // including external language grammars
 module.exports.highlighter = highlighter;
 
-
-// Allocates slideshow initialized from options
-module.exports.alloc = function (options) {
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
   var events
     , slideshow
     , slideshowView
@@ -26,18 +25,9 @@ module.exports.alloc = function (options) {
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, options.container, slideshow);
   controller = new Controller(events, slideshowView);
+
   return slideshow;
 };
-
-
-// Creates slideshow initialized from options
-module.exports.create = function (options) {
-  var slideshow = this.alloc(options);
-  slideshow.start();
-  return slideshow;
-};
-
-
 
 function applyDefaults (options) {
   var sourceElement;
