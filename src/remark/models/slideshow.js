@@ -12,6 +12,7 @@ function Slideshow (events, options) {
     , slides = []
     ;
 
+  self.events = events;
   options = options || {};
 
   // Extend slideshow functionality
@@ -22,6 +23,8 @@ function Slideshow (events, options) {
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
+  self.slide = slide;
+  self.start = start;
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
@@ -32,10 +35,19 @@ function Slideshow (events, options) {
   function loadFromString (source) {
     source = source || '';
 
-    slides = createSlides(source);
+    slides = createSlides(source, events);
     expandVariables(slides);
 
     events.emit('slidesChanged');
+  }
+
+  function slide(nameOrNumber) {
+    var slideNo = self.getSlideNo(nameOrNumber);
+    return slides[slideNo-1];
+  }
+
+  function start() {
+    this.events.emit('startSlideShow');
   }
 
   function getSlides () {
@@ -61,7 +73,7 @@ function Slideshow (events, options) {
   }
 }
 
-function createSlides (slideshowSource) {
+function createSlides (slideshowSource, events) {
   var parser = new Parser()
    ,  parsedSlides = parser.parse(slideshowSource)
     , slides = []
@@ -87,7 +99,7 @@ function createSlides (slideshowSource) {
       template = layoutSlide;
     }
 
-    slideViewModel = new Slide(i + 1, slide, template);
+    slideViewModel = new Slide(i + 1, slide, template, events);
 
     if (slide.properties.layout === 'true') {
       layoutSlide = slideViewModel;

@@ -24,6 +24,10 @@ function SlideshowView (events, containerElement, slideshow) {
   self.updateDimensions();
   self.updateSlideViews();
 
+  events.on('startSlideShow', function () {
+    self.startSlideShow();
+  });
+
   events.on('slidesChanged', function () {
     self.updateSlideViews();
   });
@@ -66,6 +70,29 @@ function handleFullscreen(self) {
     self.updateDimensions();
   });
 }
+
+SlideshowView.prototype.startSlideShow = function() {
+  var self = this;
+
+  if (self.isEmbedded()) {
+    self.events.emit('gotoSlide', 1);
+  }
+  else {
+    self.events.on('hashchange', navigateByHash);
+    self.events.on('slideChanged', updateHash);
+
+    navigateByHash();
+  }
+
+  function navigateByHash () {
+    var slideNoOrName = (window.location.hash || '').substr(1);
+    self.events.emit('gotoSlide', slideNoOrName);
+  }
+
+  function updateHash (slideNoOrName) {
+    window.location.hash = '#' + slideNoOrName;
+  }
+};
 
 SlideshowView.prototype.isEmbedded = function () {
   return this.containerElement !== document.body;
@@ -246,6 +273,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
     self.previewElement.innerHTML = '';
   }
 
+  slideView.run();
+  
   self.events.emit("afterShowSlide", slideIndex);
 };
 

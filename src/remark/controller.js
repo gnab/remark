@@ -3,12 +3,13 @@ module.exports = Controller;
 function Controller (events, slideshowView) {
   addApiEventListeners(events, slideshowView);
   addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
+  addKeyboardEventListeners(events, 'gotoNextSlide');
+  addMouseEventListeners(events, 'gotoNextSlide');
+  addTouchEventListeners(events, 'gotoNextSlide');
 }
 
 function addApiEventListeners(events, slideshowView) {
+
   events.on('pause', function(event) {
     removeKeyboardEventListeners(events);
     removeMouseEventListeners(events);
@@ -16,33 +17,34 @@ function addApiEventListeners(events, slideshowView) {
   });
 
   events.on('resume',  function(event) {
-    addKeyboardEventListeners(events);
-    addMouseEventListeners(events);
-    addTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlide');
+    addMouseEventListeners(events, 'gotoNextSlide');
+    addTouchEventListeners(events, 'gotoNextSlide');
+  });
+
+  events.on('beginStepWithinSlide', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlideStep');
+    addMouseEventListeners(events, 'gotoNextSlideStep');
+    addTouchEventListeners(events, 'gotoNextSlideStep');
+  });
+
+  events.on('endStepWithinSlide', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+    addKeyboardEventListeners(events, 'gotoNextSlide');
+    addMouseEventListeners(events, 'gotoNextSlide');
+    addTouchEventListeners(events, 'gotoNextSlide');
   });
 }
 
-function addNavigationEventListeners (events, slideshowView) {
-  if (slideshowView.isEmbedded()) {
-    events.emit('gotoSlide', 1);
-  }
-  else {
-    events.on('hashchange', navigateByHash);
-    events.on('slideChanged', updateHash);
 
-    navigateByHash();
-  }
+function addNavigationEventListeners (events, slideshowView) {
 
   events.on('message', navigateByMessage);
-
-  function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
-    events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
 
   function navigateByMessage(message) {
     var cap;
@@ -58,7 +60,10 @@ function removeKeyboardEventListeners(events) {
   events.removeAllListeners("keypress");
 }
 
-function addKeyboardEventListeners (events) {
+
+
+
+function addKeyboardEventListeners (events, forwardEvent) {
   events.on('keydown', function (event) {
     switch (event.keyCode) {
       case 33: // Page up
@@ -70,7 +75,7 @@ function addKeyboardEventListeners (events) {
       case 34: // Page down
       case 39: // Right
       case 40: // Down
-        events.emit('gotoNextSlide');
+        events.emit(forwardEvent);
         break;
       case 36: // Home
         events.emit('gotoFirstSlide');
@@ -87,7 +92,7 @@ function addKeyboardEventListeners (events) {
   events.on('keypress', function (event) {
     switch (String.fromCharCode(event.which)) {
       case 'j':
-        events.emit('gotoNextSlide');
+        events.emit(forwardEvent);
         break;
       case 'k':
         events.emit('gotoPreviousSlide');
@@ -108,21 +113,21 @@ function addKeyboardEventListeners (events) {
   });
 }
 
+
 function removeMouseEventListeners(events) {
   events.removeAllListeners("mousewheel");
 }
 
-function addMouseEventListeners (events) {
+function addMouseEventListeners (events, forwardEvent) {
   events.on('mousewheel', function (event) {
     if (event.wheelDeltaY > 0) {
       events.emit('gotoPreviousSlide');
     }
     else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
+      events.emit(forwardEvent);
     }
   });
 }
-
 
 function removeTouchEventListeners(events) {
   events.removeAllListeners("touchstart");
@@ -131,7 +136,7 @@ function removeTouchEventListeners(events) {
 }
 
 
-function addTouchEventListeners (events) {
+function addTouchEventListeners (events, forwardEvent) {
   var touch
     , startX
     , endX
@@ -147,7 +152,7 @@ function addTouchEventListeners (events) {
 
   var handleSwipe = function () {
     if (startX > endX) {
-      events.emit('gotoNextSlide');
+      events.emit(forwardEvent);
     }
     else {
       events.emit('gotoPreviousSlide');

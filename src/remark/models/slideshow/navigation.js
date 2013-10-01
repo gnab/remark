@@ -11,6 +11,7 @@ function Navigation (events) {
   self.gotoNextSlide = gotoNextSlide;
   self.gotoFirstSlide = gotoFirstSlide;
   self.gotoLastSlide = gotoLastSlide;
+  self.getSlideNo = getSlideNo;
   self.pause = pause;
   self.resume = resume;
 
