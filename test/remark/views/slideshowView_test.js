@@ -176,8 +176,8 @@ describe('SlideshowView', function () {
 
       view = new SlideshowView(events, containerElement, model);
 
-      view.element.style.width.should.equal('908px');
-      view.element.style.height.should.equal('681px');
+      view.slideViews[0].scalingElement.style.width.should.equal('908px');
+      view.slideViews[0].scalingElement.style.height.should.equal('681px');
     });
 
     it('should calculate element size for 16:9', function () {
@@ -185,8 +185,8 @@ describe('SlideshowView', function () {
 
       view = new SlideshowView(events, containerElement, model);
 
-      view.element.style.width.should.equal('1210px');
-      view.element.style.height.should.equal('681px');
+      view.slideViews[0].scalingElement.style.width.should.equal('1210px');
+      view.slideViews[0].scalingElement.style.height.should.equal('681px');
     });
   });
 
@@ -196,13 +196,13 @@ describe('SlideshowView', function () {
     });
 
     it('should create initial slide views', function () {
-      view.element.getElementsByClassName('slide').length.should.equal(0);
+      view.slideViews.length.should.equal(1);
     });
 
     it('should replace slide views on slideshow update', function () {
       model.loadFromString('a\n---\nb');
 
-      view.element.getElementsByClassName('remark-slide').length.should.equal(2);
+      view.slideViews.length.should.equal(2);
     });
   });
 

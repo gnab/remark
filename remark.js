@@ -2296,8 +2296,8 @@ module.exports = {
 /* Automatically generated */
 
 module.exports = {
-  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}@media print{.remark-container{background:none;}}.remark-slideshow-area{position:absolute;height:100%;width:100%;}.remark-slideshow{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-position{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;opacity:0.95;background:#000;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slideshow:empty{display:none;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-toolbar{color:#979892;padding-bottom:1em;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-container.remark-presenter-mode .remark-slideshow-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}",
-  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slideshow-area\">\n  <div class=\"remark-slideshow\">\n    <div class=\"remark-position\"></div>\n  </div>\n</div>\n<div class=\"remark-preview-area\">\n  <div class=\"remark-slideshow\"></div>\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">K</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">J</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">F</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">C</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">P</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
+  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}@media print{.remark-container{background:none;overflow:visible;}}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:relative;height:100%;width:100%;}.remark-slide-scaler{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-active-slide{display:block;}@media print{.remark-slide-container{display:block;}}.remark-position{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;opacity:0.95;background:#000;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slideshow:empty{display:none;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-toolbar{color:#979892;padding-bottom:1em;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}",
+  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n  <div class=\"remark-slideshow\"></div>\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">K</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">J</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">F</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">C</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">P</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
 };
 
 },{}],5:[function(require,module,exports){
@@ -2592,7 +2592,7 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
+},{"events":6,"./models/slideshow":7,"./views/slideshowView":8,"./highlighter":3,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
@@ -3022,9 +3022,9 @@ SlideshowView.prototype.configureChildElements = function () {
 
   self.containerElement.innerHTML += resources.containerLayout;
 
-  self.elementArea = self.containerElement.getElementsByClassName('remark-slideshow-area')[0];
-  self.element = self.elementArea.getElementsByClassName('remark-slideshow')[0];
-  self.positionElement = self.element.getElementsByClassName('remark-position')[0];
+  self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
+  //self.element = self.elementArea.getElementsByClassName('remark-slideshow')[0];
+  //self.positionElement = self.element.getElementsByClassName('remark-position')[0];
 
   self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
   self.previewElement = self.previewArea.getElementsByClassName('remark-slideshow')[0];
@@ -3063,18 +3063,29 @@ SlideshowView.prototype.configureChildElements = function () {
   if (window.matchMedia) {
     window.matchMedia('print').addListener(function (e) {
       if (e.matches) {
-        self.scaleToFit(self.element, {
-          clientWidth: document.documentElement.clientWidth * 1.25,
-          clientHeight: document.documentElement.clientHeight
-        });
+        if (self.slideViews) {
+          self.slideViews.forEach(function (slideView) {
+            self.scaleToFit(slideView.scalingElement, {
+              clientWidth: document.documentElement.clientWidth * 1.25,
+              clientHeight: document.documentElement.clientHeight * 1.02
+            });
+          });
+
+          // For some strange reason the documentElement's
+          // clientWidth must be accessed a last time after
+          // scaling the slides for the scaling to work
+          // properly in print preview.
+          //
+          // If this line is omitted, the slides are scaled
+          // for incorrect dimensions.
+          var width = document.documentElement.clientWidth;
+        }
       }
     });
   }
 
   function onResize () {
-    self.scaleToFit(self.element, self.elementArea);
-    self.scaleToFit(self.previewElement, self.previewArea);
-    self.scaleToFit(self.helpElement, self.containerElement);
+    self.scaleElements();
   }
 };
 
@@ -3083,7 +3094,7 @@ SlideshowView.prototype.configurePositionElement = function () {
 
   self.positionElement = document.createElement('div');
   self.positionElement.className = 'remark-position';
-  self.element.appendChild(self.positionElement);
+  //self.element.appendChild(self.positionElement);
 };
 
 SlideshowView.prototype.updateSlideViews = function () {
@@ -3091,7 +3102,7 @@ SlideshowView.prototype.updateSlideViews = function () {
 
   if (self.slideViews) {
     self.slideViews.forEach(function (slideView) {
-      self.element.removeChild(slideView.element);
+      self.elementArea.removeChild(slideView.containerElement);
     });
   }
 
@@ -3100,10 +3111,10 @@ SlideshowView.prototype.updateSlideViews = function () {
   });
 
   self.slideViews.forEach(function (slideView) {
-    self.element.appendChild(slideView.element);
+    self.elementArea.appendChild(slideView.containerElement);
   });
 
-  self.scaleSlideBackgroundImages();
+  self.updateDimensions();
 
   if (self.slideshow.getCurrentSlideNo() > 0) {
     self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
@@ -3129,8 +3140,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
   slideView.show();
 
-  self.positionElement.innerHTML =
-    slideIndex + 1 + ' / ' + self.slideViews.length;
+  //self.positionElement.innerHTML =
+    //slideIndex + 1 + ' / ' + self.slideViews.length;
   self.notesElement.innerHTML = slideView.notesMarkup;
 
   if (nextSlideView) {
@@ -3160,21 +3171,37 @@ SlideshowView.prototype.updateDimensions = function () {
     , dimensions = getDimensions(ratio)
     ;
 
-  this.ratio = ratio;
-  this.dimensions.width = dimensions.width;
-  this.dimensions.height = dimensions.height;
+  self.ratio = ratio;
+  self.dimensions.width = dimensions.width;
+  self.dimensions.height = dimensions.height;
 
-  this.element.style.width = this.dimensions.width + 'px';
-  this.element.style.height = this.dimensions.height + 'px';
-  this.previewElement.style.width = this.dimensions.width + 'px';
-  this.previewElement.style.height = this.dimensions.height + 'px';
-  this.helpElement.style.width = this.dimensions.width + 'px';
-  this.helpElement.style.height = this.dimensions.height + 'px';
+  if (self.slideViews) {
+    self.slideViews.forEach(function (slideView) {
+      slideView.scalingElement.style.width = self.dimensions.width + 'px';
+      slideView.scalingElement.style.height = self.dimensions.height + 'px';
+    });
+  }
 
-  this.scaleSlideBackgroundImages();
-  this.scaleToFit(this.element, this.elementArea);
-  this.scaleToFit(this.previewElement, this.previewArea);
-  this.scaleToFit(this.helpElement, this.containerElement);
+  self.previewElement.style.width = self.dimensions.width + 'px';
+  self.previewElement.style.height = self.dimensions.height + 'px';
+  self.helpElement.style.width = self.dimensions.width + 'px';
+  self.helpElement.style.height = self.dimensions.height + 'px';
+
+  self.scaleSlideBackgroundImages();
+  self.scaleElements();
+};
+
+SlideshowView.prototype.scaleElements = function () {
+  var self = this;
+
+  if (self.slideViews) {
+    self.slideViews.forEach(function (slideView) {
+      self.scaleToFit(slideView.scalingElement, self.elementArea);
+    });
+  }
+
+  self.scaleToFit(self.previewElement, self.previewArea);
+  self.scaleToFit(self.helpElement, self.containerElement);
 };
 
 SlideshowView.prototype.scaleToFit = function (element, container) {
@@ -3207,7 +3234,17 @@ SlideshowView.prototype.scaleToFit = function (element, container) {
   element.style['-webkit-transform'] = 'scale(' + scale + ')';
   element.style.MozTransform = 'scale(' + scale + ')';
   element.style.left = left + 'px';
-  element.style.top = top + 'px';
+
+  if (element === self.element) {
+    if (self.slideViews) {
+      self.slideViews.forEach(function (slideView) {
+        slideView.element.style.top = top + 'px';
+      });
+    }
+  }
+  else {
+    element.style.top = top + 'px';
+  }
 };
 
 function getRatio (slideshow) {
@@ -3379,6 +3416,12 @@ function Events (events) {
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
+    .join(' ');
+};
+
+exports.removeClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .filter(function (klass) { return klass !== className; })
     .join(' ');
 };
 
@@ -3651,19 +3694,23 @@ function SlideView (events, slideshow, slide) {
   this.slideshow = slideshow;
   this.slide = slide;
 
+  this.containerElement = createContainerElement();
+  this.scalingElement = createScalingElement();
   this.element = createSlideElement();
   this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
   this.notesMarkup = createNotesMarkup(slideshow, slide.notes);
 
   this.element.appendChild(this.contentElement);
+  this.scalingElement.appendChild(this.element);
+  this.containerElement.appendChild(this.scalingElement);
 }
 
 SlideView.prototype.show = function () {
-  this.element.style.display = 'table';
+  utils.addClass(this.containerElement, 'remark-active-slide');
 };
 
 SlideView.prototype.hide = function () {
-  this.element.style.display = 'none';
+  utils.removeClass(this.containerElement, 'remark-active-slide');
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
@@ -3699,11 +3746,26 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   }
 };
 
+function createContainerElement () {
+  var element = document.createElement('div');
+
+  element.className = 'remark-slide-container';
+
+  return element;
+}
+
+function createScalingElement () {
+  var element = document.createElement('div');
+
+  element.className = 'remark-slide-scaler';
+
+  return element;
+}
+
 function createSlideElement () {
   var element = document.createElement('div');
 
   element.className = 'remark-slide';
-  element.style.display = 'none';
 
   return element;
 }

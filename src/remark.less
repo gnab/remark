@@ -22,6 +22,7 @@ html.remark-container, body.remark-container {
 @media print {
   .remark-container {
     background: none;
+    overflow: visible;
   }
 }
 
@@ -29,13 +30,23 @@ html.remark-container, body.remark-container {
 /* Slideshow */
 /*************/
 
-.remark-slideshow-area {
-  position: absolute;
+.remark-slides-area {
+  position: relative;
   height: 100%;
   width: 100%;
 }
 
-.remark-slideshow {
+/*********/
+/* Slide */
+/*********/
+
+.remark-slide-container {
+  display: none;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.remark-slide-scaler {
   background: #fff;
   overflow: hidden;
   position: absolute;
@@ -46,14 +57,10 @@ html.remark-container, body.remark-container {
   -webkit-box-shadow: 0 0 30px #888;
   box-shadow: 0 0 30px #888;
 }
-
-/*********/
-/* Slide */
-/*********/
-
 .remark-slide {
   height: 100%;
   width: 100%;
+  display: table;
 
   > .left {
     text-align: left;
@@ -99,6 +106,14 @@ html.remark-container, body.remark-container {
       display: block;
       text-align: right;
     }
+  }
+}
+.remark-active-slide {
+  display: block;
+}
+@media print {
+  .remark-slide-container {
+    display: block;
   }
 }
 
@@ -238,7 +253,7 @@ html.remark-container, body.remark-container {
 }
 
 .remark-container.remark-presenter-mode {
-  .remark-slideshow-area {
+  .remark-slides-area {
     top: 2%;
     left: 2%;
     height: 47.25%;

@@ -10,19 +10,23 @@ function SlideView (events, slideshow, slide) {
   this.slideshow = slideshow;
   this.slide = slide;
 
+  this.containerElement = createContainerElement();
+  this.scalingElement = createScalingElement();
   this.element = createSlideElement();
   this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
   this.notesMarkup = createNotesMarkup(slideshow, slide.notes);
 
   this.element.appendChild(this.contentElement);
+  this.scalingElement.appendChild(this.element);
+  this.containerElement.appendChild(this.scalingElement);
 }
 
 SlideView.prototype.show = function () {
-  this.element.style.display = 'table';
+  utils.addClass(this.containerElement, 'remark-active-slide');
 };
 
 SlideView.prototype.hide = function () {
-  this.element.style.display = 'none';
+  utils.removeClass(this.containerElement, 'remark-active-slide');
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
@@ -58,11 +62,26 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   }
 };
 
+function createContainerElement () {
+  var element = document.createElement('div');
+
+  element.className = 'remark-slide-container';
+
+  return element;
+}
+
+function createScalingElement () {
+  var element = document.createElement('div');
+
+  element.className = 'remark-slide-scaler';
+
+  return element;
+}
+
 function createSlideElement () {
   var element = document.createElement('div');
 
   element.className = 'remark-slide';
-  element.style.display = 'none';
 
   return element;
 }

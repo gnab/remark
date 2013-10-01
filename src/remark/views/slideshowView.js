@@ -127,9 +127,9 @@ SlideshowView.prototype.configureChildElements = function () {
 
   self.containerElement.innerHTML += resources.containerLayout;
 
-  self.elementArea = self.containerElement.getElementsByClassName('remark-slideshow-area')[0];
-  self.element = self.elementArea.getElementsByClassName('remark-slideshow')[0];
-  self.positionElement = self.element.getElementsByClassName('remark-position')[0];
+  self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
+  //self.element = self.elementArea.getElementsByClassName('remark-slideshow')[0];
+  //self.positionElement = self.element.getElementsByClassName('remark-position')[0];
 
   self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
   self.previewElement = self.previewArea.getElementsByClassName('remark-slideshow')[0];
@@ -168,18 +168,29 @@ SlideshowView.prototype.configureChildElements = function () {
   if (window.matchMedia) {
     window.matchMedia('print').addListener(function (e) {
       if (e.matches) {
-        self.scaleToFit(self.element, {
-          clientWidth: document.documentElement.clientWidth * 1.25,
-          clientHeight: document.documentElement.clientHeight
-        });
+        if (self.slideViews) {
+          self.slideViews.forEach(function (slideView) {
+            self.scaleToFit(slideView.scalingElement, {
+              clientWidth: document.documentElement.clientWidth * 1.25,
+              clientHeight: document.documentElement.clientHeight * 1.02
+            });
+          });
+
+          // For some strange reason the documentElement's
+          // clientWidth must be accessed a last time after
+          // scaling the slides for the scaling to work
+          // properly in print preview.
+          //
+          // If this line is omitted, the slides are scaled
+          // for incorrect dimensions.
+          var width = document.documentElement.clientWidth;
+        }
       }
     });
   }
 
   function onResize () {
-    self.scaleToFit(self.element, self.elementArea);
-    self.scaleToFit(self.previewElement, self.previewArea);
-    self.scaleToFit(self.helpElement, self.containerElement);
+    self.scaleElements();
   }
 };
 
@@ -188,7 +199,7 @@ SlideshowView.prototype.configurePositionElement = function () {
 
   self.positionElement = document.createElement('div');
   self.positionElement.className = 'remark-position';
-  self.element.appendChild(self.positionElement);
+  //self.element.appendChild(self.positionElement);
 };
 
 SlideshowView.prototype.updateSlideViews = function () {
@@ -196,7 +207,7 @@ SlideshowView.prototype.updateSlideViews = function () {
 
   if (self.slideViews) {
     self.slideViews.forEach(function (slideView) {
-      self.element.removeChild(slideView.element);
+      self.elementArea.removeChild(slideView.containerElement);
     });
   }
 
@@ -205,10 +216,10 @@ SlideshowView.prototype.updateSlideViews = function () {
   });
 
   self.slideViews.forEach(function (slideView) {
-    self.element.appendChild(slideView.element);
+    self.elementArea.appendChild(slideView.containerElement);
   });
 
-  self.scaleSlideBackgroundImages();
+  self.updateDimensions();
 
   if (self.slideshow.getCurrentSlideNo() > 0) {
     self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
@@ -234,8 +245,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
   slideView.show();
 
-  self.positionElement.innerHTML =
-    slideIndex + 1 + ' / ' + self.slideViews.length;
+  //self.positionElement.innerHTML =
+    //slideIndex + 1 + ' / ' + self.slideViews.length;
   self.notesElement.innerHTML = slideView.notesMarkup;
 
   if (nextSlideView) {
@@ -265,21 +276,37 @@ SlideshowView.prototype.updateDimensions = function () {
     , dimensions = getDimensions(ratio)
     ;
 
-  this.ratio = ratio;
-  this.dimensions.width = dimensions.width;
-  this.dimensions.height = dimensions.height;
+  self.ratio = ratio;
+  self.dimensions.width = dimensions.width;
+  self.dimensions.height = dimensions.height;
 
-  this.element.style.width = this.dimensions.width + 'px';
-  this.element.style.height = this.dimensions.height + 'px';
-  this.previewElement.style.width = this.dimensions.width + 'px';
-  this.previewElement.style.height = this.dimensions.height + 'px';
-  this.helpElement.style.width = this.dimensions.width + 'px';
-  this.helpElement.style.height = this.dimensions.height + 'px';
+  if (self.slideViews) {
+    self.slideViews.forEach(function (slideView) {
+      slideView.scalingElement.style.width = self.dimensions.width + 'px';
+      slideView.scalingElement.style.height = self.dimensions.height + 'px';
+    });
+  }
 
-  this.scaleSlideBackgroundImages();
-  this.scaleToFit(this.element, this.elementArea);
-  this.scaleToFit(this.previewElement, this.previewArea);
-  this.scaleToFit(this.helpElement, this.containerElement);
+  self.previewElement.style.width = self.dimensions.width + 'px';
+  self.previewElement.style.height = self.dimensions.height + 'px';
+  self.helpElement.style.width = self.dimensions.width + 'px';
+  self.helpElement.style.height = self.dimensions.height + 'px';
+
+  self.scaleSlideBackgroundImages();
+  self.scaleElements();
+};
+
+SlideshowView.prototype.scaleElements = function () {
+  var self = this;
+
+  if (self.slideViews) {
+    self.slideViews.forEach(function (slideView) {
+      self.scaleToFit(slideView.scalingElement, self.elementArea);
+    });
+  }
+
+  self.scaleToFit(self.previewElement, self.previewArea);
+  self.scaleToFit(self.helpElement, self.containerElement);
 };
 
 SlideshowView.prototype.scaleToFit = function (element, container) {
@@ -312,7 +339,17 @@ SlideshowView.prototype.scaleToFit = function (element, container) {
   element.style['-webkit-transform'] = 'scale(' + scale + ')';
   element.style.MozTransform = 'scale(' + scale + ')';
   element.style.left = left + 'px';
-  element.style.top = top + 'px';
+
+  if (element === self.element) {
+    if (self.slideViews) {
+      self.slideViews.forEach(function (slideView) {
+        slideView.element.style.top = top + 'px';
+      });
+    }
+  }
+  else {
+    element.style.top = top + 'px';
+  }
 };
 
 function getRatio (slideshow) {

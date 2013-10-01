@@ -4,6 +4,12 @@ exports.addClass = function (element, className) {
     .join(' ');
 };
 
+exports.removeClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .filter(function (klass) { return klass !== className; })
+    .join(' ');
+};
+
 exports.toggleClass = function (element, className) {
   var classes = exports.getClasses(element),
       index = classes.indexOf(className);
