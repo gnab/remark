@@ -24,7 +24,7 @@ function Slideshow (events, options) {
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
   self.slide = slide;
-  self.begin = begin;
+  self.start = start;
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
@@ -46,8 +46,8 @@ function Slideshow (events, options) {
     return slides[slideNo-1];
   }
 
-  function begin() {
-    this.events.emit('beginSlideShow');
+  function start() {
+    this.events.emit('startSlideShow');
   }
 
   function getSlides () {

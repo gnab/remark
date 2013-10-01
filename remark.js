@@ -2576,7 +2576,7 @@ module.exports.alloc = function (options) {
 // Creates slideshow initialized from options
 module.exports.create = function (options) {
   var slideshow = this.alloc(options);
-  slideshow.begin();
+  slideshow.start();
   return slideshow;
 };
 
@@ -2822,7 +2822,7 @@ function Slideshow (events, options) {
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
   self.slide = slide;
-  self.begin = begin;
+  self.start = start;
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
@@ -2844,8 +2844,8 @@ function Slideshow (events, options) {
     return slides[slideNo-1];
   }
 
-  function begin() {
-    this.events.emit('beginSlideShow');
+  function start() {
+    this.events.emit('startSlideShow');
   }
 
   function getSlides () {
@@ -2950,8 +2950,8 @@ function SlideshowView (events, containerElement, slideshow) {
   self.scaleElements();
   self.updateSlideViews();
 
-  events.on('beginSlideShow', function () {
-    self.beginSlideShow();
+  events.on('startSlideShow', function () {
+    self.startSlideShow();
   });
 
   events.on('slidesChanged', function () {
@@ -2997,7 +2997,7 @@ function handleFullscreen(self) {
   });
 }
 
-SlideshowView.prototype.beginSlideShow = function() {
+SlideshowView.prototype.startSlideShow = function() {
   var self = this;
 
   if (self.isEmbedded()) {
