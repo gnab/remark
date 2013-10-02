@@ -1,12 +1,9 @@
 var SlideView = require('./slideView')
+  , Scaler = require('../scaler')
   , resources = require('../resources')
   , addClass = require('../utils').addClass
   , toggleClass = require('../utils').toggleClass
   , getPrefixedProperty = require('../utils').getPrefixedProperty
-
-  , referenceWidth = 908
-  , referenceHeight = 681
-  , referenceRatio = referenceWidth / referenceHeight
   ;
 
 module.exports = SlideshowView;
@@ -16,12 +13,13 @@ function SlideshowView (events, containerElement, slideshow) {
 
   self.events = events;
   self.slideshow = slideshow;
-  self.dimensions = {};
+  self.scaler = new Scaler(events, slideshow);
 
   self.configureContainerElement(containerElement);
   self.configureChildElements();
 
   self.updateDimensions();
+  self.scaleElements();
   self.updateSlideViews();
 
   events.on('slidesChanged', function () {
@@ -38,7 +36,7 @@ function SlideshowView (events, containerElement, slideshow) {
 
   events.on('togglePresenterMode', function () {
     toggleClass(self.containerElement, 'remark-presenter-mode');
-    self.updateDimensions();
+    self.scaleElements();
   });
 
   events.on('toggleHelp', function () {
@@ -63,7 +61,7 @@ function handleFullscreen(self) {
     else if (cancelFullscreen) {
       cancelFullscreen.call(document);
     }
-    self.updateDimensions();
+    self.scaleElements();
   });
 }
 
@@ -167,7 +165,7 @@ SlideshowView.prototype.configureChildElements = function () {
       if (e.matches) {
         if (self.slideViews) {
           self.slideViews.forEach(function (slideView) {
-            self.scaleToFit(slideView.scalingElement, {
+            self.scaler.scaleToFit(slideView.scalingElement, {
               clientWidth: document.documentElement.clientWidth * 1.25,
               clientHeight: document.documentElement.clientHeight * 0.4
             });
@@ -215,12 +213,12 @@ SlideshowView.prototype.updateSlideViews = function () {
   }
 };
 
-SlideshowView.prototype.scaleSlideBackgroundImages = function () {
+SlideshowView.prototype.scaleSlideBackgroundImages = function (dimensions) {
   var self = this;
 
   if (self.slideViews) {
     self.slideViews.forEach(function (slideView) {
-      slideView.scaleBackgroundImage(self.dimensions);
+      slideView.scaleBackgroundImage(dimensions);
     });
   }
 };
@@ -259,27 +257,22 @@ SlideshowView.prototype.hideSlide = function (slideIndex) {
 
 SlideshowView.prototype.updateDimensions = function () {
   var self = this
-    , ratio = getRatio(self.slideshow)
-    , dimensions = getDimensions(ratio)
+    , dimensions = self.scaler.dimensions
     ;
-
-  self.ratio = ratio;
-  self.dimensions.width = dimensions.width;
-  self.dimensions.height = dimensions.height;
 
   if (self.slideViews) {
     self.slideViews.forEach(function (slideView) {
-      slideView.scalingElement.style.width = self.dimensions.width + 'px';
-      slideView.scalingElement.style.height = self.dimensions.height + 'px';
+      slideView.scalingElement.style.width = dimensions.width + 'px';
+      slideView.scalingElement.style.height = dimensions.height + 'px';
     });
   }
 
-  self.previewElement.style.width = self.dimensions.width + 'px';
-  self.previewElement.style.height = self.dimensions.height + 'px';
-  self.helpElement.style.width = self.dimensions.width + 'px';
-  self.helpElement.style.height = self.dimensions.height + 'px';
+  self.previewElement.style.width = dimensions.width + 'px';
+  self.previewElement.style.height = dimensions.height + 'px';
+  self.helpElement.style.width = dimensions.width + 'px';
+  self.helpElement.style.height = dimensions.height + 'px';
 
-  self.scaleSlideBackgroundImages();
+  self.scaleSlideBackgroundImages(dimensions);
   self.scaleElements();
 };
 
@@ -288,65 +281,10 @@ SlideshowView.prototype.scaleElements = function () {
 
   if (self.slideViews) {
     self.slideViews.forEach(function (slideView) {
-      self.scaleToFit(slideView.scalingElement, self.elementArea);
+      self.scaler.scaleToFit(slideView.scalingElement, self.elementArea);
     });
   }
 
-  self.scaleToFit(self.previewElement, self.previewArea);
-  self.scaleToFit(self.helpElement, self.containerElement);
+  self.scaler.scaleToFit(self.previewElement, self.previewArea);
+  self.scaler.scaleToFit(self.helpElement, self.containerElement);
 };
-
-SlideshowView.prototype.scaleToFit = function (element, container) {
-  var self = this
-    , containerHeight = container.clientHeight
-    , containerWidth = container.clientWidth
-    , scale
-    , scaledWidth
-    , scaledHeight
-    , ratio = this.ratio
-    , dimensions = this.dimensions
-    , direction
-    , left
-    , top
-    ;
-
-  if (containerWidth / ratio.width > containerHeight / ratio.height) {
-    scale = containerHeight / dimensions.height;
-  }
-  else {
-    scale = containerWidth / dimensions.width;
-  }
-
-  scaledWidth = dimensions.width * scale;
-  scaledHeight = dimensions.height * scale;
-
-  left = (containerWidth - scaledWidth) / 2;
-  top = (containerHeight - scaledHeight) / 2;
-
-  element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  element.style.MozTransform = 'scale(' + scale + ')';
-  element.style.left = left + 'px';
-  element.style.top = top + 'px';
-};
-
-function getRatio (slideshow) {
-  var ratioComponents = slideshow.getRatio().split(':')
-    , ratio
-    ;
-
-  ratio = {
-    width: parseInt(ratioComponents[0], 10)
-  , height: parseInt(ratioComponents[1], 10)
-  };
-
-  ratio.ratio = ratio.width / ratio.height;
-
-  return ratio;
-}
-
-function getDimensions (ratio) {
-  return {
-    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
-  , height: referenceHeight
-  };
-}
