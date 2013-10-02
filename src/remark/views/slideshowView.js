@@ -14,6 +14,7 @@ function SlideshowView (events, containerElement, slideshow) {
   self.events = events;
   self.slideshow = slideshow;
   self.scaler = new Scaler(events, slideshow);
+  self.slideViews = [];
 
   self.configureContainerElement(containerElement);
   self.configureChildElements();
@@ -163,23 +164,21 @@ SlideshowView.prototype.configureChildElements = function () {
   if (window.matchMedia) {
     window.matchMedia('print').addListener(function (e) {
       if (e.matches) {
-        if (self.slideViews) {
-          self.slideViews.forEach(function (slideView) {
-            self.scaler.scaleToFit(slideView.scalingElement, {
-              clientWidth: document.documentElement.clientWidth * 1.25,
-              clientHeight: document.documentElement.clientHeight * 0.4
-            });
+        self.slideViews.forEach(function (slideView) {
+          self.scaler.scaleToFit(slideView.scalingElement, {
+            clientWidth: document.documentElement.clientWidth * 1.25,
+            clientHeight: document.documentElement.clientHeight * 1
           });
+        });
 
-          // For some strange reason the documentElement's
-          // clientWidth must be accessed a last time after
-          // scaling the slides for the scaling to work
-          // properly in print preview.
-          //
-          // If this line is omitted, the slides are scaled
-          // for incorrect dimensions.
-          var width = document.documentElement.clientWidth;
-        }
+        // For some strange reason the documentElement's
+        // clientWidth must be accessed a last time after
+        // scaling the slides for the scaling to work
+        // properly in print preview.
+        //
+        // If this line is omitted, the slides are scaled
+        // for incorrect dimensions.
+        var width = document.documentElement.clientWidth;
       }
     });
   }
@@ -192,14 +191,12 @@ SlideshowView.prototype.configureChildElements = function () {
 SlideshowView.prototype.updateSlideViews = function () {
   var self = this;
 
-  if (self.slideViews) {
-    self.slideViews.forEach(function (slideView) {
-      self.elementArea.removeChild(slideView.containerElement);
-    });
-  }
+  self.slideViews.forEach(function (slideView) {
+    self.elementArea.removeChild(slideView.containerElement);
+  });
 
   self.slideViews = self.slideshow.getSlides().map(function (slide) {
-    return new SlideView(self.events, self.slideshow, slide);
+    return new SlideView(self.events, self.slideshow, self.scaler, slide);
   });
 
   self.slideViews.forEach(function (slideView) {
@@ -216,11 +213,9 @@ SlideshowView.prototype.updateSlideViews = function () {
 SlideshowView.prototype.scaleSlideBackgroundImages = function (dimensions) {
   var self = this;
 
-  if (self.slideViews) {
-    self.slideViews.forEach(function (slideView) {
-      slideView.scaleBackgroundImage(dimensions);
-    });
-  }
+  self.slideViews.forEach(function (slideView) {
+    slideView.scaleBackgroundImage(dimensions);
+  });
 };
 
 SlideshowView.prototype.showSlide =  function (slideIndex) {
@@ -260,13 +255,6 @@ SlideshowView.prototype.updateDimensions = function () {
     , dimensions = self.scaler.dimensions
     ;
 
-  if (self.slideViews) {
-    self.slideViews.forEach(function (slideView) {
-      slideView.scalingElement.style.width = dimensions.width + 'px';
-      slideView.scalingElement.style.height = dimensions.height + 'px';
-    });
-  }
-
   self.previewElement.style.width = dimensions.width + 'px';
   self.previewElement.style.height = dimensions.height + 'px';
   self.helpElement.style.width = dimensions.width + 'px';
@@ -279,11 +267,9 @@ SlideshowView.prototype.updateDimensions = function () {
 SlideshowView.prototype.scaleElements = function () {
   var self = this;
 
-  if (self.slideViews) {
-    self.slideViews.forEach(function (slideView) {
-      self.scaler.scaleToFit(slideView.scalingElement, self.elementArea);
-    });
-  }
+  self.slideViews.forEach(function (slideView) {
+    slideView.scale(self.elementArea);
+  });
 
   self.scaler.scaleToFit(self.previewElement, self.previewArea);
   self.scaler.scaleToFit(self.helpElement, self.containerElement);

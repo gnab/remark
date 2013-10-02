@@ -5,22 +5,47 @@ var converter = require('../converter')
 
 module.exports = SlideView;
 
-function SlideView (events, slideshow, slide) {
-  this.events = events;
-  this.slideshow = slideshow;
-  this.slide = slide;
+function SlideView (events, slideshow, scaler, slide) {
+  var self = this;
 
-  this.notesMarkup = createNotesMarkup(slideshow, slide.notes);
+  self.events = events;
+  self.slideshow = slideshow;
+  self.scaler = scaler;
+  self.slide = slide;
 
-  this.configureElements();
+  self.notesMarkup = createNotesMarkup(slideshow, slide.notes);
+
+  self.configureElements();
+  self.updateDimensions();
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.updateDimensions();
+    }
+  });
 }
 
+SlideView.prototype.updateDimensions = function () {
+  var self = this
+    , dimensions = self.scaler.dimensions
+    ;
+
+  self.scalingElement.style.width = dimensions.width + 'px';
+  self.scalingElement.style.height = dimensions.height + 'px';
+};
+
+SlideView.prototype.scale = function (containerElement) {
+  var self = this;
+
+  self.scaler.scaleToFit(self.scalingElement, containerElement);
+};
+
 SlideView.prototype.show = function () {
-  utils.addClass(this.containerElement, 'remark-active-slide');
+  utils.addClass(this.containerElement, 'remark-visible');
 };
 
 SlideView.prototype.hide = function () {
-  utils.removeClass(this.containerElement, 'remark-active-slide');
+  utils.removeClass(this.containerElement, 'remark-visible');
 };
 
 SlideView.prototype.configureElements = function () {
