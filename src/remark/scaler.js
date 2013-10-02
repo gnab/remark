@@ -50,8 +50,8 @@ Scaler.prototype.scaleToFit = function (element, container) {
 
   element.style['-webkit-transform'] = 'scale(' + scale + ')';
   element.style.MozTransform = 'scale(' + scale + ')';
-  element.style.left = left + 'px';
-  element.style.top = top + 'px';
+  element.style.left = Math.max(left, 0) + 'px';
+  element.style.top = Math.max(top, 0) + 'px';
 };
 
 function getRatio (slideshow) {

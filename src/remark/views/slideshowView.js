@@ -165,9 +165,9 @@ SlideshowView.prototype.configureChildElements = function () {
     window.matchMedia('print').addListener(function (e) {
       if (e.matches) {
         self.slideViews.forEach(function (slideView) {
-          self.scaler.scaleToFit(slideView.scalingElement, {
-            clientWidth: document.documentElement.clientWidth * 1.25,
-            clientHeight: document.documentElement.clientHeight * 1
+          slideView.scale({
+            clientWidth: document.documentElement.clientWidth * 1.275,
+            clientHeight: document.documentElement.clientHeight * 1.024
           });
         });
 
