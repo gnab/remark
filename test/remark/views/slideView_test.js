@@ -6,8 +6,13 @@ var EventEmitter = require('events').EventEmitter
 
 describe('SlideView', function () {
   var slideshow = {
-    getHighlightStyle: function () { return 'default'; } 
-  };
+        getHighlightStyle: function () { return 'default'; }
+      , getSlides: function () { return []; }
+      }
+    , scaler = {
+        dimensions: {width: 10, height: 10}
+      }
+    ;
 
   describe('background', function () {
     it('should be set from background slide property', function () {
@@ -15,7 +20,7 @@ describe('SlideView', function () {
             source: '',
             properties: {'background-image': 'image.jpg'}
           })
-        , slideView = new SlideView(new EventEmitter(), slideshow, slide)
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         ;
 
         slideView.contentElement.style.backgroundImage.should.equal('image.jpg');
@@ -25,7 +30,7 @@ describe('SlideView', function () {
   describe('classes', function () {
     it('should contain "content" class by default', function () {
       var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, slide)
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         , classes = utils.getClasses(slideView.contentElement)
         ;
 
@@ -37,7 +42,7 @@ describe('SlideView', function () {
             source: '',
             properties: {'class': 'middle, center'}
           })
-        , slideView = new SlideView(new EventEmitter(), slideshow, slide)
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         , classes = utils.getClasses(slideView.contentElement)
         ;
 
@@ -50,9 +55,9 @@ describe('SlideView', function () {
   describe('empty paragraph removal', function () {
     it('should have empty paragraphs removed', function () {
       var slide = new Slide(1, {source: '&lt;p&gt; &lt;/p&gt;'})
-        , slideView = new SlideView(new EventEmitter(), slideshow, slide);
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
-      slideView.contentElement.innerHTML.should.equal('\n');
+      slideView.contentElement.innerHTML.should.not.include('<p></p>');
     });
   });
 });

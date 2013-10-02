@@ -3566,14 +3566,14 @@ function getRatio (slideshow) {
   ratio.ratio = ratio.width / ratio.height;
 
   return ratio;
-};
+}
 
 function getDimensions (ratio) {
   return {
     width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
   , height: referenceHeight
   };
-};
+}
 
 },{}],14:[function(require,module,exports){
 var Lexer = require('./lexer'),
