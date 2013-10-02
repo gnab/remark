@@ -128,9 +128,6 @@ SlideshowView.prototype.configureChildElements = function () {
   self.containerElement.innerHTML += resources.containerLayout;
 
   self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
-  //self.element = self.elementArea.getElementsByClassName('remark-slideshow')[0];
-  //self.positionElement = self.element.getElementsByClassName('remark-position')[0];
-
   self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
   self.previewElement = self.previewArea.getElementsByClassName('remark-slideshow')[0];
   self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
@@ -172,7 +169,7 @@ SlideshowView.prototype.configureChildElements = function () {
           self.slideViews.forEach(function (slideView) {
             self.scaleToFit(slideView.scalingElement, {
               clientWidth: document.documentElement.clientWidth * 1.25,
-              clientHeight: document.documentElement.clientHeight * 1.02
+              clientHeight: document.documentElement.clientHeight * 0.4
             });
           });
 
@@ -192,14 +189,6 @@ SlideshowView.prototype.configureChildElements = function () {
   function onResize () {
     self.scaleElements();
   }
-};
-
-SlideshowView.prototype.configurePositionElement = function () {
-  var self = this;
-
-  self.positionElement = document.createElement('div');
-  self.positionElement.className = 'remark-position';
-  //self.element.appendChild(self.positionElement);
 };
 
 SlideshowView.prototype.updateSlideViews = function () {
@@ -245,8 +234,6 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
   slideView.show();
 
-  //self.positionElement.innerHTML =
-    //slideIndex + 1 + ' / ' + self.slideViews.length;
   self.notesElement.innerHTML = slideView.notesMarkup;
 
   if (nextSlideView) {
@@ -339,17 +326,7 @@ SlideshowView.prototype.scaleToFit = function (element, container) {
   element.style['-webkit-transform'] = 'scale(' + scale + ')';
   element.style.MozTransform = 'scale(' + scale + ')';
   element.style.left = left + 'px';
-
-  if (element === self.element) {
-    if (self.slideViews) {
-      self.slideViews.forEach(function (slideView) {
-        slideView.element.style.top = top + 'px';
-      });
-    }
-  }
-  else {
-    element.style.top = top + 'px';
-  }
+  element.style.top = top + 'px';
 };
 
 function getRatio (slideshow) {

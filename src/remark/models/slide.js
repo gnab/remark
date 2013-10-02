@@ -6,6 +6,7 @@ function Slide (slideNo, slide, template) {
   self.properties = slide.properties || {};
   self.source = slide.source || '';
   self.notes = slide.notes || '';
+  self.number = slideNo;
 
   self.getSlideNo = function () { return slideNo; };
 

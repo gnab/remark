@@ -2296,7 +2296,7 @@ module.exports = {
 /* Automatically generated */
 
 module.exports = {
-  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}@media print{.remark-container{background:none;overflow:visible;}}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:relative;height:100%;width:100%;}.remark-slide-scaler{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-active-slide{display:block;}@media print{.remark-slide-container{display:block;}}.remark-position{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;opacity:0.95;background:#000;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slideshow:empty{display:none;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-toolbar{color:#979892;padding-bottom:1em;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}",
+  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}@media print{.remark-container{background:none;overflow:visible;}}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:relative;height:100%;width:100%;}.remark-slide-scaler{background:#fff;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slide .remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-active-slide{display:block;}@media print{.remark-slide-container{display:block;}}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;opacity:0.95;background:#000;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:10%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slideshow:empty{display:none;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-toolbar{color:#979892;padding-bottom:1em;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}",
   containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n  <div class=\"remark-slideshow\"></div>\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">K</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">J</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">F</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">C</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">P</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
 };
 
@@ -2592,7 +2592,7 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./models/slideshow":7,"./views/slideshowView":8,"./highlighter":3,"./controller":9}],9:[function(require,module,exports){
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
@@ -3023,9 +3023,6 @@ SlideshowView.prototype.configureChildElements = function () {
   self.containerElement.innerHTML += resources.containerLayout;
 
   self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
-  //self.element = self.elementArea.getElementsByClassName('remark-slideshow')[0];
-  //self.positionElement = self.element.getElementsByClassName('remark-position')[0];
-
   self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
   self.previewElement = self.previewArea.getElementsByClassName('remark-slideshow')[0];
   self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
@@ -3067,7 +3064,7 @@ SlideshowView.prototype.configureChildElements = function () {
           self.slideViews.forEach(function (slideView) {
             self.scaleToFit(slideView.scalingElement, {
               clientWidth: document.documentElement.clientWidth * 1.25,
-              clientHeight: document.documentElement.clientHeight * 1.02
+              clientHeight: document.documentElement.clientHeight * 0.4
             });
           });
 
@@ -3087,14 +3084,6 @@ SlideshowView.prototype.configureChildElements = function () {
   function onResize () {
     self.scaleElements();
   }
-};
-
-SlideshowView.prototype.configurePositionElement = function () {
-  var self = this;
-
-  self.positionElement = document.createElement('div');
-  self.positionElement.className = 'remark-position';
-  //self.element.appendChild(self.positionElement);
 };
 
 SlideshowView.prototype.updateSlideViews = function () {
@@ -3140,8 +3129,6 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
   slideView.show();
 
-  //self.positionElement.innerHTML =
-    //slideIndex + 1 + ' / ' + self.slideViews.length;
   self.notesElement.innerHTML = slideView.notesMarkup;
 
   if (nextSlideView) {
@@ -3234,17 +3221,7 @@ SlideshowView.prototype.scaleToFit = function (element, container) {
   element.style['-webkit-transform'] = 'scale(' + scale + ')';
   element.style.MozTransform = 'scale(' + scale + ')';
   element.style.left = left + 'px';
-
-  if (element === self.element) {
-    if (self.slideViews) {
-      self.slideViews.forEach(function (slideView) {
-        slideView.element.style.top = top + 'px';
-      });
-    }
-  }
-  else {
-    element.style.top = top + 'px';
-  }
+  element.style.top = top + 'px';
 };
 
 function getRatio (slideshow) {
@@ -3506,6 +3483,7 @@ function Slide (slideNo, slide, template) {
   self.properties = slide.properties || {};
   self.source = slide.source || '';
   self.notes = slide.notes || '';
+  self.number = slideNo;
 
   self.getSlideNo = function () { return slideNo; };
 
@@ -3694,15 +3672,9 @@ function SlideView (events, slideshow, slide) {
   this.slideshow = slideshow;
   this.slide = slide;
 
-  this.containerElement = createContainerElement();
-  this.scalingElement = createScalingElement();
-  this.element = createSlideElement();
-  this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
   this.notesMarkup = createNotesMarkup(slideshow, slide.notes);
 
-  this.element.appendChild(this.contentElement);
-  this.scalingElement.appendChild(this.element);
-  this.containerElement.appendChild(this.scalingElement);
+  this.configureElements();
 }
 
 SlideView.prototype.show = function () {
@@ -3711,6 +3683,30 @@ SlideView.prototype.show = function () {
 
 SlideView.prototype.hide = function () {
   utils.removeClass(this.containerElement, 'remark-active-slide');
+};
+
+SlideView.prototype.configureElements = function () {
+  var self = this;
+
+  self.containerElement = document.createElement('div');
+  self.containerElement.className = 'remark-slide-container';
+
+  self.scalingElement = document.createElement('div');
+  self.scalingElement.className = 'remark-slide-scaler';
+
+  self.element = document.createElement('div');
+  self.element.className = 'remark-slide';
+
+  self.contentElement = createContentElement(self.events, self.slideshow, self.slide);
+
+  self.numberElement = document.createElement('div');
+  self.numberElement.className = 'remark-slide-number';
+  self.numberElement.innerHTML = self.slide.number + ' / ' + self.slideshow.getSlides().length;
+
+  self.contentElement.appendChild(self.numberElement);
+  self.element.appendChild(self.contentElement);
+  self.scalingElement.appendChild(self.element);
+  self.containerElement.appendChild(self.scalingElement);
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
@@ -3746,40 +3742,16 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   }
 };
 
-function createContainerElement () {
+function createContentElement (events, slideshow, slide) {
   var element = document.createElement('div');
 
-  element.className = 'remark-slide-container';
-
-  return element;
-}
-
-function createScalingElement () {
-  var element = document.createElement('div');
-
-  element.className = 'remark-slide-scaler';
-
-  return element;
-}
-
-function createSlideElement () {
-  var element = document.createElement('div');
-
-  element.className = 'remark-slide';
-
-  return element;
-}
-
-function createContentElement (events, slideshow, source, properties) {
-  var element = document.createElement('div');
-
-  if (properties.name) {
-    element.id = 'slide-' + properties.name;
+  if (slide.properties.name) {
+    element.id = 'slide-' + slide.properties.name;
   }
 
-  styleContentElement(slideshow, element, properties);
+  styleContentElement(slideshow, element, slide.properties);
 
-  element.innerHTML = converter.convertMarkdown(source);
+  element.innerHTML = converter.convertMarkdown(slide.source);
   element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);

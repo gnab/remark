@@ -10,15 +10,9 @@ function SlideView (events, slideshow, slide) {
   this.slideshow = slideshow;
   this.slide = slide;
 
-  this.containerElement = createContainerElement();
-  this.scalingElement = createScalingElement();
-  this.element = createSlideElement();
-  this.contentElement = createContentElement(events, slideshow, slide.source, slide.properties);
   this.notesMarkup = createNotesMarkup(slideshow, slide.notes);
 
-  this.element.appendChild(this.contentElement);
-  this.scalingElement.appendChild(this.element);
-  this.containerElement.appendChild(this.scalingElement);
+  this.configureElements();
 }
 
 SlideView.prototype.show = function () {
@@ -27,6 +21,30 @@ SlideView.prototype.show = function () {
 
 SlideView.prototype.hide = function () {
   utils.removeClass(this.containerElement, 'remark-active-slide');
+};
+
+SlideView.prototype.configureElements = function () {
+  var self = this;
+
+  self.containerElement = document.createElement('div');
+  self.containerElement.className = 'remark-slide-container';
+
+  self.scalingElement = document.createElement('div');
+  self.scalingElement.className = 'remark-slide-scaler';
+
+  self.element = document.createElement('div');
+  self.element.className = 'remark-slide';
+
+  self.contentElement = createContentElement(self.events, self.slideshow, self.slide);
+
+  self.numberElement = document.createElement('div');
+  self.numberElement.className = 'remark-slide-number';
+  self.numberElement.innerHTML = self.slide.number + ' / ' + self.slideshow.getSlides().length;
+
+  self.contentElement.appendChild(self.numberElement);
+  self.element.appendChild(self.contentElement);
+  self.scalingElement.appendChild(self.element);
+  self.containerElement.appendChild(self.scalingElement);
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
@@ -62,40 +80,16 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   }
 };
 
-function createContainerElement () {
+function createContentElement (events, slideshow, slide) {
   var element = document.createElement('div');
 
-  element.className = 'remark-slide-container';
-
-  return element;
-}
-
-function createScalingElement () {
-  var element = document.createElement('div');
-
-  element.className = 'remark-slide-scaler';
-
-  return element;
-}
-
-function createSlideElement () {
-  var element = document.createElement('div');
-
-  element.className = 'remark-slide';
-
-  return element;
-}
-
-function createContentElement (events, slideshow, source, properties) {
-  var element = document.createElement('div');
-
-  if (properties.name) {
-    element.id = 'slide-' + properties.name;
+  if (slide.properties.name) {
+    element.id = 'slide-' + slide.properties.name;
   }
 
-  styleContentElement(slideshow, element, properties);
+  styleContentElement(slideshow, element, slide.properties);
 
-  element.innerHTML = converter.convertMarkdown(source);
+  element.innerHTML = converter.convertMarkdown(slide.source);
   element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);
