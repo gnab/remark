@@ -1,3 +1,9 @@
+### 0.5.6
+* #50: Support printing / export to PDF via Save as PDF in Chrome.
+* Extend API: (([gureckis](https://github.com/gureckis)))
+  * Add `slideshow.pause()` and `slideshow.resume()` for bypassing keyboard navigation.
+  * Add `[before|after][Show|Hide]Slide` events.
+
 ### 0.5.5
 * #53: Use highlight.js fork that fixes Scala multiline string issue.
 * #54: Expose slide object in showSlide and hideSlide events.

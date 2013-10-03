@@ -50,7 +50,7 @@ class: center, middle
 # Introduction
 
     </textarea>
-    <script src="http://gnab.github.io/remark/downloads/remark-0.5.5.min.js" type="text/javascript">
+    <script src="http://gnab.github.io/remark/downloads/remark-0.5.6.min.js" type="text/javascript">
     </script>
     <script type="text/javascript">
       var slideshow = remark.create();
