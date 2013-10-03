@@ -128,7 +128,6 @@ SlideshowView.prototype.configureChildElements = function () {
 
   self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
   self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
-  self.previewElement = self.previewArea.getElementsByClassName('remark-slideshow')[0];
   self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
   self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
   self.toolbarElement = self.notesArea.getElementsByClassName('remark-toolbar')[0];
@@ -230,11 +229,10 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
   self.notesElement.innerHTML = slideView.notesMarkup;
 
   if (nextSlideView) {
-    self.previewElement.innerHTML = nextSlideView.element.outerHTML;
-    self.previewElement.childNodes[0].style.display = 'table';
+    self.previewArea.innerHTML = nextSlideView.containerElement.outerHTML;
   }
   else {
-    self.previewElement.innerHTML = '';
+    self.previewArea.innerHTML = '';
   }
 
   self.events.emit("afterShowSlide", slideIndex);
@@ -255,8 +253,6 @@ SlideshowView.prototype.updateDimensions = function () {
     , dimensions = self.scaler.dimensions
     ;
 
-  self.previewElement.style.width = dimensions.width + 'px';
-  self.previewElement.style.height = dimensions.height + 'px';
   self.helpElement.style.width = dimensions.width + 'px';
   self.helpElement.style.height = dimensions.height + 'px';
 
@@ -271,6 +267,8 @@ SlideshowView.prototype.scaleElements = function () {
     slideView.scale(self.elementArea);
   });
 
-  self.scaler.scaleToFit(self.previewElement, self.previewArea);
+  if (self.previewArea.children.length) {
+    self.scaler.scaleToFit(self.previewArea.children[0].children[0], self.previewArea);
+  }
   self.scaler.scaleToFit(self.helpElement, self.containerElement);
 };
