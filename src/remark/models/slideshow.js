@@ -47,7 +47,8 @@ function Slideshow (events, options) {
   }
 
   function start() {
-    this.events.emit('startSlideShow');
+    events.emit('resume');
+    return self;
   }
 
   function getSlides () {

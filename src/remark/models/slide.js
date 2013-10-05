@@ -14,8 +14,10 @@ function Slide (slideNo, slide, template, events) {
   self.loopcount = 0;
   self.stepQueue = [];
 
+  self.forward = forward;
+  self.hasMoreSteps = hasMoreSteps;
+
   self.run = run;
-  self.executeStep = executeStep;
   self.setup = setup;
   self.step = step;
   self.loop = loop;
@@ -34,21 +36,20 @@ function run() {
     self.userSetupFunction();
   }
   self.currentstep = 0;
-
-  if (self.stepQueue.length > 0) {
-    self.events.emit('beginStepWithinSlide');  // raise event 'stepWithinSlide' which should disconnect event handlers for next slide
-    self.events.on('gotoNextSlideStep', function(event) { self.executeStep(); });  // add event handler for advancing slide
-  } else {
-    // return control back for next slide
-    self.events.emit('endStepWithinSlide'); // raise event 'stepBetweenSlides' which should return to between-slide control
-    self.events.removeAllListeners('gotoNextSlideStep');
-  }
-
 }
 
-function executeStep() {
+function hasMoreSteps () {
   var self = this;
-  // this is the function that will actually step through
+
+  return self.stepQueue.length > 0;
+}
+
+function forward() {
+  var self = this;
+
+  if (!self.hasMoreSteps()) {
+    return self;
+  }
 
   var stepresult = self.stepQueue[0].apply(self, [self.loopcount]); // add optional argument which is the loop count for the current transition
   if( stepresult === undefined || stepresult === true ) { // run the step
@@ -59,12 +60,6 @@ function executeStep() {
     // don't remove step or advance, track number within current step
     self.loopcount += 1;
   }
-
-  if(self.stepQueue.length <= 0) {
-    self.events.emit('endStepWithinSlide');
-    self.events.removeAllListeners('gotoNextSlideStep');
-  }
-
 }
 
 function setup (userFunction) {
@@ -73,7 +68,7 @@ function setup (userFunction) {
 }
 
 function step (userFunction) {
-  this.stepQueue.push(function () { userFunction(); }); 
+  this.stepQueue.push(function () { userFunction(); });
   return this;
 }
 

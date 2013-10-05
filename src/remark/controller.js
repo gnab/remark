@@ -1,90 +1,109 @@
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
-  addApiEventListeners(events, slideshowView);
-  addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events, 'gotoNextSlide');
-  addMouseEventListeners(events, 'gotoNextSlide');
-  addTouchEventListeners(events, 'gotoNextSlide');
+  var self = this;
+
+  self.events = events;
+  self.slideshowView = slideshowView;
+
+  self.started = false;
+  // When paused, no events will be processed
+  self.paused = true;
+
+  self.addApiEventListeners();
+  self.addNavigationEventListeners();
+  self.addKeyboardEventListeners();
+  self.addMouseEventListeners();
+  self.addTouchEventListeners();
 }
 
-function addApiEventListeners(events, slideshowView) {
+Controller.prototype.addApiEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-  events.on('pause', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
+  events.on('pause', function () {
+    self.paused = true;
   });
 
-  events.on('resume',  function(event) {
-    addKeyboardEventListeners(events, 'gotoNextSlide');
-    addMouseEventListeners(events, 'gotoNextSlide');
-    addTouchEventListeners(events, 'gotoNextSlide');
+  events.on('resume', function () {
+    if (!self.paused) {
+      return;
+    }
+
+    self.paused = false;
+
+    if (self.started) {
+      return;
+    }
+
+    if (self.slideshowView.isEmbedded()) {
+      events.emit('gotoSlide', 1);
+    }
+    else {
+      self.navigateByHash();
+    }
+
+    self.started = true;
   });
+};
 
-  events.on('beginStepWithinSlide', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-    addKeyboardEventListeners(events, 'gotoNextSlideStep');
-    addMouseEventListeners(events, 'gotoNextSlideStep');
-    addTouchEventListeners(events, 'gotoNextSlideStep');
-  });
+Controller.prototype.addNavigationEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-  events.on('endStepWithinSlide', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-    addKeyboardEventListeners(events, 'gotoNextSlide');
-    addMouseEventListeners(events, 'gotoNextSlide');
-    addTouchEventListeners(events, 'gotoNextSlide');
-  });
-}
+  if (!self.slideshowView.isEmbedded()) {
+    events.on('hashchange', function () {
+      if (self.paused) return;
+      self.navigateByHash();
+    });
+    events.on('slideChanged', function (slideNoOrName) {
+      window.location.hash = '#' + slideNoOrName;
+    });
+  }
 
-
-function addNavigationEventListeners (events, slideshowView) {
-
-  events.on('message', navigateByMessage);
-
-  function navigateByMessage(message) {
+  events.on('message', function (message) {
     var cap;
 
     if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
       events.emit('gotoSlide', parseInt(cap[1], 10));
     }
-  }
-}
+  });
+};
 
-function removeKeyboardEventListeners(events) {
-  events.removeAllListeners("keydown");
-  events.removeAllListeners("keypress");
-}
+Controller.prototype.navigateByHash = function () {
+  var self = this
+    , slideNoOrName = (window.location.hash || '').substr(1)
+    ;
 
+  self.events.emit('gotoSlide', slideNoOrName);
+};
 
+Controller.prototype.addKeyboardEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-
-function addKeyboardEventListeners (events, forwardEvent) {
   events.on('keydown', function (event) {
+    if (self.paused) return;
     switch (event.keyCode) {
       case 33: // Page up
       case 37: // Left
       case 38: // Up
-        events.emit('gotoPreviousSlide');
+        events.emit('backward');
         break;
       case 32: // Space
       case 34: // Page down
       case 39: // Right
       case 40: // Down
-        events.emit(forwardEvent);
+        events.emit('forward');
         break;
       case 36: // Home
         events.emit('gotoFirstSlide');
         break;
       case 35: // End
         events.emit('gotoLastSlide');
-        break;
-      case 27: // Escape
-        events.emit('hideOverlay');
         break;
     }
   });
@@ -97,10 +116,12 @@ function addKeyboardEventListeners (events, forwardEvent) {
 
     switch (String.fromCharCode(event.which)) {
       case 'j':
-        events.emit(forwardEvent);
+        if (self.paused) return;
+        events.emit('forward');
         break;
       case 'k':
-        events.emit('gotoPreviousSlide');
+        if (self.paused) return;
+        events.emit('backward');
         break;
       case 'c':
         events.emit('createClone');
@@ -116,33 +137,29 @@ function addKeyboardEventListeners (events, forwardEvent) {
         break;
     }
   });
-}
+};
 
+Controller.prototype.addMouseEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-function removeMouseEventListeners(events) {
-  events.removeAllListeners("mousewheel");
-}
-
-function addMouseEventListeners (events, forwardEvent) {
   events.on('mousewheel', function (event) {
+    if (self.paused) return;
+
     if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
+      events.emit('backward');
     }
     else if (event.wheelDeltaY < 0) {
-      events.emit(forwardEvent);
+      events.emit('forward');
     }
   });
-}
+};
 
-function removeTouchEventListeners(events) {
-  events.removeAllListeners("touchstart");
-  events.removeAllListeners("touchend");
-  events.removeAllListeners("touchmove");
-}
-
-
-function addTouchEventListeners (events, forwardEvent) {
-  var touch
+Controller.prototype.addTouchEventListeners = function () {
+  var self = this
+    , events = self.events
+    , touch
     , startX
     , endX
     ;
@@ -152,15 +169,19 @@ function addTouchEventListeners (events, forwardEvent) {
   };
 
   var handleTap = function () {
+    if (self.paused) return;
+
     events.emit('tap', endX);
   };
 
   var handleSwipe = function () {
+    if (self.paused) return;
+
     if (startX > endX) {
-      events.emit(forwardEvent);
+      events.emit('forward');
     }
     else {
-      events.emit('gotoPreviousSlide');
+      events.emit('backward');
     }
   };
 
@@ -188,4 +209,4 @@ function addTouchEventListeners (events, forwardEvent) {
   events.on('touchmove', function (event) {
     event.preventDefault();
   });
-}
+};

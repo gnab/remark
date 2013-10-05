@@ -2592,94 +2592,113 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9,"./highlighter":3}],9:[function(require,module,exports){
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
-  addApiEventListeners(events, slideshowView);
-  addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events, 'gotoNextSlide');
-  addMouseEventListeners(events, 'gotoNextSlide');
-  addTouchEventListeners(events, 'gotoNextSlide');
+  var self = this;
+
+  self.events = events;
+  self.slideshowView = slideshowView;
+
+  self.started = false;
+  // When paused, no events will be processed
+  self.paused = true;
+
+  self.addApiEventListeners();
+  self.addNavigationEventListeners();
+  self.addKeyboardEventListeners();
+  self.addMouseEventListeners();
+  self.addTouchEventListeners();
 }
 
-function addApiEventListeners(events, slideshowView) {
+Controller.prototype.addApiEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-  events.on('pause', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
+  events.on('pause', function () {
+    self.paused = true;
   });
 
-  events.on('resume',  function(event) {
-    addKeyboardEventListeners(events, 'gotoNextSlide');
-    addMouseEventListeners(events, 'gotoNextSlide');
-    addTouchEventListeners(events, 'gotoNextSlide');
+  events.on('resume', function () {
+    if (!self.paused) {
+      return;
+    }
+
+    self.paused = false;
+
+    if (self.started) {
+      return;
+    }
+
+    if (self.slideshowView.isEmbedded()) {
+      events.emit('gotoSlide', 1);
+    }
+    else {
+      self.navigateByHash();
+    }
+
+    self.started = true;
   });
+};
 
-  events.on('beginStepWithinSlide', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-    addKeyboardEventListeners(events, 'gotoNextSlideStep');
-    addMouseEventListeners(events, 'gotoNextSlideStep');
-    addTouchEventListeners(events, 'gotoNextSlideStep');
-  });
+Controller.prototype.addNavigationEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-  events.on('endStepWithinSlide', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-    addKeyboardEventListeners(events, 'gotoNextSlide');
-    addMouseEventListeners(events, 'gotoNextSlide');
-    addTouchEventListeners(events, 'gotoNextSlide');
-  });
-}
+  if (!self.slideshowView.isEmbedded()) {
+    events.on('hashchange', function () {
+      if (self.paused) return;
+      self.navigateByHash();
+    });
+    events.on('slideChanged', function (slideNoOrName) {
+      window.location.hash = '#' + slideNoOrName;
+    });
+  }
 
-
-function addNavigationEventListeners (events, slideshowView) {
-
-  events.on('message', navigateByMessage);
-
-  function navigateByMessage(message) {
+  events.on('message', function (message) {
     var cap;
 
     if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
       events.emit('gotoSlide', parseInt(cap[1], 10));
     }
-  }
-}
+  });
+};
 
-function removeKeyboardEventListeners(events) {
-  events.removeAllListeners("keydown");
-  events.removeAllListeners("keypress");
-}
+Controller.prototype.navigateByHash = function () {
+  var self = this
+    , slideNoOrName = (window.location.hash || '').substr(1)
+    ;
 
+  self.events.emit('gotoSlide', slideNoOrName);
+};
 
+Controller.prototype.addKeyboardEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-
-function addKeyboardEventListeners (events, forwardEvent) {
   events.on('keydown', function (event) {
+    if (self.paused) return;
     switch (event.keyCode) {
       case 33: // Page up
       case 37: // Left
       case 38: // Up
-        events.emit('gotoPreviousSlide');
+        events.emit('backward');
         break;
       case 32: // Space
       case 34: // Page down
       case 39: // Right
       case 40: // Down
-        events.emit(forwardEvent);
+        events.emit('forward');
         break;
       case 36: // Home
         events.emit('gotoFirstSlide');
         break;
       case 35: // End
         events.emit('gotoLastSlide');
-        break;
-      case 27: // Escape
-        events.emit('hideOverlay');
         break;
     }
   });
@@ -2692,10 +2711,12 @@ function addKeyboardEventListeners (events, forwardEvent) {
 
     switch (String.fromCharCode(event.which)) {
       case 'j':
-        events.emit(forwardEvent);
+        if (self.paused) return;
+        events.emit('forward');
         break;
       case 'k':
-        events.emit('gotoPreviousSlide');
+        if (self.paused) return;
+        events.emit('backward');
         break;
       case 'c':
         events.emit('createClone');
@@ -2711,33 +2732,29 @@ function addKeyboardEventListeners (events, forwardEvent) {
         break;
     }
   });
-}
+};
 
+Controller.prototype.addMouseEventListeners = function () {
+  var self = this
+    , events = self.events
+    ;
 
-function removeMouseEventListeners(events) {
-  events.removeAllListeners("mousewheel");
-}
-
-function addMouseEventListeners (events, forwardEvent) {
   events.on('mousewheel', function (event) {
+    if (self.paused) return;
+
     if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
+      events.emit('backward');
     }
     else if (event.wheelDeltaY < 0) {
-      events.emit(forwardEvent);
+      events.emit('forward');
     }
   });
-}
+};
 
-function removeTouchEventListeners(events) {
-  events.removeAllListeners("touchstart");
-  events.removeAllListeners("touchend");
-  events.removeAllListeners("touchmove");
-}
-
-
-function addTouchEventListeners (events, forwardEvent) {
-  var touch
+Controller.prototype.addTouchEventListeners = function () {
+  var self = this
+    , events = self.events
+    , touch
     , startX
     , endX
     ;
@@ -2747,15 +2764,19 @@ function addTouchEventListeners (events, forwardEvent) {
   };
 
   var handleTap = function () {
+    if (self.paused) return;
+
     events.emit('tap', endX);
   };
 
   var handleSwipe = function () {
+    if (self.paused) return;
+
     if (startX > endX) {
-      events.emit(forwardEvent);
+      events.emit('forward');
     }
     else {
-      events.emit('gotoPreviousSlide');
+      events.emit('backward');
     }
   };
 
@@ -2783,7 +2804,7 @@ function addTouchEventListeners (events, forwardEvent) {
   events.on('touchmove', function (event) {
     event.preventDefault();
   });
-}
+};
 
 },{}],7:[function(require,module,exports){
 var Navigation = require('./slideshow/navigation')
@@ -2835,7 +2856,8 @@ function Slideshow (events, options) {
   }
 
   function start() {
-    this.events.emit('startSlideShow');
+    events.emit('resume');
+    return self;
   }
 
   function getSlides () {
@@ -2940,10 +2962,6 @@ function SlideshowView (events, containerElement, slideshow) {
   self.scaleElements();
   self.updateSlideViews();
 
-  events.on('startSlideShow', function () {
-    self.startSlideShow();
-  });
-
   events.on('slidesChanged', function () {
     self.updateSlideViews();
   });
@@ -2987,29 +3005,6 @@ function handleFullscreen(self) {
   });
 }
 
-SlideshowView.prototype.startSlideShow = function() {
-  var self = this;
-
-  if (self.isEmbedded()) {
-    self.events.emit('gotoSlide', 1);
-  }
-  else {
-    self.events.on('hashchange', navigateByHash);
-    self.events.on('slideChanged', updateHash);
-
-    navigateByHash();
-  }
-
-  function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
-    self.events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
-};
-
 SlideshowView.prototype.isEmbedded = function () {
   return this.containerElement !== document.body;
 };
@@ -3048,10 +3043,10 @@ SlideshowView.prototype.configureContainerElement = function (element) {
   // whether to move backwards or forwards
   self.events.on('tap', function (endX) {
     if (endX < self.getContainerWidth() / 2) {
-      self.slideshow.gotoPreviousSlide();
+      self.slideshow.backward();
     }
     else {
-      self.slideshow.gotoNextSlide();
+      self.slideshow.forward();
     }
   });
 };
@@ -3171,7 +3166,7 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
   }
 
   slideView.run();
-  
+
   self.events.emit("afterShowSlide", slideIndex);
 };
 
@@ -3210,7 +3205,32 @@ SlideshowView.prototype.scaleElements = function () {
   self.scaler.scaleToFit(self.helpElement, self.containerElement);
 };
 
-},{"./slideView":15,"../scaler":16,"../resources":4,"../utils":12}],10:[function(require,module,exports){
+},{"./slideView":15,"../scaler":16,"../resources":4,"../utils":12}],11:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+
+module.exports = Events;
+
+function Events (events) {
+  var self = this
+    , externalEvents = new EventEmitter()
+    ;
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
+}
+
+},{"events":6}],10:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3220,8 +3240,8 @@ function Navigation (events) {
 
   self.getCurrentSlideNo = getCurrentSlideNo;
   self.gotoSlide = gotoSlide;
-  self.gotoPreviousSlide = gotoPreviousSlide;
-  self.gotoNextSlide = gotoNextSlide;
+  self.backward = backward;
+  self.forward = forward;
   self.gotoFirstSlide = gotoFirstSlide;
   self.gotoLastSlide = gotoLastSlide;
   self.getSlideNo = getSlideNo;
@@ -3229,8 +3249,8 @@ function Navigation (events) {
   self.resume = resume;
 
   events.on('gotoSlide', gotoSlide);
-  events.on('gotoPreviousSlide', gotoPreviousSlide);
-  events.on('gotoNextSlide', gotoNextSlide);
+  events.on('backward', backward);
+  events.on('forward', forward);
   events.on('gotoFirstSlide', gotoFirstSlide);
   events.on('gotoLastSlide', gotoLastSlide);
 
@@ -3290,12 +3310,17 @@ function Navigation (events) {
     }
   }
 
-  function gotoPreviousSlide() {
+  function backward() {
     self.gotoSlide(currentSlideNo - 1);
   }
 
-  function gotoNextSlide() {
-    self.gotoSlide(currentSlideNo + 1);
+  function forward() {
+    if (self.slide().hasMoreSteps()) {
+      self.slide().forward();
+    }
+    else {
+      self.gotoSlide(currentSlideNo + 1);
+    }
   }
 
   function gotoFirstSlide () {
@@ -3329,32 +3354,7 @@ function Navigation (events) {
   }
 }
 
-},{}],11:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":6}],12:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -3456,8 +3456,10 @@ function Slide (slideNo, slide, template, events) {
   self.loopcount = 0;
   self.stepQueue = [];
 
+  self.forward = forward;
+  self.hasMoreSteps = hasMoreSteps;
+
   self.run = run;
-  self.executeStep = executeStep;
   self.setup = setup;
   self.step = step;
   self.loop = loop;
@@ -3476,21 +3478,20 @@ function run() {
     self.userSetupFunction();
   }
   self.currentstep = 0;
-
-  if (self.stepQueue.length > 0) {
-    self.events.emit('beginStepWithinSlide');  // raise event 'stepWithinSlide' which should disconnect event handlers for next slide
-    self.events.on('gotoNextSlideStep', function(event) { self.executeStep(); });  // add event handler for advancing slide
-  } else {
-    // return control back for next slide
-    self.events.emit('endStepWithinSlide'); // raise event 'stepBetweenSlides' which should return to between-slide control
-    self.events.removeAllListeners('gotoNextSlideStep');
-  }
-
 }
 
-function executeStep() {
+function hasMoreSteps () {
   var self = this;
-  // this is the function that will actually step through
+
+  return self.stepQueue.length > 0;
+}
+
+function forward() {
+  var self = this;
+
+  if (!self.hasMoreSteps()) {
+    return self;
+  }
 
   var stepresult = self.stepQueue[0].apply(self, [self.loopcount]); // add optional argument which is the loop count for the current transition
   if( stepresult === undefined || stepresult === true ) { // run the step
@@ -3501,12 +3502,6 @@ function executeStep() {
     // don't remove step or advance, track number within current step
     self.loopcount += 1;
   }
-
-  if(self.stepQueue.length <= 0) {
-    self.events.emit('endStepWithinSlide');
-    self.events.removeAllListeners('gotoNextSlideStep');
-  }
-
 }
 
 function setup (userFunction) {
@@ -3515,7 +3510,7 @@ function setup (userFunction) {
 }
 
 function step (userFunction) {
-  this.stepQueue.push(function () { userFunction(); }); 
+  this.stepQueue.push(function () { userFunction(); });
   return this;
 }
 

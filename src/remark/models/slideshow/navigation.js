@@ -7,8 +7,8 @@ function Navigation (events) {
 
   self.getCurrentSlideNo = getCurrentSlideNo;
   self.gotoSlide = gotoSlide;
-  self.gotoPreviousSlide = gotoPreviousSlide;
-  self.gotoNextSlide = gotoNextSlide;
+  self.backward = backward;
+  self.forward = forward;
   self.gotoFirstSlide = gotoFirstSlide;
   self.gotoLastSlide = gotoLastSlide;
   self.getSlideNo = getSlideNo;
@@ -16,8 +16,8 @@ function Navigation (events) {
   self.resume = resume;
 
   events.on('gotoSlide', gotoSlide);
-  events.on('gotoPreviousSlide', gotoPreviousSlide);
-  events.on('gotoNextSlide', gotoNextSlide);
+  events.on('backward', backward);
+  events.on('forward', forward);
   events.on('gotoFirstSlide', gotoFirstSlide);
   events.on('gotoLastSlide', gotoLastSlide);
 
@@ -77,12 +77,17 @@ function Navigation (events) {
     }
   }
 
-  function gotoPreviousSlide() {
+  function backward() {
     self.gotoSlide(currentSlideNo - 1);
   }
 
-  function gotoNextSlide() {
-    self.gotoSlide(currentSlideNo + 1);
+  function forward() {
+    if (self.slide().hasMoreSteps()) {
+      self.slide().forward();
+    }
+    else {
+      self.gotoSlide(currentSlideNo + 1);
+    }
   }
 
   function gotoFirstSlide () {
