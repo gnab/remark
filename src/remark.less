@@ -19,12 +19,6 @@ html.remark-container, body.remark-container {
   width: 100%;
   height: 100%;
 }
-@media print {
-  .remark-container {
-    background: none;
-    overflow: visible;
-  }
-}
 
 /**********/
 /* Slides */
@@ -113,11 +107,6 @@ html.remark-container, body.remark-container {
 }
 .remark-visible {
   display: block;
-}
-@media print {
-  .remark-slide-container {
-    display: block;
-  }
 }
 
 /************/
@@ -257,4 +246,21 @@ html.remark-container, body.remark-container {
   .remark-notes-area {
     display: block;
   }
+}
+
+/************/
+/* Printing */
+/************/
+
+@media print {
+  .remark-container {
+    overflow: visible;
+  }
+  .remark-slide-container {
+    display: block;
+  }
+}
+@page {
+  size: 908px 681px;
+  margin: 0;
 }

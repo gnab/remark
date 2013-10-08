@@ -165,19 +165,10 @@ SlideshowView.prototype.configureChildElements = function () {
       if (e.matches) {
         self.slideViews.forEach(function (slideView) {
           slideView.scale({
-            clientWidth: document.documentElement.clientWidth * 1.275,
-            clientHeight: document.documentElement.clientHeight * 1.024
+            clientWidth: 908,
+            clientHeight: 681
           });
         });
-
-        // For some strange reason the documentElement's
-        // clientWidth must be accessed a last time after
-        // scaling the slides for the scaling to work
-        // properly in print preview.
-        //
-        // If this line is omitted, the slides are scaled
-        // for incorrect dimensions.
-        var width = document.documentElement.clientWidth;
       }
     });
   }
