@@ -1,3 +1,6 @@
+### 0.5.7
+* Hardcode paper dimensions to make slides fit perfectly when printing / exporting to PDF.
+
 ### 0.5.6
 * #50: Support printing / export to PDF via Save as PDF in Chrome.
 * Extend API: (([gureckis](https://github.com/gureckis)))
