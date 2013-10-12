@@ -41,7 +41,11 @@ SlideView.prototype.scale = function (containerElement) {
 };
 
 SlideView.prototype.show = function () {
-  utils.addClass(this.containerElement, 'remark-visible');
+  var self = this;
+
+  utils.addClass(self.containerElement, 'remark-visible');
+
+  self.slide.rewind({onlyInitial: true});
 };
 
 SlideView.prototype.hide = function () {
@@ -70,10 +74,6 @@ SlideView.prototype.configureElements = function () {
   self.element.appendChild(self.contentElement);
   self.scalingElement.appendChild(self.element);
   self.containerElement.appendChild(self.scalingElement);
-};
-
-SlideView.prototype.run = function () {
-  this.slide.run();
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {

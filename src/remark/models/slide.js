@@ -10,69 +10,88 @@ function Slide (number, slide, template) {
     return number;
   };
 
-  self.currentstep = -1;
-  self.loopcount = 0;
-  self.stepQueue = [];
-
-  self.forward = forward;
-  self.hasMoreSteps = hasMoreSteps;
-
-  self.run = run;
-  self.setup = setup;
-  self.step = step;
-  self.loop = loop;
-
   if (template) {
     inherit(self, template);
   }
-}
 
-function run() {
-  var self = this;
-  // if this is the first time slide is being run
-  if (self.currentstep === -1 && self.userSetupFunction !== undefined) {
-    self.userSetupFunction();
-  }
-  self.currentstep = 0;
-}
+  /**
+   * Steps
+   * =====
+   */
+  var callbacks = {
+        setup: []
+      , step: []
+      }
+    , stepIndex = -1
+    , loopCount = 0
+    ;
 
-function hasMoreSteps () {
-  var self = this;
-
-  return self.stepQueue.length > 0;
-}
-
-function forward() {
-  var self = this;
-
-  if (!self.hasMoreSteps()) {
+  self.setup = function (callback) {
+    if (callback) {
+      callbacks.setup.push(callback);
+    }
     return self;
-  }
+  };
 
-  var stepresult = self.stepQueue[0].apply(self, [self.loopcount]); // add optional argument which is the loop count for the current transition
-  if( stepresult === undefined || stepresult === true ) { // run the step
-    self.stepQueue.shift(); // remove step
-    self.currentstep += 1;
-    self.loopcount = 0;
-  } else {
-    // don't remove step or advance, track number within current step
-    self.loopcount += 1;
-  }
-}
+  self.step = function (callback) {
+    if (callback) {
+      callbacks.step.push(callback);
+    }
+    return self;
+  };
 
-function setup (userFunction) {
-  this.userSetupFunction = userFunction;
-  return this;
-}
+  self.loop = self.step;
 
-function step (userFunction) {
-  this.stepQueue.push(function () { userFunction(); });
-  return this;
-}
+  self.init = function () {
+    if (stepIndex === -1) {
+      self.rewind();
+    }
+  };
 
-function loop (userFunction) {
-  this.stepQueue.push(userFunction);
-  return this;
+  self.rewind = function (options) {
+    var initial = stepIndex === -1;
+
+    if (options && options.onlyInitial && !initial) {
+      return self;
+    }
+
+    stepIndex = 0;
+    callbacks.setup.forEach(function (setupCallback) {
+      setupCallback.call(self, initial);
+    });
+
+    return self;
+  };
+
+  self.forward = function () {
+    self.init();
+
+    if (stepIndex < callbacks.step.length) {
+      var result = callbacks.step[stepIndex].call(self, loopCount);
+      if (result === undefined || result === true) {
+        stepIndex += 1;
+        loopCount = 0;
+      }
+      else {
+        loopCount += 1;
+      }
+      return true;
+    }
+    else {
+      return false;
+    }
+  };
+
+  self.backward = function () {
+    self.init();
+
+    if (stepIndex > 0) {
+      self.rewind();
+      return true;
+    }
+
+    return false;
+  };
 }
 
 function inherit (slide, template) {

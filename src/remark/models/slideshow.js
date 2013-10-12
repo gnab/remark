@@ -118,19 +118,18 @@ function Slideshow (events, options) {
    * ==========
    */
 
-  var currentSlideNo = 1;
+  var currentSlideNo = 0;
 
   self.forward = function () {
-    if (self.slide().hasMoreSteps()) {
-      self.slide().forward();
-    }
-    else {
+    if (!self.slide().forward()) {
       self.gotoSlide(currentSlideNo + 1);
     }
   };
 
   self.backward = function () {
-    self.gotoSlide(currentSlideNo - 1);
+    if (!self.slide().backward()) {
+      self.gotoSlide(currentSlideNo - 1);
+    }
   };
 
   self.gotoSlide = function (slideNoOrName) {
@@ -148,6 +147,10 @@ function Slideshow (events, options) {
       else {
         return;
       }
+    }
+
+    if (slideNo === currentSlideNo) {
+      return;
     }
 
     if (currentSlideNo !== 0) {

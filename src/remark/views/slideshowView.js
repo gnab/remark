@@ -208,7 +208,7 @@ SlideshowView.prototype.scaleSlideBackgroundImages = function (dimensions) {
   });
 };
 
-SlideshowView.prototype.showSlide =  function (slideIndex) {
+SlideshowView.prototype.showSlide = function (slideIndex) {
   var self = this
     , slideView = self.slideViews[slideIndex]
     , nextSlideView = self.slideViews[slideIndex + 1];
@@ -225,8 +225,6 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
   else {
     self.previewArea.innerHTML = '';
   }
-
-  slideView.run();
 
   self.events.emit("afterShowSlide", slideIndex);
 };

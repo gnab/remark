@@ -2592,7 +2592,7 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":6,"./highlighter":3,"./models/slideshow":7,"./controller":8,"./views/slideshowView":9}],8:[function(require,module,exports){
+},{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
@@ -2927,19 +2927,18 @@ function Slideshow (events, options) {
    * ==========
    */
 
-  var currentSlideNo = 1;
+  var currentSlideNo = 0;
 
   self.forward = function () {
-    if (self.slide().hasMoreSteps()) {
-      self.slide().forward();
-    }
-    else {
+    if (!self.slide().forward()) {
       self.gotoSlide(currentSlideNo + 1);
     }
   };
 
   self.backward = function () {
-    self.gotoSlide(currentSlideNo - 1);
+    if (!self.slide().backward()) {
+      self.gotoSlide(currentSlideNo - 1);
+    }
   };
 
   self.gotoSlide = function (slideNoOrName) {
@@ -2957,6 +2956,10 @@ function Slideshow (events, options) {
       else {
         return;
       }
+    }
+
+    if (slideNo === currentSlideNo) {
+      return;
     }
 
     if (currentSlideNo !== 0) {
@@ -3085,7 +3088,7 @@ function expandVariables (slides) {
   });
 }
 
-},{"events":6,"../utils":10,"./slide":11,"../parser":12}],9:[function(require,module,exports){
+},{"events":6,"../utils":10,"./slide":11,"../parser":12}],8:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -3296,7 +3299,7 @@ SlideshowView.prototype.scaleSlideBackgroundImages = function (dimensions) {
   });
 };
 
-SlideshowView.prototype.showSlide =  function (slideIndex) {
+SlideshowView.prototype.showSlide = function (slideIndex) {
   var self = this
     , slideView = self.slideViews[slideIndex]
     , nextSlideView = self.slideViews[slideIndex + 1];
@@ -3313,8 +3316,6 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
   else {
     self.previewArea.innerHTML = '';
   }
-
-  slideView.run();
 
   self.events.emit("afterShowSlide", slideIndex);
 };
@@ -3452,69 +3453,88 @@ function Slide (number, slide, template) {
     return number;
   };
 
-  self.currentstep = -1;
-  self.loopcount = 0;
-  self.stepQueue = [];
-
-  self.forward = forward;
-  self.hasMoreSteps = hasMoreSteps;
-
-  self.run = run;
-  self.setup = setup;
-  self.step = step;
-  self.loop = loop;
-
   if (template) {
     inherit(self, template);
   }
-}
 
-function run() {
-  var self = this;
-  // if this is the first time slide is being run
-  if (self.currentstep === -1 && self.userSetupFunction !== undefined) {
-    self.userSetupFunction();
-  }
-  self.currentstep = 0;
-}
+  /**
+   * Steps
+   * =====
+   */
+  var callbacks = {
+        setup: []
+      , step: []
+      }
+    , stepIndex = -1
+    , loopCount = 0
+    ;
 
-function hasMoreSteps () {
-  var self = this;
-
-  return self.stepQueue.length > 0;
-}
-
-function forward() {
-  var self = this;
-
-  if (!self.hasMoreSteps()) {
+  self.setup = function (callback) {
+    if (callback) {
+      callbacks.setup.push(callback);
+    }
     return self;
-  }
+  };
 
-  var stepresult = self.stepQueue[0].apply(self, [self.loopcount]); // add optional argument which is the loop count for the current transition
-  if( stepresult === undefined || stepresult === true ) { // run the step
-    self.stepQueue.shift(); // remove step
-    self.currentstep += 1;
-    self.loopcount = 0;
-  } else {
-    // don't remove step or advance, track number within current step
-    self.loopcount += 1;
-  }
-}
+  self.step = function (callback) {
+    if (callback) {
+      callbacks.step.push(callback);
+    }
+    return self;
+  };
 
-function setup (userFunction) {
-  this.userSetupFunction = userFunction;
-  return this;
-}
+  self.loop = self.step;
 
-function step (userFunction) {
-  this.stepQueue.push(function () { userFunction(); });
-  return this;
-}
+  self.init = function () {
+    if (stepIndex === -1) {
+      self.rewind();
+    }
+  };
 
-function loop (userFunction) {
-  this.stepQueue.push(userFunction);
-  return this;
+  self.rewind = function (options) {
+    var initial = stepIndex === -1;
+
+    if (options && options.onlyInitial && !initial) {
+      return self;
+    }
+
+    stepIndex = 0;
+    callbacks.setup.forEach(function (setupCallback) {
+      setupCallback.call(self, initial);
+    });
+
+    return self;
+  };
+
+  self.forward = function () {
+    self.init();
+
+    if (stepIndex < callbacks.step.length) {
+      var result = callbacks.step[stepIndex].call(self, loopCount);
+      if (result === undefined || result === true) {
+        stepIndex += 1;
+        loopCount = 0;
+      }
+      else {
+        loopCount += 1;
+      }
+      return true;
+    }
+    else {
+      return false;
+    }
+  };
+
+  self.backward = function () {
+    self.init();
+
+    if (stepIndex > 0) {
+      self.rewind();
+      return true;
+    }
+
+    return false;
+  };
 }
 
 function inherit (slide, template) {
@@ -3814,7 +3834,11 @@ SlideView.prototype.scale = function (containerElement) {
 };
 
 SlideView.prototype.show = function () {
-  utils.addClass(this.containerElement, 'remark-visible');
+  var self = this;
+
+  utils.addClass(self.containerElement, 'remark-visible');
+
+  self.slide.rewind({onlyInitial: true});
 };
 
 SlideView.prototype.hide = function () {
@@ -3843,10 +3867,6 @@ SlideView.prototype.configureElements = function () {
   self.element.appendChild(self.contentElement);
   self.scalingElement.appendChild(self.element);
   self.containerElement.appendChild(self.scalingElement);
-};
-
-SlideView.prototype.run = function () {
-  this.slide.run();
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
