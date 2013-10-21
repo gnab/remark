@@ -3465,40 +3465,39 @@ function Slide (number, slide, template) {
         setup: []
       , step: []
       }
-    , stepIndex = -1
-    , loopCount = 0
+    , stepIndex = null
     ;
 
   self.setup = function (callback) {
-    if (callback) {
-      callbacks.setup.push(callback);
-    }
+    callbacks.setup.push(callback);
     return self;
   };
 
-  self.step = function (callback) {
-    if (callback) {
-      callbacks.step.push(callback);
-    }
+  self.step = function (forward, backward) {
+    callbacks.step.push({
+      forward: forward
+    , backward: backward
+    , calls: 0
+    });
     return self;
   };
 
   self.loop = self.step;
 
   self.init = function () {
-    if (stepIndex === -1) {
+    if (stepIndex === null) {
       self.rewind();
     }
   };
 
-  self.rewind = function (options) {
-    var initial = stepIndex === -1;
+  self.rewind = function () {
+    var initial = stepIndex === null;
 
-    if (options && options.onlyInitial && !initial) {
-      return self;
-    }
+    stepIndex = -1;
+    callbacks.step.forEach(function (step) {
+      step.calls = 0;
+    });
 
-    stepIndex = 0;
     callbacks.setup.forEach(function (setupCallback) {
       setupCallback.call(self, initial);
     });
@@ -3507,17 +3506,39 @@ function Slide (number, slide, template) {
   };
 
   self.forward = function () {
+    var step
+      , done
+      ;
+
+    // Make sure slide is initialized
     self.init();
 
-    if (stepIndex < callbacks.step.length) {
-      var result = callbacks.step[stepIndex].call(self, loopCount);
-      if (result === undefined || result === true) {
+    if (stepIndex === -1) {
+      stepIndex = 0;
+    }
+
+    // Find step with forward action
+    while (stepIndex < callbacks.step.length) {
+      if (callbacks.step[stepIndex].forward) {
+        step = callbacks.step[stepIndex];
+        break;
+      }
+      stepIndex += 1;
+    }
+
+    if (step) {
+      // Call step forward action
+      done = step.forward.call(self, step.calls);
+
+      if (done || done === undefined) {
+        // Move to next step
         stepIndex += 1;
-        loopCount = 0;
       }
       else {
-        loopCount += 1;
+        // Stay on step, increment step counter
+        step.calls += 1;
       }
+
       return true;
     }
     else {
@@ -3526,14 +3547,43 @@ function Slide (number, slide, template) {
   };
 
   self.backward = function () {
+    var step
+      , done
+      ;
+
+    // Make sure slide is initialized
     self.init();
 
-    if (stepIndex > 0) {
-      self.rewind();
-      return true;
+    // Find step with backward action
+    while (stepIndex >= 0) {
+      step = callbacks.step[stepIndex];
+      if (step && step.backward) {
+        break;
+      }
+      step = undefined;
+      stepIndex -= 1;
     }
 
-    return false;
+    if (step) {
+      // Call step backward action
+      done = step.backward.call(self, step.calls);
+
+      if (done || done === undefined) {
+        // Move to previous step
+        stepIndex -= 1;
+        // Clear out step counter
+        step.calls = 0;
+      }
+      else {
+        // Stay on step, decrement step counter
+        step.calls -= 1;
+      }
+
+      return true;
+    }
+    else {
+      return false;
+    }
   };
 }
 
@@ -3838,7 +3888,7 @@ SlideView.prototype.show = function () {
 
   utils.addClass(self.containerElement, 'remark-visible');
 
-  self.slide.rewind({onlyInitial: true});
+  self.slide.init();
 };
 
 SlideView.prototype.hide = function () {

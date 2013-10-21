@@ -45,7 +45,7 @@ SlideView.prototype.show = function () {
 
   utils.addClass(self.containerElement, 'remark-visible');
 
-  self.slide.rewind({onlyInitial: true});
+  self.slide.init();
 };
 
 SlideView.prototype.hide = function () {

@@ -1,18 +1,6 @@
 var Slide = require('../../../src/remark/models/slide');
 
 describe('Slide', function () {
-  describe('properties', function () {
-    it('should be extracted', function () {
-      var slide = new Slide(1, {
-            source: '',
-            properties: {a: 'b', c: 'd'}
-          });
-      slide.properties.should.have.property('a', 'b');
-      slide.properties.should.have.property('c', 'd');
-      slide.source.should.equal('');
-    });
-  });
-
   describe('inheritance', function () {
     it('should inherit properties, source and notes', function () {
       var template = new Slide(1, {
@@ -108,6 +96,122 @@ describe('Slide', function () {
       slide.expandVariables();
 
       slide.source.should.equal('prop1 = {{ prop1 }}');
+    });
+  });
+
+  describe('steps', function () {
+    describe('#init', function () {
+      it('should trigger setup with initial set to true', function (done) {
+        slide.setup(function (initial) {
+          initial.should.equal(true);
+          done();
+        });
+        slide.init();
+      });
+
+      it('should only trigger setup once', function () {
+        slide.init();
+        slide.setup(function () {
+          throw new Error('setup was called on second init');
+        });
+        slide.init();
+      });
+    });
+
+    describe('#rewind', function () {
+      it('should trigger setup with initial set to false', function (done) {
+        slide.init();
+        slide.setup(function (initial) {
+          initial.should.equal(false);
+          done();
+        });
+        slide.rewind();
+      });
+    });
+
+    describe('#forward', function () {
+      it('should trigger next step', function (done) {
+        slide.step(function () {
+          done();
+        });
+        slide.forward();
+      });
+
+      it('should skip step without forward action', function (done) {
+        slide.step(null, function () {});
+        slide.step(function () {
+          done();
+        });
+        slide.forward();
+      });
+
+      it('should loop until truthy or undefined result', function () {
+        slide.step(function (calls) {
+          return calls === 2;
+        });
+
+        slide.forward().should.equal(true);
+        slide.forward().should.equal(true);
+        slide.forward().should.equal(true);
+        slide.forward().should.equal(false);
+      });
+
+      it('should return true when step was triggered', function () {
+        slide.step(function () {});
+        slide.forward().should.equal(true);
+      });
+
+      it('should return false when no more steps', function () {
+        slide.forward().should.equal(false);
+      });
+    });
+
+    describe('#backward', function () {
+      it('should trigger previous step', function (done) {
+        slide.step(function () {}, function () {
+          done();
+        });
+        slide.forward();
+        slide.backward();
+      });
+
+      it('should skip step without backward action', function (done) {
+        slide.step(null, function () {
+          done();
+        });
+        slide.step(function () {});
+        slide.forward();
+        slide.forward();
+        slide.backward();
+      });
+
+      it('should loop until truthy or undefined result', function () {
+        slide.step(null, function (calls) {
+          return calls === -2;
+        });
+
+        slide.forward();
+        slide.backward().should.equal(true);
+        slide.backward().should.equal(true);
+        slide.backward().should.equal(true);
+        slide.backward().should.equal(false);
+      });
+
+      it('should return true when step was triggered', function () {
+        slide.step(function () {}, function () {});
+        slide.forward();
+        slide.backward().should.equal(true);
+      });
+
+      it('should return false when no more steps', function () {
+        slide.backward().should.equal(false);
+      });
+    });
+
+    var slide;
+
+    beforeEach(function () {
+      slide = new Slide(1, {});
     });
   });
 });
