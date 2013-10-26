@@ -18,6 +18,7 @@ function Slide (slideNo, slide, template) {
 function inherit (slide, template) {
   inheritProperties(slide, template);
   inheritSource(slide, template);
+  inheritNotes(slide, template);
 }
 
 function inheritProperties (slide, template) {
@@ -61,6 +62,12 @@ function inheritSource (slide, template) {
   }
 
   delete slide.properties.content;
+}
+
+function inheritNotes (slide, template) {
+  if (template.notes) {
+    slide.notes = template.notes + '\n\n' + slide.notes;
+  }
 }
 
 Slide.prototype.expandVariables = function (contentOnly) {

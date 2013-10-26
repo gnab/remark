@@ -14,19 +14,22 @@ describe('Slide', function () {
   });
 
   describe('inheritance', function () {
-    it('should inherit properties and source', function () {
+    it('should inherit properties, source and notes', function () {
       var template = new Slide(1, {
             source: 'Some content.',
-            properties: {prop1: 'val1'}
+            properties: {prop1: 'val1'},
+            notes: 'template notes'
           })
-        , slide = new Slide(1, {
+        , slide = new Slide(2, {
             source: 'More content.',
-            properties: {prop2: 'val2'}
+            properties: {prop2: 'val2'},
+            notes: 'slide notes'
           }, template);
 
       slide.properties.should.have.property('prop1', 'val1');
       slide.properties.should.have.property('prop2', 'val2');
       slide.source.should.equal('Some content.More content.');
+      slide.notes.should.equal('template notes\n\nslide notes');
     });
 
     it('should not inherit name property', function () {
