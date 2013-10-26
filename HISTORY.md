@@ -1,3 +1,6 @@
+### 0.5.8
+* #61: Only handle shortcut keys when meta/ctrl key is not pressed.
+
 ### 0.5.7
 * Hardcode paper dimensions to make slides fit perfectly when printing / exporting to PDF.
 
