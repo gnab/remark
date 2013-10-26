@@ -85,6 +85,11 @@ function addKeyboardEventListeners (events) {
   });
 
   events.on('keypress', function (event) {
+    if (event.metaKey || event.ctrlKey) {
+      // Bail out if meta or ctrl key was pressed
+      return;
+    }
+
     switch (String.fromCharCode(event.which)) {
       case 'j':
         events.emit('gotoNextSlide');
