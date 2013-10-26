@@ -1,3 +1,6 @@
+### 0.5.9
+* #62: Inherit presenter notes from template slide.
+
 ### 0.5.8
 * #61: Only handle shortcut keys when meta/ctrl key is not pressed.
 
