@@ -20,6 +20,7 @@ function Slide (number, slide, template) {
    */
   var callbacks = {
         setup: []
+      , reset: []
       , step: []
       }
     , stepIndex = null
@@ -27,6 +28,11 @@ function Slide (number, slide, template) {
 
   self.setup = function (callback) {
     callbacks.setup.push(callback);
+    return self;
+  };
+
+  self.reset = function (callback) {
+    callbacks.reset.push(callback);
     return self;
   };
 
@@ -43,6 +49,10 @@ function Slide (number, slide, template) {
 
   self.init = function () {
     if (stepIndex === null) {
+      callbacks.setup.forEach(function (setupCallback) {
+        setupCallback.call(self);
+      });
+
       self.rewind();
     }
   };
@@ -55,8 +65,8 @@ function Slide (number, slide, template) {
       step.calls = 0;
     });
 
-    callbacks.setup.forEach(function (setupCallback) {
-      setupCallback.call(self, initial);
+    callbacks.reset.forEach(function (resetCallback) {
+      resetCallback.call(self, initial);
     });
 
     return self;

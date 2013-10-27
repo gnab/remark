@@ -101,15 +101,14 @@ describe('Slide', function () {
 
   describe('steps', function () {
     describe('#init', function () {
-      it('should trigger setup with initial set to true', function (done) {
-        slide.setup(function (initial) {
-          initial.should.equal(true);
+      it('should trigger setup on first call', function (done) {
+        slide.setup(function () {
           done();
         });
         slide.init();
       });
 
-      it('should only trigger setup once', function () {
+      it('should not trigger setup after first call', function () {
         slide.init();
         slide.setup(function () {
           throw new Error('setup was called on second init');
@@ -119,10 +118,8 @@ describe('Slide', function () {
     });
 
     describe('#rewind', function () {
-      it('should trigger setup with initial set to false', function (done) {
-        slide.init();
-        slide.setup(function (initial) {
-          initial.should.equal(false);
+      it('should trigger reset', function (done) {
+        slide.reset(function () {
           done();
         });
         slide.rewind();
