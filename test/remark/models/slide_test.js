@@ -134,14 +134,6 @@ describe('Slide', function () {
         slide.forward();
       });
 
-      it('should skip step without forward action', function (done) {
-        slide.step(null, function () {});
-        slide.step(function () {
-          done();
-        });
-        slide.forward();
-      });
-
       it('should loop until truthy or undefined result', function () {
         slide.step(function (calls) {
           return calls === 2;
@@ -164,43 +156,22 @@ describe('Slide', function () {
     });
 
     describe('#backward', function () {
-      it('should trigger previous step', function (done) {
-        slide.step(function () {}, function () {
-          done();
-        });
-        slide.forward();
-        slide.backward();
-      });
-
-      it('should skip step without backward action', function (done) {
-        slide.step(null, function () {
-          done();
-        });
+      it('should rewind when step was triggered', function (done) {
         slide.step(function () {});
         slide.forward();
-        slide.forward();
-        slide.backward();
-      });
-
-      it('should loop until truthy or undefined result', function () {
-        slide.step(null, function (calls) {
-          return calls === -2;
+        slide.reset(function () {
+          done();
         });
-
-        slide.forward();
-        slide.backward().should.equal(true);
-        slide.backward().should.equal(true);
-        slide.backward().should.equal(true);
-        slide.backward().should.equal(false);
+        slide.backward();
       });
 
       it('should return true when step was triggered', function () {
-        slide.step(function () {}, function () {});
+        slide.step(function () {});
         slide.forward();
         slide.backward().should.equal(true);
       });
 
-      it('should return false when no more steps', function () {
+      it('should return false when no step was triggered', function () {
         slide.backward().should.equal(false);
       });
     });

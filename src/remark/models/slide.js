@@ -36,10 +36,9 @@ function Slide (number, slide, template) {
     return self;
   };
 
-  self.step = function (forward, backward) {
+  self.step = function (forward) {
     callbacks.step.push({
       forward: forward
-    , backward: backward
     , calls: 0
     });
     return self;
@@ -108,49 +107,18 @@ function Slide (number, slide, template) {
 
       return true;
     }
-    else {
-      return false;
-    }
+
+    return false;
   };
 
   self.backward = function () {
-    var step
-      , done
-      ;
-
-    // Make sure slide is initialized
-    self.init();
-
-    // Find step with backward action
-    while (stepIndex >= 0) {
-      step = callbacks.step[stepIndex];
-      if (step && step.backward) {
-        break;
-      }
-      step = undefined;
-      stepIndex -= 1;
-    }
-
-    if (step) {
-      // Call step backward action
-      done = step.backward.call(self, step.calls);
-
-      if (done || done === undefined) {
-        // Move to previous step
-        stepIndex -= 1;
-        // Clear out step counter
-        step.calls = 0;
-      }
-      else {
-        // Stay on step, decrement step counter
-        step.calls -= 1;
-      }
-
+    // If some step has been triggered, rewind
+    if (stepIndex !== null && stepIndex >= 0) {
+      self.rewind();
       return true;
     }
-    else {
-      return false;
-    }
+
+    return false;
   };
 }
 
