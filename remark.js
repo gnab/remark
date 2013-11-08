@@ -2806,6 +2806,11 @@ function Slideshow (events, options) {
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
 
+  self.togglePresenterMode = togglePresenterMode;
+  self.toggleHelp = toggleHelp;
+  self.toggleFullscreen = toggleFullscreen;
+  self.createClone = createClone;
+
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
@@ -2831,6 +2836,22 @@ function Slideshow (events, options) {
 
   function getSlideByName (name) {
     return slides.byName[name];
+  }
+
+  function togglePresenterMode () {
+    events.emit('togglePresenterMode');
+  }
+
+  function toggleHelp () {
+    events.emit('toggleHelp');
+  }
+
+  function toggleFullscreen () {
+    events.emit('toggleFullscreen');
+  }
+
+  function createClone () {
+    events.emit('createClone');
   }
 
   function getOrDefault (key, defaultValue) {
@@ -2897,7 +2918,7 @@ function expandVariables (slides) {
   });
 }
 
-},{"./slideshow/navigation":10,"./slideshow/events":11,"../utils":12,"./slide":13,"../parser":14}],8:[function(require,module,exports){
+},{"./slideshow/events":10,"./slideshow/navigation":11,"../utils":12,"./slide":13,"../parser":14}],8:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -3165,6 +3186,31 @@ SlideshowView.prototype.scaleElements = function () {
 };
 
 },{"./slideView":15,"../scaler":16,"../resources":4,"../utils":12}],10:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+
+module.exports = Events;
+
+function Events (events) {
+  var self = this
+    , externalEvents = new EventEmitter()
+    ;
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
+}
+
+},{"events":6}],11:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3282,32 +3328,7 @@ function Navigation (events) {
   }
 }
 
-},{}],11:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":6}],12:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
