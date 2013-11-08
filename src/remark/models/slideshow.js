@@ -23,6 +23,11 @@ function Slideshow (events, options) {
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
 
+  self.togglePresenterMode = togglePresenterMode;
+  self.toggleHelp = toggleHelp;
+  self.toggleFullscreen = toggleFullscreen;
+  self.createClone = createClone;
+
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
@@ -48,6 +53,22 @@ function Slideshow (events, options) {
 
   function getSlideByName (name) {
     return slides.byName[name];
+  }
+
+  function togglePresenterMode () {
+    events.emit('togglePresenterMode');
+  }
+
+  function toggleHelp () {
+    events.emit('toggleHelp');
+  }
+
+  function toggleFullscreen () {
+    events.emit('toggleFullscreen');
+  }
+
+  function createClone () {
+    events.emit('createClone');
   }
 
   function getOrDefault (key, defaultValue) {
