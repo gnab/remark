@@ -2567,7 +2567,7 @@ module.exports.create = function (options) {
 
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = new Controller(events, slideshowView);
+  controller = new Controller(events, slideshowView, options.handleInputs);
 
   return slideshow;
 };
@@ -2589,32 +2589,40 @@ function applyDefaults (options) {
     options.container = document.body;
   }
 
+  if (!options.hasOwnProperty('handleInputs')) {
+    options.handleInputs = true;
+  }
+
   return options;
 }
 
 },{"events":6,"./highlighter":3,"./models/slideshow":7,"./views/slideshowView":8,"./controller":9}],9:[function(require,module,exports){
 module.exports = Controller;
 
-function Controller (events, slideshowView) {
-  addApiEventListeners(events, slideshowView);
+function Controller (events, slideshowView, handleInputs) {
+  addApiEventListeners(events, slideshowView, handleInputs);
   addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
-}
-
-function addApiEventListeners(events, slideshowView) {
-  events.on('pause', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-  });
-
-  events.on('resume',  function(event) {
+  if (handleInputs) {
     addKeyboardEventListeners(events);
     addMouseEventListeners(events);
     addTouchEventListeners(events);
-  });
+  }
+}
+
+function addApiEventListeners(events, slideshowView, handleInputs) {
+  if (handleInputs) {
+    events.on('pause', function(event) {
+      removeKeyboardEventListeners(events);
+      removeMouseEventListeners(events);
+      removeTouchEventListeners(events);
+    });
+
+    events.on('resume',  function(event) {
+      addKeyboardEventListeners(events);
+      addMouseEventListeners(events);
+      addTouchEventListeners(events);
+    });
+  }
 }
 
 function addNavigationEventListeners (events, slideshowView) {
@@ -2918,7 +2926,7 @@ function expandVariables (slides) {
   });
 }
 
-},{"./slideshow/events":10,"./slideshow/navigation":11,"../utils":12,"./slide":13,"../parser":14}],8:[function(require,module,exports){
+},{"./slideshow/navigation":10,"./slideshow/events":11,"../utils":12,"./slide":13,"../parser":14}],8:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -3186,31 +3194,6 @@ SlideshowView.prototype.scaleElements = function () {
 };
 
 },{"./slideView":15,"../scaler":16,"../resources":4,"../utils":12}],10:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":6}],11:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3328,7 +3311,32 @@ function Navigation (events) {
   }
 }
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+
+module.exports = Events;
+
+function Events (events) {
+  var self = this
+    , externalEvents = new EventEmitter()
+    ;
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
+}
+
+},{"events":6}],12:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
