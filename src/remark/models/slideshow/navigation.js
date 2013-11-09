@@ -3,6 +3,7 @@ module.exports = Navigation;
 function Navigation (events) {
   var self = this
     , currentSlideNo = 0
+    , started = null
     ;
 
   self.getCurrentSlideNo = getCurrentSlideNo;
@@ -35,6 +36,10 @@ function Navigation (events) {
     }
   });
 
+  events.on('resetTimer', function() {
+    started = false;
+  });
+
   function pause () {
     events.emit('pause');
   }
@@ -59,6 +64,19 @@ function Navigation (events) {
 
     if (currentSlideNo !== 0) {
       events.emit('hideSlide', currentSlideNo - 1);
+    }
+
+    // Use some tri-state logic here.
+    // null = We haven't shown the first slide yet.
+    // false = We've shown the initial slide, but we haven't progressed beyond that.
+    // true = We've issued the first slide change command.
+    if (started === null) {
+      started = false;
+    } else if (started === false) {
+      // We've shown the initial slide previously - that means this is a
+      // genuine move to a new slide.
+      events.emit('start');
+      started = true;
     }
 
     events.emit('showSlide', slideNo - 1);

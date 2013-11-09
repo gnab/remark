@@ -23,6 +23,13 @@ function SlideshowView (events, containerElement, slideshow) {
   self.scaleElements();
   self.updateSlideViews();
 
+  self.startTime = null;
+  self.pauseStart = null;
+  self.pauseLength = 0;
+  setInterval(function() {
+      self.updateTimer();
+    }, 100);
+
   events.on('slidesChanged', function () {
     self.updateSlideViews();
   });
@@ -42,6 +49,28 @@ function SlideshowView (events, containerElement, slideshow) {
 
   events.on('toggleHelp', function () {
     toggleClass(self.containerElement, 'remark-help-mode');
+  });
+
+  events.on('start', function () {
+    // When we do the first slide change, start the clock.
+    self.startTime = new Date();
+  });
+
+  events.on('resetTimer', function () {
+    // If we reset the timer, clear everything.
+    self.startTime = null;
+    self.pauseStart = null;
+    self.pauseLength = 0;
+    self.timerElement.innerHTML = '0:00:00';
+  });
+
+  events.on('pause', function () {
+    self.pauseStart = new Date();
+  });
+
+  events.on('resume', function () {
+    self.pauseLength += new Date() - self.pauseStart;
+    self.pauseStart = null;
   });
 
   handleFullscreen(self);
@@ -152,6 +181,8 @@ SlideshowView.prototype.configureChildElements = function () {
   self.backdropElement = self.containerElement.getElementsByClassName('remark-backdrop')[0];
   self.helpElement = self.containerElement.getElementsByClassName('remark-help')[0];
 
+  self.timerElement = self.notesArea.getElementsByClassName('remark-toolbar-timer')[0];
+
   self.events.on('propertiesChanged', function (changes) {
     if (changes.hasOwnProperty('ratio')) {
       self.updateDimensions();
@@ -249,6 +280,28 @@ SlideshowView.prototype.updateDimensions = function () {
 
   self.scaleSlideBackgroundImages(dimensions);
   self.scaleElements();
+};
+
+SlideshowView.prototype.updateTimer = function () {
+  var self = this;
+
+  if (self.startTime) {
+    var millis;
+    // If we're currently paused, measure elapsed time from the pauseStart.
+    // Otherwise, use "now".
+    if (self.pauseStart) {
+      millis = self.pauseStart - self.startTime - self.pauseLength;
+    } else {
+      millis = new Date() - self.startTime - self.pauseLength;
+    }
+
+    var seconds = Math.floor(millis / 1000) % 60;
+    var minutes = Math.floor(millis / 60000) % 60;
+    var hours = Math.floor(millis / 3600000);
+
+    self.timerElement.innerHTML = hours + (minutes > 9 ? ':' : ':0') + minutes + (seconds > 9 ? ':' : ':0') + seconds;
+  }
+
 };
 
 SlideshowView.prototype.scaleElements = function () {
