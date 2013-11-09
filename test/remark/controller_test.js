@@ -101,16 +101,30 @@ describe('Controller', function () {
     });
   });
 
+  describe('disabled keyboard navigation', function () {
+    it('should not navigate based on keyboard input', function () {
+      events.emit('keydown', {keyCode: 33});
+
+      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
+    });
+
+    beforeEach(function () {
+      createController({handleInputs: false});
+    });
+  });
+
   var events
     , controller
-    ; 
+    ;
 
   function createController (options) {
-    options = options || {embedded: false};
+    options = options || {embedded: false, handleInputs: true};
 
     controller = new Controller(events, {
-      isEmbedded: function () { return options.embedded; }
-    });
+        isEmbedded: function () { return options.embedded; },
+      },
+      options.handleInputs
+    );
   }
 
   beforeEach(function () {

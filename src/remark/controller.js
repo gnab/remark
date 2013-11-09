@@ -1,25 +1,29 @@
 module.exports = Controller;
 
-function Controller (events, slideshowView) {
-  addApiEventListeners(events, slideshowView);
+function Controller (events, slideshowView, handleInputs) {
+  addApiEventListeners(events, slideshowView, handleInputs);
   addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
-}
-
-function addApiEventListeners(events, slideshowView) {
-  events.on('pause', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-  });
-
-  events.on('resume',  function(event) {
+  if (handleInputs) {
     addKeyboardEventListeners(events);
     addMouseEventListeners(events);
     addTouchEventListeners(events);
-  });
+  }
+}
+
+function addApiEventListeners(events, slideshowView, handleInputs) {
+  if (handleInputs) {
+    events.on('pause', function(event) {
+      removeKeyboardEventListeners(events);
+      removeMouseEventListeners(events);
+      removeTouchEventListeners(events);
+    });
+
+    events.on('resume',  function(event) {
+      addKeyboardEventListeners(events);
+      addMouseEventListeners(events);
+      addTouchEventListeners(events);
+    });
+  }
 }
 
 function addNavigationEventListeners (events, slideshowView) {

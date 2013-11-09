@@ -24,7 +24,7 @@ module.exports.create = function (options) {
 
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = new Controller(events, slideshowView);
+  controller = new Controller(events, slideshowView, options.handleInputs);
 
   return slideshow;
 };
@@ -44,6 +44,10 @@ function applyDefaults (options) {
 
   if (!(options.container instanceof window.HTMLElement)) {
     options.container = document.body;
+  }
+
+  if (!options.hasOwnProperty('handleInputs')) {
+    options.handleInputs = true;
   }
 
   return options;
