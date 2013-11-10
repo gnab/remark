@@ -91,7 +91,9 @@ Other interesting stuff:
 ### Credits
 
 - [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
-- [kjbekkelund](https://github.com/kjbekkelund), for numerous commits.
+- [kjbekkelund](https://github.com/kjbekkelund), for numerous pull requests.
+- [gureckis](https://github.com/gureckis), for several pull requests.
+- [freakboy3742](https://github.com/freakboy3742), for several pull requests.
 
 ### License
 
