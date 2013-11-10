@@ -106,6 +106,9 @@ function addKeyboardEventListeners (events) {
       case 'f':
         events.emit('toggleFullscreen');
         break;
+      case 't':
+        events.emit('resetTimer');
+        break;
       case '?':
         events.emit('toggleHelp');
         break;

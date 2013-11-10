@@ -28,6 +28,8 @@ function Slideshow (events, options) {
   self.toggleFullscreen = toggleFullscreen;
   self.createClone = createClone;
 
+  self.resetTimer = resetTimer;
+
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
@@ -69,6 +71,10 @@ function Slideshow (events, options) {
 
   function createClone () {
     events.emit('createClone');
+  }
+
+  function resetTimer () {
+    events.emit('resetTimer');
   }
 
   function getOrDefault (key, defaultValue) {

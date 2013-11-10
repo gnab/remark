@@ -211,11 +211,17 @@ html.remark-container, body.remark-container {
   position: absolute;
   right: 0;
   top: 0;
+
+  .remark-notes {
+    clear:both;
+    margin-top:30px;
+  }
 }
 
 .remark-toolbar {
   color: #979892;
   padding-bottom: 1em;
+  vertical-align: middle;
 
   .remark-toolbar-link {
     border: 2px solid #d7d8d2;
@@ -230,6 +236,21 @@ html.remark-container, body.remark-container {
       border-color: #979892;
       color: #676862;
     }
+  }
+
+  .remark-toolbar-timer {
+    border: 2px solid black;
+    border-radius: 10px;
+    background: black;
+    color: white;
+    display: inline-block;
+    float: right;
+    padding: 10px;
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 200%;
+    text-decoration: none;
+    text-align: center;
   }
 }
 
