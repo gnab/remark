@@ -120,9 +120,49 @@ html.remark-container, body.remark-container {
   left: 0;
   right: 0;
   display: none;
-  opacity: 0.95;
   background: #000;
 }
+
+/*****************/
+/* Pause overlay */
+/*****************/
+
+.remark-pause {
+  bottom: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: none;
+  position: absolute;
+  z-index: 1000;
+
+  .remark-pause-lozenge {
+    margin-top: 30%;
+    text-align: center;
+
+    span {
+      color: white;
+      background: black;
+      border: 2px solid black;
+      border-radius: 20px;
+      padding: 20px 30px;
+      font-family: Helvetica, arial, freesans, clean, sans-serif;
+      font-size: 42pt;
+      font-weight: bold;
+    }
+  }
+}
+
+.remark-container.remark-presenter-mode.remark-pause-mode {
+  .remark-pause {
+    display: block;
+  }
+  .remark-backdrop {
+    display: block;
+    opacity: 0.5;
+  }
+}
+
 
 /********/
 /* Help */
@@ -179,7 +219,8 @@ html.remark-container, body.remark-container {
     display: block;
   }
   .remark-backdrop {
-    display: block
+    display: block;
+    opacity: 0.95;
   }
 }
 

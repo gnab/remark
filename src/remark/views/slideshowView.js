@@ -51,6 +51,7 @@ function SlideshowView (events, containerElement, slideshow) {
     toggleClass(self.containerElement, 'remark-help-mode');
   });
 
+
   events.on('start', function () {
     // When we do the first slide change, start the clock.
     self.startTime = new Date();
@@ -66,11 +67,13 @@ function SlideshowView (events, containerElement, slideshow) {
 
   events.on('pause', function () {
     self.pauseStart = new Date();
+    toggleClass(self.containerElement, 'remark-pause-mode');
   });
 
   events.on('resume', function () {
     self.pauseLength += new Date() - self.pauseStart;
     self.pauseStart = null;
+    toggleClass(self.containerElement, 'remark-pause-mode');
   });
 
   handleFullscreen(self);
@@ -182,6 +185,7 @@ SlideshowView.prototype.configureChildElements = function () {
   self.helpElement = self.containerElement.getElementsByClassName('remark-help')[0];
 
   self.timerElement = self.notesArea.getElementsByClassName('remark-toolbar-timer')[0];
+  self.pauseElement = self.containerElement.getElementsByClassName('remark-pause')[0];
 
   self.events.on('propertiesChanged', function (changes) {
     if (changes.hasOwnProperty('ratio')) {
@@ -315,4 +319,5 @@ SlideshowView.prototype.scaleElements = function () {
     self.scaler.scaleToFit(self.previewArea.children[0].children[0], self.previewArea);
   }
   self.scaler.scaleToFit(self.helpElement, self.containerElement);
+  self.scaler.scaleToFit(self.pauseElement, self.containerElement);
 };
