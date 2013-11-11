@@ -96,56 +96,27 @@ describe('Controller', function () {
       events.emit.should.be.calledWithExactly('gotoLastSlide');
     });
 
-    it('should goto next slide', function () {
-      events.emit('keypress', {which: 'j'.charCodeAt(0)});
-
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
-    });
-
-    it('should goto previous slide', function () {
-      events.emit('keypress', {which: 'k'.charCodeAt(0)});
-
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
-    });
-
-    it('should create a screen clone', function () {
-      events.emit('keypress', {which: 'c'.charCodeAt(0)});
-
-      events.emit.should.be.calledWithExactly('createClone');
-    });
-
-    it('should toggle presenter mode', function () {
-      events.emit('keypress', {which: 'p'.charCodeAt(0)});
-
-      events.emit.should.be.calledWithExactly('togglePresenterMode');
-    });
-
-    it('should toggle full screen mode', function () {
-      events.emit('keypress', {which: 'f'.charCodeAt(0)});
-
-      events.emit.should.be.calledWithExactly('toggleFullscreen');
-    });
-
-    it('should reset timer', function () {
-      events.emit('keypress', {which: 't'.charCodeAt(0)});
-
-      events.emit.should.be.calledWithExactly('resetTimer');
-    });
-
-    it('should toggle help', function () {
-      events.emit('keypress', {which: '?'.charCodeAt(0)});
-
-      events.emit.should.be.calledWithExactly('toggleHelp');
-    });
-
     beforeEach(function () {
       createController();
     });
   });
 
+  describe('custom controller', function () {
+    it('should do nothing when pressing page up', function () {
+      events.emit('keydown', {keyCode: 33});
+
+      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
+    });
+
+    beforeEach(function () {
+      controller = function() {};
+    });
+  });
+
+
   var events
     , controller
-    ; 
+    ;
 
   function createController (options) {
     options = options || {embedded: false};
