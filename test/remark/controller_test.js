@@ -143,9 +143,22 @@ describe('Controller', function () {
     });
   });
 
+  describe('custom controller', function () {
+    it('should do nothing when pressing page up', function () {
+      events.emit('keydown', {keyCode: 33});
+
+      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
+    });
+
+    beforeEach(function () {
+      controller = function() {};
+    });
+  });
+
+
   var events
     , controller
-    ; 
+    ;
 
   function createController (options) {
     options = options || {embedded: false};
