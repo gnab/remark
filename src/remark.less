@@ -31,13 +31,13 @@ html.remark-container, body.remark-container {
 }
 .remark-slide-container {
   display: none;
-  position: relative;
+  position: absolute;
   height: 100%;
   width: 100%;
   page-break-after: always;
 }
 .remark-slide-scaler {
-  background: #fff;
+  background: transparent;
   overflow: hidden;
   position: absolute;
   -webkit-transform-origin: top left;
@@ -107,6 +107,11 @@ html.remark-container, body.remark-container {
 }
 .remark-visible {
   display: block;
+  z-index: 2;
+}
+.remark-fading {
+  display: block;
+  z-index: 1;
 }
 
 /************/
