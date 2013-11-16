@@ -330,9 +330,16 @@ html.remark-container, body.remark-container {
 @media print {
   .remark-container {
     overflow: visible;
+    background-color: #fff;
   }
   .remark-slide-container {
     display: block;
+    position: relative;
+  }
+  .remark-slide-scaler {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
   }
 }
 @page {
