@@ -63,7 +63,7 @@ function Navigation (events) {
     }
 
     if (currentSlideNo !== 0) {
-      events.emit('hideSlide', currentSlideNo - 1);
+      events.emit('hideSlide', currentSlideNo - 1, false);
     }
 
     // Use some tri-state logic here.

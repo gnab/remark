@@ -4,6 +4,7 @@ var SlideView = require('./slideView')
   , addClass = require('../utils').addClass
   , toggleClass = require('../utils').toggleClass
   , getPrefixedProperty = require('../utils').getPrefixedProperty
+  , utils = require('../utils')
   ;
 
 module.exports = SlideshowView;
@@ -35,6 +36,12 @@ function SlideshowView (events, containerElement, slideshow) {
   });
 
   events.on('hideSlide', function (slideIndex) {
+    // To make sure that there is only one element fading at a time,
+    // remove the fading class from all slides before hiding
+    // the new slide.
+    self.elementArea.getElementsByClassName('remark-fading').forEach(function (slide) {
+      utils.removeClass(slide, 'remark-fading');
+    });
     self.hideSlide(slideIndex);
   });
 
@@ -50,7 +57,6 @@ function SlideshowView (events, containerElement, slideshow) {
   events.on('toggleHelp', function () {
     toggleClass(self.containerElement, 'remark-help-mode');
   });
-
 
   events.on('start', function () {
     // When we do the first slide change, start the clock.

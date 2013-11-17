@@ -60,4 +60,47 @@ describe('SlideView', function () {
       slideView.contentElement.innerHTML.should.not.include('<p></p>');
     });
   });
+
+  describe('show slide', function () {
+    it('should set the slide visible', function () {
+      var slide = new Slide(1, {source: ''})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+
+        slideView.show();
+
+        var classes = utils.getClasses(slideView.containerElement);
+        classes.should.include('remark-visible');
+        classes.should.not.include('remark-fading');
+    });
+
+    it('should remove any fading element', function () {
+      var slide = new Slide(1, {source: ''})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+        utils.addClass(slideView.containerElement, 'remark-fading');
+
+        slideView.show();
+
+        var classes = utils.getClasses(slideView.containerElement);
+        classes.should.include('remark-visible');
+        classes.should.not.include('remark-fading');
+    });
+  });
+
+  describe('hide slide', function () {
+    it('should mark the slide as fading', function () {
+      var slide = new Slide(1, {source: ''})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+        utils.addClass(slideView.containerElement, 'remark-visible');
+
+        slideView.hide();
+
+        var classes = utils.getClasses(slideView.containerElement);
+        classes.should.not.include('remark-visible');
+        classes.should.include('remark-fading');
+    });
+  });
+
 });

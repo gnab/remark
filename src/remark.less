@@ -31,13 +31,13 @@ html.remark-container, body.remark-container {
 }
 .remark-slide-container {
   display: none;
-  position: relative;
+  position: absolute;
   height: 100%;
   width: 100%;
   page-break-after: always;
 }
 .remark-slide-scaler {
-  background: #fff;
+  background-color: transparent;
   overflow: hidden;
   position: absolute;
   -webkit-transform-origin: top left;
@@ -105,8 +105,21 @@ html.remark-container, body.remark-container {
     right: 20px;
   }
 }
+.remark-slide-content {
+  background-color: #fff;
+}
 .remark-visible {
   display: block;
+  z-index: 2;
+}
+.remark-fading {
+  display: block;
+  z-index: 1;
+  .remark-slide-scaler {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+  }
 }
 
 /************/
@@ -317,9 +330,16 @@ html.remark-container, body.remark-container {
 @media print {
   .remark-container {
     overflow: visible;
+    background-color: #fff;
   }
   .remark-slide-container {
     display: block;
+    position: relative;
+  }
+  .remark-slide-scaler {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
   }
 }
 @page {
