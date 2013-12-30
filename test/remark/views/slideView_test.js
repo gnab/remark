@@ -18,12 +18,12 @@ describe('SlideView', function () {
     it('should be set from background slide property', function () {
       var slide = new Slide(1, {
             source: '',
-            properties: {'background-image': 'image.jpg'}
+            properties: {'background-image': 'url(image.jpg)'}
           })
         , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         ;
 
-        slideView.contentElement.style.backgroundImage.should.equal('image.jpg');
+        slideView.contentElement.style.backgroundImage.should.equal('url(image.jpg)');
     });
   });
 
