@@ -48,7 +48,7 @@ function addNavigationEventListeners (events, slideshowView) {
     var cap;
 
     if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
-      events.emit('gotoSlide', parseInt(cap[1], 10));
+      events.emit('gotoSlide', parseInt(cap[1], 10), true);
     }
   }
 }
