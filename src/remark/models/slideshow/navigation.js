@@ -52,11 +52,12 @@ function Navigation (events) {
     return currentSlideNo;
   }
 
-  function gotoSlide (slideNoOrName) {
+  function gotoSlide (slideNoOrName, noMessage) {
     var slideNo = getSlideNo(slideNoOrName)
       , alreadyOnSlide = slideNo === currentSlideNo
       , slideOutOfRange = slideNo < 1 || slideNo > self.getSlideCount()
       ;
+    if (noMessage === undefined) noMessage = false;
 
     if (alreadyOnSlide || slideOutOfRange) {
       return;
@@ -85,12 +86,14 @@ function Navigation (events) {
 
     events.emit('slideChanged', slideNoOrName || slideNo);
 
-    if (self.clone && !self.clone.closed) {
-      self.clone.postMessage('gotoSlide:' + currentSlideNo, '*');
-    }
+    if (!noMessage) {
+      if (self.clone && !self.clone.closed) {
+        self.clone.postMessage('gotoSlide:' + currentSlideNo, '*');
+      }
 
-    if (window.opener) {
-      window.opener.postMessage('gotoSlide:' + currentSlideNo, '*');
+      if (window.opener) {
+        window.opener.postMessage('gotoSlide:' + currentSlideNo, '*');
+      }
     }
   }
 
