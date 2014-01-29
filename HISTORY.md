@@ -1,3 +1,12 @@
+### 0.6.0
+* #73: Fix infinite loop issue for cloned views ([peter50216](https://github.com/peter50216)).
+* #71: Make `img { max-with: 100%}` work in Firefox ([obfusk](https://github.com/obfusk)).
+* #69: Assign `remark-fading` class to slide being hidden to allow animated transitions ([freakboy3742](https://github.com/freakboy3742)).
+* #68: Add overlay in presenter mode to indicate paused state ([freakboy3742](https://github.com/freakboy3742)).
+* #67: Make slideshow controller customizable ([freakboy3742](https://github.com/freakboy3742)).
+* #66: Add timer for presentation view ([freakboy3742](https://github.com/freakboy3742)).
+* #64: Expose API endpoints for display functions ([freakboy3742](https://github.com/freakboy3742)).
+
 ### 0.5.9
 * #62: Inherit presenter notes from template slide.
 
@@ -9,7 +18,7 @@
 
 ### 0.5.6
 * #50: Support printing / export to PDF via Save as PDF in Chrome.
-* Extend API: (([gureckis](https://github.com/gureckis)))
+* Extend API: ([gureckis](https://github.com/gureckis))
   * Add `slideshow.pause()` and `slideshow.resume()` for bypassing keyboard navigation.
   * Add `[before|after][Show|Hide]Slide` events.
 
