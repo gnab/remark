@@ -109,6 +109,7 @@ function addKeyboardEventListeners (events) {
       case 't':
         events.emit('resetTimer');
         break;
+      case 'h':
       case '?':
         events.emit('toggleHelp');
         break;
