@@ -8,6 +8,7 @@ target.all = function () {
   target.test();
   target.bundle();
   target.minify();
+  target.boilerplate();
 };
 
 target.highlighter = function () {
@@ -29,6 +30,11 @@ target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
   run('browserify src/remark.js', {silent: true}).output.to('remark.js');
+};
+
+target.boilerplate = function () {
+  console.log('Generating boilerplate...');
+  generateBoilerplateSingle("boilerplate-single.html");
 };
 
 target.minify = function () {
@@ -73,6 +79,21 @@ function bundleHighlighter (target) {
       };
 
   cat('src/highlighter.js.template')
+    .replace(/%(\w+)%/g, function (match, key) {
+      return resources[key];
+    })
+    .to(target);
+}
+
+function generateBoilerplateSingle(target) {
+  var resources = {
+        REMARK_MINJS: escape(cat('remark.min.js')
+                              // highlighter has a ending script tag as a string literal, and
+                              // that causes early termination of escaped script. Split that literal.
+                              .replace('"</script>"', '"</" + "script>"'))
+      };
+
+  cat('src/boilerplate-single.html.template')
     .replace(/%(\w+)%/g, function (match, key) {
       return resources[key];
     })
