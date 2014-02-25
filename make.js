@@ -5,8 +5,8 @@ require('shelljs/global');
 
 target.all = function () {
   target.lint();
-  target.test();
   target.bundle();
+  target.test();
   target.minify();
   target.boilerplate();
 };
@@ -21,15 +21,34 @@ target.lint = function () {
   run('jshint src', {silent: true});
 };
 
+target['test-bundle'] = function () {
+  console.log('Bundling tests...');
+
+  [
+    "require('should');"
+  ]
+    .concat(find('./test')
+      .filter(function(file) { return file.match(/\.js$/); })
+      .map(function (file) { return "require('./" + file + "');" })
+    )
+      .join('\n')
+      .to('_tests.js');
+
+  run('browserify _tests.js', {silent: true}).output.to('out/tests.js');
+  rm('_tests.js');
+};
+
 target.test = function () {
+  target['test-bundle']();
+
   console.log('Running tests...');
-  run('mocha --recursive test');
+  run('mocha-phantomjs test/runner.html');
 };
 
 target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
-  run('browserify src/remark.js', {silent: true}).output.to('remark.js');
+  run('browserify src/remark.js', {silent: true}).output.to('out/remark.js');
 };
 
 target.boilerplate = function () {
@@ -39,7 +58,7 @@ target.boilerplate = function () {
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs remark.js', {silent: true}).output.to('remark.min.js');
+  run('uglifyjs remark.js', {silent: true}).output.to('out/remark.min.js');
 };
 
 // Helper functions

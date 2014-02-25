@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script>
+      mocha.ui('bdd');
+      mocha.reporter('html');
+    </script>
+    <script src="../out/remark.js"></script>
+    <script src="../out/tests.js"></script>
+    <script>
+      should.__proto__.calledWithExactly = function () {
+        var args = Array.prototype.slice.call(arguments);
+
+        this.assert(
+          this.obj.calledWithExactly.apply(this.obj, args)
+        , function () { return 'expected ' + this.inspect + ' to be called with ' + JSON.stringify(args); }
+        , function () { return 'expected ' + this.inspect + ' not to be called with ' + JSON.stringify(args); })
+
+        return this;
+      };
+
+      if (window.mochaPhantomJS) {
+        mochaPhantomJS.run();
+      }
+      else {
+        mocha.run();
+      }
+    </script>
+  </body>
+</html>
