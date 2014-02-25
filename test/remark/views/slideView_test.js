@@ -23,7 +23,7 @@ describe('SlideView', function () {
         , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         ;
 
-        slideView.contentElement.style.backgroundImage.should.equal('url(image.jpg)');
+        slideView.contentElement.style.backgroundImage.should.match(/^url\(.*image\.jpg\)$/);
     });
   });
 
