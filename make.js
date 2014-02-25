@@ -25,7 +25,8 @@ target['test-bundle'] = function () {
   console.log('Bundling tests...');
 
   [
-    "require('should');"
+    "require('should');",
+    "require('sinon');"
   ]
     .concat(find('./test')
       .filter(function(file) { return file.match(/\.js$/); })
