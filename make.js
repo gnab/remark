@@ -59,7 +59,7 @@ target.boilerplate = function () {
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs remark.js', {silent: true}).output.to('out/remark.min.js');
+  run('uglifyjs out/remark.js', {silent: true}).output.to('out/remark.min.js');
 };
 
 // Helper functions
