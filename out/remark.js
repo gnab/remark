@@ -3260,7 +3260,7 @@ SlideshowView.prototype.scaleElements = function () {
   self.scaler.scaleToFit(self.pauseElement, self.containerElement);
 };
 
-},{"./slideView":15,"../scaler":16,"../resources":4,"../utils":12}],10:[function(require,module,exports){
+},{"../scaler":15,"./slideView":16,"../resources":4,"../utils":12}],10:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3399,32 +3399,7 @@ function Navigation (events) {
   }
 }
 
-},{}],11:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":6}],12:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -3509,7 +3484,32 @@ function forEach (list, f) {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+
+module.exports = Events;
+
+function Events (events) {
+  var self = this
+    , externalEvents = new EventEmitter()
+    ;
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
+}
+
+},{"events":6}],13:[function(require,module,exports){
 module.exports = Slide;
 
 function Slide (slideNo, slide, template) {
@@ -3614,7 +3614,7 @@ Slide.prototype.expandVariables = function (contentOnly) {
   return expandResult;
 };
 
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var referenceWidth = 908
   , referenceHeight = 681
   , referenceRatio = referenceWidth / referenceHeight
@@ -3780,7 +3780,7 @@ function extractProperties (source, properties) {
   return source;
 }
 
-},{"./lexer":17,"./converter":18}],15:[function(require,module,exports){
+},{"./lexer":17,"./converter":18}],16:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
