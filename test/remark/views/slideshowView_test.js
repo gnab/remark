@@ -298,7 +298,7 @@ describe('SlideshowView', function () {
   });
 
   function triggerEvent(element, eventName) {
-    var event = document.createEvent();
+    var event = document.createEvent('HTMLEvents');
     event.initEvent(eventName, true, true);
     element.dispatchEvent(event);
   }
