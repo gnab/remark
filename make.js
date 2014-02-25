@@ -139,7 +139,7 @@ function less (file) {
 }
 
 function run (command, options) {
-  var result = exec('node_modules/.bin/' + command, options);
+  var result = exec(pwd() + '/node_modules/.bin/' + command, options);
 
   if (result.code !== 0) {
     if (!options || options.silent) {
