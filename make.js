@@ -107,7 +107,7 @@ function bundleHighlighter (target) {
 
 function generateBoilerplateSingle(target) {
   var resources = {
-        REMARK_MINJS: escape(cat('remark.min.js')
+        REMARK_MINJS: escape(cat('out/remark.min.js')
                               // highlighter has a ending script tag as a string literal, and
                               // that causes early termination of escaped script. Split that literal.
                               .replace('"</script>"', '"</" + "script>"'))

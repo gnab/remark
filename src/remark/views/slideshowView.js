@@ -104,8 +104,16 @@ function handleFullscreen(self) {
   });
 }
 
+SlideshowView.prototype.getHTMLElement = function () {
+  return document.getElementsByTagName('html')[0];
+};
+
+SlideshowView.prototype.getBodyElement = function () {
+  return document.body;
+};
+
 SlideshowView.prototype.isEmbedded = function () {
-  return this.containerElement !== document.body;
+  return this.containerElement !== this.getBodyElement();
 };
 
 SlideshowView.prototype.configureContainerElement = function (element) {
@@ -115,8 +123,8 @@ SlideshowView.prototype.configureContainerElement = function (element) {
 
   addClass(element, 'remark-container');
 
-  if (element === document.body) {
-    addClass(document.getElementsByTagName('html')[0], 'remark-container');
+  if (element === self.getBodyElement()) {
+    addClass(self.getHTMLElement(), 'remark-container');
 
     forwardEvents(self.events, window, [
       'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel', 'message'
