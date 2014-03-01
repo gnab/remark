@@ -1,6 +1,7 @@
 var sinon = require('sinon')
   , EventEmitter = require('events').EventEmitter
   , Controller = require('../../src/remark/controller')
+  , utils = require('../../src/remark/utils')
   ;
 
 describe('Controller', function () {
@@ -13,11 +14,13 @@ describe('Controller', function () {
     });
 
     it('should naviate by hash when slideshow is not embedded', function () {
-      window.location.hash = '#2';
+      sinon.stub(utils, 'getLocationHash').returns('#2');
 
       createController({embedded: false});
 
       events.emit.should.be.calledWithExactly('gotoSlide', '2');
+
+      utils.getLocationHash.restore();
     });
   });
 
