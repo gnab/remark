@@ -1,7 +1,8 @@
-var should = require('should')
+var sinon = require('sinon')
   , api = require('../../src/remark/api')
   , highlighter = require('../../src/remark/highlighter')
   , Slideshow = require('../../src/remark/models/slideshow')
+  , utils = require('../../src/remark/utils')
   ;
 
 describe('API', function () {
@@ -15,7 +16,16 @@ describe('API', function () {
   });
 
   it('should allow creating slideshow', function () {
-    // FIX: Skip for now - should not use document.body inside runner.html
-    //api.create().should.be.an.instanceOf(Slideshow);
+    var html = document.createElement('html');
+    var body = document.createElement('body');
+
+    // Stub to prevent altering test runner DOM
+    sinon.stub(utils, 'getHTMLElement').returns(html);
+    sinon.stub(utils, 'getBodyElement').returns(body);
+
+    api.create().should.be.an.instanceOf(Slideshow);
+
+    utils.getHTMLElement.restore();
+    utils.getBodyElement.restore();
   });
 });

@@ -3,6 +3,7 @@ var EventEmitter = require('events').EventEmitter
   , Slideshow = require('./models/slideshow')
   , SlideshowView = require('./views/slideshowView')
   , Controller = require('./controller')
+  , utils = require('./utils')
   ;
 
 // Expose highlighter to allow enumerating available styles and
@@ -43,7 +44,7 @@ function applyDefaults (options) {
   }
 
   if (!(options.container instanceof window.HTMLElement)) {
-    options.container = document.body;
+    options.container = utils.getBodyElement();
   }
 
   return options;
