@@ -1,10 +1,14 @@
 var api = require('./remark/api')
   , highlighter = require('./remark/highlighter')
+  , polyfills = require('./polyfills')
   , resources = require('./remark/resources')
   ;
 
 // Expose API as `remark`
 window.remark = api;
+
+// Apply polyfills as needed
+polyfills.apply();
 
 // Apply embedded styles to document
 styleDocument();
