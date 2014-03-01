@@ -28,19 +28,23 @@ describe('Controller', function () {
     it('should not navigate by hash when slideshow is embedded', function () {
       createController({embedded: true});
 
-      window.location.hash = '#3';
+      sinon.stub(utils, 'getLocationHash').returns('#3');
       events.emit('hashchange');
 
       events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
+
+      utils.getLocationHash.restore();
     });
 
     it('should navigate by hash when slideshow is not embedded', function () {
       createController({embedded: false});
 
-      window.location.hash = '#3';
+      sinon.stub(utils, 'getLocationHash').returns('#3');
       events.emit('hashchange');
 
       events.emit.should.be.calledWithExactly('gotoSlide', '3');
+
+      utils.getLocationHash.restore();
     });
   });
 
