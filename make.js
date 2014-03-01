@@ -35,7 +35,7 @@ target['test-bundle'] = function () {
       .join('\n')
       .to('_tests.js');
 
-  run('browserify _tests.js', {silent: true}).output.to('out/tests.js');
+  run('browserify _tests.js', {silent: true}).output.to('tests.js');
   rm('_tests.js');
 };
 
@@ -49,7 +49,7 @@ target.test = function () {
 target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
-  run('browserify src/remark.js', {silent: true}).output.to('out/remark.js');
+  run('browserify src/remark.js', {silent: true}).output.to('remark.js');
 };
 
 target.boilerplate = function () {
@@ -59,7 +59,7 @@ target.boilerplate = function () {
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs out/remark.js', {silent: true}).output.to('out/remark.min.js');
+  run('uglifyjs remark.js', {silent: true}).output.to('remark.min.js');
 };
 
 // Helper functions
@@ -107,7 +107,7 @@ function bundleHighlighter (target) {
 
 function generateBoilerplateSingle(target) {
   var resources = {
-        REMARK_MINJS: escape(cat('out/remark.min.js')
+        REMARK_MINJS: escape(cat('remark.min.js')
                               // highlighter has a ending script tag as a string literal, and
                               // that causes early termination of escaped script. Split that literal.
                               .replace('"</script>"', '"</" + "script>"'))
