@@ -115,10 +115,6 @@ describe('SlideshowView', function () {
       containerElement.style.position.should.not.equal('absolute');
     });
 
-    it('should not make element focusable', function () {
-      //containerElement.should.not.have.property('tabIndex');
-    });
-
     describe('proxying of element events', function () {
       it('should proxy resize event', function (done) {
         events.on('resize', function () {
