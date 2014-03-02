@@ -1,6 +1,8 @@
-var EventEmitter = require('events').EventEmitter
+var sinon = require('sinon')
+  , EventEmitter = require('events').EventEmitter
   , SlideshowView = require('../../../src/remark/views/slideshowView')
   , Slideshow = require('../../../src/remark/models/slideshow')
+  , utils = require('../../../src/remark/utils')
   ;
 
 describe('SlideshowView', function () {
@@ -85,22 +87,32 @@ describe('SlideshowView', function () {
   });
 
   describe('document.body container element configuration', function () {
+    var html, body;
+
     beforeEach(function () {
-      containerElement = document.body;
+      html = document.createElement('html');
+      body = document.createElement('body');
+
+      // Stub to prevent altering test runner DOM
+      sinon.stub(utils, 'getHTMLElement').returns(html);
+      sinon.stub(utils, 'getBodyElement').returns(body);
+
+      containerElement = body;
       view = new SlideshowView(events, containerElement, model);
     });
 
+    afterEach(function () {
+      utils.getHTMLElement.restore();
+      utils.getBodyElement.restore();
+    });
+
     it('should style HTML element', function () {
-      var html = document.getElementsByTagName('html')[0];
+      var html = utils.getHTMLElement();
       html.className.should.include('remark-container');
     });
 
     it('should not position element', function () {
       containerElement.style.position.should.not.equal('absolute');
-    });
-
-    it('should not make element focusable', function () {
-      containerElement.should.not.have.property('tabIndex');
     });
 
     describe('proxying of element events', function () {
@@ -149,7 +161,7 @@ describe('SlideshowView', function () {
           done();
         });
 
-        triggerEvent(document, 'touchstart');
+        triggerEvent(body, 'touchstart');
       });
 
       it('should proxy touchmove event', function (done) {
@@ -157,7 +169,7 @@ describe('SlideshowView', function () {
           done();
         });
 
-        triggerEvent(document, 'touchmove');
+        triggerEvent(body, 'touchmove');
       });
 
       it('should proxy touchend event', function (done) {
@@ -165,7 +177,7 @@ describe('SlideshowView', function () {
           done();
         });
 
-        triggerEvent(document, 'touchend');
+        triggerEvent(body, 'touchend');
       });
     });
   });
@@ -298,7 +310,7 @@ describe('SlideshowView', function () {
   });
 
   function triggerEvent(element, eventName) {
-    var event = document.createEvent();
+    var event = document.createEvent('HTMLEvents');
     event.initEvent(eventName, true, true);
     element.dispatchEvent(event);
   }

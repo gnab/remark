@@ -5,8 +5,8 @@ require('shelljs/global');
 
 target.all = function () {
   target.lint();
-  target.test();
   target.bundle();
+  target.test();
   target.minify();
   target.boilerplate();
 };
@@ -21,15 +21,35 @@ target.lint = function () {
   run('jshint src', {silent: true});
 };
 
+target['test-bundle'] = function () {
+  console.log('Bundling tests...');
+
+  [
+    "require('should');",
+    "require('sinon');"
+  ]
+    .concat(find('./test')
+      .filter(function(file) { return file.match(/\.js$/); })
+      .map(function (file) { return "require('./" + file + "');" })
+    )
+      .join('\n')
+      .to('_tests.js');
+
+  run('browserify _tests.js', {silent: true}).output.to('out/tests.js');
+  rm('_tests.js');
+};
+
 target.test = function () {
+  target['test-bundle']();
+
   console.log('Running tests...');
-  run('mocha --recursive test');
+  run('mocha-phantomjs test/runner.html');
 };
 
 target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
-  run('browserify src/remark.js', {silent: true}).output.to('remark.js');
+  run('browserify src/remark.js', {silent: true}).output.to('out/remark.js');
 };
 
 target.boilerplate = function () {
@@ -39,7 +59,7 @@ target.boilerplate = function () {
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs remark.js', {silent: true}).output.to('remark.min.js');
+  run('uglifyjs out/remark.js', {silent: true}).output.to('out/remark.min.js');
 };
 
 // Helper functions
@@ -87,7 +107,7 @@ function bundleHighlighter (target) {
 
 function generateBoilerplateSingle(target) {
   var resources = {
-        REMARK_MINJS: escape(cat('remark.min.js')
+        REMARK_MINJS: escape(cat('out/remark.min.js')
                               // highlighter has a ending script tag as a string literal, and
                               // that causes early termination of escaped script. Split that literal.
                               .replace('"</script>"', '"</" + "script>"'))
@@ -119,7 +139,7 @@ function less (file) {
 }
 
 function run (command, options) {
-  var result = exec('node_modules/.bin/' + command, options);
+  var result = exec(pwd() + '/node_modules/.bin/' + command, options);
 
   if (result.code !== 0) {
     if (!options || options.silent) {

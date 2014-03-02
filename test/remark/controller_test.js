@@ -1,6 +1,7 @@
 var sinon = require('sinon')
   , EventEmitter = require('events').EventEmitter
   , Controller = require('../../src/remark/controller')
+  , utils = require('../../src/remark/utils')
   ;
 
 describe('Controller', function () {
@@ -13,11 +14,13 @@ describe('Controller', function () {
     });
 
     it('should naviate by hash when slideshow is not embedded', function () {
-      window.location.hash = '#2';
+      sinon.stub(utils, 'getLocationHash').returns('#2');
 
       createController({embedded: false});
 
       events.emit.should.be.calledWithExactly('gotoSlide', '2');
+
+      utils.getLocationHash.restore();
     });
   });
 
@@ -25,19 +28,23 @@ describe('Controller', function () {
     it('should not navigate by hash when slideshow is embedded', function () {
       createController({embedded: true});
 
-      window.location.hash = '#3';
+      sinon.stub(utils, 'getLocationHash').returns('#3');
       events.emit('hashchange');
 
       events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
+
+      utils.getLocationHash.restore();
     });
 
     it('should navigate by hash when slideshow is not embedded', function () {
       createController({embedded: false});
 
-      window.location.hash = '#3';
+      sinon.stub(utils, 'getLocationHash').returns('#3');
       events.emit('hashchange');
 
       events.emit.should.be.calledWithExactly('gotoSlide', '3');
+
+      utils.getLocationHash.restore();
     });
   });
 

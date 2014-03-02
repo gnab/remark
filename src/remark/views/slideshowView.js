@@ -1,9 +1,6 @@
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
-  , addClass = require('../utils').addClass
-  , toggleClass = require('../utils').toggleClass
-  , getPrefixedProperty = require('../utils').getPrefixedProperty
   , utils = require('../utils')
   ;
 
@@ -50,12 +47,12 @@ function SlideshowView (events, containerElement, slideshow) {
   });
 
   events.on('togglePresenterMode', function () {
-    toggleClass(self.containerElement, 'remark-presenter-mode');
+    utils.toggleClass(self.containerElement, 'remark-presenter-mode');
     self.scaleElements();
   });
 
   events.on('toggleHelp', function () {
-    toggleClass(self.containerElement, 'remark-help-mode');
+    utils.toggleClass(self.containerElement, 'remark-help-mode');
   });
 
   events.on('start', function () {
@@ -73,26 +70,26 @@ function SlideshowView (events, containerElement, slideshow) {
 
   events.on('pause', function () {
     self.pauseStart = new Date();
-    toggleClass(self.containerElement, 'remark-pause-mode');
+    utils.toggleClass(self.containerElement, 'remark-pause-mode');
   });
 
   events.on('resume', function () {
     self.pauseLength += new Date() - self.pauseStart;
     self.pauseStart = null;
-    toggleClass(self.containerElement, 'remark-pause-mode');
+    utils.toggleClass(self.containerElement, 'remark-pause-mode');
   });
 
   handleFullscreen(self);
 }
 
 function handleFullscreen(self) {
-  var requestFullscreen = getPrefixedProperty(self.containerElement, 'requestFullScreen')
-    , cancelFullscreen = getPrefixedProperty(document, 'cancelFullScreen')
+  var requestFullscreen = utils.getPrefixedProperty(self.containerElement, 'requestFullScreen')
+    , cancelFullscreen = utils.getPrefixedProperty(document, 'cancelFullScreen')
     ;
 
   self.events.on('toggleFullscreen', function () {
-    var fullscreenElement = getPrefixedProperty(document, 'fullscreenElement') ||
-      getPrefixedProperty(document, 'fullScreenElement');
+    var fullscreenElement = utils.getPrefixedProperty(document, 'fullscreenElement') ||
+      utils.getPrefixedProperty(document, 'fullScreenElement');
 
     if (!fullscreenElement && requestFullscreen) {
       requestFullscreen.call(self.containerElement, Element.ALLOW_KEYBOARD_INPUT);
@@ -105,7 +102,7 @@ function handleFullscreen(self) {
 }
 
 SlideshowView.prototype.isEmbedded = function () {
-  return this.containerElement !== document.body;
+  return this.containerElement !== utils.getBodyElement();
 };
 
 SlideshowView.prototype.configureContainerElement = function (element) {
@@ -113,15 +110,15 @@ SlideshowView.prototype.configureContainerElement = function (element) {
 
   self.containerElement = element;
 
-  addClass(element, 'remark-container');
+  utils.addClass(element, 'remark-container');
 
-  if (element === document.body) {
-    addClass(document.getElementsByTagName('html')[0], 'remark-container');
+  if (element === utils.getBodyElement()) {
+    utils.addClass(utils.getHTMLElement(), 'remark-container');
 
     forwardEvents(self.events, window, [
       'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel', 'message'
     ]);
-    forwardEvents(self.events, document, [
+    forwardEvents(self.events, self.containerElement, [
       'touchstart', 'touchmove', 'touchend'
     ]);
   }

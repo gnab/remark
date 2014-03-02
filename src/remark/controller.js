@@ -1,3 +1,5 @@
+var utils = require('./utils');
+
 module.exports = Controller;
 
 function Controller (events, slideshowView) {
@@ -36,12 +38,12 @@ function addNavigationEventListeners (events, slideshowView) {
   events.on('message', navigateByMessage);
 
   function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
+    var slideNoOrName = (utils.getLocationHash() || '').substr(1);
     events.emit('gotoSlide', slideNoOrName);
   }
 
   function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
+    utils.setLocationHash('#' + slideNoOrName);
   }
 
   function navigateByMessage(message) {
