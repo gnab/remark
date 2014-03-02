@@ -22,10 +22,12 @@ describe('API', function () {
     // Stub to prevent altering test runner DOM
     sinon.stub(utils, 'getHTMLElement').returns(html);
     sinon.stub(utils, 'getBodyElement').returns(body);
+    sinon.stub(utils, 'setLocationHash');
 
     api.create().should.be.an.instanceOf(Slideshow);
 
     utils.getHTMLElement.restore();
     utils.getBodyElement.restore();
+    utils.setLocationHash.restore();
   });
 });

@@ -43,7 +43,7 @@ function addNavigationEventListeners (events, slideshowView) {
   }
 
   function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
+    utils.setLocationHash('#' + slideNoOrName);
   }
 
   function navigateByMessage(message) {

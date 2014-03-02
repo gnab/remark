@@ -49,3 +49,7 @@ exports.getBodyElement = function () {
 exports.getLocationHash = function () {
   return window.location.hash;
 };
+
+exports.setLocationHash = function (hash) {
+  window.location.hash = hash;
+};
