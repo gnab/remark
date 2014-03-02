@@ -35,7 +35,7 @@ target['test-bundle'] = function () {
       .join('\n')
       .to('_tests.js');
 
-  run('browserify _tests.js', {silent: true}).output.to('tests.js');
+  run('browserify _tests.js', {silent: true}).output.to('out/tests.js');
   rm('_tests.js');
 };
 
