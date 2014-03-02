@@ -43,6 +43,7 @@
       , "lisp"
       , "clojure"
       , "http"
+      , "haskell"
       ]
     }
   }
