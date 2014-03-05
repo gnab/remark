@@ -7,8 +7,7 @@ var sinon = require('sinon')
 
 describe('API', function () {
   it('should be exposed', function () {
-    var remark = require('../../src/remark.js');
-    window.remark.should.equal(api);
+    window.should.have.property('remark');
   });
 
   it('should expose highlighter', function () {
