@@ -44,24 +44,24 @@ describe('Slideshow', function () {
   describe('templates', function () {
     it('should have properties inherited by referenced slide', function () {
       slideshow.loadFromString('name: a\na\n---\ntemplate: a\nb');
-      slideshow.getSlides()[1].source.should.equal('\na\nb');
+      slideshow.getSlides()[1].content.should.eql(['\na', '\nb']);
     });
 
-    it('should have source inherited by referenced slide', function () {
+    it('should have content inherited by referenced slide', function () {
       slideshow.loadFromString('name: a\na\n---\ntemplate: a\nb');
-      slideshow.getSlides()[1].source.should.equal('\na\nb');
+      slideshow.getSlides()[1].content.should.eql(['\na', '\nb']);
     });
   });
 
   describe('layout slides', function () {
     it('should be default template for subsequent slides', function () {
       slideshow.loadFromString('layout: true\na\n---\nb');
-      slideshow.getSlides()[0].source.should.equal('\nab');
+      slideshow.getSlides()[0].content.should.eql(['\na', 'b']);
     });
 
     it('should not be default template for subsequent layout slide', function () {
       slideshow.loadFromString('layout: true\na\n---\nlayout: true\nb\n---\nc');
-      slideshow.getSlides()[0].source.should.equal('\nbc');
+      slideshow.getSlides()[0].content.should.eql(['\nb', 'c']);
     });
 
     it('should be omitted from list of slides', function () {

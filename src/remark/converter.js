@@ -1,35 +1,41 @@
 var marked = require('marked')
   , converter = module.exports = {}
+  , element = document.createElement('div')
   ;
 
 marked.setOptions({
   gfm: true,
   tables: true,
   breaks: false,
-  pedantic: false,
+  pedantic: true,
   sanitize: false,
   smartLists: true,
   langPrefix: ''
 });
 
-converter.convertMarkdown = function (source) {
-  // Unescape block-quotes before conversion (&gt; => >)
-  source = source.replace(/(^|\n)( *)&gt;/g, '$1$2>');
+converter.convertMarkdown = function (content, insideContentClass) {
+  var i, tag, markdown = '', html;
 
-  // Perform the actual Markdown conversion
-  source = marked(source.replace(/^\s+/, ''));
+  for (i = 0; i < content.length; ++i) {
+    if (typeof content[i] === 'string') {
+      markdown += content[i];
+    }
+    else {
+      tag = content[i].block ? 'div' : 'span';
+      markdown += '<' + tag + ' class="' + content[i].class + '">';
+      markdown += this.convertMarkdown(content[i].content, true);
+      markdown += '</' + tag + '>';
+    }
+  }
 
-  // Unescape HTML escaped by the browser; &lt;, &gt;, ...
-  source = source.replace(/&[l|g]t;/g,
-    function (match) {
-      return match === '&lt;' ? '<' : '>';
-    });
+  html = marked(markdown.replace(/^\s+/, ''));
 
-  // ... and &amp;
-  source = source.replace(/&amp;/g, '&');
-  
-  // ... and &quot;
-  source = source.replace(/&quot;/g, '"');
+  if (insideContentClass) {
+    element.innerHTML = html;
+    if (element.children.length === 1 && element.children[0].tagName === 'P') {
+      html = element.children[0].innerHTML;
+    }
+  }
 
-  return source;
+  return html;
 };

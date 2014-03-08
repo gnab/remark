@@ -4,7 +4,7 @@ function Slide (slideNo, slide, template) {
   var self = this;
 
   self.properties = slide.properties || {};
-  self.source = slide.source || '';
+  self.content = slide.content || [];
   self.notes = slide.notes || '';
   self.number = slideNo;
 
@@ -17,7 +17,7 @@ function Slide (slideNo, slide, template) {
 
 function inherit (slide, template) {
   inheritProperties(slide, template);
-  inheritSource(slide, template);
+  inheritContent(slide, template);
   inheritNotes(slide, template);
 }
 
@@ -49,16 +49,16 @@ function ignoreProperty (property) {
     property === 'layout';
 }
 
-function inheritSource (slide, template) {
+function inheritContent (slide, template) {
   var expandedVariables;
 
-  slide.properties.content = slide.source;
-  slide.source = template.source;
+  slide.properties.content = slide.content.slice();
+  slide.content = template.content.slice();
 
   expandedVariables = slide.expandVariables(/* contentOnly: */ true);
 
   if (expandedVariables.content === undefined) {
-    slide.source += slide.properties.content;
+    slide.content = slide.content.concat(slide.properties.content);
   }
 
   delete slide.properties.content;
@@ -70,34 +70,46 @@ function inheritNotes (slide, template) {
   }
 }
 
-Slide.prototype.expandVariables = function (contentOnly) {
+Slide.prototype.expandVariables = function (contentOnly, content, expandResult) {
   var properties = this.properties
-    , expandResult = {}
+    , i
     ;
 
-  this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
-    function (match, escaped, unescapedMatch, property) {
-      var propertyName = property.trim()
-        , propertyValue
-        ;
+  content = content !== undefined ? content : this.content;
+  expandResult = expandResult || {};
 
-      if (escaped) {
-        return contentOnly ? match[0] : unescapedMatch;
-      }
+  for (i = 0; i < content.length; ++i) {
+    if (typeof content[i] === 'string') {
+      content[i] = content[i].replace(/(\\)?(\{\{([^\}\n]+)\}\})/g, expand);
+    }
+    else {
+      this.expandVariables(contentOnly, content[i].content, expandResult);
+    }
+  }
 
-      if (contentOnly && propertyName !== 'content') {
-        return match;
-      }
+  function expand (match, escaped, unescapedMatch, property) {
+    var propertyName = property.trim()
+      , propertyValue
+      ;
 
-      propertyValue = properties[propertyName];
+    if (escaped) {
+      return contentOnly ? match[0] : unescapedMatch;
+    }
 
-      if (propertyValue !== undefined) {
-        expandResult[propertyName] = propertyValue;
-        return propertyValue;
-      }
+    if (contentOnly && propertyName !== 'content') {
+      return match;
+    }
 
-      return propertyName === 'content' ? '' : unescapedMatch;
-    });
+    propertyValue = properties[propertyName];
+
+    if (propertyValue !== undefined) {
+      expandResult[propertyName] = propertyValue;
+      return propertyValue;
+    }
+
+    return propertyName === 'content' ? '' : unescapedMatch;
+  }
 
   return expandResult;
 };
+

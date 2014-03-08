@@ -38,7 +38,7 @@ function applyDefaults (options) {
   if (!options.hasOwnProperty('source')) {
     sourceElement = document.getElementById('source');
     if (sourceElement) {
-      options.source = sourceElement.innerHTML;
+      options.source = unescape(sourceElement.innerHTML);
       sourceElement.style.display = 'none';
     }
   }
@@ -48,4 +48,16 @@ function applyDefaults (options) {
   }
 
   return options;
+}
+
+function unescape (source) {
+  source = source.replace(/&[l|g]t;/g,
+    function (match) {
+      return match === '&lt;' ? '<' : '>';
+    });
+
+  source = source.replace(/&amp;/g, '&');
+  source = source.replace(/&quot;/g, '"');
+
+  return source;
 }

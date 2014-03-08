@@ -2910,7 +2910,7 @@ function applyDefaults (options) {
   if (!options.hasOwnProperty('source')) {
     sourceElement = document.getElementById('source');
     if (sourceElement) {
-      options.source = sourceElement.innerHTML;
+      options.source = unescape(sourceElement.innerHTML);
       sourceElement.style.display = 'none';
     }
   }
@@ -2922,7 +2922,19 @@ function applyDefaults (options) {
   return options;
 }
 
-},{"events":7,"./highlighter":3,"./views/slideshowView":8,"./controller":9,"./utils":10,"./models/slideshow":11}],10:[function(require,module,exports){
+function unescape (source) {
+  source = source.replace(/&[l|g]t;/g,
+    function (match) {
+      return match === '&lt;' ? '<' : '>';
+    });
+
+  source = source.replace(/&amp;/g, '&');
+  source = source.replace(/&quot;/g, '"');
+
+  return source;
+}
+
+},{"events":7,"./highlighter":3,"./models/slideshow":8,"./views/slideshowView":9,"./controller":10,"./utils":11}],11:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -2978,7 +2990,7 @@ exports.getLocationHash = function () {
 exports.setLocationHash = function (hash) {
   window.location.hash = hash;
 };
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var utils = require('./utils');
 
 module.exports = Controller;
@@ -3172,7 +3184,151 @@ function addTouchEventListeners (events) {
   });
 }
 
-},{"./utils":10}],8:[function(require,module,exports){
+},{"./utils":11}],8:[function(require,module,exports){
+var Navigation = require('./slideshow/navigation')
+  , Events = require('./slideshow/events')
+  , utils = require('../utils')
+  , Slide = require('./slide')
+  , Parser = require('../parser')
+  ;
+
+module.exports = Slideshow;
+
+function Slideshow (events, options) {
+  var self = this
+    , slides = []
+    ;
+
+  options = options || {};
+
+  // Extend slideshow functionality
+  Events.call(self, events);
+  Navigation.call(self, events);
+
+  self.loadFromString = loadFromString;
+  self.getSlides = getSlides;
+  self.getSlideCount = getSlideCount;
+  self.getSlideByName = getSlideByName;
+
+  self.togglePresenterMode = togglePresenterMode;
+  self.toggleHelp = toggleHelp;
+  self.toggleFullscreen = toggleFullscreen;
+  self.createClone = createClone;
+
+  self.resetTimer = resetTimer;
+
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
+
+  loadFromString(options.source);
+
+  function loadFromString (source) {
+    source = source || '';
+
+    slides = createSlides(source);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  }
+
+  function getSlides () {
+    return slides.map(function (slide) { return slide; });
+  }
+
+  function getSlideCount () {
+    return slides.length;
+  }
+
+  function getSlideByName (name) {
+    return slides.byName[name];
+  }
+
+  function togglePresenterMode () {
+    events.emit('togglePresenterMode');
+  }
+
+  function toggleHelp () {
+    events.emit('toggleHelp');
+  }
+
+  function toggleFullscreen () {
+    events.emit('toggleFullscreen');
+  }
+
+  function createClone () {
+    events.emit('createClone');
+  }
+
+  function resetTimer () {
+    events.emit('resetTimer');
+  }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
+  }
+}
+
+function createSlides (slideshowSource) {
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
+    , byName = {}
+    , layoutSlide
+    ;
+
+  slides.byName = {};
+
+  parsedSlides.forEach(function (slide, i) {
+    var template, slideViewModel;
+
+    if (slide.properties.continued === 'true' && i > 0) {
+      template = slides[slides.length - 1];
+    }
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
+    }
+    else if (slide.properties.layout === 'false') {
+      layoutSlide = undefined;
+    }
+    else if (layoutSlide && slide.properties.layout !== 'true') {
+      template = layoutSlide;
+    }
+
+    slideViewModel = new Slide(slides.length + 1, slide, template);
+
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
+    }
+
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
+    }
+
+    if (slide.properties.layout !== 'true') {
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
+      }
+    }
+  });
+
+  return slides;
+}
+
+function expandVariables (slides) {
+  slides.forEach(function (slide) {
+    slide.expandVariables();
+  });
+}
+
+},{"./slideshow/navigation":12,"./slideshow/events":13,"../utils":11,"../parser":14,"./slide":15}],9:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -3500,230 +3656,7 @@ SlideshowView.prototype.scaleElements = function () {
   self.scaler.scaleToFit(self.pauseElement, self.containerElement);
 };
 
-},{"./slideView":12,"../scaler":13,"../resources":5,"../utils":10}],11:[function(require,module,exports){
-var Navigation = require('./slideshow/navigation')
-  , Events = require('./slideshow/events')
-  , utils = require('../utils')
-  , Slide = require('./slide')
-  , Parser = require('../parser')
-  ;
-
-module.exports = Slideshow;
-
-function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
-
-  options = options || {};
-
-  // Extend slideshow functionality
-  Events.call(self, events);
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-
-  self.togglePresenterMode = togglePresenterMode;
-  self.toggleHelp = toggleHelp;
-  self.toggleFullscreen = toggleFullscreen;
-  self.createClone = createClone;
-
-  self.resetTimer = resetTimer;
-
-  self.getRatio = getOrDefault('ratio', '4:3');
-  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
-  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
-
-  function togglePresenterMode () {
-    events.emit('togglePresenterMode');
-  }
-
-  function toggleHelp () {
-    events.emit('toggleHelp');
-  }
-
-  function toggleFullscreen () {
-    events.emit('toggleFullscreen');
-  }
-
-  function createClone () {
-    events.emit('createClone');
-  }
-
-  function resetTimer () {
-    events.emit('resetTimer');
-  }
-
-  function getOrDefault (key, defaultValue) {
-    return function () {
-      if (options[key] === undefined) {
-        return defaultValue;
-      }
-
-      return options[key];
-    };
-  }
-}
-
-function createSlides (slideshowSource) {
-  var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource)
-    , slides = []
-    , byName = {}
-    , layoutSlide
-    ;
-
-  slides.byName = {};
-
-  parsedSlides.forEach(function (slide, i) {
-    var template, slideViewModel;
-
-    if (slide.properties.continued === 'true' && i > 0) {
-      template = slides[slides.length - 1];
-    }
-    else if (byName[slide.properties.template]) {
-      template = byName[slide.properties.template];
-    }
-    else if (slide.properties.layout === 'false') {
-      layoutSlide = undefined;
-    }
-    else if (layoutSlide && slide.properties.layout !== 'true') {
-      template = layoutSlide;
-    }
-
-    slideViewModel = new Slide(slides.length + 1, slide, template);
-
-    if (slide.properties.layout === 'true') {
-      layoutSlide = slideViewModel;
-    }
-
-    if (slide.properties.name) {
-      byName[slide.properties.name] = slideViewModel;
-    }
-
-    if (slide.properties.layout !== 'true') {
-      slides.push(slideViewModel);
-      if (slide.properties.name) {
-        slides.byName[slide.properties.name] = slideViewModel;
-      }
-    }
-  });
-
-  return slides;
-}
-
-function expandVariables (slides) {
-  slides.forEach(function (slide) {
-    slide.expandVariables();
-  });
-}
-
-},{"./slideshow/navigation":14,"../utils":10,"./slide":15,"../parser":16,"./slideshow/events":17}],13:[function(require,module,exports){
-var referenceWidth = 908
-  , referenceHeight = 681
-  , referenceRatio = referenceWidth / referenceHeight
-  ;
-
-module.exports = Scaler;
-
-function Scaler (events, slideshow) {
-  var self = this;
-
-  self.events = events;
-  self.slideshow = slideshow;
-  self.ratio = getRatio(slideshow);
-  self.dimensions = getDimensions(self.ratio);
-
-  self.events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('ratio')) {
-      self.ratio = getRatio(slideshow);
-      self.dimensions = getDimensions(self.ratio);
-    }
-  });
-}
-
-Scaler.prototype.scaleToFit = function (element, container) {
-  var self = this
-    , containerHeight = container.clientHeight
-    , containerWidth = container.clientWidth
-    , scale
-    , scaledWidth
-    , scaledHeight
-    , ratio = self.ratio
-    , dimensions = self.dimensions
-    , direction
-    , left
-    , top
-    ;
-
-  if (containerWidth / ratio.width > containerHeight / ratio.height) {
-    scale = containerHeight / dimensions.height;
-  }
-  else {
-    scale = containerWidth / dimensions.width;
-  }
-
-  scaledWidth = dimensions.width * scale;
-  scaledHeight = dimensions.height * scale;
-
-  left = (containerWidth - scaledWidth) / 2;
-  top = (containerHeight - scaledHeight) / 2;
-
-  element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  element.style.MozTransform = 'scale(' + scale + ')';
-  element.style.left = Math.max(left, 0) + 'px';
-  element.style.top = Math.max(top, 0) + 'px';
-};
-
-function getRatio (slideshow) {
-  var ratioComponents = slideshow.getRatio().split(':')
-    , ratio
-    ;
-
-  ratio = {
-    width: parseInt(ratioComponents[0], 10)
-  , height: parseInt(ratioComponents[1], 10)
-  };
-
-  ratio.ratio = ratio.width / ratio.height;
-
-  return ratio;
-}
-
-function getDimensions (ratio) {
-  return {
-    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
-  , height: referenceHeight
-  };
-}
-
-},{}],14:[function(require,module,exports){
+},{"./slideView":16,"../scaler":17,"../resources":5,"../utils":11}],12:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3862,6 +3795,110 @@ function Navigation (events) {
   }
 }
 
+},{}],13:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+
+module.exports = Events;
+
+function Events (events) {
+  var self = this
+    , externalEvents = new EventEmitter()
+    ;
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
+}
+
+},{"events":7}],17:[function(require,module,exports){
+var referenceWidth = 908
+  , referenceHeight = 681
+  , referenceRatio = referenceWidth / referenceHeight
+  ;
+
+module.exports = Scaler;
+
+function Scaler (events, slideshow) {
+  var self = this;
+
+  self.events = events;
+  self.slideshow = slideshow;
+  self.ratio = getRatio(slideshow);
+  self.dimensions = getDimensions(self.ratio);
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.ratio = getRatio(slideshow);
+      self.dimensions = getDimensions(self.ratio);
+    }
+  });
+}
+
+Scaler.prototype.scaleToFit = function (element, container) {
+  var self = this
+    , containerHeight = container.clientHeight
+    , containerWidth = container.clientWidth
+    , scale
+    , scaledWidth
+    , scaledHeight
+    , ratio = self.ratio
+    , dimensions = self.dimensions
+    , direction
+    , left
+    , top
+    ;
+
+  if (containerWidth / ratio.width > containerHeight / ratio.height) {
+    scale = containerHeight / dimensions.height;
+  }
+  else {
+    scale = containerWidth / dimensions.width;
+  }
+
+  scaledWidth = dimensions.width * scale;
+  scaledHeight = dimensions.height * scale;
+
+  left = (containerWidth - scaledWidth) / 2;
+  top = (containerHeight - scaledHeight) / 2;
+
+  element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  element.style.MozTransform = 'scale(' + scale + ')';
+  element.style.left = Math.max(left, 0) + 'px';
+  element.style.top = Math.max(top, 0) + 'px';
+};
+
+function getRatio (slideshow) {
+  var ratioComponents = slideshow.getRatio().split(':')
+    , ratio
+    ;
+
+  ratio = {
+    width: parseInt(ratioComponents[0], 10)
+  , height: parseInt(ratioComponents[1], 10)
+  };
+
+  ratio.ratio = ratio.width / ratio.height;
+
+  return ratio;
+}
+
+function getDimensions (ratio) {
+  return {
+    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
+  , height: referenceHeight
+  };
+}
+
 },{}],15:[function(require,module,exports){
 module.exports = Slide;
 
@@ -3869,7 +3906,7 @@ function Slide (slideNo, slide, template) {
   var self = this;
 
   self.properties = slide.properties || {};
-  self.source = slide.source || '';
+  self.content = slide.content || [];
   self.notes = slide.notes || '';
   self.number = slideNo;
 
@@ -3882,7 +3919,7 @@ function Slide (slideNo, slide, template) {
 
 function inherit (slide, template) {
   inheritProperties(slide, template);
-  inheritSource(slide, template);
+  inheritContent(slide, template);
   inheritNotes(slide, template);
 }
 
@@ -3914,16 +3951,16 @@ function ignoreProperty (property) {
     property === 'layout';
 }
 
-function inheritSource (slide, template) {
+function inheritContent (slide, template) {
   var expandedVariables;
 
-  slide.properties.content = slide.source;
-  slide.source = template.source;
+  slide.properties.content = slide.content.slice();
+  slide.content = template.content.slice();
 
   expandedVariables = slide.expandVariables(/* contentOnly: */ true);
 
   if (expandedVariables.content === undefined) {
-    slide.source += slide.properties.content;
+    slide.content = slide.content.concat(slide.properties.content);
   }
 
   delete slide.properties.content;
@@ -3935,64 +3972,198 @@ function inheritNotes (slide, template) {
   }
 }
 
-Slide.prototype.expandVariables = function (contentOnly) {
+Slide.prototype.expandVariables = function (contentOnly, content, expandResult) {
   var properties = this.properties
-    , expandResult = {}
+    , i
     ;
 
-  this.source = this.source.replace(/(\\)?(\{\{([^\}\n]+)\}\})/g,
-    function (match, escaped, unescapedMatch, property) {
-      var propertyName = property.trim()
-        , propertyValue
-        ;
+  content = content !== undefined ? content : this.content;
+  expandResult = expandResult || {};
 
-      if (escaped) {
-        return contentOnly ? match[0] : unescapedMatch;
-      }
+  for (i = 0; i < content.length; ++i) {
+    if (typeof content[i] === 'string') {
+      content[i] = content[i].replace(/(\\)?(\{\{([^\}\n]+)\}\})/g, expand);
+    }
+    else {
+      this.expandVariables(contentOnly, content[i].content, expandResult);
+    }
+  }
 
-      if (contentOnly && propertyName !== 'content') {
-        return match;
-      }
+  function expand (match, escaped, unescapedMatch, property) {
+    var propertyName = property.trim()
+      , propertyValue
+      ;
 
-      propertyValue = properties[propertyName];
+    if (escaped) {
+      return contentOnly ? match[0] : unescapedMatch;
+    }
 
-      if (propertyValue !== undefined) {
-        expandResult[propertyName] = propertyValue;
-        return propertyValue;
-      }
+    if (contentOnly && propertyName !== 'content') {
+      return match;
+    }
 
-      return propertyName === 'content' ? '' : unescapedMatch;
-    });
+    propertyValue = properties[propertyName];
+
+    if (propertyValue !== undefined) {
+      expandResult[propertyName] = propertyValue;
+      return propertyValue;
+    }
+
+    return propertyName === 'content' ? '' : unescapedMatch;
+  }
 
   return expandResult;
 };
 
-},{}],17:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
 
-module.exports = Events;
+},{}],14:[function(require,module,exports){
+(function(){var Lexer = require('./lexer');
 
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
+module.exports = Parser;
 
-  externalEvents.setMaxListeners(0);
+function Parser () { }
 
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
+/*
+ *  Parses source string into list of slides.
+ *
+ *  Output format:
+ *
+ *  [
+ *    // Per slide
+ *    {
+ *      // Properties
+ *      properties: {
+ *        name: 'value'
+ *      },
+ *      // Notes (optional, same format as content list)
+ *      notes: [...],
+ *      content: [
+ *        // Any content but content classes are represented as strings
+ *        'plain text ',
+ *        // Content classes are represented as objects
+ *        { block: false, class: 'the-class', content: [...] },
+ *        { block: true, class: 'the-class', content: [...] },
+ *        ...
+ *      ]
+ *    },
+ *    ...
+ *  ]
+ */
+Parser.prototype.parse = function (src) {
+  var lexer = new Lexer(),
+      tokens = lexer.lex(src),
+      slides = [],
 
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
+      // The last item on the stack contains the current slide or
+      // content class we're currently appending content to.
+      stack = [createSlide()];
+
+  tokens.forEach(function (token) {
+    switch (token.type) {
+      case 'text':
+      case 'code':
+      case 'fences':
+        // Code, fenced code and all other content except for content
+        // classes is appended to its parent as string literals, and
+        // is only included in the parse process in order to reason about
+        // structure (like ignoring a slide separator inside fenced code).
+        appendTo(stack[stack.length - 1], token.text);
+        break;
+      case 'content_start':
+        // Entering content class, so create stack entry for appending
+        // upcoming content to.
+        //
+        // Lexer handles open/close bracket balance, so there's no need
+        // to worry about there being a matching closing bracket.
+        stack.push(createContentClass(token));
+        break;
+      case 'content_end':
+        // Exiting content class, so remove entry from stack and
+        // append to previous item (outer content class or slide).
+        appendTo(stack[stack.length - 2], stack[stack.length - 1]);
+        stack.pop();
+        break;
+      case 'separator':
+        // Slide separator (--- or --), so add current slide to list of
+        // slides and re-initialize stack with new, blank slide.
+        slides.push(stack[0]);
+        stack = [createSlide()];
+        // Tag the new slide as a continued slide if the separator
+        // used was -- instead of --- (2 vs. 3 dashes).
+        stack[0].properties.continued = (token.text === '--').toString();
+        break;
+      case 'notes_separator':
+        // Notes separator (???), so create empty content list on slide
+        // in which all remaining slide content will be put.
+        stack[0].notes = [];
+        break;
+    }
   });
+
+  // Push current slide to list of slides.
+  slides.push(stack[0]);
+
+  slides.forEach(function (slide) {
+    slide.content[0] = extractProperties(slide.content[0], slide.properties);
+  });
+
+  return slides;
+};
+
+function createSlide () {
+  return {
+    content: [],
+    properties: {
+      continued: 'false'
+    }
+  };
 }
 
-},{"events":7}],12:[function(require,module,exports){
+function createContentClass (token) {
+  return {
+    class: token.classes.join(' '),
+    block: token.block,
+    content: []
+  };
+}
+
+function appendTo (element, content) {
+  var target = element.content;
+
+  if (element.notes !== undefined) {
+    target = element.notes;
+  }
+
+  // If two string are added after one another, we can just as well
+  // go ahead and concatenate them into a single string.
+  var lastIdx = target.length - 1;
+  if (typeof target[lastIdx] === 'string' && typeof content === 'string') {
+    target[lastIdx] += content;
+  }
+  else {
+    target.push(content);
+  }
+}
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}
+
+})()
+},{"./lexer":18}],16:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -4118,7 +4289,7 @@ function createContentElement (events, slideshow, slide) {
 
   styleContentElement(slideshow, element, slide.properties);
 
-  element.innerHTML = converter.convertMarkdown(slide.source);
+  element.innerHTML = converter.convertMarkdown(slide.content);
   element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);
@@ -4191,94 +4362,7 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":18,"../utils":10,"../highlighter":3}],16:[function(require,module,exports){
-var Lexer = require('./lexer'),
-    converter = require('./converter');
-
-module.exports = Parser;
-
-function Parser () { }
-
-Parser.prototype.parse = function (src) {
-  var lexer = new Lexer(),
-      tokens = lexer.lex(src),
-      slides = [],
-      slide = createSlide(),
-      tag,
-      classes;
-
-  tokens.forEach(function (token) {
-    switch (token.type) {
-      case 'text':
-      case 'code':
-      case 'fences':
-        appendTo(slide, token.text);
-        break;
-      case 'content_start':
-        tag = token.block ? 'div' : 'span';
-        classes = token.classes.join(' ');
-        appendTo(slide, '&lt;' + tag + ' class="' + classes + '"&gt;');
-        break;
-      case 'content_end':
-        tag = token.block ? 'div' : 'span';
-        appendTo(slide, '&lt;/' + tag + '&gt;');
-        break;
-      case 'separator':
-        slides.push(slide);
-        slide = createSlide();
-        slide.properties.continued = (token.text === '--').toString();
-        break;
-      case 'notes_separator':
-        slide.notes = '';
-        break;
-    }
-  });
-
-  slides.push(slide);
-
-  slides.forEach(function (slide) {
-    slide.source = extractProperties(slide.source, slide.properties);
-  });
-
-  return slides;
-};
-
-function createSlide () {
-  return {
-    source: '', 
-    properties: { 
-      continued: 'false'
-    }
-  };
-}
-
-function appendTo (slide, content) {
-  if (slide.notes !== undefined) {
-    slide.notes += content;
-  }
-  else {
-    slide.source += content;
-  }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
-}
-
-},{"./lexer":19,"./converter":18}],19:[function(require,module,exports){
+},{"../converter":19,"../highlighter":3,"../utils":11}],18:[function(require,module,exports){
 module.exports = Lexer;
 
 var CODE = 1,
@@ -4409,41 +4493,47 @@ function getTextInBrackets (src, offset) {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var marked = require('marked')
   , converter = module.exports = {}
+  , element = document.createElement('div')
   ;
 
 marked.setOptions({
   gfm: true,
   tables: true,
   breaks: false,
-  pedantic: false,
+  pedantic: true,
   sanitize: false,
   smartLists: true,
   langPrefix: ''
 });
 
-converter.convertMarkdown = function (source) {
-  // Unescape block-quotes before conversion (&gt; => >)
-  source = source.replace(/(^|\n)( *)&gt;/g, '$1$2>');
+converter.convertMarkdown = function (content, insideContentClass) {
+  var i, tag, markdown = '', html;
 
-  // Perform the actual Markdown conversion
-  source = marked(source.replace(/^\s+/, ''));
+  for (i = 0; i < content.length; ++i) {
+    if (typeof content[i] === 'string') {
+      markdown += content[i];
+    }
+    else {
+      tag = content[i].block ? 'div' : 'span';
+      markdown += '<' + tag + ' class="' + content[i].class + '">';
+      markdown += this.convertMarkdown(content[i].content, true);
+      markdown += '</' + tag + '>';
+    }
+  }
 
-  // Unescape HTML escaped by the browser; &lt;, &gt;, ...
-  source = source.replace(/&[l|g]t;/g,
-    function (match) {
-      return match === '&lt;' ? '<' : '>';
-    });
+  html = marked(markdown.replace(/^\s+/, ''));
 
-  // ... and &amp;
-  source = source.replace(/&amp;/g, '&');
-  
-  // ... and &quot;
-  source = source.replace(/&quot;/g, '"');
+  if (insideContentClass) {
+    element.innerHTML = html;
+    if (element.children.length === 1 && element.children[0].tagName === 'P') {
+      html = element.children[0].innerHTML;
+    }
+  }
 
-  return source;
+  return html;
 };
 
 },{"marked":20}],20:[function(require,module,exports){
