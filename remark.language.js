@@ -3,7 +3,7 @@ Language: remark markdown flavor
 Author: Ole Petter Bang <olepbang@gmail.com>
 */
 
-hljs.LANGUAGES.remark = function(){
+hljs.registerLanguage('remark', function () {
   return {
     contains: [
       {
@@ -15,11 +15,11 @@ hljs.LANGUAGES.remark = function(){
         className: 'comment',
         begin: '^---?'
       },
-      { 
+      {
         className: 'string',
         begin: '^\\w+:'
       },
-      { 
+      {
         className: 'literal',
         begin: '\\{\\{', end: '\\}\\}'
       },
@@ -29,4 +29,4 @@ hljs.LANGUAGES.remark = function(){
       }
     ]
   };
-}();
+});
