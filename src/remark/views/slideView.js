@@ -180,6 +180,10 @@ function highlightCodeBlocks (content, slideshow) {
     ;
 
   codeBlocks.forEach(function (block) {
+    if (block.parentElement.tagName !== 'PRE') {
+      return;
+    }
+
     if (block.className === '') {
       block.className = slideshow.getHighlightLanguage();
     }
