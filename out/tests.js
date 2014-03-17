@@ -1,4 +1,16 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+require('should');
+require('sinon');
+require('./test/remark/api_test.js');
+require('./test/remark/controller_test.js');
+require('./test/remark/converter_test.js');
+require('./test/remark/lexer_test.js');
+require('./test/remark/models/slideshow_test.js');
+require('./test/remark/models/slide_test.js');
+require('./test/remark/parser_test.js');
+require('./test/remark/views/slideshowView_test.js');
+require('./test/remark/views/slideView_test.js');
+},{"./test/remark/api_test.js":2,"./test/remark/controller_test.js":3,"./test/remark/lexer_test.js":4,"./test/remark/models/slideshow_test.js":5,"./test/remark/parser_test.js":6,"./test/remark/views/slideshowView_test.js":7,"./test/remark/views/slideView_test.js":8,"./test/remark/models/slide_test.js":9,"./test/remark/converter_test.js":10,"should":11,"sinon":12}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -53,7 +65,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],2:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -239,45 +251,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":1}],3:[function(require,module,exports){
-require('should');
-require('sinon');
-require('./test/remark/api_test.js');
-require('./test/remark/controller_test.js');
-require('./test/remark/converter_test.js');
-require('./test/remark/lexer_test.js');
-require('./test/remark/models/slideshow_test.js');
-require('./test/remark/models/slide_test.js');
-require('./test/remark/parser_test.js');
-require('./test/remark/views/slideshowView_test.js');
-require('./test/remark/views/slideView_test.js');
-},{"./test/remark/api_test.js":4,"./test/remark/converter_test.js":5,"./test/remark/controller_test.js":6,"./test/remark/lexer_test.js":7,"./test/remark/models/slideshow_test.js":8,"./test/remark/parser_test.js":9,"./test/remark/views/slideshowView_test.js":10,"./test/remark/models/slide_test.js":11,"./test/remark/views/slideView_test.js":12,"should":13,"sinon":14}],5:[function(require,module,exports){
-var converter = require('../../src/remark/converter');
-
-describe('converter', function () {
-
-  describe('convertMarkdown', function () {
-    var convert = converter.convertMarkdown;
-
-    it('should unescape block-quote before conversion', function () {
-      convert('&gt; a block quote\n&gt; another block quote')
-        .should.equal('<blockquote>\n<p>a block quote\nanother block quote</p>\n</blockquote>\n');
-    });
-
-    it('should unescape HTML', function () {
-      convert('&lt;b class="test"&gt;a&lt;/b&gt;')
-        .should.equal('<p><b class="test">a</b></p>\n');
-    });
-
-    it('should unescape once HTML escaped twice in code tags', function () {
-      convert('<p><code>&amp;lt;p&amp;gt;a&amp;lt;/p&amp;gt;</code></p>')
-       .should.equal('<p><code>&lt;p&gt;a&lt;/p&gt;</code></p>');
-    });
-  });
-
-});
-
-},{"../../src/remark/converter":15}],7:[function(require,module,exports){
+},{"__browserify_process":13}],4:[function(require,module,exports){
 var Lexer = require('../../src/remark/lexer');
 
 describe('Lexer', function () {
@@ -392,7 +366,7 @@ describe('Lexer', function () {
 
 });
 
-},{"../../src/remark/lexer":16}],9:[function(require,module,exports){
+},{"../../src/remark/lexer":15}],6:[function(require,module,exports){
 var Parser = require('../../src/remark/parser');
 
 describe('Parser', function () {
@@ -548,7 +522,33 @@ describe('Parser', function () {
 
 });
 
-},{"../../src/remark/parser":17}],8:[function(require,module,exports){
+},{"../../src/remark/parser":16}],10:[function(require,module,exports){
+var converter = require('../../src/remark/converter');
+
+describe('converter', function () {
+
+  describe('convertMarkdown', function () {
+    var convert = converter.convertMarkdown;
+
+    it('should unescape block-quote before conversion', function () {
+      convert('&gt; a block quote\n&gt; another block quote')
+        .should.equal('<blockquote>\n<p>a block quote\nanother block quote</p>\n</blockquote>\n');
+    });
+
+    it('should unescape HTML', function () {
+      convert('&lt;b class="test"&gt;a&lt;/b&gt;')
+        .should.equal('<p><b class="test">a</b></p>\n');
+    });
+
+    it('should unescape once HTML escaped twice in code tags', function () {
+      convert('<p><code>&amp;lt;p&amp;gt;a&amp;lt;/p&amp;gt;</code></p>')
+       .should.equal('<p><code>&lt;p&gt;a&lt;/p&gt;</code></p>');
+    });
+  });
+
+});
+
+},{"../../src/remark/converter":17}],5:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , Slideshow = require('../../../src/remark/models/slideshow')
   , Slide = require('../../../src/remark/models/slide')
@@ -632,7 +632,115 @@ describe('Slideshow', function () {
   });
 });
 
-},{"events":2,"../../../src/remark/models/slideshow":18,"../../../src/remark/models/slide":19}],11:[function(require,module,exports){
+},{"events":14,"../../../src/remark/models/slideshow":18,"../../../src/remark/models/slide":19}],8:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , Slide = require('../../../src/remark/models/slide')
+  , SlideView = require('../../../src/remark/views/slideView')
+  , utils = require('../../../src/remark/utils')
+  ;
+
+describe('SlideView', function () {
+  var slideshow = {
+        getHighlightStyle: function () { return 'default'; }
+      , getSlides: function () { return []; }
+      }
+    , scaler = {
+        dimensions: {width: 10, height: 10}
+      }
+    ;
+
+  describe('background', function () {
+    it('should be set from background slide property', function () {
+      var slide = new Slide(1, {
+            source: '',
+            properties: {'background-image': 'url(image.jpg)'}
+          })
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+
+        slideView.contentElement.style.backgroundImage.should.match(/^url\(.*image\.jpg\)$/);
+    });
+  });
+
+  describe('classes', function () {
+    it('should contain "content" class by default', function () {
+      var slide = new Slide(1, {source: ''})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        , classes = utils.getClasses(slideView.contentElement)
+        ;
+
+      classes.should.include('remark-slide-content');
+    });
+
+    it('should contain additional classes from slide properties', function () {
+      var slide = new Slide(1, {
+            source: '',
+            properties: {'class': 'middle, center'}
+          })
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        , classes = utils.getClasses(slideView.contentElement)
+        ;
+
+      classes.should.include('remark-slide-content');
+      classes.should.include('middle');
+      classes.should.include('center');
+    });
+  });
+
+  describe('empty paragraph removal', function () {
+    it('should have empty paragraphs removed', function () {
+      var slide = new Slide(1, {source: '&lt;p&gt; &lt;/p&gt;'})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      slideView.contentElement.innerHTML.should.not.include('<p></p>');
+    });
+  });
+
+  describe('show slide', function () {
+    it('should set the slide visible', function () {
+      var slide = new Slide(1, {source: ''})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+
+        slideView.show();
+
+        var classes = utils.getClasses(slideView.containerElement);
+        classes.should.include('remark-visible');
+        classes.should.not.include('remark-fading');
+    });
+
+    it('should remove any fading element', function () {
+      var slide = new Slide(1, {source: ''})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+        utils.addClass(slideView.containerElement, 'remark-fading');
+
+        slideView.show();
+
+        var classes = utils.getClasses(slideView.containerElement);
+        classes.should.include('remark-visible');
+        classes.should.not.include('remark-fading');
+    });
+  });
+
+  describe('hide slide', function () {
+    it('should mark the slide as fading', function () {
+      var slide = new Slide(1, {source: ''})
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+        utils.addClass(slideView.containerElement, 'remark-visible');
+
+        slideView.hide();
+
+        var classes = utils.getClasses(slideView.containerElement);
+        classes.should.not.include('remark-visible');
+        classes.should.include('remark-fading');
+    });
+  });
+
+});
+
+},{"events":14,"../../../src/remark/models/slide":19,"../../../src/remark/views/slideView":20,"../../../src/remark/utils":21}],9:[function(require,module,exports){
 var Slide = require('../../../src/remark/models/slide');
 
 describe('Slide', function () {
@@ -747,115 +855,864 @@ describe('Slide', function () {
   });
 });
 
-},{"../../../src/remark/models/slide":19}],12:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , Slide = require('../../../src/remark/models/slide')
-  , SlideView = require('../../../src/remark/views/slideView')
-  , utils = require('../../../src/remark/utils')
-  ;
+},{"../../../src/remark/models/slide":19}],22:[function(require,module,exports){
+var events = require('events');
 
-describe('SlideView', function () {
-  var slideshow = {
-        getHighlightStyle: function () { return 'default'; }
-      , getSlides: function () { return []; }
+exports.isArray = isArray;
+exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
+exports.isRegExp = function(obj){return Object.prototype.toString.call(obj) === '[object RegExp]'};
+
+
+exports.print = function () {};
+exports.puts = function () {};
+exports.debug = function() {};
+
+exports.inspect = function(obj, showHidden, depth, colors) {
+  var seen = [];
+
+  var stylize = function(str, styleType) {
+    // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+    var styles =
+        { 'bold' : [1, 22],
+          'italic' : [3, 23],
+          'underline' : [4, 24],
+          'inverse' : [7, 27],
+          'white' : [37, 39],
+          'grey' : [90, 39],
+          'black' : [30, 39],
+          'blue' : [34, 39],
+          'cyan' : [36, 39],
+          'green' : [32, 39],
+          'magenta' : [35, 39],
+          'red' : [31, 39],
+          'yellow' : [33, 39] };
+
+    var style =
+        { 'special': 'cyan',
+          'number': 'blue',
+          'boolean': 'yellow',
+          'undefined': 'grey',
+          'null': 'bold',
+          'string': 'green',
+          'date': 'magenta',
+          // "name": intentionally not styling
+          'regexp': 'red' }[styleType];
+
+    if (style) {
+      return '\033[' + styles[style][0] + 'm' + str +
+             '\033[' + styles[style][1] + 'm';
+    } else {
+      return str;
+    }
+  };
+  if (! colors) {
+    stylize = function(str, styleType) { return str; };
+  }
+
+  function format(value, recurseTimes) {
+    // Provide a hook for user-specified inspect functions.
+    // Check that value is an object with an inspect function on it
+    if (value && typeof value.inspect === 'function' &&
+        // Filter out the util module, it's inspect function is special
+        value !== exports &&
+        // Also filter out any prototype objects using the circular check.
+        !(value.constructor && value.constructor.prototype === value)) {
+      return value.inspect(recurseTimes);
+    }
+
+    // Primitive types cannot have properties
+    switch (typeof value) {
+      case 'undefined':
+        return stylize('undefined', 'undefined');
+
+      case 'string':
+        var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                                 .replace(/'/g, "\\'")
+                                                 .replace(/\\"/g, '"') + '\'';
+        return stylize(simple, 'string');
+
+      case 'number':
+        return stylize('' + value, 'number');
+
+      case 'boolean':
+        return stylize('' + value, 'boolean');
+    }
+    // For some reason typeof null is "object", so special case here.
+    if (value === null) {
+      return stylize('null', 'null');
+    }
+
+    // Look up the keys of the object.
+    var visible_keys = Object_keys(value);
+    var keys = showHidden ? Object_getOwnPropertyNames(value) : visible_keys;
+
+    // Functions without properties can be shortcutted.
+    if (typeof value === 'function' && keys.length === 0) {
+      if (isRegExp(value)) {
+        return stylize('' + value, 'regexp');
+      } else {
+        var name = value.name ? ': ' + value.name : '';
+        return stylize('[Function' + name + ']', 'special');
       }
-    , scaler = {
-        dimensions: {width: 10, height: 10}
+    }
+
+    // Dates without properties can be shortcutted
+    if (isDate(value) && keys.length === 0) {
+      return stylize(value.toUTCString(), 'date');
+    }
+
+    var base, type, braces;
+    // Determine the object type
+    if (isArray(value)) {
+      type = 'Array';
+      braces = ['[', ']'];
+    } else {
+      type = 'Object';
+      braces = ['{', '}'];
+    }
+
+    // Make functions say that they are functions
+    if (typeof value === 'function') {
+      var n = value.name ? ': ' + value.name : '';
+      base = (isRegExp(value)) ? ' ' + value : ' [Function' + n + ']';
+    } else {
+      base = '';
+    }
+
+    // Make dates with properties first say the date
+    if (isDate(value)) {
+      base = ' ' + value.toUTCString();
+    }
+
+    if (keys.length === 0) {
+      return braces[0] + base + braces[1];
+    }
+
+    if (recurseTimes < 0) {
+      if (isRegExp(value)) {
+        return stylize('' + value, 'regexp');
+      } else {
+        return stylize('[Object]', 'special');
       }
-    ;
+    }
 
-  describe('background', function () {
-    it('should be set from background slide property', function () {
-      var slide = new Slide(1, {
-            source: '',
-            properties: {'background-image': 'url(image.jpg)'}
-          })
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
+    seen.push(value);
 
-        slideView.contentElement.style.backgroundImage.should.match(/^url\(.*image\.jpg\)$/);
+    var output = keys.map(function(key) {
+      var name, str;
+      if (value.__lookupGetter__) {
+        if (value.__lookupGetter__(key)) {
+          if (value.__lookupSetter__(key)) {
+            str = stylize('[Getter/Setter]', 'special');
+          } else {
+            str = stylize('[Getter]', 'special');
+          }
+        } else {
+          if (value.__lookupSetter__(key)) {
+            str = stylize('[Setter]', 'special');
+          }
+        }
+      }
+      if (visible_keys.indexOf(key) < 0) {
+        name = '[' + key + ']';
+      }
+      if (!str) {
+        if (seen.indexOf(value[key]) < 0) {
+          if (recurseTimes === null) {
+            str = format(value[key]);
+          } else {
+            str = format(value[key], recurseTimes - 1);
+          }
+          if (str.indexOf('\n') > -1) {
+            if (isArray(value)) {
+              str = str.split('\n').map(function(line) {
+                return '  ' + line;
+              }).join('\n').substr(2);
+            } else {
+              str = '\n' + str.split('\n').map(function(line) {
+                return '   ' + line;
+              }).join('\n');
+            }
+          }
+        } else {
+          str = stylize('[Circular]', 'special');
+        }
+      }
+      if (typeof name === 'undefined') {
+        if (type === 'Array' && key.match(/^\d+$/)) {
+          return str;
+        }
+        name = JSON.stringify('' + key);
+        if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+          name = name.substr(1, name.length - 2);
+          name = stylize(name, 'name');
+        } else {
+          name = name.replace(/'/g, "\\'")
+                     .replace(/\\"/g, '"')
+                     .replace(/(^"|"$)/g, "'");
+          name = stylize(name, 'string');
+        }
+      }
+
+      return name + ': ' + str;
     });
+
+    seen.pop();
+
+    var numLinesEst = 0;
+    var length = output.reduce(function(prev, cur) {
+      numLinesEst++;
+      if (cur.indexOf('\n') >= 0) numLinesEst++;
+      return prev + cur.length + 1;
+    }, 0);
+
+    if (length > 50) {
+      output = braces[0] +
+               (base === '' ? '' : base + '\n ') +
+               ' ' +
+               output.join(',\n  ') +
+               ' ' +
+               braces[1];
+
+    } else {
+      output = braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+    }
+
+    return output;
+  }
+  return format(obj, (typeof depth === 'undefined' ? 2 : depth));
+};
+
+
+function isArray(ar) {
+  return ar instanceof Array ||
+         Array.isArray(ar) ||
+         (ar && ar !== Object.prototype && isArray(ar.__proto__));
+}
+
+
+function isRegExp(re) {
+  return re instanceof RegExp ||
+    (typeof re === 'object' && Object.prototype.toString.call(re) === '[object RegExp]');
+}
+
+
+function isDate(d) {
+  if (d instanceof Date) return true;
+  if (typeof d !== 'object') return false;
+  var properties = Date.prototype && Object_getOwnPropertyNames(Date.prototype);
+  var proto = d.__proto__ && Object_getOwnPropertyNames(d.__proto__);
+  return JSON.stringify(proto) === JSON.stringify(properties);
+}
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+exports.log = function (msg) {};
+
+exports.pump = null;
+
+var Object_keys = Object.keys || function (obj) {
+    var res = [];
+    for (var key in obj) res.push(key);
+    return res;
+};
+
+var Object_getOwnPropertyNames = Object.getOwnPropertyNames || function (obj) {
+    var res = [];
+    for (var key in obj) {
+        if (Object.hasOwnProperty.call(obj, key)) res.push(key);
+    }
+    return res;
+};
+
+var Object_create = Object.create || function (prototype, properties) {
+    // from es5-shim
+    var object;
+    if (prototype === null) {
+        object = { '__proto__' : null };
+    }
+    else {
+        if (typeof prototype !== 'object') {
+            throw new TypeError(
+                'typeof prototype[' + (typeof prototype) + '] != \'object\''
+            );
+        }
+        var Type = function () {};
+        Type.prototype = prototype;
+        object = new Type();
+        object.__proto__ = prototype;
+    }
+    if (typeof properties !== 'undefined' && Object.defineProperties) {
+        Object.defineProperties(object, properties);
+    }
+    return object;
+};
+
+exports.inherits = function(ctor, superCtor) {
+  ctor.super_ = superCtor;
+  ctor.prototype = Object_create(superCtor.prototype, {
+    constructor: {
+      value: ctor,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
   });
+};
 
-  describe('classes', function () {
-    it('should contain "content" class by default', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        , classes = utils.getClasses(slideView.contentElement)
-        ;
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (typeof f !== 'string') {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(exports.inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
 
-      classes.should.include('remark-slide-content');
-    });
-
-    it('should contain additional classes from slide properties', function () {
-      var slide = new Slide(1, {
-            source: '',
-            properties: {'class': 'middle, center'}
-          })
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        , classes = utils.getClasses(slideView.contentElement)
-        ;
-
-      classes.should.include('remark-slide-content');
-      classes.should.include('middle');
-      classes.should.include('center');
-    });
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j': return JSON.stringify(args[i++]);
+      default:
+        return x;
+    }
   });
+  for(var x = args[i]; i < len; x = args[++i]){
+    if (x === null || typeof x !== 'object') {
+      str += ' ' + x;
+    } else {
+      str += ' ' + exports.inspect(x);
+    }
+  }
+  return str;
+};
 
-  describe('empty paragraph removal', function () {
-    it('should have empty paragraphs removed', function () {
-      var slide = new Slide(1, {source: '&lt;p&gt; &lt;/p&gt;'})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+},{"events":14}],23:[function(require,module,exports){
+(function(){// UTILITY
+var util = require('util');
+var Buffer = require("buffer").Buffer;
+var pSlice = Array.prototype.slice;
 
-      slideView.contentElement.innerHTML.should.not.include('<p></p>');
-    });
+function objectKeys(object) {
+  if (Object.keys) return Object.keys(object);
+  var result = [];
+  for (var name in object) {
+    if (Object.prototype.hasOwnProperty.call(object, name)) {
+      result.push(name);
+    }
+  }
+  return result;
+}
+
+// 1. The assert module provides functions that throw
+// AssertionError's when particular conditions are not met. The
+// assert module must conform to the following interface.
+
+var assert = module.exports = ok;
+
+// 2. The AssertionError is defined in assert.
+// new assert.AssertionError({ message: message,
+//                             actual: actual,
+//                             expected: expected })
+
+assert.AssertionError = function AssertionError(options) {
+  this.name = 'AssertionError';
+  this.message = options.message;
+  this.actual = options.actual;
+  this.expected = options.expected;
+  this.operator = options.operator;
+  var stackStartFunction = options.stackStartFunction || fail;
+
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, stackStartFunction);
+  }
+};
+util.inherits(assert.AssertionError, Error);
+
+function replacer(key, value) {
+  if (value === undefined) {
+    return '' + value;
+  }
+  if (typeof value === 'number' && (isNaN(value) || !isFinite(value))) {
+    return value.toString();
+  }
+  if (typeof value === 'function' || value instanceof RegExp) {
+    return value.toString();
+  }
+  return value;
+}
+
+function truncate(s, n) {
+  if (typeof s == 'string') {
+    return s.length < n ? s : s.slice(0, n);
+  } else {
+    return s;
+  }
+}
+
+assert.AssertionError.prototype.toString = function() {
+  if (this.message) {
+    return [this.name + ':', this.message].join(' ');
+  } else {
+    return [
+      this.name + ':',
+      truncate(JSON.stringify(this.actual, replacer), 128),
+      this.operator,
+      truncate(JSON.stringify(this.expected, replacer), 128)
+    ].join(' ');
+  }
+};
+
+// assert.AssertionError instanceof Error
+
+assert.AssertionError.__proto__ = Error.prototype;
+
+// At present only the three keys mentioned above are used and
+// understood by the spec. Implementations or sub modules can pass
+// other keys to the AssertionError's constructor - they will be
+// ignored.
+
+// 3. All of the following functions must throw an AssertionError
+// when a corresponding condition is not met, with a message that
+// may be undefined if not provided.  All assertion methods provide
+// both the actual and expected values to the assertion error for
+// display purposes.
+
+function fail(actual, expected, message, operator, stackStartFunction) {
+  throw new assert.AssertionError({
+    message: message,
+    actual: actual,
+    expected: expected,
+    operator: operator,
+    stackStartFunction: stackStartFunction
   });
+}
 
-  describe('show slide', function () {
-    it('should set the slide visible', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
+// EXTENSION! allows for well behaved errors defined elsewhere.
+assert.fail = fail;
 
-        slideView.show();
+// 4. Pure assertion tests whether a value is truthy, as determined
+// by !!guard.
+// assert.ok(guard, message_opt);
+// This statement is equivalent to assert.equal(true, guard,
+// message_opt);. To test strictly for the value true, use
+// assert.strictEqual(true, guard, message_opt);.
 
-        var classes = utils.getClasses(slideView.containerElement);
-        classes.should.include('remark-visible');
-        classes.should.not.include('remark-fading');
+function ok(value, message) {
+  if (!!!value) fail(value, true, message, '==', assert.ok);
+}
+assert.ok = ok;
+
+// 5. The equality assertion tests shallow, coercive equality with
+// ==.
+// assert.equal(actual, expected, message_opt);
+
+assert.equal = function equal(actual, expected, message) {
+  if (actual != expected) fail(actual, expected, message, '==', assert.equal);
+};
+
+// 6. The non-equality assertion tests for whether two objects are not equal
+// with != assert.notEqual(actual, expected, message_opt);
+
+assert.notEqual = function notEqual(actual, expected, message) {
+  if (actual == expected) {
+    fail(actual, expected, message, '!=', assert.notEqual);
+  }
+};
+
+// 7. The equivalence assertion tests a deep equality relation.
+// assert.deepEqual(actual, expected, message_opt);
+
+assert.deepEqual = function deepEqual(actual, expected, message) {
+  if (!_deepEqual(actual, expected)) {
+    fail(actual, expected, message, 'deepEqual', assert.deepEqual);
+  }
+};
+
+function _deepEqual(actual, expected) {
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
+    return true;
+
+  } else if (Buffer.isBuffer(actual) && Buffer.isBuffer(expected)) {
+    if (actual.length != expected.length) return false;
+
+    for (var i = 0; i < actual.length; i++) {
+      if (actual[i] !== expected[i]) return false;
+    }
+
+    return true;
+
+  // 7.2. If the expected value is a Date object, the actual value is
+  // equivalent if it is also a Date object that refers to the same time.
+  } else if (actual instanceof Date && expected instanceof Date) {
+    return actual.getTime() === expected.getTime();
+
+  // 7.3. Other pairs that do not both pass typeof value == 'object',
+  // equivalence is determined by ==.
+  } else if (typeof actual != 'object' && typeof expected != 'object') {
+    return actual == expected;
+
+  // 7.4. For all other Object pairs, including Array objects, equivalence is
+  // determined by having the same number of owned properties (as verified
+  // with Object.prototype.hasOwnProperty.call), the same set of keys
+  // (although not necessarily the same order), equivalent values for every
+  // corresponding key, and an identical 'prototype' property. Note: this
+  // accounts for both named and indexed properties on Arrays.
+  } else {
+    return objEquiv(actual, expected);
+  }
+}
+
+function isUndefinedOrNull(value) {
+  return value === null || value === undefined;
+}
+
+function isArguments(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+}
+
+function objEquiv(a, b) {
+  if (isUndefinedOrNull(a) || isUndefinedOrNull(b))
+    return false;
+  // an identical 'prototype' property.
+  if (a.prototype !== b.prototype) return false;
+  //~~~I've managed to break Object.keys through screwy arguments passing.
+  //   Converting to array solves the problem.
+  if (isArguments(a)) {
+    if (!isArguments(b)) {
+      return false;
+    }
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return _deepEqual(a, b);
+  }
+  try {
+    var ka = objectKeys(a),
+        kb = objectKeys(b),
+        key, i;
+  } catch (e) {//happens when one is a string literal and the other isn't
+    return false;
+  }
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length != kb.length)
+    return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] != kb[i])
+      return false;
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!_deepEqual(a[key], b[key])) return false;
+  }
+  return true;
+}
+
+// 8. The non-equivalence assertion tests for any deep inequality.
+// assert.notDeepEqual(actual, expected, message_opt);
+
+assert.notDeepEqual = function notDeepEqual(actual, expected, message) {
+  if (_deepEqual(actual, expected)) {
+    fail(actual, expected, message, 'notDeepEqual', assert.notDeepEqual);
+  }
+};
+
+// 9. The strict equality assertion tests strict equality, as determined by ===.
+// assert.strictEqual(actual, expected, message_opt);
+
+assert.strictEqual = function strictEqual(actual, expected, message) {
+  if (actual !== expected) {
+    fail(actual, expected, message, '===', assert.strictEqual);
+  }
+};
+
+// 10. The strict non-equality assertion tests for strict inequality, as
+// determined by !==.  assert.notStrictEqual(actual, expected, message_opt);
+
+assert.notStrictEqual = function notStrictEqual(actual, expected, message) {
+  if (actual === expected) {
+    fail(actual, expected, message, '!==', assert.notStrictEqual);
+  }
+};
+
+function expectedException(actual, expected) {
+  if (!actual || !expected) {
+    return false;
+  }
+
+  if (expected instanceof RegExp) {
+    return expected.test(actual);
+  } else if (actual instanceof expected) {
+    return true;
+  } else if (expected.call({}, actual) === true) {
+    return true;
+  }
+
+  return false;
+}
+
+function _throws(shouldThrow, block, expected, message) {
+  var actual;
+
+  if (typeof expected === 'string') {
+    message = expected;
+    expected = null;
+  }
+
+  try {
+    block();
+  } catch (e) {
+    actual = e;
+  }
+
+  message = (expected && expected.name ? ' (' + expected.name + ').' : '.') +
+            (message ? ' ' + message : '.');
+
+  if (shouldThrow && !actual) {
+    fail('Missing expected exception' + message);
+  }
+
+  if (!shouldThrow && expectedException(actual, expected)) {
+    fail('Got unwanted exception' + message);
+  }
+
+  if ((shouldThrow && actual && expected &&
+      !expectedException(actual, expected)) || (!shouldThrow && actual)) {
+    throw actual;
+  }
+}
+
+// 11. Expected to throw an error:
+// assert.throws(block, Error_opt, message_opt);
+
+assert.throws = function(block, /*optional*/error, /*optional*/message) {
+  _throws.apply(this, [true].concat(pSlice.call(arguments)));
+};
+
+// EXTENSION! This is annoying to write outside this module.
+assert.doesNotThrow = function(block, /*optional*/error, /*optional*/message) {
+  _throws.apply(this, [false].concat(pSlice.call(arguments)));
+};
+
+assert.ifError = function(err) { if (err) {throw err;}};
+
+})()
+},{"util":22,"buffer":24}],21:[function(require,module,exports){
+exports.addClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .concat([className])
+    .join(' ');
+};
+
+exports.removeClass = function (element, className) {
+  element.className = exports.getClasses(element)
+    .filter(function (klass) { return klass !== className; })
+    .join(' ');
+};
+
+exports.toggleClass = function (element, className) {
+  var classes = exports.getClasses(element),
+      index = classes.indexOf(className);
+
+  if (index !== -1) {
+    classes.splice(index, 1);
+  }
+  else {
+    classes.push(className);
+  }
+
+  element.className = classes.join(' ');
+};
+
+exports.getClasses = function (element) {
+  return element.className
+    .split(' ')
+    .filter(function (s) { return s !== ''; });
+};
+
+exports.getPrefixedProperty = function (element, propertyName) {
+  var capitalizedPropertName = propertyName[0].toUpperCase() +
+    propertyName.slice(1);
+
+  return element[propertyName] || element['moz' + capitalizedPropertName] ||
+    element['webkit' + capitalizedPropertName];
+};
+
+exports.getHTMLElement = function () {
+  return document.getElementsByTagName('html')[0];
+};
+
+exports.getBodyElement = function () {
+  return document.body;
+};
+
+exports.getLocationHash = function () {
+  return window.location.hash;
+};
+
+exports.setLocationHash = function (hash) {
+  window.location.hash = hash;
+};
+},{}],15:[function(require,module,exports){
+module.exports = Lexer;
+
+var CODE = 1,
+    CONTENT = 2,
+    FENCES = 3,
+    SEPARATOR = 4,
+    NOTES_SEPARATOR = 5;
+
+var regexByName = {
+    CODE: /(?:^|\n)( {4}[^\n]+\n*)+/,
+    CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
+    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/,
+    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
+    NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
+  };
+
+var block = replace(/CODE|CONTENT|FENCES|SEPARATOR|NOTES_SEPARATOR/, regexByName),
+    inline = replace(/CODE|CONTENT|FENCES/, regexByName);
+
+function Lexer () { }
+
+Lexer.prototype.lex = function (src) {
+  var tokens = lex(src, block),
+      i;
+
+  for (i = tokens.length - 2; i >= 0; i--) {
+    if (tokens[i].type === 'text' && tokens[i+1].type === 'text') {
+      tokens[i].text += tokens[i+1].text;
+      tokens.splice(i+1, 1);
+    }
+  }
+
+  return tokens;
+};
+
+function lex (src, regex, tokens) {
+  var cap, text;
+
+  tokens = tokens || [];
+
+  while ((cap = regex.exec(src)) !== null) {
+    if (cap.index > 0) {
+      tokens.push({
+        type: 'text',
+        text: src.substring(0, cap.index)
+      });
+    }
+
+    if (cap[CODE]) {
+      tokens.push({
+        type: 'code',
+        text: cap[0]
+      });
+    }
+    else if (cap[FENCES]) {
+      tokens.push({
+        type: 'fences',
+        text: cap[0]
+      });
+    }
+    else if (cap[SEPARATOR]) {
+      tokens.push({
+        type: 'separator',
+        text: cap[SEPARATOR]
+      });
+    }
+    else if (cap[NOTES_SEPARATOR]) {
+      tokens.push({
+        type: 'notes_separator',
+        text: cap[NOTES_SEPARATOR]
+      });
+    }
+    else if (cap[CONTENT]) {
+      text = getTextInBrackets(src, cap.index + cap[0].length);
+      if (text !== undefined) {
+        src = src.substring(text.length + 1);
+        tokens.push({
+          type: 'content_start',
+          classes: cap[CONTENT].substring(1).split('.'),
+          block: text.indexOf('\n') !== -1
+        });
+        lex(text, inline, tokens);
+        tokens.push({
+          type: 'content_end',
+          block: text.indexOf('\n') !== -1
+        });
+      }
+      else {
+        tokens.push({
+          type: 'text',
+          text: cap[0]
+        });
+      }
+    }
+
+    src = src.substring(cap.index + cap[0].length);
+  }
+
+  if (src || (!src && tokens.length === 0)) {
+    tokens.push({
+      type: 'text',
+      text: src
     });
+  }
 
-    it('should remove any fading element', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
-        utils.addClass(slideView.containerElement, 'remark-fading');
+  return tokens;
+}
 
-        slideView.show();
+function replace (regex, replacements) {
+  return new RegExp(regex.source.replace(/\w{2,}/g, function (key) {
+    return replacements[key].source;
+  }));
+}
 
-        var classes = utils.getClasses(slideView.containerElement);
-        classes.should.include('remark-visible');
-        classes.should.not.include('remark-fading');
-    });
-  });
+function getTextInBrackets (src, offset) {
+  var depth = 1,
+      pos = offset,
+      chr;
 
-  describe('hide slide', function () {
-    it('should mark the slide as fading', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
-        utils.addClass(slideView.containerElement, 'remark-visible');
+  while (depth > 0 && pos < src.length) {
+    chr = src[pos++];
+    depth += (chr === '[' && 1) || (chr === ']' && -1) || 0;
+  }
 
-        slideView.hide();
+  if (depth === 0) {
+    src = src.substr(offset, pos - offset - 1);
+    return src;
+  }
+}
 
-        var classes = utils.getClasses(slideView.containerElement);
-        classes.should.not.include('remark-visible');
-        classes.should.include('remark-fading');
-    });
-  });
-
-});
-
-},{"events":2,"../../../src/remark/models/slide":19,"../../../src/remark/views/slideView":20,"../../../src/remark/utils":21}],22:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function(){/* Automatically generated */
 
 var hljs = new (/*
@@ -3397,193 +4254,6 @@ module.exports = {
 };
 
 })()
-},{}],21:[function(require,module,exports){
-exports.addClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .concat([className])
-    .join(' ');
-};
-
-exports.removeClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .filter(function (klass) { return klass !== className; })
-    .join(' ');
-};
-
-exports.toggleClass = function (element, className) {
-  var classes = exports.getClasses(element),
-      index = classes.indexOf(className);
-
-  if (index !== -1) {
-    classes.splice(index, 1);
-  }
-  else {
-    classes.push(className);
-  }
-
-  element.className = classes.join(' ');
-};
-
-exports.getClasses = function (element) {
-  return element.className
-    .split(' ')
-    .filter(function (s) { return s !== ''; });
-};
-
-exports.getPrefixedProperty = function (element, propertyName) {
-  var capitalizedPropertName = propertyName[0].toUpperCase() +
-    propertyName.slice(1);
-
-  return element[propertyName] || element['moz' + capitalizedPropertName] ||
-    element['webkit' + capitalizedPropertName];
-};
-
-exports.getHTMLElement = function () {
-  return document.getElementsByTagName('html')[0];
-};
-
-exports.getBodyElement = function () {
-  return document.body;
-};
-
-exports.getLocationHash = function () {
-  return window.location.hash;
-};
-
-exports.setLocationHash = function (hash) {
-  window.location.hash = hash;
-};
-},{}],16:[function(require,module,exports){
-module.exports = Lexer;
-
-var CODE = 1,
-    CONTENT = 2,
-    FENCES = 3,
-    SEPARATOR = 4,
-    NOTES_SEPARATOR = 5;
-
-var regexByName = {
-    CODE: /(?:^|\n)( {4}[^\n]+\n*)+/,
-    CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
-    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/,
-    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
-    NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
-  };
-
-var block = replace(/CODE|CONTENT|FENCES|SEPARATOR|NOTES_SEPARATOR/, regexByName),
-    inline = replace(/CODE|CONTENT|FENCES/, regexByName);
-
-function Lexer () { }
-
-Lexer.prototype.lex = function (src) {
-  var tokens = lex(src, block),
-      i;
-
-  for (i = tokens.length - 2; i >= 0; i--) {
-    if (tokens[i].type === 'text' && tokens[i+1].type === 'text') {
-      tokens[i].text += tokens[i+1].text;
-      tokens.splice(i+1, 1);
-    }
-  }
-
-  return tokens;
-};
-
-function lex (src, regex, tokens) {
-  var cap, text;
-
-  tokens = tokens || [];
-
-  while ((cap = regex.exec(src)) !== null) {
-    if (cap.index > 0) {
-      tokens.push({
-        type: 'text',
-        text: src.substring(0, cap.index)
-      });
-    }
-
-    if (cap[CODE]) {
-      tokens.push({
-        type: 'code',
-        text: cap[0]
-      });
-    }
-    else if (cap[FENCES]) {
-      tokens.push({
-        type: 'fences',
-        text: cap[0]
-      });
-    }
-    else if (cap[SEPARATOR]) {
-      tokens.push({
-        type: 'separator',
-        text: cap[SEPARATOR]
-      });
-    }
-    else if (cap[NOTES_SEPARATOR]) {
-      tokens.push({
-        type: 'notes_separator',
-        text: cap[NOTES_SEPARATOR]
-      });
-    }
-    else if (cap[CONTENT]) {
-      text = getTextInBrackets(src, cap.index + cap[0].length);
-      if (text !== undefined) {
-        src = src.substring(text.length + 1);
-        tokens.push({
-          type: 'content_start',
-          classes: cap[CONTENT].substring(1).split('.'),
-          block: text.indexOf('\n') !== -1
-        });
-        lex(text, inline, tokens);
-        tokens.push({
-          type: 'content_end',
-          block: text.indexOf('\n') !== -1
-        });
-      }
-      else {
-        tokens.push({
-          type: 'text',
-          text: cap[0]
-        });
-      }
-    }
-
-    src = src.substring(cap.index + cap[0].length);
-  }
-
-  if (src || (!src && tokens.length === 0)) {
-    tokens.push({
-      type: 'text',
-      text: src
-    });
-  }
-
-  return tokens;
-}
-
-function replace (regex, replacements) {
-  return new RegExp(regex.source.replace(/\w{2,}/g, function (key) {
-    return replacements[key].source;
-  }));
-}
-
-function getTextInBrackets (src, offset) {
-  var depth = 1,
-      pos = offset,
-      chr;
-
-  while (depth > 0 && pos < src.length) {
-    chr = src[pos++];
-    depth += (chr === '[' && 1) || (chr === ']' && -1) || 0;
-  }
-
-  if (depth === 0) {
-    src = src.substr(offset, pos - offset - 1);
-    return src;
-  }
-}
-
 },{}],19:[function(require,module,exports){
 module.exports = Slide;
 
@@ -3689,711 +4359,7 @@ Slide.prototype.expandVariables = function (contentOnly) {
   return expandResult;
 };
 
-},{}],23:[function(require,module,exports){
-(function(){// UTILITY
-var util = require('util');
-var Buffer = require("buffer").Buffer;
-var pSlice = Array.prototype.slice;
-
-function objectKeys(object) {
-  if (Object.keys) return Object.keys(object);
-  var result = [];
-  for (var name in object) {
-    if (Object.prototype.hasOwnProperty.call(object, name)) {
-      result.push(name);
-    }
-  }
-  return result;
-}
-
-// 1. The assert module provides functions that throw
-// AssertionError's when particular conditions are not met. The
-// assert module must conform to the following interface.
-
-var assert = module.exports = ok;
-
-// 2. The AssertionError is defined in assert.
-// new assert.AssertionError({ message: message,
-//                             actual: actual,
-//                             expected: expected })
-
-assert.AssertionError = function AssertionError(options) {
-  this.name = 'AssertionError';
-  this.message = options.message;
-  this.actual = options.actual;
-  this.expected = options.expected;
-  this.operator = options.operator;
-  var stackStartFunction = options.stackStartFunction || fail;
-
-  if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, stackStartFunction);
-  }
-};
-util.inherits(assert.AssertionError, Error);
-
-function replacer(key, value) {
-  if (value === undefined) {
-    return '' + value;
-  }
-  if (typeof value === 'number' && (isNaN(value) || !isFinite(value))) {
-    return value.toString();
-  }
-  if (typeof value === 'function' || value instanceof RegExp) {
-    return value.toString();
-  }
-  return value;
-}
-
-function truncate(s, n) {
-  if (typeof s == 'string') {
-    return s.length < n ? s : s.slice(0, n);
-  } else {
-    return s;
-  }
-}
-
-assert.AssertionError.prototype.toString = function() {
-  if (this.message) {
-    return [this.name + ':', this.message].join(' ');
-  } else {
-    return [
-      this.name + ':',
-      truncate(JSON.stringify(this.actual, replacer), 128),
-      this.operator,
-      truncate(JSON.stringify(this.expected, replacer), 128)
-    ].join(' ');
-  }
-};
-
-// assert.AssertionError instanceof Error
-
-assert.AssertionError.__proto__ = Error.prototype;
-
-// At present only the three keys mentioned above are used and
-// understood by the spec. Implementations or sub modules can pass
-// other keys to the AssertionError's constructor - they will be
-// ignored.
-
-// 3. All of the following functions must throw an AssertionError
-// when a corresponding condition is not met, with a message that
-// may be undefined if not provided.  All assertion methods provide
-// both the actual and expected values to the assertion error for
-// display purposes.
-
-function fail(actual, expected, message, operator, stackStartFunction) {
-  throw new assert.AssertionError({
-    message: message,
-    actual: actual,
-    expected: expected,
-    operator: operator,
-    stackStartFunction: stackStartFunction
-  });
-}
-
-// EXTENSION! allows for well behaved errors defined elsewhere.
-assert.fail = fail;
-
-// 4. Pure assertion tests whether a value is truthy, as determined
-// by !!guard.
-// assert.ok(guard, message_opt);
-// This statement is equivalent to assert.equal(true, guard,
-// message_opt);. To test strictly for the value true, use
-// assert.strictEqual(true, guard, message_opt);.
-
-function ok(value, message) {
-  if (!!!value) fail(value, true, message, '==', assert.ok);
-}
-assert.ok = ok;
-
-// 5. The equality assertion tests shallow, coercive equality with
-// ==.
-// assert.equal(actual, expected, message_opt);
-
-assert.equal = function equal(actual, expected, message) {
-  if (actual != expected) fail(actual, expected, message, '==', assert.equal);
-};
-
-// 6. The non-equality assertion tests for whether two objects are not equal
-// with != assert.notEqual(actual, expected, message_opt);
-
-assert.notEqual = function notEqual(actual, expected, message) {
-  if (actual == expected) {
-    fail(actual, expected, message, '!=', assert.notEqual);
-  }
-};
-
-// 7. The equivalence assertion tests a deep equality relation.
-// assert.deepEqual(actual, expected, message_opt);
-
-assert.deepEqual = function deepEqual(actual, expected, message) {
-  if (!_deepEqual(actual, expected)) {
-    fail(actual, expected, message, 'deepEqual', assert.deepEqual);
-  }
-};
-
-function _deepEqual(actual, expected) {
-  // 7.1. All identical values are equivalent, as determined by ===.
-  if (actual === expected) {
-    return true;
-
-  } else if (Buffer.isBuffer(actual) && Buffer.isBuffer(expected)) {
-    if (actual.length != expected.length) return false;
-
-    for (var i = 0; i < actual.length; i++) {
-      if (actual[i] !== expected[i]) return false;
-    }
-
-    return true;
-
-  // 7.2. If the expected value is a Date object, the actual value is
-  // equivalent if it is also a Date object that refers to the same time.
-  } else if (actual instanceof Date && expected instanceof Date) {
-    return actual.getTime() === expected.getTime();
-
-  // 7.3. Other pairs that do not both pass typeof value == 'object',
-  // equivalence is determined by ==.
-  } else if (typeof actual != 'object' && typeof expected != 'object') {
-    return actual == expected;
-
-  // 7.4. For all other Object pairs, including Array objects, equivalence is
-  // determined by having the same number of owned properties (as verified
-  // with Object.prototype.hasOwnProperty.call), the same set of keys
-  // (although not necessarily the same order), equivalent values for every
-  // corresponding key, and an identical 'prototype' property. Note: this
-  // accounts for both named and indexed properties on Arrays.
-  } else {
-    return objEquiv(actual, expected);
-  }
-}
-
-function isUndefinedOrNull(value) {
-  return value === null || value === undefined;
-}
-
-function isArguments(object) {
-  return Object.prototype.toString.call(object) == '[object Arguments]';
-}
-
-function objEquiv(a, b) {
-  if (isUndefinedOrNull(a) || isUndefinedOrNull(b))
-    return false;
-  // an identical 'prototype' property.
-  if (a.prototype !== b.prototype) return false;
-  //~~~I've managed to break Object.keys through screwy arguments passing.
-  //   Converting to array solves the problem.
-  if (isArguments(a)) {
-    if (!isArguments(b)) {
-      return false;
-    }
-    a = pSlice.call(a);
-    b = pSlice.call(b);
-    return _deepEqual(a, b);
-  }
-  try {
-    var ka = objectKeys(a),
-        kb = objectKeys(b),
-        key, i;
-  } catch (e) {//happens when one is a string literal and the other isn't
-    return false;
-  }
-  // having the same number of owned properties (keys incorporates
-  // hasOwnProperty)
-  if (ka.length != kb.length)
-    return false;
-  //the same set of keys (although not necessarily the same order),
-  ka.sort();
-  kb.sort();
-  //~~~cheap key test
-  for (i = ka.length - 1; i >= 0; i--) {
-    if (ka[i] != kb[i])
-      return false;
-  }
-  //equivalent values for every corresponding key, and
-  //~~~possibly expensive deep test
-  for (i = ka.length - 1; i >= 0; i--) {
-    key = ka[i];
-    if (!_deepEqual(a[key], b[key])) return false;
-  }
-  return true;
-}
-
-// 8. The non-equivalence assertion tests for any deep inequality.
-// assert.notDeepEqual(actual, expected, message_opt);
-
-assert.notDeepEqual = function notDeepEqual(actual, expected, message) {
-  if (_deepEqual(actual, expected)) {
-    fail(actual, expected, message, 'notDeepEqual', assert.notDeepEqual);
-  }
-};
-
-// 9. The strict equality assertion tests strict equality, as determined by ===.
-// assert.strictEqual(actual, expected, message_opt);
-
-assert.strictEqual = function strictEqual(actual, expected, message) {
-  if (actual !== expected) {
-    fail(actual, expected, message, '===', assert.strictEqual);
-  }
-};
-
-// 10. The strict non-equality assertion tests for strict inequality, as
-// determined by !==.  assert.notStrictEqual(actual, expected, message_opt);
-
-assert.notStrictEqual = function notStrictEqual(actual, expected, message) {
-  if (actual === expected) {
-    fail(actual, expected, message, '!==', assert.notStrictEqual);
-  }
-};
-
-function expectedException(actual, expected) {
-  if (!actual || !expected) {
-    return false;
-  }
-
-  if (expected instanceof RegExp) {
-    return expected.test(actual);
-  } else if (actual instanceof expected) {
-    return true;
-  } else if (expected.call({}, actual) === true) {
-    return true;
-  }
-
-  return false;
-}
-
-function _throws(shouldThrow, block, expected, message) {
-  var actual;
-
-  if (typeof expected === 'string') {
-    message = expected;
-    expected = null;
-  }
-
-  try {
-    block();
-  } catch (e) {
-    actual = e;
-  }
-
-  message = (expected && expected.name ? ' (' + expected.name + ').' : '.') +
-            (message ? ' ' + message : '.');
-
-  if (shouldThrow && !actual) {
-    fail('Missing expected exception' + message);
-  }
-
-  if (!shouldThrow && expectedException(actual, expected)) {
-    fail('Got unwanted exception' + message);
-  }
-
-  if ((shouldThrow && actual && expected &&
-      !expectedException(actual, expected)) || (!shouldThrow && actual)) {
-    throw actual;
-  }
-}
-
-// 11. Expected to throw an error:
-// assert.throws(block, Error_opt, message_opt);
-
-assert.throws = function(block, /*optional*/error, /*optional*/message) {
-  _throws.apply(this, [true].concat(pSlice.call(arguments)));
-};
-
-// EXTENSION! This is annoying to write outside this module.
-assert.doesNotThrow = function(block, /*optional*/error, /*optional*/message) {
-  _throws.apply(this, [false].concat(pSlice.call(arguments)));
-};
-
-assert.ifError = function(err) { if (err) {throw err;}};
-
-})()
-},{"util":24,"buffer":25}],24:[function(require,module,exports){
-var events = require('events');
-
-exports.isArray = isArray;
-exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
-exports.isRegExp = function(obj){return Object.prototype.toString.call(obj) === '[object RegExp]'};
-
-
-exports.print = function () {};
-exports.puts = function () {};
-exports.debug = function() {};
-
-exports.inspect = function(obj, showHidden, depth, colors) {
-  var seen = [];
-
-  var stylize = function(str, styleType) {
-    // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-    var styles =
-        { 'bold' : [1, 22],
-          'italic' : [3, 23],
-          'underline' : [4, 24],
-          'inverse' : [7, 27],
-          'white' : [37, 39],
-          'grey' : [90, 39],
-          'black' : [30, 39],
-          'blue' : [34, 39],
-          'cyan' : [36, 39],
-          'green' : [32, 39],
-          'magenta' : [35, 39],
-          'red' : [31, 39],
-          'yellow' : [33, 39] };
-
-    var style =
-        { 'special': 'cyan',
-          'number': 'blue',
-          'boolean': 'yellow',
-          'undefined': 'grey',
-          'null': 'bold',
-          'string': 'green',
-          'date': 'magenta',
-          // "name": intentionally not styling
-          'regexp': 'red' }[styleType];
-
-    if (style) {
-      return '\033[' + styles[style][0] + 'm' + str +
-             '\033[' + styles[style][1] + 'm';
-    } else {
-      return str;
-    }
-  };
-  if (! colors) {
-    stylize = function(str, styleType) { return str; };
-  }
-
-  function format(value, recurseTimes) {
-    // Provide a hook for user-specified inspect functions.
-    // Check that value is an object with an inspect function on it
-    if (value && typeof value.inspect === 'function' &&
-        // Filter out the util module, it's inspect function is special
-        value !== exports &&
-        // Also filter out any prototype objects using the circular check.
-        !(value.constructor && value.constructor.prototype === value)) {
-      return value.inspect(recurseTimes);
-    }
-
-    // Primitive types cannot have properties
-    switch (typeof value) {
-      case 'undefined':
-        return stylize('undefined', 'undefined');
-
-      case 'string':
-        var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                                 .replace(/'/g, "\\'")
-                                                 .replace(/\\"/g, '"') + '\'';
-        return stylize(simple, 'string');
-
-      case 'number':
-        return stylize('' + value, 'number');
-
-      case 'boolean':
-        return stylize('' + value, 'boolean');
-    }
-    // For some reason typeof null is "object", so special case here.
-    if (value === null) {
-      return stylize('null', 'null');
-    }
-
-    // Look up the keys of the object.
-    var visible_keys = Object_keys(value);
-    var keys = showHidden ? Object_getOwnPropertyNames(value) : visible_keys;
-
-    // Functions without properties can be shortcutted.
-    if (typeof value === 'function' && keys.length === 0) {
-      if (isRegExp(value)) {
-        return stylize('' + value, 'regexp');
-      } else {
-        var name = value.name ? ': ' + value.name : '';
-        return stylize('[Function' + name + ']', 'special');
-      }
-    }
-
-    // Dates without properties can be shortcutted
-    if (isDate(value) && keys.length === 0) {
-      return stylize(value.toUTCString(), 'date');
-    }
-
-    var base, type, braces;
-    // Determine the object type
-    if (isArray(value)) {
-      type = 'Array';
-      braces = ['[', ']'];
-    } else {
-      type = 'Object';
-      braces = ['{', '}'];
-    }
-
-    // Make functions say that they are functions
-    if (typeof value === 'function') {
-      var n = value.name ? ': ' + value.name : '';
-      base = (isRegExp(value)) ? ' ' + value : ' [Function' + n + ']';
-    } else {
-      base = '';
-    }
-
-    // Make dates with properties first say the date
-    if (isDate(value)) {
-      base = ' ' + value.toUTCString();
-    }
-
-    if (keys.length === 0) {
-      return braces[0] + base + braces[1];
-    }
-
-    if (recurseTimes < 0) {
-      if (isRegExp(value)) {
-        return stylize('' + value, 'regexp');
-      } else {
-        return stylize('[Object]', 'special');
-      }
-    }
-
-    seen.push(value);
-
-    var output = keys.map(function(key) {
-      var name, str;
-      if (value.__lookupGetter__) {
-        if (value.__lookupGetter__(key)) {
-          if (value.__lookupSetter__(key)) {
-            str = stylize('[Getter/Setter]', 'special');
-          } else {
-            str = stylize('[Getter]', 'special');
-          }
-        } else {
-          if (value.__lookupSetter__(key)) {
-            str = stylize('[Setter]', 'special');
-          }
-        }
-      }
-      if (visible_keys.indexOf(key) < 0) {
-        name = '[' + key + ']';
-      }
-      if (!str) {
-        if (seen.indexOf(value[key]) < 0) {
-          if (recurseTimes === null) {
-            str = format(value[key]);
-          } else {
-            str = format(value[key], recurseTimes - 1);
-          }
-          if (str.indexOf('\n') > -1) {
-            if (isArray(value)) {
-              str = str.split('\n').map(function(line) {
-                return '  ' + line;
-              }).join('\n').substr(2);
-            } else {
-              str = '\n' + str.split('\n').map(function(line) {
-                return '   ' + line;
-              }).join('\n');
-            }
-          }
-        } else {
-          str = stylize('[Circular]', 'special');
-        }
-      }
-      if (typeof name === 'undefined') {
-        if (type === 'Array' && key.match(/^\d+$/)) {
-          return str;
-        }
-        name = JSON.stringify('' + key);
-        if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-          name = name.substr(1, name.length - 2);
-          name = stylize(name, 'name');
-        } else {
-          name = name.replace(/'/g, "\\'")
-                     .replace(/\\"/g, '"')
-                     .replace(/(^"|"$)/g, "'");
-          name = stylize(name, 'string');
-        }
-      }
-
-      return name + ': ' + str;
-    });
-
-    seen.pop();
-
-    var numLinesEst = 0;
-    var length = output.reduce(function(prev, cur) {
-      numLinesEst++;
-      if (cur.indexOf('\n') >= 0) numLinesEst++;
-      return prev + cur.length + 1;
-    }, 0);
-
-    if (length > 50) {
-      output = braces[0] +
-               (base === '' ? '' : base + '\n ') +
-               ' ' +
-               output.join(',\n  ') +
-               ' ' +
-               braces[1];
-
-    } else {
-      output = braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-    }
-
-    return output;
-  }
-  return format(obj, (typeof depth === 'undefined' ? 2 : depth));
-};
-
-
-function isArray(ar) {
-  return ar instanceof Array ||
-         Array.isArray(ar) ||
-         (ar && ar !== Object.prototype && isArray(ar.__proto__));
-}
-
-
-function isRegExp(re) {
-  return re instanceof RegExp ||
-    (typeof re === 'object' && Object.prototype.toString.call(re) === '[object RegExp]');
-}
-
-
-function isDate(d) {
-  if (d instanceof Date) return true;
-  if (typeof d !== 'object') return false;
-  var properties = Date.prototype && Object_getOwnPropertyNames(Date.prototype);
-  var proto = d.__proto__ && Object_getOwnPropertyNames(d.__proto__);
-  return JSON.stringify(proto) === JSON.stringify(properties);
-}
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-exports.log = function (msg) {};
-
-exports.pump = null;
-
-var Object_keys = Object.keys || function (obj) {
-    var res = [];
-    for (var key in obj) res.push(key);
-    return res;
-};
-
-var Object_getOwnPropertyNames = Object.getOwnPropertyNames || function (obj) {
-    var res = [];
-    for (var key in obj) {
-        if (Object.hasOwnProperty.call(obj, key)) res.push(key);
-    }
-    return res;
-};
-
-var Object_create = Object.create || function (prototype, properties) {
-    // from es5-shim
-    var object;
-    if (prototype === null) {
-        object = { '__proto__' : null };
-    }
-    else {
-        if (typeof prototype !== 'object') {
-            throw new TypeError(
-                'typeof prototype[' + (typeof prototype) + '] != \'object\''
-            );
-        }
-        var Type = function () {};
-        Type.prototype = prototype;
-        object = new Type();
-        object.__proto__ = prototype;
-    }
-    if (typeof properties !== 'undefined' && Object.defineProperties) {
-        Object.defineProperties(object, properties);
-    }
-    return object;
-};
-
-exports.inherits = function(ctor, superCtor) {
-  ctor.super_ = superCtor;
-  ctor.prototype = Object_create(superCtor.prototype, {
-    constructor: {
-      value: ctor,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-};
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (typeof f !== 'string') {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(exports.inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j': return JSON.stringify(args[i++]);
-      default:
-        return x;
-    }
-  });
-  for(var x = args[i]; i < len; x = args[++i]){
-    if (x === null || typeof x !== 'object') {
-      str += ' ' + x;
-    } else {
-      str += ' ' + exports.inspect(x);
-    }
-  }
-  return str;
-};
-
-},{"events":2}],26:[function(require,module,exports){
-var api = require('./remark/api')
-  , highlighter = require('./remark/highlighter')
-  , polyfills = require('./polyfills')
-  , resources = require('./remark/resources')
-  ;
-
-// Expose API as `remark`
-window.remark = api;
-
-// Apply polyfills as needed
-polyfills.apply();
-
-// Apply embedded styles to document
-styleDocument();
-
-function styleDocument () {
-  var styleElement = document.createElement('style')
-    , headElement = document.getElementsByTagName('head')[0]
-    , style
-    ;
-
-  styleElement.type = 'text/css';
-  headElement.insertBefore(styleElement, headElement.firstChild);
-
-  styleElement.innerHTML = resources.documentStyles;
-
-  for (style in highlighter.styles) {
-    if (highlighter.styles.hasOwnProperty(style)) {
-      styleElement.innerHTML = styleElement.innerHTML +
-        highlighter.styles[style];
-    }
-  }
-}
-},{"./remark/api":27,"./remark/highlighter":22,"./polyfills":28,"./remark/resources":29}],13:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*!
  * Should
  * Copyright(c) 2010-2012 TJ Holowaychuk <tj@vision-media.ca>
@@ -5125,539 +5091,7 @@ Assertion.prototype = {
 ('below', 'lessThan');
 
 
-},{"util":24,"http":30,"assert":23,"./eql":31}],32:[function(require,module,exports){
-var utils = require('./utils');
-
-module.exports = Controller;
-
-function Controller (events, slideshowView) {
-  addApiEventListeners(events, slideshowView);
-  addNavigationEventListeners(events, slideshowView);
-  addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
-}
-
-function addApiEventListeners(events, slideshowView) {
-  events.on('pause', function(event) {
-    removeKeyboardEventListeners(events);
-    removeMouseEventListeners(events);
-    removeTouchEventListeners(events);
-  });
-
-  events.on('resume',  function(event) {
-    addKeyboardEventListeners(events);
-    addMouseEventListeners(events);
-    addTouchEventListeners(events);
-  });
-}
-
-function addNavigationEventListeners (events, slideshowView) {
-  if (slideshowView.isEmbedded()) {
-    events.emit('gotoSlide', 1);
-  }
-  else {
-    events.on('hashchange', navigateByHash);
-    events.on('slideChanged', updateHash);
-
-    navigateByHash();
-  }
-
-  events.on('message', navigateByMessage);
-
-  function navigateByHash () {
-    var slideNoOrName = (utils.getLocationHash() || '').substr(1);
-    events.emit('gotoSlide', slideNoOrName);
-  }
-
-  function updateHash (slideNoOrName) {
-    utils.setLocationHash('#' + slideNoOrName);
-  }
-
-  function navigateByMessage(message) {
-    var cap;
-
-    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
-      events.emit('gotoSlide', parseInt(cap[1], 10), true);
-    }
-  }
-}
-
-function removeKeyboardEventListeners(events) {
-  events.removeAllListeners("keydown");
-  events.removeAllListeners("keypress");
-}
-
-function addKeyboardEventListeners (events) {
-  events.on('keydown', function (event) {
-    switch (event.keyCode) {
-      case 33: // Page up
-      case 37: // Left
-      case 38: // Up
-        events.emit('gotoPreviousSlide');
-        break;
-      case 32: // Space
-      case 34: // Page down
-      case 39: // Right
-      case 40: // Down
-        events.emit('gotoNextSlide');
-        break;
-      case 36: // Home
-        events.emit('gotoFirstSlide');
-        break;
-      case 35: // End
-        events.emit('gotoLastSlide');
-        break;
-      case 27: // Escape
-        events.emit('hideOverlay');
-        break;
-    }
-  });
-
-  events.on('keypress', function (event) {
-    if (event.metaKey || event.ctrlKey) {
-      // Bail out if meta or ctrl key was pressed
-      return;
-    }
-
-    switch (String.fromCharCode(event.which)) {
-      case 'j':
-        events.emit('gotoNextSlide');
-        break;
-      case 'k':
-        events.emit('gotoPreviousSlide');
-        break;
-      case 'c':
-        events.emit('createClone');
-        break;
-      case 'p':
-        events.emit('togglePresenterMode');
-        break;
-      case 'f':
-        events.emit('toggleFullscreen');
-        break;
-      case 't':
-        events.emit('resetTimer');
-        break;
-      case 'h':
-      case '?':
-        events.emit('toggleHelp');
-        break;
-    }
-  });
-}
-
-function removeMouseEventListeners(events) {
-  events.removeAllListeners("mousewheel");
-}
-
-function addMouseEventListeners (events) {
-  events.on('mousewheel', function (event) {
-    if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
-    }
-    else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
-    }
-  });
-}
-
-
-function removeTouchEventListeners(events) {
-  events.removeAllListeners("touchstart");
-  events.removeAllListeners("touchend");
-  events.removeAllListeners("touchmove");
-}
-
-
-function addTouchEventListeners (events) {
-  var touch
-    , startX
-    , endX
-    ;
-
-  var isTap = function () {
-    return Math.abs(startX - endX) < 10;
-  };
-
-  var handleTap = function () {
-    events.emit('tap', endX);
-  };
-
-  var handleSwipe = function () {
-    if (startX > endX) {
-      events.emit('gotoNextSlide');
-    }
-    else {
-      events.emit('gotoPreviousSlide');
-    }
-  };
-
-  events.on('touchstart', function (event) {
-    touch = event.touches[0];
-    startX = touch.clientX;
-  });
-
-  events.on('touchend', function (event) {
-    if (event.target.nodeName.toUpperCase() === 'A') {
-      return;
-    }
-
-    touch = event.changedTouches[0];
-    endX = touch.clientX;
-
-    if (isTap()) {
-      handleTap();
-    }
-    else {
-      handleSwipe();
-    }
-  });
-
-  events.on('touchmove', function (event) {
-    event.preventDefault();
-  });
-}
-
-},{"./utils":21}],27:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , highlighter = require('./highlighter')
-  , Slideshow = require('./models/slideshow')
-  , SlideshowView = require('./views/slideshowView')
-  , Controller = require('./controller')
-  , utils = require('./utils')
-  ;
-
-// Expose highlighter to allow enumerating available styles and
-// including external language grammars
-module.exports.highlighter = highlighter;
-
-// Creates slideshow initialized from options
-module.exports.create = function (options) {
-  var events
-    , slideshow
-    , slideshowView
-    , controller
-    ;
-
-  options = applyDefaults(options);
-
-  events = new EventEmitter();
-  events.setMaxListeners(0);
-
-  slideshow = new Slideshow(events, options);
-  slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = options.controller || new Controller(events, slideshowView);
-
-  return slideshow;
-};
-
-function applyDefaults (options) {
-  var sourceElement;
-
-  options = options || {};
-
-  if (!options.hasOwnProperty('source')) {
-    sourceElement = document.getElementById('source');
-    if (sourceElement) {
-      options.source = sourceElement.innerHTML;
-      sourceElement.style.display = 'none';
-    }
-  }
-
-  if (!(options.container instanceof window.HTMLElement)) {
-    options.container = utils.getBodyElement();
-  }
-
-  return options;
-}
-
-},{"events":2,"./highlighter":22,"./models/slideshow":18,"./views/slideshowView":33,"./utils":21,"./controller":32}],18:[function(require,module,exports){
-var Navigation = require('./slideshow/navigation')
-  , Events = require('./slideshow/events')
-  , utils = require('../utils')
-  , Slide = require('./slide')
-  , Parser = require('../parser')
-  ;
-
-module.exports = Slideshow;
-
-function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
-
-  options = options || {};
-
-  // Extend slideshow functionality
-  Events.call(self, events);
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-
-  self.togglePresenterMode = togglePresenterMode;
-  self.toggleHelp = toggleHelp;
-  self.toggleFullscreen = toggleFullscreen;
-  self.createClone = createClone;
-
-  self.resetTimer = resetTimer;
-
-  self.getRatio = getOrDefault('ratio', '4:3');
-  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
-  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
-
-  function togglePresenterMode () {
-    events.emit('togglePresenterMode');
-  }
-
-  function toggleHelp () {
-    events.emit('toggleHelp');
-  }
-
-  function toggleFullscreen () {
-    events.emit('toggleFullscreen');
-  }
-
-  function createClone () {
-    events.emit('createClone');
-  }
-
-  function resetTimer () {
-    events.emit('resetTimer');
-  }
-
-  function getOrDefault (key, defaultValue) {
-    return function () {
-      if (options[key] === undefined) {
-        return defaultValue;
-      }
-
-      return options[key];
-    };
-  }
-}
-
-function createSlides (slideshowSource) {
-  var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource)
-    , slides = []
-    , byName = {}
-    , layoutSlide
-    ;
-
-  slides.byName = {};
-
-  parsedSlides.forEach(function (slide, i) {
-    var template, slideViewModel;
-
-    if (slide.properties.continued === 'true' && i > 0) {
-      template = slides[slides.length - 1];
-    }
-    else if (byName[slide.properties.template]) {
-      template = byName[slide.properties.template];
-    }
-    else if (slide.properties.layout === 'false') {
-      layoutSlide = undefined;
-    }
-    else if (layoutSlide && slide.properties.layout !== 'true') {
-      template = layoutSlide;
-    }
-
-    slideViewModel = new Slide(slides.length + 1, slide, template);
-
-    if (slide.properties.layout === 'true') {
-      layoutSlide = slideViewModel;
-    }
-
-    if (slide.properties.name) {
-      byName[slide.properties.name] = slideViewModel;
-    }
-
-    if (slide.properties.layout !== 'true') {
-      slides.push(slideViewModel);
-      if (slide.properties.name) {
-        slides.byName[slide.properties.name] = slideViewModel;
-      }
-    }
-  });
-
-  return slides;
-}
-
-function expandVariables (slides) {
-  slides.forEach(function (slide) {
-    slide.expandVariables();
-  });
-}
-
-},{"./slideshow/navigation":34,"../utils":21,"./slideshow/events":35,"./slide":19,"../parser":17}],17:[function(require,module,exports){
-var Lexer = require('./lexer'),
-    converter = require('./converter');
-
-module.exports = Parser;
-
-function Parser () { }
-
-Parser.prototype.parse = function (src) {
-  var lexer = new Lexer(),
-      tokens = lexer.lex(src),
-      slides = [],
-      slide = createSlide(),
-      tag,
-      classes;
-
-  tokens.forEach(function (token) {
-    switch (token.type) {
-      case 'text':
-      case 'code':
-      case 'fences':
-        appendTo(slide, token.text);
-        break;
-      case 'content_start':
-        tag = token.block ? 'div' : 'span';
-        classes = token.classes.join(' ');
-        appendTo(slide, '&lt;' + tag + ' class="' + classes + '"&gt;');
-        break;
-      case 'content_end':
-        tag = token.block ? 'div' : 'span';
-        appendTo(slide, '&lt;/' + tag + '&gt;');
-        break;
-      case 'separator':
-        slides.push(slide);
-        slide = createSlide();
-        slide.properties.continued = (token.text === '--').toString();
-        break;
-      case 'notes_separator':
-        slide.notes = '';
-        break;
-    }
-  });
-
-  slides.push(slide);
-
-  slides.forEach(function (slide) {
-    slide.source = extractProperties(slide.source, slide.properties);
-  });
-
-  return slides;
-};
-
-function createSlide () {
-  return {
-    source: '', 
-    properties: { 
-      continued: 'false'
-    }
-  };
-}
-
-function appendTo (slide, content) {
-  if (slide.notes !== undefined) {
-    slide.notes += content;
-  }
-  else {
-    slide.source += content;
-  }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
-}
-
-},{"./lexer":16,"./converter":15}],28:[function(require,module,exports){
-exports.apply = function () {
-  forEach([Array, window.NodeList, window.HTMLCollection], extend);
-};
-
-function forEach (list, f) {
-  var i;
-
-  for (i = 0; i < list.length; ++i) {
-    f(list[i], i);
-  }
-}
-
-function extend (object) {
-  var prototype = object && object.prototype;
-
-  if (!prototype) {
-    return;
-  }
-
-  prototype.forEach = prototype.forEach || function (f) {
-    forEach(this, f);
-  };
-
-  prototype.filter = prototype.filter || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      if (f(element, result.length)) {
-        result.push(element);
-      }
-    });
-
-    return result;
-  };
-
-  prototype.map = prototype.map || function (f) {
-    var result = [];
-
-    this.forEach(function (element) {
-      result.push(f(element, result.length));
-    });
-
-    return result;
-  };
-}
-},{}],29:[function(require,module,exports){
-/* Automatically generated */
-
-module.exports = {
-  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;-webkit-print-color-adjust:exact;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:absolute;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background-color:transparent;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;table-layout:fixed;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slide .remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-slide-content{background-color:#fff;}.remark-visible{display:block;z-index:2;}.remark-fading{display:block;z-index:1;}.remark-fading .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;background:#000;z-index:2;}.remark-pause{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;}.remark-pause .remark-pause-lozenge{margin-top:30%;text-align:center;}.remark-pause .remark-pause-lozenge span{color:white;background:black;border:2px solid black;border-radius:20px;padding:20px 30px;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:42pt;font-weight:bold;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-pause{display:block;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-backdrop{display:block;opacity:0.5;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:0px;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;opacity:0.95;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-notes-area .remark-notes{clear:both;margin-top:30px;}.remark-toolbar{color:#979892;padding-bottom:1em;vertical-align:middle;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-toolbar .remark-toolbar-timer{border:2px solid black;border-radius:10px;background:black;color:white;display:inline-block;float:right;padding:10px;font-family:sans-serif;font-weight:bold;font-size:200%;text-decoration:none;text-align:center;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;background-color:#fff;} .remark-slide-container{display:block;position:relative;} .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}}@page {size:908px 681px;margin:0;}",
-  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n    <span class=\"remark-toolbar-timer\">0:00:00</span>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-pause\">\n  <div class=\"remark-pause-lozenge\">\n    <span>Paused</span>\n  </div>\n</div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">k</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">j</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">f</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">c</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">p</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">w</span>\n        </td>\n        <td>Pause/Resume the presentation</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">t</span>\n        </td>\n        <td>Restart the presentation timer</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>,\n          <span class=\"key\">h</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
-};
-
-},{}],30:[function(require,module,exports){
+},{"util":22,"http":26,"assert":23,"./eql":27}],26:[function(require,module,exports){
 var http = module.exports;
 var EventEmitter = require('events').EventEmitter;
 var Request = require('./lib/request');
@@ -5719,515 +5153,7 @@ var xhrHttp = (function () {
     }
 })();
 
-},{"events":2,"./lib/request":36}],33:[function(require,module,exports){
-var SlideView = require('./slideView')
-  , Scaler = require('../scaler')
-  , resources = require('../resources')
-  , utils = require('../utils')
-  ;
-
-module.exports = SlideshowView;
-
-function SlideshowView (events, containerElement, slideshow) {
-  var self = this;
-
-  self.events = events;
-  self.slideshow = slideshow;
-  self.scaler = new Scaler(events, slideshow);
-  self.slideViews = [];
-
-  self.configureContainerElement(containerElement);
-  self.configureChildElements();
-
-  self.updateDimensions();
-  self.scaleElements();
-  self.updateSlideViews();
-
-  self.startTime = null;
-  self.pauseStart = null;
-  self.pauseLength = 0;
-  setInterval(function() {
-      self.updateTimer();
-    }, 100);
-
-  events.on('slidesChanged', function () {
-    self.updateSlideViews();
-  });
-
-  events.on('hideSlide', function (slideIndex) {
-    // To make sure that there is only one element fading at a time,
-    // remove the fading class from all slides before hiding
-    // the new slide.
-    self.elementArea.getElementsByClassName('remark-fading').forEach(function (slide) {
-      utils.removeClass(slide, 'remark-fading');
-    });
-    self.hideSlide(slideIndex);
-  });
-
-  events.on('showSlide', function (slideIndex) {
-    self.showSlide(slideIndex);
-  });
-
-  events.on('togglePresenterMode', function () {
-    utils.toggleClass(self.containerElement, 'remark-presenter-mode');
-    self.scaleElements();
-  });
-
-  events.on('toggleHelp', function () {
-    utils.toggleClass(self.containerElement, 'remark-help-mode');
-  });
-
-  events.on('start', function () {
-    // When we do the first slide change, start the clock.
-    self.startTime = new Date();
-  });
-
-  events.on('resetTimer', function () {
-    // If we reset the timer, clear everything.
-    self.startTime = null;
-    self.pauseStart = null;
-    self.pauseLength = 0;
-    self.timerElement.innerHTML = '0:00:00';
-  });
-
-  events.on('pause', function () {
-    self.pauseStart = new Date();
-    utils.toggleClass(self.containerElement, 'remark-pause-mode');
-  });
-
-  events.on('resume', function () {
-    self.pauseLength += new Date() - self.pauseStart;
-    self.pauseStart = null;
-    utils.toggleClass(self.containerElement, 'remark-pause-mode');
-  });
-
-  handleFullscreen(self);
-}
-
-function handleFullscreen(self) {
-  var requestFullscreen = utils.getPrefixedProperty(self.containerElement, 'requestFullScreen')
-    , cancelFullscreen = utils.getPrefixedProperty(document, 'cancelFullScreen')
-    ;
-
-  self.events.on('toggleFullscreen', function () {
-    var fullscreenElement = utils.getPrefixedProperty(document, 'fullscreenElement') ||
-      utils.getPrefixedProperty(document, 'fullScreenElement');
-
-    if (!fullscreenElement && requestFullscreen) {
-      requestFullscreen.call(self.containerElement, Element.ALLOW_KEYBOARD_INPUT);
-    }
-    else if (cancelFullscreen) {
-      cancelFullscreen.call(document);
-    }
-    self.scaleElements();
-  });
-}
-
-SlideshowView.prototype.isEmbedded = function () {
-  return this.containerElement !== utils.getBodyElement();
-};
-
-SlideshowView.prototype.configureContainerElement = function (element) {
-  var self = this;
-
-  self.containerElement = element;
-
-  utils.addClass(element, 'remark-container');
-
-  if (element === utils.getBodyElement()) {
-    utils.addClass(utils.getHTMLElement(), 'remark-container');
-
-    forwardEvents(self.events, window, [
-      'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel', 'message'
-    ]);
-    forwardEvents(self.events, self.containerElement, [
-      'touchstart', 'touchmove', 'touchend'
-    ]);
-  }
-  else {
-    element.style.position = 'absolute';
-    element.tabIndex = -1;
-
-    forwardEvents(self.events, window, ['resize']);
-    forwardEvents(self.events, element, [
-      'keydown', 'keypress', 'mousewheel',
-      'touchstart', 'touchmove', 'touchend'
-    ]);
-  }
-
-  // Tap event is handled in slideshow view
-  // rather than controller as knowledge of
-  // container width is needed to determine
-  // whether to move backwards or forwards
-  self.events.on('tap', function (endX) {
-    if (endX < self.getContainerWidth() / 2) {
-      self.slideshow.gotoPreviousSlide();
-    }
-    else {
-      self.slideshow.gotoNextSlide();
-    }
-  });
-};
-
-function forwardEvents (target, source, events) {
-  events.forEach(function (eventName) {
-    source.addEventListener(eventName, function () {
-      var args = Array.prototype.slice.call(arguments);
-      target.emit.apply(target, [eventName].concat(args));
-    });
-  });
-}
-
-SlideshowView.prototype.configureChildElements = function () {
-  var self = this;
-
-  self.containerElement.innerHTML += resources.containerLayout;
-
-  self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
-  self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
-  self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
-  self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
-  self.toolbarElement = self.notesArea.getElementsByClassName('remark-toolbar')[0];
-
-  var commands = {
-    increase: function () {
-      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) + 0.1 + 'em';
-    },
-    decrease: function () {
-      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) - 0.1 + 'em';
-    }
-  };
-
-  self.toolbarElement.getElementsByTagName('a').forEach(function (link) {
-    link.addEventListener('click', function (e) {
-      var command = e.target.hash.substr(1);
-      commands[command]();
-      e.preventDefault();
-    });
-  });
-
-  self.backdropElement = self.containerElement.getElementsByClassName('remark-backdrop')[0];
-  self.helpElement = self.containerElement.getElementsByClassName('remark-help')[0];
-
-  self.timerElement = self.notesArea.getElementsByClassName('remark-toolbar-timer')[0];
-  self.pauseElement = self.containerElement.getElementsByClassName('remark-pause')[0];
-
-  self.events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('ratio')) {
-      self.updateDimensions();
-    }
-  });
-
-  self.events.on('resize', onResize);
-
-  if (window.matchMedia) {
-    window.matchMedia('print').addListener(function (e) {
-      if (e.matches) {
-        self.slideViews.forEach(function (slideView) {
-          slideView.scale({
-            clientWidth: 908,
-            clientHeight: 681
-          });
-        });
-      }
-    });
-  }
-
-  function onResize () {
-    self.scaleElements();
-  }
-};
-
-SlideshowView.prototype.updateSlideViews = function () {
-  var self = this;
-
-  self.slideViews.forEach(function (slideView) {
-    self.elementArea.removeChild(slideView.containerElement);
-  });
-
-  self.slideViews = self.slideshow.getSlides().map(function (slide) {
-    return new SlideView(self.events, self.slideshow, self.scaler, slide);
-  });
-
-  self.slideViews.forEach(function (slideView) {
-    self.elementArea.appendChild(slideView.containerElement);
-  });
-
-  self.updateDimensions();
-
-  if (self.slideshow.getCurrentSlideNo() > 0) {
-    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
-  }
-};
-
-SlideshowView.prototype.scaleSlideBackgroundImages = function (dimensions) {
-  var self = this;
-
-  self.slideViews.forEach(function (slideView) {
-    slideView.scaleBackgroundImage(dimensions);
-  });
-};
-
-SlideshowView.prototype.showSlide =  function (slideIndex) {
-  var self = this
-    , slideView = self.slideViews[slideIndex]
-    , nextSlideView = self.slideViews[slideIndex + 1];
-
-  self.events.emit("beforeShowSlide", slideIndex);
-
-  slideView.show();
-
-  self.notesElement.innerHTML = slideView.notesMarkup;
-
-  if (nextSlideView) {
-    self.previewArea.innerHTML = nextSlideView.containerElement.outerHTML;
-  }
-  else {
-    self.previewArea.innerHTML = '';
-  }
-
-  self.events.emit("afterShowSlide", slideIndex);
-};
-
-SlideshowView.prototype.hideSlide = function (slideIndex) {
-  var self = this
-    , slideView = self.slideViews[slideIndex];
-
-  self.events.emit("beforeHideSlide", slideIndex);
-  slideView.hide();
-  self.events.emit("afterHideSlide", slideIndex);
-
-};
-
-SlideshowView.prototype.updateDimensions = function () {
-  var self = this
-    , dimensions = self.scaler.dimensions
-    ;
-
-  self.helpElement.style.width = dimensions.width + 'px';
-  self.helpElement.style.height = dimensions.height + 'px';
-
-  self.scaleSlideBackgroundImages(dimensions);
-  self.scaleElements();
-};
-
-SlideshowView.prototype.updateTimer = function () {
-  var self = this;
-
-  if (self.startTime) {
-    var millis;
-    // If we're currently paused, measure elapsed time from the pauseStart.
-    // Otherwise, use "now".
-    if (self.pauseStart) {
-      millis = self.pauseStart - self.startTime - self.pauseLength;
-    } else {
-      millis = new Date() - self.startTime - self.pauseLength;
-    }
-
-    var seconds = Math.floor(millis / 1000) % 60;
-    var minutes = Math.floor(millis / 60000) % 60;
-    var hours = Math.floor(millis / 3600000);
-
-    self.timerElement.innerHTML = hours + (minutes > 9 ? ':' : ':0') + minutes + (seconds > 9 ? ':' : ':0') + seconds;
-  }
-
-};
-
-SlideshowView.prototype.scaleElements = function () {
-  var self = this;
-
-  self.slideViews.forEach(function (slideView) {
-    slideView.scale(self.elementArea);
-  });
-
-  if (self.previewArea.children.length) {
-    self.scaler.scaleToFit(self.previewArea.children[0].children[0], self.previewArea);
-  }
-  self.scaler.scaleToFit(self.helpElement, self.containerElement);
-  self.scaler.scaleToFit(self.pauseElement, self.containerElement);
-};
-
-},{"./slideView":20,"../scaler":37,"../resources":29,"../utils":21}],4:[function(require,module,exports){
-var sinon = require('sinon')
-  , api = require('../../src/remark/api')
-  , highlighter = require('../../src/remark/highlighter')
-  , Slideshow = require('../../src/remark/models/slideshow')
-  , utils = require('../../src/remark/utils')
-  ;
-
-describe('API', function () {
-  it('should be exposed', function () {
-    var remark = require('../../src/remark.js');
-    window.remark.should.equal(api);
-  });
-
-  it('should expose highlighter', function () {
-    api.highlighter.should.equal(highlighter);
-  });
-
-  it('should allow creating slideshow', function () {
-    var html = document.createElement('html');
-    var body = document.createElement('body');
-
-    // Stub to prevent altering test runner DOM
-    sinon.stub(utils, 'getHTMLElement').returns(html);
-    sinon.stub(utils, 'getBodyElement').returns(body);
-    sinon.stub(utils, 'setLocationHash');
-
-    api.create().should.be.an.instanceOf(Slideshow);
-
-    utils.getHTMLElement.restore();
-    utils.getBodyElement.restore();
-    utils.setLocationHash.restore();
-  });
-});
-
-},{"../../src/remark.js":26,"../../src/remark/highlighter":22,"../../src/remark/models/slideshow":18,"../../src/remark/utils":21,"../../src/remark/api":27,"sinon":14}],6:[function(require,module,exports){
-var sinon = require('sinon')
-  , EventEmitter = require('events').EventEmitter
-  , Controller = require('../../src/remark/controller')
-  , utils = require('../../src/remark/utils')
-  ;
-
-describe('Controller', function () {
-
-  describe('initial navigation', function () {
-    it('should naviate to first slide when slideshow is embedded ', function () {
-      createController({embedded: true});
-
-      events.emit.should.be.calledWithExactly('gotoSlide', 1);
-    });
-
-    it('should naviate by hash when slideshow is not embedded', function () {
-      sinon.stub(utils, 'getLocationHash').returns('#2');
-
-      createController({embedded: false});
-
-      events.emit.should.be.calledWithExactly('gotoSlide', '2');
-
-      utils.getLocationHash.restore();
-    });
-  });
-
-  describe('hash change', function () {
-    it('should not navigate by hash when slideshow is embedded', function () {
-      createController({embedded: true});
-
-      sinon.stub(utils, 'getLocationHash').returns('#3');
-      events.emit('hashchange');
-
-      events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
-
-      utils.getLocationHash.restore();
-    });
-
-    it('should navigate by hash when slideshow is not embedded', function () {
-      createController({embedded: false});
-
-      sinon.stub(utils, 'getLocationHash').returns('#3');
-      events.emit('hashchange');
-
-      events.emit.should.be.calledWithExactly('gotoSlide', '3');
-
-      utils.getLocationHash.restore();
-    });
-  });
-
-  describe('keyboard navigation', function () {
-    it('should navigate to previous slide when pressing page up', function () {
-      events.emit('keydown', {keyCode: 33});
-
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
-    });
-
-    it('should navigate to previous slide when pressing arrow left', function () {
-      events.emit('keydown', {keyCode: 37});
-
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
-    });
-
-    it('should navigate to previous slide when pressing arrow up', function () {
-      events.emit('keydown', {keyCode: 38});
-
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
-    });
-
-    it('should navigate to next slide when pressing space', function () {
-      events.emit('keydown', {keyCode: 32});
-
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
-    });
-
-    it('should navigate to next slide when pressing page down', function () {
-      events.emit('keydown', {keyCode: 34});
-
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
-    });
-
-    it('should navigate to next slide when pressing arrow right', function () {
-      events.emit('keydown', {keyCode: 39});
-
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
-    });
-
-    it('should navigate to next slide when pressing arrow down', function () {
-      events.emit('keydown', {keyCode: 39});
-
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
-    });
-
-    it('should navigate to first slide when pressing home', function () {
-      events.emit('keydown', {keyCode: 36});
-
-      events.emit.should.be.calledWithExactly('gotoFirstSlide');
-    });
-
-    it('should navigate to last slide when pressing end', function () {
-      events.emit('keydown', {keyCode: 35});
-
-      events.emit.should.be.calledWithExactly('gotoLastSlide');
-    });
-
-    beforeEach(function () {
-      createController();
-    });
-  });
-
-  describe('custom controller', function () {
-    it('should do nothing when pressing page up', function () {
-      events.emit('keydown', {keyCode: 33});
-
-      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
-    });
-
-    beforeEach(function () {
-      controller = function() {};
-    });
-  });
-
-  var events
-    , controller
-    ;
-
-  function createController (options) {
-    options = options || {embedded: false};
-
-    controller = new Controller(events, {
-      isEmbedded: function () { return options.embedded; }
-    });
-  }
-
-  beforeEach(function () {
-    events = new EventEmitter();
-    sinon.spy(events, 'emit');
-  });
-
-  afterEach(function () {
-    events.emit.restore();
-  });
-});
-
-},{"events":2,"../../src/remark/controller":32,"../../src/remark/utils":21,"sinon":14}],38:[function(require,module,exports){
+},{"events":14,"./lib/request":28}],29:[function(require,module,exports){
 require=(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){
 exports.readIEEE754 = function(buffer, offset, isBE, mLen, nBytes) {
   var e, m,
@@ -10092,7 +9018,7 @@ SlowBuffer.prototype.writeDoubleBE = Buffer.prototype.writeDoubleBE;
 },{}]},{},[])
 ;;module.exports=require("buffer-browserify")
 
-},{}],31:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function(Buffer){
 // Taken from node's assert module, because it sucks
 // and exposes next to nothing useful.
@@ -10188,7 +9114,519 @@ function objEquiv (a, b) {
 }
 
 })(require("__browserify_buffer").Buffer)
-},{"__browserify_buffer":38}],20:[function(require,module,exports){
+},{"__browserify_buffer":29}],30:[function(require,module,exports){
+var api = require('./remark/api')
+  , highlighter = require('./remark/highlighter')
+  , polyfills = require('./polyfills')
+  , resources = require('./remark/resources')
+  ;
+
+// Expose API as `remark`
+window.remark = api;
+
+// Apply polyfills as needed
+polyfills.apply();
+
+// Apply embedded styles to document
+styleDocument();
+
+function styleDocument () {
+  var styleElement = document.createElement('style')
+    , headElement = document.getElementsByTagName('head')[0]
+    , style
+    ;
+
+  styleElement.type = 'text/css';
+  headElement.insertBefore(styleElement, headElement.firstChild);
+
+  styleElement.innerHTML = resources.documentStyles;
+
+  for (style in highlighter.styles) {
+    if (highlighter.styles.hasOwnProperty(style)) {
+      styleElement.innerHTML = styleElement.innerHTML +
+        highlighter.styles[style];
+    }
+  }
+}
+},{"./remark/api":31,"./remark/highlighter":25,"./polyfills":32,"./remark/resources":33}],34:[function(require,module,exports){
+var utils = require('./utils');
+
+module.exports = Controller;
+
+function Controller (events, slideshowView) {
+  addApiEventListeners(events, slideshowView);
+  addNavigationEventListeners(events, slideshowView);
+  addKeyboardEventListeners(events);
+  addMouseEventListeners(events);
+  addTouchEventListeners(events);
+}
+
+function addApiEventListeners(events, slideshowView) {
+  events.on('pause', function(event) {
+    removeKeyboardEventListeners(events);
+    removeMouseEventListeners(events);
+    removeTouchEventListeners(events);
+  });
+
+  events.on('resume',  function(event) {
+    addKeyboardEventListeners(events);
+    addMouseEventListeners(events);
+    addTouchEventListeners(events);
+  });
+}
+
+function addNavigationEventListeners (events, slideshowView) {
+  if (slideshowView.isEmbedded()) {
+    events.emit('gotoSlide', 1);
+  }
+  else {
+    events.on('hashchange', navigateByHash);
+    events.on('slideChanged', updateHash);
+
+    navigateByHash();
+  }
+
+  events.on('message', navigateByMessage);
+
+  function navigateByHash () {
+    var slideNoOrName = (utils.getLocationHash() || '').substr(1);
+    events.emit('gotoSlide', slideNoOrName);
+  }
+
+  function updateHash (slideNoOrName) {
+    utils.setLocationHash('#' + slideNoOrName);
+  }
+
+  function navigateByMessage(message) {
+    var cap;
+
+    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
+      events.emit('gotoSlide', parseInt(cap[1], 10), true);
+    }
+  }
+}
+
+function removeKeyboardEventListeners(events) {
+  events.removeAllListeners("keydown");
+  events.removeAllListeners("keypress");
+}
+
+function addKeyboardEventListeners (events) {
+  events.on('keydown', function (event) {
+    switch (event.keyCode) {
+      case 33: // Page up
+      case 37: // Left
+      case 38: // Up
+        events.emit('gotoPreviousSlide');
+        break;
+      case 32: // Space
+      case 34: // Page down
+      case 39: // Right
+      case 40: // Down
+        events.emit('gotoNextSlide');
+        break;
+      case 36: // Home
+        events.emit('gotoFirstSlide');
+        break;
+      case 35: // End
+        events.emit('gotoLastSlide');
+        break;
+      case 27: // Escape
+        events.emit('hideOverlay');
+        break;
+    }
+  });
+
+  events.on('keypress', function (event) {
+    if (event.metaKey || event.ctrlKey) {
+      // Bail out if meta or ctrl key was pressed
+      return;
+    }
+
+    switch (String.fromCharCode(event.which)) {
+      case 'j':
+        events.emit('gotoNextSlide');
+        break;
+      case 'k':
+        events.emit('gotoPreviousSlide');
+        break;
+      case 'c':
+        events.emit('createClone');
+        break;
+      case 'p':
+        events.emit('togglePresenterMode');
+        break;
+      case 'f':
+        events.emit('toggleFullscreen');
+        break;
+      case 't':
+        events.emit('resetTimer');
+        break;
+      case 'h':
+      case '?':
+        events.emit('toggleHelp');
+        break;
+    }
+  });
+}
+
+function removeMouseEventListeners(events) {
+  events.removeAllListeners("mousewheel");
+}
+
+function addMouseEventListeners (events) {
+  events.on('mousewheel', function (event) {
+    if (event.wheelDeltaY > 0) {
+      events.emit('gotoPreviousSlide');
+    }
+    else if (event.wheelDeltaY < 0) {
+      events.emit('gotoNextSlide');
+    }
+  });
+}
+
+
+function removeTouchEventListeners(events) {
+  events.removeAllListeners("touchstart");
+  events.removeAllListeners("touchend");
+  events.removeAllListeners("touchmove");
+}
+
+
+function addTouchEventListeners (events) {
+  var touch
+    , startX
+    , endX
+    ;
+
+  var isTap = function () {
+    return Math.abs(startX - endX) < 10;
+  };
+
+  var handleTap = function () {
+    events.emit('tap', endX);
+  };
+
+  var handleSwipe = function () {
+    if (startX > endX) {
+      events.emit('gotoNextSlide');
+    }
+    else {
+      events.emit('gotoPreviousSlide');
+    }
+  };
+
+  events.on('touchstart', function (event) {
+    touch = event.touches[0];
+    startX = touch.clientX;
+  });
+
+  events.on('touchend', function (event) {
+    if (event.target.nodeName.toUpperCase() === 'A') {
+      return;
+    }
+
+    touch = event.changedTouches[0];
+    endX = touch.clientX;
+
+    if (isTap()) {
+      handleTap();
+    }
+    else {
+      handleSwipe();
+    }
+  });
+
+  events.on('touchmove', function (event) {
+    event.preventDefault();
+  });
+}
+
+},{"./utils":21}],16:[function(require,module,exports){
+var Lexer = require('./lexer'),
+    converter = require('./converter');
+
+module.exports = Parser;
+
+function Parser () { }
+
+Parser.prototype.parse = function (src) {
+  var lexer = new Lexer(),
+      tokens = lexer.lex(src),
+      slides = [],
+      slide = createSlide(),
+      tag,
+      classes;
+
+  tokens.forEach(function (token) {
+    switch (token.type) {
+      case 'text':
+      case 'code':
+      case 'fences':
+        appendTo(slide, token.text);
+        break;
+      case 'content_start':
+        tag = token.block ? 'div' : 'span';
+        classes = token.classes.join(' ');
+        appendTo(slide, '&lt;' + tag + ' class="' + classes + '"&gt;');
+        break;
+      case 'content_end':
+        tag = token.block ? 'div' : 'span';
+        appendTo(slide, '&lt;/' + tag + '&gt;');
+        break;
+      case 'separator':
+        slides.push(slide);
+        slide = createSlide();
+        slide.properties.continued = (token.text === '--').toString();
+        break;
+      case 'notes_separator':
+        slide.notes = '';
+        break;
+    }
+  });
+
+  slides.push(slide);
+
+  slides.forEach(function (slide) {
+    slide.source = extractProperties(slide.source, slide.properties);
+  });
+
+  return slides;
+};
+
+function createSlide () {
+  return {
+    source: '', 
+    properties: { 
+      continued: 'false'
+    }
+  };
+}
+
+function appendTo (slide, content) {
+  if (slide.notes !== undefined) {
+    slide.notes += content;
+  }
+  else {
+    slide.source += content;
+  }
+}
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}
+
+},{"./lexer":15,"./converter":17}],31:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , highlighter = require('./highlighter')
+  , Slideshow = require('./models/slideshow')
+  , SlideshowView = require('./views/slideshowView')
+  , Controller = require('./controller')
+  , utils = require('./utils')
+  ;
+
+// Expose highlighter to allow enumerating available styles and
+// including external language grammars
+module.exports.highlighter = highlighter;
+
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
+  var events
+    , slideshow
+    , slideshowView
+    , controller
+    ;
+
+  options = applyDefaults(options);
+
+  events = new EventEmitter();
+  events.setMaxListeners(0);
+
+  slideshow = new Slideshow(events, options);
+  slideshowView = new SlideshowView(events, options.container, slideshow);
+  controller = options.controller || new Controller(events, slideshowView);
+
+  return slideshow;
+};
+
+function applyDefaults (options) {
+  var sourceElement;
+
+  options = options || {};
+
+  if (!options.hasOwnProperty('source')) {
+    sourceElement = document.getElementById('source');
+    if (sourceElement) {
+      options.source = sourceElement.innerHTML;
+      sourceElement.style.display = 'none';
+    }
+  }
+
+  if (!(options.container instanceof window.HTMLElement)) {
+    options.container = utils.getBodyElement();
+  }
+
+  return options;
+}
+
+},{"events":14,"./highlighter":25,"./views/slideshowView":35,"./models/slideshow":18,"./controller":34,"./utils":21}],18:[function(require,module,exports){
+var Navigation = require('./slideshow/navigation')
+  , Events = require('./slideshow/events')
+  , utils = require('../utils')
+  , Slide = require('./slide')
+  , Parser = require('../parser')
+  ;
+
+module.exports = Slideshow;
+
+function Slideshow (events, options) {
+  var self = this
+    , slides = []
+    ;
+
+  options = options || {};
+
+  // Extend slideshow functionality
+  Events.call(self, events);
+  Navigation.call(self, events);
+
+  self.loadFromString = loadFromString;
+  self.getSlides = getSlides;
+  self.getSlideCount = getSlideCount;
+  self.getSlideByName = getSlideByName;
+
+  self.togglePresenterMode = togglePresenterMode;
+  self.toggleHelp = toggleHelp;
+  self.toggleFullscreen = toggleFullscreen;
+  self.createClone = createClone;
+
+  self.resetTimer = resetTimer;
+
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
+
+  loadFromString(options.source);
+
+  function loadFromString (source) {
+    source = source || '';
+
+    slides = createSlides(source);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  }
+
+  function getSlides () {
+    return slides.map(function (slide) { return slide; });
+  }
+
+  function getSlideCount () {
+    return slides.length;
+  }
+
+  function getSlideByName (name) {
+    return slides.byName[name];
+  }
+
+  function togglePresenterMode () {
+    events.emit('togglePresenterMode');
+  }
+
+  function toggleHelp () {
+    events.emit('toggleHelp');
+  }
+
+  function toggleFullscreen () {
+    events.emit('toggleFullscreen');
+  }
+
+  function createClone () {
+    events.emit('createClone');
+  }
+
+  function resetTimer () {
+    events.emit('resetTimer');
+  }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
+  }
+}
+
+function createSlides (slideshowSource) {
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
+    , byName = {}
+    , layoutSlide
+    ;
+
+  slides.byName = {};
+
+  parsedSlides.forEach(function (slide, i) {
+    var template, slideViewModel;
+
+    if (slide.properties.continued === 'true' && i > 0) {
+      template = slides[slides.length - 1];
+    }
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
+    }
+    else if (slide.properties.layout === 'false') {
+      layoutSlide = undefined;
+    }
+    else if (layoutSlide && slide.properties.layout !== 'true') {
+      template = layoutSlide;
+    }
+
+    slideViewModel = new Slide(slides.length + 1, slide, template);
+
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
+    }
+
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
+    }
+
+    if (slide.properties.layout !== 'true') {
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
+      }
+    }
+  });
+
+  return slides;
+}
+
+function expandVariables (slides) {
+  slides.forEach(function (slide) {
+    slide.expandVariables();
+  });
+}
+
+},{"./slideshow/navigation":36,"./slideshow/events":37,"../utils":21,"./slide":19,"../parser":16}],20:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -10387,7 +9825,801 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":15,"../utils":21,"../highlighter":22}],34:[function(require,module,exports){
+},{"../converter":17,"../highlighter":25,"../utils":21}],35:[function(require,module,exports){
+var SlideView = require('./slideView')
+  , Scaler = require('../scaler')
+  , resources = require('../resources')
+  , utils = require('../utils')
+  ;
+
+module.exports = SlideshowView;
+
+function SlideshowView (events, containerElement, slideshow) {
+  var self = this;
+
+  self.events = events;
+  self.slideshow = slideshow;
+  self.scaler = new Scaler(events, slideshow);
+  self.slideViews = [];
+
+  self.configureContainerElement(containerElement);
+  self.configureChildElements();
+
+  self.updateDimensions();
+  self.scaleElements();
+  self.updateSlideViews();
+
+  self.startTime = null;
+  self.pauseStart = null;
+  self.pauseLength = 0;
+  setInterval(function() {
+      self.updateTimer();
+    }, 100);
+
+  events.on('slidesChanged', function () {
+    self.updateSlideViews();
+  });
+
+  events.on('hideSlide', function (slideIndex) {
+    // To make sure that there is only one element fading at a time,
+    // remove the fading class from all slides before hiding
+    // the new slide.
+    self.elementArea.getElementsByClassName('remark-fading').forEach(function (slide) {
+      utils.removeClass(slide, 'remark-fading');
+    });
+    self.hideSlide(slideIndex);
+  });
+
+  events.on('showSlide', function (slideIndex) {
+    self.showSlide(slideIndex);
+  });
+
+  events.on('togglePresenterMode', function () {
+    utils.toggleClass(self.containerElement, 'remark-presenter-mode');
+    self.scaleElements();
+  });
+
+  events.on('toggleHelp', function () {
+    utils.toggleClass(self.containerElement, 'remark-help-mode');
+  });
+
+  events.on('start', function () {
+    // When we do the first slide change, start the clock.
+    self.startTime = new Date();
+  });
+
+  events.on('resetTimer', function () {
+    // If we reset the timer, clear everything.
+    self.startTime = null;
+    self.pauseStart = null;
+    self.pauseLength = 0;
+    self.timerElement.innerHTML = '0:00:00';
+  });
+
+  events.on('pause', function () {
+    self.pauseStart = new Date();
+    utils.toggleClass(self.containerElement, 'remark-pause-mode');
+  });
+
+  events.on('resume', function () {
+    self.pauseLength += new Date() - self.pauseStart;
+    self.pauseStart = null;
+    utils.toggleClass(self.containerElement, 'remark-pause-mode');
+  });
+
+  handleFullscreen(self);
+}
+
+function handleFullscreen(self) {
+  var requestFullscreen = utils.getPrefixedProperty(self.containerElement, 'requestFullScreen')
+    , cancelFullscreen = utils.getPrefixedProperty(document, 'cancelFullScreen')
+    ;
+
+  self.events.on('toggleFullscreen', function () {
+    var fullscreenElement = utils.getPrefixedProperty(document, 'fullscreenElement') ||
+      utils.getPrefixedProperty(document, 'fullScreenElement');
+
+    if (!fullscreenElement && requestFullscreen) {
+      requestFullscreen.call(self.containerElement, Element.ALLOW_KEYBOARD_INPUT);
+    }
+    else if (cancelFullscreen) {
+      cancelFullscreen.call(document);
+    }
+    self.scaleElements();
+  });
+}
+
+SlideshowView.prototype.isEmbedded = function () {
+  return this.containerElement !== utils.getBodyElement();
+};
+
+SlideshowView.prototype.configureContainerElement = function (element) {
+  var self = this;
+
+  self.containerElement = element;
+
+  utils.addClass(element, 'remark-container');
+
+  if (element === utils.getBodyElement()) {
+    utils.addClass(utils.getHTMLElement(), 'remark-container');
+
+    forwardEvents(self.events, window, [
+      'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel', 'message'
+    ]);
+    forwardEvents(self.events, self.containerElement, [
+      'touchstart', 'touchmove', 'touchend'
+    ]);
+  }
+  else {
+    element.style.position = 'absolute';
+    element.tabIndex = -1;
+
+    forwardEvents(self.events, window, ['resize']);
+    forwardEvents(self.events, element, [
+      'keydown', 'keypress', 'mousewheel',
+      'touchstart', 'touchmove', 'touchend'
+    ]);
+  }
+
+  // Tap event is handled in slideshow view
+  // rather than controller as knowledge of
+  // container width is needed to determine
+  // whether to move backwards or forwards
+  self.events.on('tap', function (endX) {
+    if (endX < self.getContainerWidth() / 2) {
+      self.slideshow.gotoPreviousSlide();
+    }
+    else {
+      self.slideshow.gotoNextSlide();
+    }
+  });
+};
+
+function forwardEvents (target, source, events) {
+  events.forEach(function (eventName) {
+    source.addEventListener(eventName, function () {
+      var args = Array.prototype.slice.call(arguments);
+      target.emit.apply(target, [eventName].concat(args));
+    });
+  });
+}
+
+SlideshowView.prototype.configureChildElements = function () {
+  var self = this;
+
+  self.containerElement.innerHTML += resources.containerLayout;
+
+  self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
+  self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
+  self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
+  self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
+  self.toolbarElement = self.notesArea.getElementsByClassName('remark-toolbar')[0];
+
+  var commands = {
+    increase: function () {
+      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) + 0.1 + 'em';
+    },
+    decrease: function () {
+      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) - 0.1 + 'em';
+    }
+  };
+
+  self.toolbarElement.getElementsByTagName('a').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      var command = e.target.hash.substr(1);
+      commands[command]();
+      e.preventDefault();
+    });
+  });
+
+  self.backdropElement = self.containerElement.getElementsByClassName('remark-backdrop')[0];
+  self.helpElement = self.containerElement.getElementsByClassName('remark-help')[0];
+
+  self.timerElement = self.notesArea.getElementsByClassName('remark-toolbar-timer')[0];
+  self.pauseElement = self.containerElement.getElementsByClassName('remark-pause')[0];
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.updateDimensions();
+    }
+  });
+
+  self.events.on('resize', onResize);
+
+  if (window.matchMedia) {
+    window.matchMedia('print').addListener(function (e) {
+      if (e.matches) {
+        self.slideViews.forEach(function (slideView) {
+          slideView.scale({
+            clientWidth: 908,
+            clientHeight: 681
+          });
+        });
+      }
+    });
+  }
+
+  function onResize () {
+    self.scaleElements();
+  }
+};
+
+SlideshowView.prototype.updateSlideViews = function () {
+  var self = this;
+
+  self.slideViews.forEach(function (slideView) {
+    self.elementArea.removeChild(slideView.containerElement);
+  });
+
+  self.slideViews = self.slideshow.getSlides().map(function (slide) {
+    return new SlideView(self.events, self.slideshow, self.scaler, slide);
+  });
+
+  self.slideViews.forEach(function (slideView) {
+    self.elementArea.appendChild(slideView.containerElement);
+  });
+
+  self.updateDimensions();
+
+  if (self.slideshow.getCurrentSlideNo() > 0) {
+    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
+  }
+};
+
+SlideshowView.prototype.scaleSlideBackgroundImages = function (dimensions) {
+  var self = this;
+
+  self.slideViews.forEach(function (slideView) {
+    slideView.scaleBackgroundImage(dimensions);
+  });
+};
+
+SlideshowView.prototype.showSlide =  function (slideIndex) {
+  var self = this
+    , slideView = self.slideViews[slideIndex]
+    , nextSlideView = self.slideViews[slideIndex + 1];
+
+  self.events.emit("beforeShowSlide", slideIndex);
+
+  slideView.show();
+
+  self.notesElement.innerHTML = slideView.notesMarkup;
+
+  if (nextSlideView) {
+    self.previewArea.innerHTML = nextSlideView.containerElement.outerHTML;
+  }
+  else {
+    self.previewArea.innerHTML = '';
+  }
+
+  self.events.emit("afterShowSlide", slideIndex);
+};
+
+SlideshowView.prototype.hideSlide = function (slideIndex) {
+  var self = this
+    , slideView = self.slideViews[slideIndex];
+
+  self.events.emit("beforeHideSlide", slideIndex);
+  slideView.hide();
+  self.events.emit("afterHideSlide", slideIndex);
+
+};
+
+SlideshowView.prototype.updateDimensions = function () {
+  var self = this
+    , dimensions = self.scaler.dimensions
+    ;
+
+  self.helpElement.style.width = dimensions.width + 'px';
+  self.helpElement.style.height = dimensions.height + 'px';
+
+  self.scaleSlideBackgroundImages(dimensions);
+  self.scaleElements();
+};
+
+SlideshowView.prototype.updateTimer = function () {
+  var self = this;
+
+  if (self.startTime) {
+    var millis;
+    // If we're currently paused, measure elapsed time from the pauseStart.
+    // Otherwise, use "now".
+    if (self.pauseStart) {
+      millis = self.pauseStart - self.startTime - self.pauseLength;
+    } else {
+      millis = new Date() - self.startTime - self.pauseLength;
+    }
+
+    var seconds = Math.floor(millis / 1000) % 60;
+    var minutes = Math.floor(millis / 60000) % 60;
+    var hours = Math.floor(millis / 3600000);
+
+    self.timerElement.innerHTML = hours + (minutes > 9 ? ':' : ':0') + minutes + (seconds > 9 ? ':' : ':0') + seconds;
+  }
+
+};
+
+SlideshowView.prototype.scaleElements = function () {
+  var self = this;
+
+  self.slideViews.forEach(function (slideView) {
+    slideView.scale(self.elementArea);
+  });
+
+  if (self.previewArea.children.length) {
+    self.scaler.scaleToFit(self.previewArea.children[0].children[0], self.previewArea);
+  }
+  self.scaler.scaleToFit(self.helpElement, self.containerElement);
+  self.scaler.scaleToFit(self.pauseElement, self.containerElement);
+};
+
+},{"./slideView":20,"../scaler":38,"../utils":21,"../resources":33}],32:[function(require,module,exports){
+exports.apply = function () {
+  forEach([Array, window.NodeList, window.HTMLCollection], extend);
+};
+
+function forEach (list, f) {
+  var i;
+
+  for (i = 0; i < list.length; ++i) {
+    f(list[i], i);
+  }
+}
+
+function extend (object) {
+  var prototype = object && object.prototype;
+
+  if (!prototype) {
+    return;
+  }
+
+  prototype.forEach = prototype.forEach || function (f) {
+    forEach(this, f);
+  };
+
+  prototype.filter = prototype.filter || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      if (f(element, result.length)) {
+        result.push(element);
+      }
+    });
+
+    return result;
+  };
+
+  prototype.map = prototype.map || function (f) {
+    var result = [];
+
+    this.forEach(function (element) {
+      result.push(f(element, result.length));
+    });
+
+    return result;
+  };
+}
+},{}],33:[function(require,module,exports){
+/* Automatically generated */
+
+module.exports = {
+  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;-webkit-print-color-adjust:exact;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:absolute;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background-color:transparent;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;table-layout:fixed;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slide .remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-slide-content{background-color:#fff;}.remark-visible{display:block;z-index:2;}.remark-fading{display:block;z-index:1;}.remark-fading .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;background:#000;z-index:2;}.remark-pause{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;}.remark-pause .remark-pause-lozenge{margin-top:30%;text-align:center;}.remark-pause .remark-pause-lozenge span{color:white;background:black;border:2px solid black;border-radius:20px;padding:20px 30px;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:42pt;font-weight:bold;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-pause{display:block;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-backdrop{display:block;opacity:0.5;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:0px;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;opacity:0.95;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-notes-area .remark-notes{clear:both;margin-top:30px;}.remark-toolbar{color:#979892;padding-bottom:1em;vertical-align:middle;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-toolbar .remark-toolbar-timer{border:2px solid black;border-radius:10px;background:black;color:white;display:inline-block;float:right;padding:10px;font-family:sans-serif;font-weight:bold;font-size:200%;text-decoration:none;text-align:center;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;background-color:#fff;} .remark-slide-container{display:block;position:relative;} .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}}@page {size:908px 681px;margin:0;}",
+  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n    <span class=\"remark-toolbar-timer\">0:00:00</span>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-pause\">\n  <div class=\"remark-pause-lozenge\">\n    <span>Paused</span>\n  </div>\n</div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">k</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">j</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">f</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">c</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">p</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">w</span>\n        </td>\n        <td>Pause/Resume the presentation</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">t</span>\n        </td>\n        <td>Restart the presentation timer</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>,\n          <span class=\"key\">h</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
+};
+
+},{}],3:[function(require,module,exports){
+var sinon = require('sinon')
+  , EventEmitter = require('events').EventEmitter
+  , Controller = require('../../src/remark/controller')
+  , utils = require('../../src/remark/utils')
+  ;
+
+describe('Controller', function () {
+
+  describe('initial navigation', function () {
+    it('should naviate to first slide when slideshow is embedded ', function () {
+      createController({embedded: true});
+
+      events.emit.should.be.calledWithExactly('gotoSlide', 1);
+    });
+
+    it('should naviate by hash when slideshow is not embedded', function () {
+      sinon.stub(utils, 'getLocationHash').returns('#2');
+
+      createController({embedded: false});
+
+      events.emit.should.be.calledWithExactly('gotoSlide', '2');
+
+      utils.getLocationHash.restore();
+    });
+  });
+
+  describe('hash change', function () {
+    it('should not navigate by hash when slideshow is embedded', function () {
+      createController({embedded: true});
+
+      sinon.stub(utils, 'getLocationHash').returns('#3');
+      events.emit('hashchange');
+
+      events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
+
+      utils.getLocationHash.restore();
+    });
+
+    it('should navigate by hash when slideshow is not embedded', function () {
+      createController({embedded: false});
+
+      sinon.stub(utils, 'getLocationHash').returns('#3');
+      events.emit('hashchange');
+
+      events.emit.should.be.calledWithExactly('gotoSlide', '3');
+
+      utils.getLocationHash.restore();
+    });
+  });
+
+  describe('keyboard navigation', function () {
+    it('should navigate to previous slide when pressing page up', function () {
+      events.emit('keydown', {keyCode: 33});
+
+      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+    });
+
+    it('should navigate to previous slide when pressing arrow left', function () {
+      events.emit('keydown', {keyCode: 37});
+
+      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+    });
+
+    it('should navigate to previous slide when pressing arrow up', function () {
+      events.emit('keydown', {keyCode: 38});
+
+      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+    });
+
+    it('should navigate to next slide when pressing space', function () {
+      events.emit('keydown', {keyCode: 32});
+
+      events.emit.should.be.calledWithExactly('gotoNextSlide');
+    });
+
+    it('should navigate to next slide when pressing page down', function () {
+      events.emit('keydown', {keyCode: 34});
+
+      events.emit.should.be.calledWithExactly('gotoNextSlide');
+    });
+
+    it('should navigate to next slide when pressing arrow right', function () {
+      events.emit('keydown', {keyCode: 39});
+
+      events.emit.should.be.calledWithExactly('gotoNextSlide');
+    });
+
+    it('should navigate to next slide when pressing arrow down', function () {
+      events.emit('keydown', {keyCode: 39});
+
+      events.emit.should.be.calledWithExactly('gotoNextSlide');
+    });
+
+    it('should navigate to first slide when pressing home', function () {
+      events.emit('keydown', {keyCode: 36});
+
+      events.emit.should.be.calledWithExactly('gotoFirstSlide');
+    });
+
+    it('should navigate to last slide when pressing end', function () {
+      events.emit('keydown', {keyCode: 35});
+
+      events.emit.should.be.calledWithExactly('gotoLastSlide');
+    });
+
+    beforeEach(function () {
+      createController();
+    });
+  });
+
+  describe('custom controller', function () {
+    it('should do nothing when pressing page up', function () {
+      events.emit('keydown', {keyCode: 33});
+
+      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
+    });
+
+    beforeEach(function () {
+      controller = function() {};
+    });
+  });
+
+  var events
+    , controller
+    ;
+
+  function createController (options) {
+    options = options || {embedded: false};
+
+    controller = new Controller(events, {
+      isEmbedded: function () { return options.embedded; }
+    });
+  }
+
+  beforeEach(function () {
+    events = new EventEmitter();
+    sinon.spy(events, 'emit');
+  });
+
+  afterEach(function () {
+    events.emit.restore();
+  });
+});
+
+},{"events":14,"../../src/remark/controller":34,"../../src/remark/utils":21,"sinon":12}],2:[function(require,module,exports){
+var sinon = require('sinon')
+  , api = require('../../src/remark/api')
+  , highlighter = require('../../src/remark/highlighter')
+  , Slideshow = require('../../src/remark/models/slideshow')
+  , utils = require('../../src/remark/utils')
+  ;
+
+describe('API', function () {
+  it('should be exposed', function () {
+    var remark = require('../../src/remark.js');
+    window.remark.should.equal(api);
+  });
+
+  it('should expose highlighter', function () {
+    api.highlighter.should.equal(highlighter);
+  });
+
+  it('should allow creating slideshow', function () {
+    var html = document.createElement('html');
+    var body = document.createElement('body');
+
+    // Stub to prevent altering test runner DOM
+    sinon.stub(utils, 'getHTMLElement').returns(html);
+    sinon.stub(utils, 'getBodyElement').returns(body);
+    sinon.stub(utils, 'setLocationHash');
+
+    api.create().should.be.an.instanceOf(Slideshow);
+
+    utils.getHTMLElement.restore();
+    utils.getBodyElement.restore();
+    utils.setLocationHash.restore();
+  });
+});
+
+},{"../../src/remark.js":30,"../../src/remark/api":31,"../../src/remark/models/slideshow":18,"../../src/remark/highlighter":25,"../../src/remark/utils":21,"sinon":12}],39:[function(require,module,exports){
+exports.readIEEE754 = function(buffer, offset, isBE, mLen, nBytes) {
+  var e, m,
+      eLen = nBytes * 8 - mLen - 1,
+      eMax = (1 << eLen) - 1,
+      eBias = eMax >> 1,
+      nBits = -7,
+      i = isBE ? 0 : (nBytes - 1),
+      d = isBE ? 1 : -1,
+      s = buffer[offset + i];
+
+  i += d;
+
+  e = s & ((1 << (-nBits)) - 1);
+  s >>= (-nBits);
+  nBits += eLen;
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8);
+
+  m = e & ((1 << (-nBits)) - 1);
+  e >>= (-nBits);
+  nBits += mLen;
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8);
+
+  if (e === 0) {
+    e = 1 - eBias;
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity);
+  } else {
+    m = m + Math.pow(2, mLen);
+    e = e - eBias;
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
+};
+
+exports.writeIEEE754 = function(buffer, value, offset, isBE, mLen, nBytes) {
+  var e, m, c,
+      eLen = nBytes * 8 - mLen - 1,
+      eMax = (1 << eLen) - 1,
+      eBias = eMax >> 1,
+      rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0),
+      i = isBE ? (nBytes - 1) : 0,
+      d = isBE ? -1 : 1,
+      s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
+
+  value = Math.abs(value);
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0;
+    e = eMax;
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2);
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--;
+      c *= 2;
+    }
+    if (e + eBias >= 1) {
+      value += rt / c;
+    } else {
+      value += rt * Math.pow(2, 1 - eBias);
+    }
+    if (value * c >= 2) {
+      e++;
+      c /= 2;
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0;
+      e = eMax;
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen);
+      e = e + eBias;
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
+      e = 0;
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8);
+
+  e = (e << mLen) | m;
+  eLen += mLen;
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8);
+
+  buffer[offset + i - d] |= s * 128;
+};
+
+},{}],40:[function(require,module,exports){
+var events = require('events');
+var util = require('util');
+
+function Stream() {
+  events.EventEmitter.call(this);
+}
+util.inherits(Stream, events.EventEmitter);
+module.exports = Stream;
+// Backwards-compat with node 0.4.x
+Stream.Stream = Stream;
+
+Stream.prototype.pipe = function(dest, options) {
+  var source = this;
+
+  function ondata(chunk) {
+    if (dest.writable) {
+      if (false === dest.write(chunk) && source.pause) {
+        source.pause();
+      }
+    }
+  }
+
+  source.on('data', ondata);
+
+  function ondrain() {
+    if (source.readable && source.resume) {
+      source.resume();
+    }
+  }
+
+  dest.on('drain', ondrain);
+
+  // If the 'end' option is not supplied, dest.end() will be called when
+  // source gets the 'end' or 'close' events.  Only dest.end() once, and
+  // only when all sources have ended.
+  if (!dest._isStdio && (!options || options.end !== false)) {
+    dest._pipeCount = dest._pipeCount || 0;
+    dest._pipeCount++;
+
+    source.on('end', onend);
+    source.on('close', onclose);
+  }
+
+  var didOnEnd = false;
+  function onend() {
+    if (didOnEnd) return;
+    didOnEnd = true;
+
+    dest._pipeCount--;
+
+    // remove the listeners
+    cleanup();
+
+    if (dest._pipeCount > 0) {
+      // waiting for other incoming streams to end.
+      return;
+    }
+
+    dest.end();
+  }
+
+
+  function onclose() {
+    if (didOnEnd) return;
+    didOnEnd = true;
+
+    dest._pipeCount--;
+
+    // remove the listeners
+    cleanup();
+
+    if (dest._pipeCount > 0) {
+      // waiting for other incoming streams to end.
+      return;
+    }
+
+    dest.destroy();
+  }
+
+  // don't leave dangling pipes when there are errors.
+  function onerror(er) {
+    cleanup();
+    if (this.listeners('error').length === 0) {
+      throw er; // Unhandled stream error in pipe.
+    }
+  }
+
+  source.on('error', onerror);
+  dest.on('error', onerror);
+
+  // remove all the event listeners that were added.
+  function cleanup() {
+    source.removeListener('data', ondata);
+    dest.removeListener('drain', ondrain);
+
+    source.removeListener('end', onend);
+    source.removeListener('close', onclose);
+
+    source.removeListener('error', onerror);
+    dest.removeListener('error', onerror);
+
+    source.removeListener('end', cleanup);
+    source.removeListener('close', cleanup);
+
+    dest.removeListener('end', cleanup);
+    dest.removeListener('close', cleanup);
+  }
+
+  source.on('end', cleanup);
+  source.on('close', cleanup);
+
+  dest.on('end', cleanup);
+  dest.on('close', cleanup);
+
+  dest.emit('pipe', source);
+
+  // Allow for unix-like usage: A.pipe(B).pipe(C)
+  return dest;
+};
+
+},{"events":14,"util":22}],37:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+
+module.exports = Events;
+
+function Events (events) {
+  var self = this
+    , externalEvents = new EventEmitter()
+    ;
+
+  externalEvents.setMaxListeners(0);
+
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
+  };
+
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
+  });
+}
+
+},{"events":14}],36:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -10526,32 +10758,7 @@ function Navigation (events) {
   }
 }
 
-},{}],35:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":2}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var referenceWidth = 908
   , referenceHeight = 681
   , referenceRatio = referenceWidth / referenceHeight
@@ -10630,618 +10837,7 @@ function getDimensions (ratio) {
   };
 }
 
-},{}],10:[function(require,module,exports){
-var sinon = require('sinon')
-  , EventEmitter = require('events').EventEmitter
-  , SlideshowView = require('../../../src/remark/views/slideshowView')
-  , Slideshow = require('../../../src/remark/models/slideshow')
-  , utils = require('../../../src/remark/utils')
-  ;
-
-describe('SlideshowView', function () {
-  var events
-    , model
-    , containerElement
-    , view
-    ;
-
-  beforeEach(function () {
-    events = new EventEmitter();
-    model = new Slideshow(events);
-    containerElement = document.createElement('div');
-  });
-
-  describe('container element configuration', function () {
-    beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
-    });
-
-    it('should style element', function () {
-      containerElement.className.should.include('remark-container');
-    });
-
-    it('should position element', function () {
-      containerElement.style.position.should.equal('absolute');
-    });
-
-    it('should make element focusable', function () {
-      containerElement.tabIndex.should.equal(-1);
-    });
-
-    describe('proxying of element events', function () {
-      it('should proxy keydown event', function (done) {
-        events.on('keydown', function () {
-          done();
-        });
-
-        triggerEvent(containerElement, 'keydown');
-      });
-
-      it('should proxy keypress event', function (done) {
-        events.on('keypress', function () {
-          done();
-        });
-
-        triggerEvent(containerElement, 'keypress');
-      });
-
-      it('should proxy mousewheel event', function (done) {
-        events.on('mousewheel', function () {
-          done();
-        });
-
-        triggerEvent(containerElement, 'mousewheel');
-      });
-
-      it('should proxy touchstart event', function (done) {
-        events.on('touchstart', function () {
-          done();
-        });
-
-        triggerEvent(containerElement, 'touchstart');
-      });
-
-      it('should proxy touchmove event', function (done) {
-        events.on('touchmove', function () {
-          done();
-        });
-
-        triggerEvent(containerElement, 'touchmove');
-      });
-
-      it('should proxy touchend event', function (done) {
-        events.on('touchend', function () {
-          done();
-        });
-
-        triggerEvent(containerElement, 'touchend');
-      });
-    });
-  });
-
-  describe('document.body container element configuration', function () {
-    var html, body;
-
-    beforeEach(function () {
-      html = document.createElement('html');
-      body = document.createElement('body');
-
-      // Stub to prevent altering test runner DOM
-      sinon.stub(utils, 'getHTMLElement').returns(html);
-      sinon.stub(utils, 'getBodyElement').returns(body);
-
-      containerElement = body;
-      view = new SlideshowView(events, containerElement, model);
-    });
-
-    afterEach(function () {
-      utils.getHTMLElement.restore();
-      utils.getBodyElement.restore();
-    });
-
-    it('should style HTML element', function () {
-      var html = utils.getHTMLElement();
-      html.className.should.include('remark-container');
-    });
-
-    it('should not position element', function () {
-      containerElement.style.position.should.not.equal('absolute');
-    });
-
-    describe('proxying of element events', function () {
-      it('should proxy resize event', function (done) {
-        events.on('resize', function () {
-          done();
-        });
-
-        triggerEvent(window, 'resize');
-      });
-
-      it('should proxy hashchange event', function (done) {
-        events.on('hashchange', function () {
-          done();
-        });
-
-        triggerEvent(window, 'hashchange');
-      });
-
-      it('should proxy keydown event', function (done) {
-        events.on('keydown', function () {
-          done();
-        });
-
-        triggerEvent(window, 'keydown');
-      });
-
-      it('should proxy keypress event', function (done) {
-        events.on('keypress', function () {
-          done();
-        });
-
-        triggerEvent(window, 'keypress');
-      });
-
-      it('should proxy mousewheel event', function (done) {
-        events.on('mousewheel', function () {
-          done();
-        });
-
-        triggerEvent(window, 'mousewheel');
-      });
-
-      it('should proxy touchstart event', function (done) {
-        events.on('touchstart', function () {
-          done();
-        });
-
-        triggerEvent(body, 'touchstart');
-      });
-
-      it('should proxy touchmove event', function (done) {
-        events.on('touchmove', function () {
-          done();
-        });
-
-        triggerEvent(body, 'touchmove');
-      });
-
-      it('should proxy touchend event', function (done) {
-        events.on('touchend', function () {
-          done();
-        });
-
-        triggerEvent(body, 'touchend');
-      });
-    });
-  });
-
-  describe('ratio calculation', function () {
-    it('should calculate element size for 4:3', function () {
-      model = new Slideshow(events, {ratio: '4:3'});
-
-      view = new SlideshowView(events, containerElement, model);
-
-      view.slideViews[0].scalingElement.style.width.should.equal('908px');
-      view.slideViews[0].scalingElement.style.height.should.equal('681px');
-    });
-
-    it('should calculate element size for 16:9', function () {
-      model = new Slideshow(events, {ratio: '16:9'});
-
-      view = new SlideshowView(events, containerElement, model);
-
-      view.slideViews[0].scalingElement.style.width.should.equal('1210px');
-      view.slideViews[0].scalingElement.style.height.should.equal('681px');
-    });
-  });
-
-  describe('model synchronization', function () {
-    beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
-    });
-
-    it('should create initial slide views', function () {
-      view.slideViews.length.should.equal(1);
-    });
-
-    it('should replace slide views on slideshow update', function () {
-      model.loadFromString('a\n---\nb');
-
-      view.slideViews.length.should.equal(2);
-    });
-  });
-
-  describe('timer updates', function () {
-    beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
-    });
-
-    it('should do nothing if the timer has not started', function () {
-      view.timerElement.innerHTML.should.equal('0:00:00');
-    });
-
-    it('should show progress time if the slideshow has started', function () {
-      // Force a specific start time and update
-      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
-      view.updateTimer();
-      // Timer output should match forced time
-      view.timerElement.innerHTML.should.equal('2:34:56');
-    });
-
-    it('should compensate for a pause in progress', function () {
-      // Force a specific start time and update, including an in-progress pause
-      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
-      view.pauseStart = new Date() - (1*3600000 + 23 * 60000 + 45 * 1000);
-      view.updateTimer();
-      // Timer output should match forced time
-      view.timerElement.innerHTML.should.equal('1:11:11');
-    });
-
-    it('should compensate for paused time', function () {
-      // Force a specific start time and update, including a recorded pause
-      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
-      view.pauseLength = (5 * 60000 + 6 * 1000);
-      view.updateTimer();
-      // Timer output should match forced time
-      view.timerElement.innerHTML.should.equal('2:29:50');
-    });
-
-
-    it('should compensate for a pause in progress in addition to previous pauses', function () {
-      // Force a specific start time and update, including a recorded pause
-      // and an in-progress pause
-      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
-      view.pauseLength = (5 * 60000 + 6 * 1000);
-      view.pauseStart = new Date() - (1*3600000 + 23 * 60000 + 45 * 1000);
-      view.updateTimer();
-      // Timer output should match forced time
-      view.timerElement.innerHTML.should.equal('1:06:05');
-    });
-
-  });
-
-  describe('timer events', function () {
-    beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
-    });
-
-    it('should respond to a start event', function () {
-      events.emit('start');
-      view.startTime.should.not.equal(null);
-    });
-
-    it('should reset on demand', function () {
-      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
-      events.emit('resetTimer');
-      view.timerElement.innerHTML.should.equal('0:00:00');
-      // BDD seems to make this really easy test impossible...
-      // view.startTime.should.equal(null);
-      // view.pauseStart.should.equal(null);
-      view.pauseLength.should.equal(0);
-    });
-
-    it('should track pause start end time', function () {
-      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
-
-      events.emit('pause');
-      view.pauseStart.should.not.equal(null);
-      view.pauseLength.should.equal(0);
-    });
-
-    it('should accumulate pause duration at pause end', function () {
-      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
-      view.pauseStart = new Date() - (12 * 1000);
-      view.pauseLength = 100000;
-
-      events.emit('resume');
-      // BDD seems to make this really easy test impossible...
-      //view.pauseStart.should.equal(null);
-      // Microsecond accuracy is a possible problem here, so
-      // allow a 5 microsecond window just in case.
-      view.pauseLength.should.be.approximately(112000, 5);
-    });
-  });
-
-  function triggerEvent(element, eventName) {
-    var event = document.createEvent('HTMLEvents');
-    event.initEvent(eventName, true, true);
-    element.dispatchEvent(event);
-  }
-});
-
-},{"events":2,"../../../src/remark/views/slideshowView":33,"../../../src/remark/models/slideshow":18,"../../../src/remark/utils":21,"sinon":14}],39:[function(require,module,exports){
-exports.readIEEE754 = function(buffer, offset, isBE, mLen, nBytes) {
-  var e, m,
-      eLen = nBytes * 8 - mLen - 1,
-      eMax = (1 << eLen) - 1,
-      eBias = eMax >> 1,
-      nBits = -7,
-      i = isBE ? 0 : (nBytes - 1),
-      d = isBE ? 1 : -1,
-      s = buffer[offset + i];
-
-  i += d;
-
-  e = s & ((1 << (-nBits)) - 1);
-  s >>= (-nBits);
-  nBits += eLen;
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8);
-
-  m = e & ((1 << (-nBits)) - 1);
-  e >>= (-nBits);
-  nBits += mLen;
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8);
-
-  if (e === 0) {
-    e = 1 - eBias;
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity);
-  } else {
-    m = m + Math.pow(2, mLen);
-    e = e - eBias;
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
-};
-
-exports.writeIEEE754 = function(buffer, value, offset, isBE, mLen, nBytes) {
-  var e, m, c,
-      eLen = nBytes * 8 - mLen - 1,
-      eMax = (1 << eLen) - 1,
-      eBias = eMax >> 1,
-      rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0),
-      i = isBE ? (nBytes - 1) : 0,
-      d = isBE ? -1 : 1,
-      s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
-
-  value = Math.abs(value);
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0;
-    e = eMax;
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2);
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--;
-      c *= 2;
-    }
-    if (e + eBias >= 1) {
-      value += rt / c;
-    } else {
-      value += rt * Math.pow(2, 1 - eBias);
-    }
-    if (value * c >= 2) {
-      e++;
-      c /= 2;
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0;
-      e = eMax;
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen);
-      e = e + eBias;
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-      e = 0;
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8);
-
-  e = (e << mLen) | m;
-  eLen += mLen;
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8);
-
-  buffer[offset + i - d] |= s * 128;
-};
-
-},{}],40:[function(require,module,exports){
-(function(){/**
-  * @depend ../sinon.js
-  * @depend match.js
-  */
-/*jslint eqeqeq: false, onevar: false, plusplus: false*/
-/*global module, require, sinon*/
-/**
-  * Spy calls
-  *
-  * @author Christian Johansen (christian@cjohansen.no)
-  * @author Maximilian Antoni (mail@maxantoni.de)
-  * @license BSD
-  *
-  * Copyright (c) 2010-2013 Christian Johansen
-  * Copyright (c) 2013 Maximilian Antoni
-  */
-"use strict";
-
-(function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
-    if (!sinon && commonJSModule) {
-        sinon = require("../sinon");
-    }
-
-    if (!sinon) {
-        return;
-    }
-
-    function throwYieldError(proxy, text, args) {
-        var msg = sinon.functionName(proxy) + text;
-        if (args.length) {
-            msg += " Received [" + slice.call(args).join(", ") + "]";
-        }
-        throw new Error(msg);
-    }
-
-    var slice = Array.prototype.slice;
-
-    var callProto = {
-        calledOn: function calledOn(thisValue) {
-            if (sinon.match && sinon.match.isMatcher(thisValue)) {
-                return thisValue.test(this.thisValue);
-            }
-            return this.thisValue === thisValue;
-        },
-
-        calledWith: function calledWith() {
-            for (var i = 0, l = arguments.length; i < l; i += 1) {
-                if (!sinon.deepEqual(arguments[i], this.args[i])) {
-                    return false;
-                }
-            }
-
-            return true;
-        },
-
-        calledWithMatch: function calledWithMatch() {
-            for (var i = 0, l = arguments.length; i < l; i += 1) {
-                var actual = this.args[i];
-                var expectation = arguments[i];
-                if (!sinon.match || !sinon.match(expectation).test(actual)) {
-                    return false;
-                }
-            }
-            return true;
-        },
-
-        calledWithExactly: function calledWithExactly() {
-            return arguments.length == this.args.length &&
-                this.calledWith.apply(this, arguments);
-        },
-
-        notCalledWith: function notCalledWith() {
-            return !this.calledWith.apply(this, arguments);
-        },
-
-        notCalledWithMatch: function notCalledWithMatch() {
-            return !this.calledWithMatch.apply(this, arguments);
-        },
-
-        returned: function returned(value) {
-            return sinon.deepEqual(value, this.returnValue);
-        },
-
-        threw: function threw(error) {
-            if (typeof error === "undefined" || !this.exception) {
-                return !!this.exception;
-            }
-
-            return this.exception === error || this.exception.name === error;
-        },
-
-        calledWithNew: function calledWithNew() {
-            return this.proxy.prototype && this.thisValue instanceof this.proxy;
-        },
-
-        calledBefore: function (other) {
-            return this.callId < other.callId;
-        },
-
-        calledAfter: function (other) {
-            return this.callId > other.callId;
-        },
-
-        callArg: function (pos) {
-            this.args[pos]();
-        },
-
-        callArgOn: function (pos, thisValue) {
-            this.args[pos].apply(thisValue);
-        },
-
-        callArgWith: function (pos) {
-            this.callArgOnWith.apply(this, [pos, null].concat(slice.call(arguments, 1)));
-        },
-
-        callArgOnWith: function (pos, thisValue) {
-            var args = slice.call(arguments, 2);
-            this.args[pos].apply(thisValue, args);
-        },
-
-        "yield": function () {
-            this.yieldOn.apply(this, [null].concat(slice.call(arguments, 0)));
-        },
-
-        yieldOn: function (thisValue) {
-            var args = this.args;
-            for (var i = 0, l = args.length; i < l; ++i) {
-                if (typeof args[i] === "function") {
-                    args[i].apply(thisValue, slice.call(arguments, 1));
-                    return;
-                }
-            }
-            throwYieldError(this.proxy, " cannot yield since no callback was passed.", args);
-        },
-
-        yieldTo: function (prop) {
-            this.yieldToOn.apply(this, [prop, null].concat(slice.call(arguments, 1)));
-        },
-
-        yieldToOn: function (prop, thisValue) {
-            var args = this.args;
-            for (var i = 0, l = args.length; i < l; ++i) {
-                if (args[i] && typeof args[i][prop] === "function") {
-                    args[i][prop].apply(thisValue, slice.call(arguments, 2));
-                    return;
-                }
-            }
-            throwYieldError(this.proxy, " cannot yield to '" + prop +
-                "' since no callback was passed.", args);
-        },
-
-        toString: function () {
-            var callStr = this.proxy.toString() + "(";
-            var args = [];
-
-            for (var i = 0, l = this.args.length; i < l; ++i) {
-                args.push(sinon.format(this.args[i]));
-            }
-
-            callStr = callStr + args.join(", ") + ")";
-
-            if (typeof this.returnValue != "undefined") {
-                callStr += " => " + sinon.format(this.returnValue);
-            }
-
-            if (this.exception) {
-                callStr += " !" + this.exception.name;
-
-                if (this.exception.message) {
-                    callStr += "(" + this.exception.message + ")";
-                }
-            }
-
-            return callStr;
-        }
-    };
-
-    callProto.invokeCallback = callProto.yield;
-
-    function createSpyCall(spy, thisValue, args, returnValue, exception, id) {
-        if (typeof id !== "number") {
-            throw new TypeError("Call id is not a number");
-        }
-        var proxyCall = sinon.create(callProto);
-        proxyCall.proxy = spy;
-        proxyCall.thisValue = thisValue;
-        proxyCall.args = args;
-        proxyCall.returnValue = returnValue;
-        proxyCall.exception = exception;
-        proxyCall.callId = id;
-
-        return proxyCall;
-    }
-    createSpyCall.toString = callProto.toString; // used by mocks
-
-    if (commonJSModule) {
-        module.exports = createSpyCall;
-    } else {
-        sinon.spyCall = createSpyCall;
-    }
-}(typeof sinon == "object" && sinon || null));
-
-
-})()
-},{"../sinon":14}],41:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 (function(){/**
   * @depend ../sinon.js
   * @depend call.js
@@ -11651,169 +11247,7 @@ exports.writeIEEE754 = function(buffer, value, offset, isBE, mLen, nBytes) {
 }(typeof sinon == "object" && sinon || null));
 
 })()
-},{"../sinon":14}],42:[function(require,module,exports){
-(function(){/**
- * @depend ../sinon.js
- * @depend spy.js
- * @depend behavior.js
- */
-/*jslint eqeqeq: false, onevar: false*/
-/*global module, require, sinon*/
-/**
- * Stub functions
- *
- * @author Christian Johansen (christian@cjohansen.no)
- * @license BSD
- *
- * Copyright (c) 2010-2013 Christian Johansen
- */
-"use strict";
-
-(function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
-
-    if (!sinon && commonJSModule) {
-        sinon = require("../sinon");
-    }
-
-    if (!sinon) {
-        return;
-    }
-
-    function stub(object, property, func) {
-        if (!!func && typeof func != "function") {
-            throw new TypeError("Custom stub should be function");
-        }
-
-        var wrapper;
-
-        if (func) {
-            wrapper = sinon.spy && sinon.spy.create ? sinon.spy.create(func) : func;
-        } else {
-            wrapper = stub.create();
-        }
-
-        if (!object && typeof property === "undefined") {
-            return sinon.stub.create();
-        }
-
-        if (typeof property === "undefined" && typeof object == "object") {
-            for (var prop in object) {
-                if (typeof object[prop] === "function") {
-                    stub(object, prop);
-                }
-            }
-
-            return object;
-        }
-
-        return sinon.wrapMethod(object, property, wrapper);
-    }
-
-    function getDefaultBehavior(stub) {
-        return stub.defaultBehavior || getParentBehaviour(stub) || sinon.behavior.create(stub);
-    }
-
-    function getParentBehaviour(stub) {
-        return (stub.parent && getCurrentBehavior(stub.parent));
-    }
-
-    function getCurrentBehavior(stub) {
-        var behavior = stub.behaviors[stub.callCount - 1];
-        return behavior && behavior.isPresent() ? behavior : getDefaultBehavior(stub);
-    }
-
-    var uuid = 0;
-
-    sinon.extend(stub, (function () {
-        var proto = {
-            create: function create() {
-                var functionStub = function () {
-                    return getCurrentBehavior(functionStub).invoke(this, arguments);
-                };
-
-                functionStub.id = "stub#" + uuid++;
-                var orig = functionStub;
-                functionStub = sinon.spy.create(functionStub);
-                functionStub.func = orig;
-
-                sinon.extend(functionStub, stub);
-                functionStub._create = sinon.stub.create;
-                functionStub.displayName = "stub";
-                functionStub.toString = sinon.functionToString;
-
-                functionStub.defaultBehavior = null;
-                functionStub.behaviors = [];
-
-                return functionStub;
-            },
-
-            resetBehavior: function () {
-                var i;
-
-                this.defaultBehavior = null;
-                this.behaviors = [];
-
-                delete this.returnValue;
-                delete this.returnArgAt;
-                this.returnThis = false;
-
-                if (this.fakes) {
-                    for (i = 0; i < this.fakes.length; i++) {
-                        this.fakes[i].resetBehavior();
-                    }
-                }
-            },
-
-            onCall: function(index) {
-                if (!this.behaviors[index]) {
-                    this.behaviors[index] = sinon.behavior.create(this);
-                }
-
-                return this.behaviors[index];
-            },
-
-            onFirstCall: function() {
-                return this.onCall(0);
-            },
-
-            onSecondCall: function() {
-                return this.onCall(1);
-            },
-
-            onThirdCall: function() {
-                return this.onCall(2);
-            }
-        };
-
-        for (var method in sinon.behavior) {
-            if (sinon.behavior.hasOwnProperty(method) &&
-                !proto.hasOwnProperty(method) &&
-                method != 'create' &&
-                method != 'withArgs' &&
-                method != 'invoke') {
-                proto[method] = (function(behaviorMethod) {
-                    return function() {
-                        this.defaultBehavior = this.defaultBehavior || sinon.behavior.create(this);
-                        this.defaultBehavior[behaviorMethod].apply(this.defaultBehavior, arguments);
-                        return this;
-                    };
-                }(method));
-            }
-        }
-
-        return proto;
-    }()));
-
-    if (commonJSModule) {
-        module.exports = stub;
-    } else {
-        sinon.stub = stub;
-    }
-}(typeof sinon == "object" && sinon || null));
-
-})()
-},{"../sinon":14}],43:[function(require,module,exports){
+},{"../sinon":12}],42:[function(require,module,exports){
 (function(process){/**
  * @depend ../sinon.js
  */
@@ -12147,163 +11581,7 @@ exports.writeIEEE754 = function(buffer, value, offset, isBE, mLen, nBytes) {
     }
 }(typeof sinon == "object" && sinon || null));
 })(require("__browserify_process"))
-},{"../sinon":14,"__browserify_process":1}],44:[function(require,module,exports){
-(function(){/**
- * @depend ../sinon.js
- * @depend stub.js
- * @depend mock.js
- */
-/*jslint eqeqeq: false, onevar: false, forin: true*/
-/*global module, require, sinon*/
-/**
- * Collections of stubs, spies and mocks.
- *
- * @author Christian Johansen (christian@cjohansen.no)
- * @license BSD
- *
- * Copyright (c) 2010-2013 Christian Johansen
- */
-"use strict";
-
-(function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
-    var push = [].push;
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-    if (!sinon && commonJSModule) {
-        sinon = require("../sinon");
-    }
-
-    if (!sinon) {
-        return;
-    }
-
-    function getFakes(fakeCollection) {
-        if (!fakeCollection.fakes) {
-            fakeCollection.fakes = [];
-        }
-
-        return fakeCollection.fakes;
-    }
-
-    function each(fakeCollection, method) {
-        var fakes = getFakes(fakeCollection);
-
-        for (var i = 0, l = fakes.length; i < l; i += 1) {
-            if (typeof fakes[i][method] == "function") {
-                fakes[i][method]();
-            }
-        }
-    }
-
-    function compact(fakeCollection) {
-        var fakes = getFakes(fakeCollection);
-        var i = 0;
-        while (i < fakes.length) {
-          fakes.splice(i, 1);
-        }
-    }
-
-    var collection = {
-        verify: function resolve() {
-            each(this, "verify");
-        },
-
-        restore: function restore() {
-            each(this, "restore");
-            compact(this);
-        },
-
-        verifyAndRestore: function verifyAndRestore() {
-            var exception;
-
-            try {
-                this.verify();
-            } catch (e) {
-                exception = e;
-            }
-
-            this.restore();
-
-            if (exception) {
-                throw exception;
-            }
-        },
-
-        add: function add(fake) {
-            push.call(getFakes(this), fake);
-            return fake;
-        },
-
-        spy: function spy() {
-            return this.add(sinon.spy.apply(sinon, arguments));
-        },
-
-        stub: function stub(object, property, value) {
-            if (property) {
-                var original = object[property];
-
-                if (typeof original != "function") {
-                    if (!hasOwnProperty.call(object, property)) {
-                        throw new TypeError("Cannot stub non-existent own property " + property);
-                    }
-
-                    object[property] = value;
-
-                    return this.add({
-                        restore: function () {
-                            object[property] = original;
-                        }
-                    });
-                }
-            }
-            if (!property && !!object && typeof object == "object") {
-                var stubbedObj = sinon.stub.apply(sinon, arguments);
-
-                for (var prop in stubbedObj) {
-                    if (typeof stubbedObj[prop] === "function") {
-                        this.add(stubbedObj[prop]);
-                    }
-                }
-
-                return stubbedObj;
-            }
-
-            return this.add(sinon.stub.apply(sinon, arguments));
-        },
-
-        mock: function mock() {
-            return this.add(sinon.mock.apply(sinon, arguments));
-        },
-
-        inject: function inject(obj) {
-            var col = this;
-
-            obj.spy = function () {
-                return col.spy.apply(col, arguments);
-            };
-
-            obj.stub = function () {
-                return col.stub.apply(col, arguments);
-            };
-
-            obj.mock = function () {
-                return col.mock.apply(col, arguments);
-            };
-
-            return obj;
-        }
-    };
-
-    if (commonJSModule) {
-        module.exports = collection;
-    } else {
-        sinon.collection = collection;
-    }
-}(typeof sinon == "object" && sinon || null));
-
-})()
-},{"../sinon":14}],45:[function(require,module,exports){
+},{"../sinon":12,"__browserify_process":13}],43:[function(require,module,exports){
 (function(){/**
  * @depend ../sinon.js
  * @depend stub.js
@@ -12755,741 +12033,213 @@ exports.writeIEEE754 = function(buffer, value, offset, isBE, mLen, nBytes) {
 }(typeof sinon == "object" && sinon || null));
 
 })()
-},{"../sinon":14,"./match":46}],47:[function(require,module,exports){
+},{"../sinon":12,"./match":44}],45:[function(require,module,exports){
 (function(){/**
- * @depend ../sinon.js
- * @depend test.js
- */
-/*jslint eqeqeq: false, onevar: false, eqeqeq: false*/
+  * @depend ../sinon.js
+  * @depend match.js
+  */
+/*jslint eqeqeq: false, onevar: false, plusplus: false*/
 /*global module, require, sinon*/
 /**
- * Test case, sandboxes all test functions
- *
- * @author Christian Johansen (christian@cjohansen.no)
- * @license BSD
- *
- * Copyright (c) 2010-2013 Christian Johansen
- */
+  * Spy calls
+  *
+  * @author Christian Johansen (christian@cjohansen.no)
+  * @author Maximilian Antoni (mail@maxantoni.de)
+  * @license BSD
+  *
+  * Copyright (c) 2010-2013 Christian Johansen
+  * Copyright (c) 2013 Maximilian Antoni
+  */
 "use strict";
 
 (function (sinon) {
     var commonJSModule = typeof module !== 'undefined' && module.exports;
-
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
     }
 
-    if (!sinon || !Object.prototype.hasOwnProperty) {
+    if (!sinon) {
         return;
     }
 
-    function createTest(property, setUp, tearDown) {
-        return function () {
-            if (setUp) {
-                setUp.apply(this, arguments);
-            }
-
-            var exception, result;
-
-            try {
-                result = property.apply(this, arguments);
-            } catch (e) {
-                exception = e;
-            }
-
-            if (tearDown) {
-                tearDown.apply(this, arguments);
-            }
-
-            if (exception) {
-                throw exception;
-            }
-
-            return result;
-        };
-    }
-
-    function testCase(tests, prefix) {
-        /*jsl:ignore*/
-        if (!tests || typeof tests != "object") {
-            throw new TypeError("sinon.testCase needs an object with test functions");
+    function throwYieldError(proxy, text, args) {
+        var msg = sinon.functionName(proxy) + text;
+        if (args.length) {
+            msg += " Received [" + slice.call(args).join(", ") + "]";
         }
-        /*jsl:end*/
-
-        prefix = prefix || "test";
-        var rPrefix = new RegExp("^" + prefix);
-        var methods = {}, testName, property, method;
-        var setUp = tests.setUp;
-        var tearDown = tests.tearDown;
-
-        for (testName in tests) {
-            if (tests.hasOwnProperty(testName)) {
-                property = tests[testName];
-
-                if (/^(setUp|tearDown)$/.test(testName)) {
-                    continue;
-                }
-
-                if (typeof property == "function" && rPrefix.test(testName)) {
-                    method = property;
-
-                    if (setUp || tearDown) {
-                        method = createTest(property, setUp, tearDown);
-                    }
-
-                    methods[testName] = sinon.test(method);
-                } else {
-                    methods[testName] = tests[testName];
-                }
-            }
-        }
-
-        return methods;
+        throw new Error(msg);
     }
 
-    if (commonJSModule) {
-        module.exports = testCase;
-    } else {
-        sinon.testCase = testCase;
-    }
-}(typeof sinon == "object" && sinon || null));
-
-})()
-},{"../sinon":14}],48:[function(require,module,exports){
-(function(global){/**
- * @depend ../sinon.js
- * @depend stub.js
- */
-/*jslint eqeqeq: false, onevar: false, nomen: false, plusplus: false*/
-/*global module, require, sinon*/
-/**
- * Assertions matching the test spy retrieval interface.
- *
- * @author Christian Johansen (christian@cjohansen.no)
- * @license BSD
- *
- * Copyright (c) 2010-2013 Christian Johansen
- */
-"use strict";
-
-(function (sinon, global) {
-    var commonJSModule = typeof module !== "undefined" && module.exports;
     var slice = Array.prototype.slice;
-    var assert;
 
-    if (!sinon && commonJSModule) {
-        sinon = require("../sinon");
-    }
-
-    if (!sinon) {
-        return;
-    }
-
-    function verifyIsStub() {
-        var method;
-
-        for (var i = 0, l = arguments.length; i < l; ++i) {
-            method = arguments[i];
-
-            if (!method) {
-                assert.fail("fake is not a spy");
+    var callProto = {
+        calledOn: function calledOn(thisValue) {
+            if (sinon.match && sinon.match.isMatcher(thisValue)) {
+                return thisValue.test(this.thisValue);
             }
-
-            if (typeof method != "function") {
-                assert.fail(method + " is not a function");
-            }
-
-            if (typeof method.getCall != "function") {
-                assert.fail(method + " is not stubbed");
-            }
-        }
-    }
-
-    function failAssertion(object, msg) {
-        object = object || global;
-        var failMethod = object.fail || assert.fail;
-        failMethod.call(object, msg);
-    }
-
-    function mirrorPropAsAssertion(name, method, message) {
-        if (arguments.length == 2) {
-            message = method;
-            method = name;
-        }
-
-        assert[name] = function (fake) {
-            verifyIsStub(fake);
-
-            var args = slice.call(arguments, 1);
-            var failed = false;
-
-            if (typeof method == "function") {
-                failed = !method(fake);
-            } else {
-                failed = typeof fake[method] == "function" ?
-                    !fake[method].apply(fake, args) : !fake[method];
-            }
-
-            if (failed) {
-                failAssertion(this, fake.printf.apply(fake, [message].concat(args)));
-            } else {
-                assert.pass(name);
-            }
-        };
-    }
-
-    function exposedName(prefix, prop) {
-        return !prefix || /^fail/.test(prop) ? prop :
-            prefix + prop.slice(0, 1).toUpperCase() + prop.slice(1);
-    }
-
-    assert = {
-        failException: "AssertError",
-
-        fail: function fail(message) {
-            var error = new Error(message);
-            error.name = this.failException || assert.failException;
-
-            throw error;
+            return this.thisValue === thisValue;
         },
 
-        pass: function pass(assertion) {},
-
-        callOrder: function assertCallOrder() {
-            verifyIsStub.apply(null, arguments);
-            var expected = "", actual = "";
-
-            if (!sinon.calledInOrder(arguments)) {
-                try {
-                    expected = [].join.call(arguments, ", ");
-                    var calls = slice.call(arguments);
-                    var i = calls.length;
-                    while (i) {
-                        if (!calls[--i].called) {
-                            calls.splice(i, 1);
-                        }
-                    }
-                    actual = sinon.orderByFirstCall(calls).join(", ");
-                } catch (e) {
-                    // If this fails, we'll just fall back to the blank string
-                }
-
-                failAssertion(this, "expected " + expected + " to be " +
-                              "called in order but were called as " + actual);
-            } else {
-                assert.pass("callOrder");
-            }
-        },
-
-        callCount: function assertCallCount(method, count) {
-            verifyIsStub(method);
-
-            if (method.callCount != count) {
-                var msg = "expected %n to be called " + sinon.timesInWords(count) +
-                    " but was called %c%C";
-                failAssertion(this, method.printf(msg));
-            } else {
-                assert.pass("callCount");
-            }
-        },
-
-        expose: function expose(target, options) {
-            if (!target) {
-                throw new TypeError("target is null or undefined");
-            }
-
-            var o = options || {};
-            var prefix = typeof o.prefix == "undefined" && "assert" || o.prefix;
-            var includeFail = typeof o.includeFail == "undefined" || !!o.includeFail;
-
-            for (var method in this) {
-                if (method != "export" && (includeFail || !/^(fail)/.test(method))) {
-                    target[exposedName(prefix, method)] = this[method];
+        calledWith: function calledWith() {
+            for (var i = 0, l = arguments.length; i < l; i += 1) {
+                if (!sinon.deepEqual(arguments[i], this.args[i])) {
+                    return false;
                 }
             }
 
-            return target;
-        }
-    };
-
-    mirrorPropAsAssertion("called", "expected %n to have been called at least once but was never called");
-    mirrorPropAsAssertion("notCalled", function (spy) { return !spy.called; },
-                          "expected %n to not have been called but was called %c%C");
-    mirrorPropAsAssertion("calledOnce", "expected %n to be called once but was called %c%C");
-    mirrorPropAsAssertion("calledTwice", "expected %n to be called twice but was called %c%C");
-    mirrorPropAsAssertion("calledThrice", "expected %n to be called thrice but was called %c%C");
-    mirrorPropAsAssertion("calledOn", "expected %n to be called with %1 as this but was called with %t");
-    mirrorPropAsAssertion("alwaysCalledOn", "expected %n to always be called with %1 as this but was called with %t");
-    mirrorPropAsAssertion("calledWithNew", "expected %n to be called with new");
-    mirrorPropAsAssertion("alwaysCalledWithNew", "expected %n to always be called with new");
-    mirrorPropAsAssertion("calledWith", "expected %n to be called with arguments %*%C");
-    mirrorPropAsAssertion("calledWithMatch", "expected %n to be called with match %*%C");
-    mirrorPropAsAssertion("alwaysCalledWith", "expected %n to always be called with arguments %*%C");
-    mirrorPropAsAssertion("alwaysCalledWithMatch", "expected %n to always be called with match %*%C");
-    mirrorPropAsAssertion("calledWithExactly", "expected %n to be called with exact arguments %*%C");
-    mirrorPropAsAssertion("alwaysCalledWithExactly", "expected %n to always be called with exact arguments %*%C");
-    mirrorPropAsAssertion("neverCalledWith", "expected %n to never be called with arguments %*%C");
-    mirrorPropAsAssertion("neverCalledWithMatch", "expected %n to never be called with match %*%C");
-    mirrorPropAsAssertion("threw", "%n did not throw exception%C");
-    mirrorPropAsAssertion("alwaysThrew", "%n did not always throw exception%C");
-
-    if (commonJSModule) {
-        module.exports = assert;
-    } else {
-        sinon.assert = assert;
-    }
-}(typeof sinon == "object" && sinon || null, typeof window != "undefined" ? window : (typeof self != "undefined") ? self : global));
-
-})(window)
-},{"../sinon":14}],49:[function(require,module,exports){
-(function(){/**
- * @depend ../sinon.js
- * @depend collection.js
- * @depend util/fake_timers.js
- * @depend util/fake_server_with_clock.js
- */
-/*jslint eqeqeq: false, onevar: false, plusplus: false*/
-/*global require, module*/
-/**
- * Manages fake collections as well as fake utilities such as Sinon's
- * timers and fake XHR implementation in one convenient object.
- *
- * @author Christian Johansen (christian@cjohansen.no)
- * @license BSD
- *
- * Copyright (c) 2010-2013 Christian Johansen
- */
-"use strict";
-
-if (typeof module !== 'undefined' && module.exports) {
-    var sinon = require("../sinon");
-    sinon.extend(sinon, require("./util/fake_timers"));
-}
-
-(function () {
-    var push = [].push;
-
-    function exposeValue(sandbox, config, key, value) {
-        if (!value) {
-            return;
-        }
-
-        if (config.injectInto && !(key in config.injectInto) ) {
-            config.injectInto[key] = value;
-        } else {
-            push.call(sandbox.args, value);
-        }
-    }
-
-    function prepareSandboxFromConfig(config) {
-        var sandbox = sinon.create(sinon.sandbox);
-
-        if (config.useFakeServer) {
-            if (typeof config.useFakeServer == "object") {
-                sandbox.serverPrototype = config.useFakeServer;
-            }
-
-            sandbox.useFakeServer();
-        }
-
-        if (config.useFakeTimers) {
-            if (typeof config.useFakeTimers == "object") {
-                sandbox.useFakeTimers.apply(sandbox, config.useFakeTimers);
-            } else {
-                sandbox.useFakeTimers();
-            }
-        }
-
-        return sandbox;
-    }
-
-    sinon.sandbox = sinon.extend(sinon.create(sinon.collection), {
-        useFakeTimers: function useFakeTimers() {
-            this.clock = sinon.useFakeTimers.apply(sinon, arguments);
-
-            return this.add(this.clock);
+            return true;
         },
 
-        serverPrototype: sinon.fakeServer,
-
-        useFakeServer: function useFakeServer() {
-            var proto = this.serverPrototype || sinon.fakeServer;
-
-            if (!proto || !proto.create) {
-                return null;
-            }
-
-            this.server = proto.create();
-            return this.add(this.server);
-        },
-
-        inject: function (obj) {
-            sinon.collection.inject.call(this, obj);
-
-            if (this.clock) {
-                obj.clock = this.clock;
-            }
-
-            if (this.server) {
-                obj.server = this.server;
-                obj.requests = this.server.requests;
-            }
-
-            return obj;
-        },
-
-        create: function (config) {
-            if (!config) {
-                return sinon.create(sinon.sandbox);
-            }
-
-            var sandbox = prepareSandboxFromConfig(config);
-            sandbox.args = sandbox.args || [];
-            var prop, value, exposed = sandbox.inject({});
-
-            if (config.properties) {
-                for (var i = 0, l = config.properties.length; i < l; i++) {
-                    prop = config.properties[i];
-                    value = exposed[prop] || prop == "sandbox" && sandbox;
-                    exposeValue(sandbox, config, prop, value);
+        calledWithMatch: function calledWithMatch() {
+            for (var i = 0, l = arguments.length; i < l; i += 1) {
+                var actual = this.args[i];
+                var expectation = arguments[i];
+                if (!sinon.match || !sinon.match(expectation).test(actual)) {
+                    return false;
                 }
-            } else {
-                exposeValue(sandbox, config, "sandbox", value);
+            }
+            return true;
+        },
+
+        calledWithExactly: function calledWithExactly() {
+            return arguments.length == this.args.length &&
+                this.calledWith.apply(this, arguments);
+        },
+
+        notCalledWith: function notCalledWith() {
+            return !this.calledWith.apply(this, arguments);
+        },
+
+        notCalledWithMatch: function notCalledWithMatch() {
+            return !this.calledWithMatch.apply(this, arguments);
+        },
+
+        returned: function returned(value) {
+            return sinon.deepEqual(value, this.returnValue);
+        },
+
+        threw: function threw(error) {
+            if (typeof error === "undefined" || !this.exception) {
+                return !!this.exception;
             }
 
-            return sandbox;
-        }
-    });
+            return this.exception === error || this.exception.name === error;
+        },
 
-    sinon.sandbox.useFakeXMLHttpRequest = sinon.sandbox.useFakeServer;
+        calledWithNew: function calledWithNew() {
+            return this.proxy.prototype && this.thisValue instanceof this.proxy;
+        },
 
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = sinon.sandbox;
-    }
-}());
+        calledBefore: function (other) {
+            return this.callId < other.callId;
+        },
 
-})()
-},{"../sinon":14,"./util/fake_timers":50}],51:[function(require,module,exports){
-(function(){/**
- * @depend ../sinon.js
- * @depend stub.js
- * @depend mock.js
- * @depend sandbox.js
- */
-/*jslint eqeqeq: false, onevar: false, forin: true, plusplus: false*/
-/*global module, require, sinon*/
-/**
- * Test function, sandboxes fakes
- *
- * @author Christian Johansen (christian@cjohansen.no)
- * @license BSD
- *
- * Copyright (c) 2010-2013 Christian Johansen
- */
-"use strict";
+        calledAfter: function (other) {
+            return this.callId > other.callId;
+        },
 
-(function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+        callArg: function (pos) {
+            this.args[pos]();
+        },
 
-    if (!sinon && commonJSModule) {
-        sinon = require("../sinon");
-    }
+        callArgOn: function (pos, thisValue) {
+            this.args[pos].apply(thisValue);
+        },
 
-    if (!sinon) {
-        return;
-    }
+        callArgWith: function (pos) {
+            this.callArgOnWith.apply(this, [pos, null].concat(slice.call(arguments, 1)));
+        },
 
-    function test(callback) {
-        var type = typeof callback;
+        callArgOnWith: function (pos, thisValue) {
+            var args = slice.call(arguments, 2);
+            this.args[pos].apply(thisValue, args);
+        },
 
-        if (type != "function") {
-            throw new TypeError("sinon.test needs to wrap a test function, got " + type);
-        }
+        "yield": function () {
+            this.yieldOn.apply(this, [null].concat(slice.call(arguments, 0)));
+        },
 
-        return function () {
-            var config = sinon.getConfig(sinon.config);
-            config.injectInto = config.injectIntoThis && this || config.injectInto;
-            var sandbox = sinon.sandbox.create(config);
-            var exception, result;
-            var args = Array.prototype.slice.call(arguments).concat(sandbox.args);
-
-            try {
-                result = callback.apply(this, args);
-            } catch (e) {
-                exception = e;
+        yieldOn: function (thisValue) {
+            var args = this.args;
+            for (var i = 0, l = args.length; i < l; ++i) {
+                if (typeof args[i] === "function") {
+                    args[i].apply(thisValue, slice.call(arguments, 1));
+                    return;
+                }
             }
+            throwYieldError(this.proxy, " cannot yield since no callback was passed.", args);
+        },
 
-            if (typeof exception !== "undefined") {
-                sandbox.restore();
-                throw exception;
+        yieldTo: function (prop) {
+            this.yieldToOn.apply(this, [prop, null].concat(slice.call(arguments, 1)));
+        },
+
+        yieldToOn: function (prop, thisValue) {
+            var args = this.args;
+            for (var i = 0, l = args.length; i < l; ++i) {
+                if (args[i] && typeof args[i][prop] === "function") {
+                    args[i][prop].apply(thisValue, slice.call(arguments, 2));
+                    return;
+                }
             }
-            else {
-                sandbox.verifyAndRestore();
-            }
+            throwYieldError(this.proxy, " cannot yield to '" + prop +
+                "' since no callback was passed.", args);
+        },
 
-            return result;
-        };
-    }
-
-    test.config = {
-        injectIntoThis: true,
-        injectInto: null,
-        properties: ["spy", "stub", "mock", "clock", "server", "requests"],
-        useFakeTimers: true,
-        useFakeServer: true
-    };
-
-    if (commonJSModule) {
-        module.exports = test;
-    } else {
-        sinon.test = test;
-    }
-}(typeof sinon == "object" && sinon || null));
-
-})()
-},{"../sinon":14}],46:[function(require,module,exports){
-(function(){/* @depend ../sinon.js */
-/*jslint eqeqeq: false, onevar: false, plusplus: false*/
-/*global module, require, sinon*/
-/**
- * Match functions
- *
- * @author Maximilian Antoni (mail@maxantoni.de)
- * @license BSD
- *
- * Copyright (c) 2012 Maximilian Antoni
- */
-"use strict";
-
-(function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
-
-    if (!sinon && commonJSModule) {
-        sinon = require("../sinon");
-    }
-
-    if (!sinon) {
-        return;
-    }
-
-    function assertType(value, type, name) {
-        var actual = sinon.typeOf(value);
-        if (actual !== type) {
-            throw new TypeError("Expected type of " + name + " to be " +
-                type + ", but was " + actual);
-        }
-    }
-
-    var matcher = {
         toString: function () {
-            return this.message;
+            var callStr = this.proxy.toString() + "(";
+            var args = [];
+
+            for (var i = 0, l = this.args.length; i < l; ++i) {
+                args.push(sinon.format(this.args[i]));
+            }
+
+            callStr = callStr + args.join(", ") + ")";
+
+            if (typeof this.returnValue != "undefined") {
+                callStr += " => " + sinon.format(this.returnValue);
+            }
+
+            if (this.exception) {
+                callStr += " !" + this.exception.name;
+
+                if (this.exception.message) {
+                    callStr += "(" + this.exception.message + ")";
+                }
+            }
+
+            return callStr;
         }
     };
 
-    function isMatcher(object) {
-        return matcher.isPrototypeOf(object);
+    callProto.invokeCallback = callProto.yield;
+
+    function createSpyCall(spy, thisValue, args, returnValue, exception, id) {
+        if (typeof id !== "number") {
+            throw new TypeError("Call id is not a number");
+        }
+        var proxyCall = sinon.create(callProto);
+        proxyCall.proxy = spy;
+        proxyCall.thisValue = thisValue;
+        proxyCall.args = args;
+        proxyCall.returnValue = returnValue;
+        proxyCall.exception = exception;
+        proxyCall.callId = id;
+
+        return proxyCall;
     }
-
-    function matchObject(expectation, actual) {
-        if (actual === null || actual === undefined) {
-            return false;
-        }
-        for (var key in expectation) {
-            if (expectation.hasOwnProperty(key)) {
-                var exp = expectation[key];
-                var act = actual[key];
-                if (match.isMatcher(exp)) {
-                    if (!exp.test(act)) {
-                        return false;
-                    }
-                } else if (sinon.typeOf(exp) === "object") {
-                    if (!matchObject(exp, act)) {
-                        return false;
-                    }
-                } else if (!sinon.deepEqual(exp, act)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    matcher.or = function (m2) {
-        if (!isMatcher(m2)) {
-            throw new TypeError("Matcher expected");
-        }
-        var m1 = this;
-        var or = sinon.create(matcher);
-        or.test = function (actual) {
-            return m1.test(actual) || m2.test(actual);
-        };
-        or.message = m1.message + ".or(" + m2.message + ")";
-        return or;
-    };
-
-    matcher.and = function (m2) {
-        if (!isMatcher(m2)) {
-            throw new TypeError("Matcher expected");
-        }
-        var m1 = this;
-        var and = sinon.create(matcher);
-        and.test = function (actual) {
-            return m1.test(actual) && m2.test(actual);
-        };
-        and.message = m1.message + ".and(" + m2.message + ")";
-        return and;
-    };
-
-    var match = function (expectation, message) {
-        var m = sinon.create(matcher);
-        var type = sinon.typeOf(expectation);
-        switch (type) {
-        case "object":
-            if (typeof expectation.test === "function") {
-                m.test = function (actual) {
-                    return expectation.test(actual) === true;
-                };
-                m.message = "match(" + sinon.functionName(expectation.test) + ")";
-                return m;
-            }
-            var str = [];
-            for (var key in expectation) {
-                if (expectation.hasOwnProperty(key)) {
-                    str.push(key + ": " + expectation[key]);
-                }
-            }
-            m.test = function (actual) {
-                return matchObject(expectation, actual);
-            };
-            m.message = "match(" + str.join(", ") + ")";
-            break;
-        case "number":
-            m.test = function (actual) {
-                return expectation == actual;
-            };
-            break;
-        case "string":
-            m.test = function (actual) {
-                if (typeof actual !== "string") {
-                    return false;
-                }
-                return actual.indexOf(expectation) !== -1;
-            };
-            m.message = "match(\"" + expectation + "\")";
-            break;
-        case "regexp":
-            m.test = function (actual) {
-                if (typeof actual !== "string") {
-                    return false;
-                }
-                return expectation.test(actual);
-            };
-            break;
-        case "function":
-            m.test = expectation;
-            if (message) {
-                m.message = message;
-            } else {
-                m.message = "match(" + sinon.functionName(expectation) + ")";
-            }
-            break;
-        default:
-            m.test = function (actual) {
-              return sinon.deepEqual(expectation, actual);
-            };
-        }
-        if (!m.message) {
-            m.message = "match(" + expectation + ")";
-        }
-        return m;
-    };
-
-    match.isMatcher = isMatcher;
-
-    match.any = match(function () {
-        return true;
-    }, "any");
-
-    match.defined = match(function (actual) {
-        return actual !== null && actual !== undefined;
-    }, "defined");
-
-    match.truthy = match(function (actual) {
-        return !!actual;
-    }, "truthy");
-
-    match.falsy = match(function (actual) {
-        return !actual;
-    }, "falsy");
-
-    match.same = function (expectation) {
-        return match(function (actual) {
-            return expectation === actual;
-        }, "same(" + expectation + ")");
-    };
-
-    match.typeOf = function (type) {
-        assertType(type, "string", "type");
-        return match(function (actual) {
-            return sinon.typeOf(actual) === type;
-        }, "typeOf(\"" + type + "\")");
-    };
-
-    match.instanceOf = function (type) {
-        assertType(type, "function", "type");
-        return match(function (actual) {
-            return actual instanceof type;
-        }, "instanceOf(" + sinon.functionName(type) + ")");
-    };
-
-    function createPropertyMatcher(propertyTest, messagePrefix) {
-        return function (property, value) {
-            assertType(property, "string", "property");
-            var onlyProperty = arguments.length === 1;
-            var message = messagePrefix + "(\"" + property + "\"";
-            if (!onlyProperty) {
-                message += ", " + value;
-            }
-            message += ")";
-            return match(function (actual) {
-                if (actual === undefined || actual === null ||
-                        !propertyTest(actual, property)) {
-                    return false;
-                }
-                return onlyProperty || sinon.deepEqual(value, actual[property]);
-            }, message);
-        };
-    }
-
-    match.has = createPropertyMatcher(function (actual, property) {
-        if (typeof actual === "object") {
-            return property in actual;
-        }
-        return actual[property] !== undefined;
-    }, "has");
-
-    match.hasOwn = createPropertyMatcher(function (actual, property) {
-        return actual.hasOwnProperty(property);
-    }, "hasOwn");
-
-    match.bool = match.typeOf("boolean");
-    match.number = match.typeOf("number");
-    match.string = match.typeOf("string");
-    match.object = match.typeOf("object");
-    match.func = match.typeOf("function");
-    match.array = match.typeOf("array");
-    match.regexp = match.typeOf("regexp");
-    match.date = match.typeOf("date");
+    createSpyCall.toString = callProto.toString; // used by mocks
 
     if (commonJSModule) {
-        module.exports = match;
+        module.exports = createSpyCall;
     } else {
-        sinon.match = match;
+        sinon.spyCall = createSpyCall;
     }
 }(typeof sinon == "object" && sinon || null));
 
+
 })()
-},{"../sinon":14}],14:[function(require,module,exports){
+},{"../sinon":12}],12:[function(require,module,exports){
 (function(){/*jslint eqeqeq: false, onevar: false, forin: true, nomen: false, regexp: false, plusplus: false*/
 /*global module, require, __dirname, document*/
 /**
@@ -13860,178 +12610,16 @@ var sinon = (function (formatio) {
 }(typeof formatio == "object" && formatio));
 
 })()
-},{"util":24,"./sinon/spy":41,"./sinon/call":40,"./sinon/behavior":43,"./sinon/stub":42,"./sinon/mock":45,"./sinon/collection":44,"./sinon/assert":48,"./sinon/sandbox":49,"./sinon/test":51,"./sinon/test_case":47,"./sinon/match":46,"formatio":52}],53:[function(require,module,exports){
-var events = require('events');
-var util = require('util');
-
-function Stream() {
-  events.EventEmitter.call(this);
-}
-util.inherits(Stream, events.EventEmitter);
-module.exports = Stream;
-// Backwards-compat with node 0.4.x
-Stream.Stream = Stream;
-
-Stream.prototype.pipe = function(dest, options) {
-  var source = this;
-
-  function ondata(chunk) {
-    if (dest.writable) {
-      if (false === dest.write(chunk) && source.pause) {
-        source.pause();
-      }
-    }
-  }
-
-  source.on('data', ondata);
-
-  function ondrain() {
-    if (source.readable && source.resume) {
-      source.resume();
-    }
-  }
-
-  dest.on('drain', ondrain);
-
-  // If the 'end' option is not supplied, dest.end() will be called when
-  // source gets the 'end' or 'close' events.  Only dest.end() once, and
-  // only when all sources have ended.
-  if (!dest._isStdio && (!options || options.end !== false)) {
-    dest._pipeCount = dest._pipeCount || 0;
-    dest._pipeCount++;
-
-    source.on('end', onend);
-    source.on('close', onclose);
-  }
-
-  var didOnEnd = false;
-  function onend() {
-    if (didOnEnd) return;
-    didOnEnd = true;
-
-    dest._pipeCount--;
-
-    // remove the listeners
-    cleanup();
-
-    if (dest._pipeCount > 0) {
-      // waiting for other incoming streams to end.
-      return;
-    }
-
-    dest.end();
-  }
-
-
-  function onclose() {
-    if (didOnEnd) return;
-    didOnEnd = true;
-
-    dest._pipeCount--;
-
-    // remove the listeners
-    cleanup();
-
-    if (dest._pipeCount > 0) {
-      // waiting for other incoming streams to end.
-      return;
-    }
-
-    dest.destroy();
-  }
-
-  // don't leave dangling pipes when there are errors.
-  function onerror(er) {
-    cleanup();
-    if (this.listeners('error').length === 0) {
-      throw er; // Unhandled stream error in pipe.
-    }
-  }
-
-  source.on('error', onerror);
-  dest.on('error', onerror);
-
-  // remove all the event listeners that were added.
-  function cleanup() {
-    source.removeListener('data', ondata);
-    dest.removeListener('drain', ondrain);
-
-    source.removeListener('end', onend);
-    source.removeListener('close', onclose);
-
-    source.removeListener('error', onerror);
-    dest.removeListener('error', onerror);
-
-    source.removeListener('end', cleanup);
-    source.removeListener('close', cleanup);
-
-    dest.removeListener('end', cleanup);
-    dest.removeListener('close', cleanup);
-  }
-
-  source.on('end', cleanup);
-  source.on('close', cleanup);
-
-  dest.on('end', cleanup);
-  dest.on('close', cleanup);
-
-  dest.emit('pipe', source);
-
-  // Allow for unix-like usage: A.pipe(B).pipe(C)
-  return dest;
-};
-
-},{"events":2,"util":24}],15:[function(require,module,exports){
-var marked = require('marked')
-  , converter = module.exports = {}
-  ;
-
-marked.setOptions({
-  gfm: true,
-  tables: true,
-  breaks: false,
-  pedantic: false,
-  sanitize: false,
-  smartLists: true,
-  langPrefix: ''
-});
-
-converter.convertMarkdown = function (source) {
-  // Unescape block-quotes before conversion (&gt; => >)
-  source = source.replace(/(^|\n)( *)&gt;/g, '$1$2>');
-
-  // Perform the actual Markdown conversion
-  source = marked(source.replace(/^\s+/, ''));
-
-  // Unescape HTML escaped by the browser; &lt;, &gt;, ...
-  source = source.replace(/&[l|g]t;/g,
-    function (match) {
-      return match === '&lt;' ? '<' : '>';
-    });
-
-  // ... and &amp;
-  source = source.replace(/&amp;/g, '&');
-  
-  // ... and &quot;
-  source = source.replace(/&quot;/g, '"');
-
-  return source;
-};
-
-},{"marked":54}],50:[function(require,module,exports){
-(function(global){/*jslint eqeqeq: false, plusplus: false, evil: true, onevar: false, browser: true, forin: false*/
-/*global module, require, window*/
+},{"util":22,"./sinon/spy":41,"./sinon/behavior":42,"./sinon/call":45,"./sinon/mock":43,"./sinon/collection":46,"./sinon/assert":47,"./sinon/stub":48,"./sinon/test_case":49,"./sinon/test":50,"./sinon/sandbox":51,"./sinon/match":44,"formatio":52}],46:[function(require,module,exports){
+(function(){/**
+ * @depend ../sinon.js
+ * @depend stub.js
+ * @depend mock.js
+ */
+/*jslint eqeqeq: false, onevar: false, forin: true*/
+/*global module, require, sinon*/
 /**
- * Fake timer API
- * setTimeout
- * setInterval
- * clearTimeout
- * clearInterval
- * tick
- * reset
- * Date
- *
- * Inspired by jsUnitMockTimeOut from JsUnit
+ * Collections of stubs, spies and mocks.
  *
  * @author Christian Johansen (christian@cjohansen.no)
  * @license BSD
@@ -14040,373 +12628,1041 @@ converter.convertMarkdown = function (source) {
  */
 "use strict";
 
-if (typeof sinon == "undefined") {
-    var sinon = {};
-}
+(function (sinon) {
+    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var push = [].push;
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-(function (global) {
-    var id = 1;
-
-    function addTimer(args, recurring) {
-        if (args.length === 0) {
-            throw new Error("Function requires at least 1 parameter");
-        }
-
-        if (typeof args[0] === "undefined") {
-            throw new Error("Callback must be provided to timer calls");
-        }
-
-        var toId = id++;
-        var delay = args[1] || 0;
-
-        if (!this.timeouts) {
-            this.timeouts = {};
-        }
-
-        this.timeouts[toId] = {
-            id: toId,
-            func: args[0],
-            callAt: this.now + delay,
-            invokeArgs: Array.prototype.slice.call(args, 2)
-        };
-
-        if (recurring === true) {
-            this.timeouts[toId].interval = delay;
-        }
-
-        return toId;
+    if (!sinon && commonJSModule) {
+        sinon = require("../sinon");
     }
 
-    function parseTime(str) {
-        if (!str) {
-            return 0;
-        }
-
-        var strings = str.split(":");
-        var l = strings.length, i = l;
-        var ms = 0, parsed;
-
-        if (l > 3 || !/^(\d\d:){0,2}\d\d?$/.test(str)) {
-            throw new Error("tick only understands numbers and 'h:m:s'");
-        }
-
-        while (i--) {
-            parsed = parseInt(strings[i], 10);
-
-            if (parsed >= 60) {
-                throw new Error("Invalid time " + str);
-            }
-
-            ms += parsed * Math.pow(60, (l - i - 1));
-        }
-
-        return ms * 1000;
+    if (!sinon) {
+        return;
     }
 
-    function createObject(object) {
-        var newObject;
-
-        if (Object.create) {
-            newObject = Object.create(object);
-        } else {
-            var F = function () {};
-            F.prototype = object;
-            newObject = new F();
+    function getFakes(fakeCollection) {
+        if (!fakeCollection.fakes) {
+            fakeCollection.fakes = [];
         }
 
-        newObject.Date.clock = newObject;
-        return newObject;
+        return fakeCollection.fakes;
     }
 
-    sinon.clock = {
-        now: 0,
+    function each(fakeCollection, method) {
+        var fakes = getFakes(fakeCollection);
 
-        create: function create(now) {
-            var clock = createObject(this);
-
-            if (typeof now == "number") {
-                clock.now = now;
+        for (var i = 0, l = fakes.length; i < l; i += 1) {
+            if (typeof fakes[i][method] == "function") {
+                fakes[i][method]();
             }
+        }
+    }
 
-            if (!!now && typeof now == "object") {
-                throw new TypeError("now should be milliseconds since UNIX epoch");
-            }
+    function compact(fakeCollection) {
+        var fakes = getFakes(fakeCollection);
+        var i = 0;
+        while (i < fakes.length) {
+          fakes.splice(i, 1);
+        }
+    }
 
-            return clock;
+    var collection = {
+        verify: function resolve() {
+            each(this, "verify");
         },
 
-        setTimeout: function setTimeout(callback, timeout) {
-            return addTimer.call(this, arguments, false);
+        restore: function restore() {
+            each(this, "restore");
+            compact(this);
         },
 
-        clearTimeout: function clearTimeout(timerId) {
-            if (!this.timeouts) {
-                this.timeouts = [];
-            }
-
-            if (timerId in this.timeouts) {
-                delete this.timeouts[timerId];
-            }
-        },
-
-        setInterval: function setInterval(callback, timeout) {
-            return addTimer.call(this, arguments, true);
-        },
-
-        clearInterval: function clearInterval(timerId) {
-            this.clearTimeout(timerId);
-        },
-
-        setImmediate: function setImmediate(callback) {
-            var passThruArgs = Array.prototype.slice.call(arguments, 1);
-
-            return addTimer.call(this, [callback, 0].concat(passThruArgs), false);
-        },
-
-        clearImmediate: function clearImmediate(timerId) {
-            this.clearTimeout(timerId);
-        },
-
-        tick: function tick(ms) {
-            ms = typeof ms == "number" ? ms : parseTime(ms);
-            var tickFrom = this.now, tickTo = this.now + ms, previous = this.now;
-            var timer = this.firstTimerInRange(tickFrom, tickTo);
-
-            var firstException;
-            while (timer && tickFrom <= tickTo) {
-                if (this.timeouts[timer.id]) {
-                    tickFrom = this.now = timer.callAt;
-                    try {
-                      this.callTimer(timer);
-                    } catch (e) {
-                      firstException = firstException || e;
-                    }
-                }
-
-                timer = this.firstTimerInRange(previous, tickTo);
-                previous = tickFrom;
-            }
-
-            this.now = tickTo;
-
-            if (firstException) {
-              throw firstException;
-            }
-
-            return this.now;
-        },
-
-        firstTimerInRange: function (from, to) {
-            var timer, smallest = null, originalTimer;
-
-            for (var id in this.timeouts) {
-                if (this.timeouts.hasOwnProperty(id)) {
-                    if (this.timeouts[id].callAt < from || this.timeouts[id].callAt > to) {
-                        continue;
-                    }
-
-                    if (smallest === null || this.timeouts[id].callAt < smallest) {
-                        originalTimer = this.timeouts[id];
-                        smallest = this.timeouts[id].callAt;
-
-                        timer = {
-                            func: this.timeouts[id].func,
-                            callAt: this.timeouts[id].callAt,
-                            interval: this.timeouts[id].interval,
-                            id: this.timeouts[id].id,
-                            invokeArgs: this.timeouts[id].invokeArgs
-                        };
-                    }
-                }
-            }
-
-            return timer || null;
-        },
-
-        callTimer: function (timer) {
-            if (typeof timer.interval == "number") {
-                this.timeouts[timer.id].callAt += timer.interval;
-            } else {
-                delete this.timeouts[timer.id];
-            }
+        verifyAndRestore: function verifyAndRestore() {
+            var exception;
 
             try {
-                if (typeof timer.func == "function") {
-                    timer.func.apply(null, timer.invokeArgs);
-                } else {
-                    eval(timer.func);
-                }
+                this.verify();
             } catch (e) {
-              var exception = e;
+                exception = e;
             }
 
-            if (!this.timeouts[timer.id]) {
-                if (exception) {
-                  throw exception;
+            this.restore();
+
+            if (exception) {
+                throw exception;
+            }
+        },
+
+        add: function add(fake) {
+            push.call(getFakes(this), fake);
+            return fake;
+        },
+
+        spy: function spy() {
+            return this.add(sinon.spy.apply(sinon, arguments));
+        },
+
+        stub: function stub(object, property, value) {
+            if (property) {
+                var original = object[property];
+
+                if (typeof original != "function") {
+                    if (!hasOwnProperty.call(object, property)) {
+                        throw new TypeError("Cannot stub non-existent own property " + property);
+                    }
+
+                    object[property] = value;
+
+                    return this.add({
+                        restore: function () {
+                            object[property] = original;
+                        }
+                    });
                 }
-                return;
+            }
+            if (!property && !!object && typeof object == "object") {
+                var stubbedObj = sinon.stub.apply(sinon, arguments);
+
+                for (var prop in stubbedObj) {
+                    if (typeof stubbedObj[prop] === "function") {
+                        this.add(stubbedObj[prop]);
+                    }
+                }
+
+                return stubbedObj;
+            }
+
+            return this.add(sinon.stub.apply(sinon, arguments));
+        },
+
+        mock: function mock() {
+            return this.add(sinon.mock.apply(sinon, arguments));
+        },
+
+        inject: function inject(obj) {
+            var col = this;
+
+            obj.spy = function () {
+                return col.spy.apply(col, arguments);
+            };
+
+            obj.stub = function () {
+                return col.stub.apply(col, arguments);
+            };
+
+            obj.mock = function () {
+                return col.mock.apply(col, arguments);
+            };
+
+            return obj;
+        }
+    };
+
+    if (commonJSModule) {
+        module.exports = collection;
+    } else {
+        sinon.collection = collection;
+    }
+}(typeof sinon == "object" && sinon || null));
+
+})()
+},{"../sinon":12}],48:[function(require,module,exports){
+(function(){/**
+ * @depend ../sinon.js
+ * @depend spy.js
+ * @depend behavior.js
+ */
+/*jslint eqeqeq: false, onevar: false*/
+/*global module, require, sinon*/
+/**
+ * Stub functions
+ *
+ * @author Christian Johansen (christian@cjohansen.no)
+ * @license BSD
+ *
+ * Copyright (c) 2010-2013 Christian Johansen
+ */
+"use strict";
+
+(function (sinon) {
+    var commonJSModule = typeof module !== 'undefined' && module.exports;
+
+    if (!sinon && commonJSModule) {
+        sinon = require("../sinon");
+    }
+
+    if (!sinon) {
+        return;
+    }
+
+    function stub(object, property, func) {
+        if (!!func && typeof func != "function") {
+            throw new TypeError("Custom stub should be function");
+        }
+
+        var wrapper;
+
+        if (func) {
+            wrapper = sinon.spy && sinon.spy.create ? sinon.spy.create(func) : func;
+        } else {
+            wrapper = stub.create();
+        }
+
+        if (!object && typeof property === "undefined") {
+            return sinon.stub.create();
+        }
+
+        if (typeof property === "undefined" && typeof object == "object") {
+            for (var prop in object) {
+                if (typeof object[prop] === "function") {
+                    stub(object, prop);
+                }
+            }
+
+            return object;
+        }
+
+        return sinon.wrapMethod(object, property, wrapper);
+    }
+
+    function getDefaultBehavior(stub) {
+        return stub.defaultBehavior || getParentBehaviour(stub) || sinon.behavior.create(stub);
+    }
+
+    function getParentBehaviour(stub) {
+        return (stub.parent && getCurrentBehavior(stub.parent));
+    }
+
+    function getCurrentBehavior(stub) {
+        var behavior = stub.behaviors[stub.callCount - 1];
+        return behavior && behavior.isPresent() ? behavior : getDefaultBehavior(stub);
+    }
+
+    var uuid = 0;
+
+    sinon.extend(stub, (function () {
+        var proto = {
+            create: function create() {
+                var functionStub = function () {
+                    return getCurrentBehavior(functionStub).invoke(this, arguments);
+                };
+
+                functionStub.id = "stub#" + uuid++;
+                var orig = functionStub;
+                functionStub = sinon.spy.create(functionStub);
+                functionStub.func = orig;
+
+                sinon.extend(functionStub, stub);
+                functionStub._create = sinon.stub.create;
+                functionStub.displayName = "stub";
+                functionStub.toString = sinon.functionToString;
+
+                functionStub.defaultBehavior = null;
+                functionStub.behaviors = [];
+
+                return functionStub;
+            },
+
+            resetBehavior: function () {
+                var i;
+
+                this.defaultBehavior = null;
+                this.behaviors = [];
+
+                delete this.returnValue;
+                delete this.returnArgAt;
+                this.returnThis = false;
+
+                if (this.fakes) {
+                    for (i = 0; i < this.fakes.length; i++) {
+                        this.fakes[i].resetBehavior();
+                    }
+                }
+            },
+
+            onCall: function(index) {
+                if (!this.behaviors[index]) {
+                    this.behaviors[index] = sinon.behavior.create(this);
+                }
+
+                return this.behaviors[index];
+            },
+
+            onFirstCall: function() {
+                return this.onCall(0);
+            },
+
+            onSecondCall: function() {
+                return this.onCall(1);
+            },
+
+            onThirdCall: function() {
+                return this.onCall(2);
+            }
+        };
+
+        for (var method in sinon.behavior) {
+            if (sinon.behavior.hasOwnProperty(method) &&
+                !proto.hasOwnProperty(method) &&
+                method != 'create' &&
+                method != 'withArgs' &&
+                method != 'invoke') {
+                proto[method] = (function(behaviorMethod) {
+                    return function() {
+                        this.defaultBehavior = this.defaultBehavior || sinon.behavior.create(this);
+                        this.defaultBehavior[behaviorMethod].apply(this.defaultBehavior, arguments);
+                        return this;
+                    };
+                }(method));
+            }
+        }
+
+        return proto;
+    }()));
+
+    if (commonJSModule) {
+        module.exports = stub;
+    } else {
+        sinon.stub = stub;
+    }
+}(typeof sinon == "object" && sinon || null));
+
+})()
+},{"../sinon":12}],47:[function(require,module,exports){
+(function(global){/**
+ * @depend ../sinon.js
+ * @depend stub.js
+ */
+/*jslint eqeqeq: false, onevar: false, nomen: false, plusplus: false*/
+/*global module, require, sinon*/
+/**
+ * Assertions matching the test spy retrieval interface.
+ *
+ * @author Christian Johansen (christian@cjohansen.no)
+ * @license BSD
+ *
+ * Copyright (c) 2010-2013 Christian Johansen
+ */
+"use strict";
+
+(function (sinon, global) {
+    var commonJSModule = typeof module !== "undefined" && module.exports;
+    var slice = Array.prototype.slice;
+    var assert;
+
+    if (!sinon && commonJSModule) {
+        sinon = require("../sinon");
+    }
+
+    if (!sinon) {
+        return;
+    }
+
+    function verifyIsStub() {
+        var method;
+
+        for (var i = 0, l = arguments.length; i < l; ++i) {
+            method = arguments[i];
+
+            if (!method) {
+                assert.fail("fake is not a spy");
+            }
+
+            if (typeof method != "function") {
+                assert.fail(method + " is not a function");
+            }
+
+            if (typeof method.getCall != "function") {
+                assert.fail(method + " is not stubbed");
+            }
+        }
+    }
+
+    function failAssertion(object, msg) {
+        object = object || global;
+        var failMethod = object.fail || assert.fail;
+        failMethod.call(object, msg);
+    }
+
+    function mirrorPropAsAssertion(name, method, message) {
+        if (arguments.length == 2) {
+            message = method;
+            method = name;
+        }
+
+        assert[name] = function (fake) {
+            verifyIsStub(fake);
+
+            var args = slice.call(arguments, 1);
+            var failed = false;
+
+            if (typeof method == "function") {
+                failed = !method(fake);
+            } else {
+                failed = typeof fake[method] == "function" ?
+                    !fake[method].apply(fake, args) : !fake[method];
+            }
+
+            if (failed) {
+                failAssertion(this, fake.printf.apply(fake, [message].concat(args)));
+            } else {
+                assert.pass(name);
+            }
+        };
+    }
+
+    function exposedName(prefix, prop) {
+        return !prefix || /^fail/.test(prop) ? prop :
+            prefix + prop.slice(0, 1).toUpperCase() + prop.slice(1);
+    }
+
+    assert = {
+        failException: "AssertError",
+
+        fail: function fail(message) {
+            var error = new Error(message);
+            error.name = this.failException || assert.failException;
+
+            throw error;
+        },
+
+        pass: function pass(assertion) {},
+
+        callOrder: function assertCallOrder() {
+            verifyIsStub.apply(null, arguments);
+            var expected = "", actual = "";
+
+            if (!sinon.calledInOrder(arguments)) {
+                try {
+                    expected = [].join.call(arguments, ", ");
+                    var calls = slice.call(arguments);
+                    var i = calls.length;
+                    while (i) {
+                        if (!calls[--i].called) {
+                            calls.splice(i, 1);
+                        }
+                    }
+                    actual = sinon.orderByFirstCall(calls).join(", ");
+                } catch (e) {
+                    // If this fails, we'll just fall back to the blank string
+                }
+
+                failAssertion(this, "expected " + expected + " to be " +
+                              "called in order but were called as " + actual);
+            } else {
+                assert.pass("callOrder");
+            }
+        },
+
+        callCount: function assertCallCount(method, count) {
+            verifyIsStub(method);
+
+            if (method.callCount != count) {
+                var msg = "expected %n to be called " + sinon.timesInWords(count) +
+                    " but was called %c%C";
+                failAssertion(this, method.printf(msg));
+            } else {
+                assert.pass("callCount");
+            }
+        },
+
+        expose: function expose(target, options) {
+            if (!target) {
+                throw new TypeError("target is null or undefined");
+            }
+
+            var o = options || {};
+            var prefix = typeof o.prefix == "undefined" && "assert" || o.prefix;
+            var includeFail = typeof o.includeFail == "undefined" || !!o.includeFail;
+
+            for (var method in this) {
+                if (method != "export" && (includeFail || !/^(fail)/.test(method))) {
+                    target[exposedName(prefix, method)] = this[method];
+                }
+            }
+
+            return target;
+        }
+    };
+
+    mirrorPropAsAssertion("called", "expected %n to have been called at least once but was never called");
+    mirrorPropAsAssertion("notCalled", function (spy) { return !spy.called; },
+                          "expected %n to not have been called but was called %c%C");
+    mirrorPropAsAssertion("calledOnce", "expected %n to be called once but was called %c%C");
+    mirrorPropAsAssertion("calledTwice", "expected %n to be called twice but was called %c%C");
+    mirrorPropAsAssertion("calledThrice", "expected %n to be called thrice but was called %c%C");
+    mirrorPropAsAssertion("calledOn", "expected %n to be called with %1 as this but was called with %t");
+    mirrorPropAsAssertion("alwaysCalledOn", "expected %n to always be called with %1 as this but was called with %t");
+    mirrorPropAsAssertion("calledWithNew", "expected %n to be called with new");
+    mirrorPropAsAssertion("alwaysCalledWithNew", "expected %n to always be called with new");
+    mirrorPropAsAssertion("calledWith", "expected %n to be called with arguments %*%C");
+    mirrorPropAsAssertion("calledWithMatch", "expected %n to be called with match %*%C");
+    mirrorPropAsAssertion("alwaysCalledWith", "expected %n to always be called with arguments %*%C");
+    mirrorPropAsAssertion("alwaysCalledWithMatch", "expected %n to always be called with match %*%C");
+    mirrorPropAsAssertion("calledWithExactly", "expected %n to be called with exact arguments %*%C");
+    mirrorPropAsAssertion("alwaysCalledWithExactly", "expected %n to always be called with exact arguments %*%C");
+    mirrorPropAsAssertion("neverCalledWith", "expected %n to never be called with arguments %*%C");
+    mirrorPropAsAssertion("neverCalledWithMatch", "expected %n to never be called with match %*%C");
+    mirrorPropAsAssertion("threw", "%n did not throw exception%C");
+    mirrorPropAsAssertion("alwaysThrew", "%n did not always throw exception%C");
+
+    if (commonJSModule) {
+        module.exports = assert;
+    } else {
+        sinon.assert = assert;
+    }
+}(typeof sinon == "object" && sinon || null, typeof window != "undefined" ? window : (typeof self != "undefined") ? self : global));
+
+})(window)
+},{"../sinon":12}],49:[function(require,module,exports){
+(function(){/**
+ * @depend ../sinon.js
+ * @depend test.js
+ */
+/*jslint eqeqeq: false, onevar: false, eqeqeq: false*/
+/*global module, require, sinon*/
+/**
+ * Test case, sandboxes all test functions
+ *
+ * @author Christian Johansen (christian@cjohansen.no)
+ * @license BSD
+ *
+ * Copyright (c) 2010-2013 Christian Johansen
+ */
+"use strict";
+
+(function (sinon) {
+    var commonJSModule = typeof module !== 'undefined' && module.exports;
+
+    if (!sinon && commonJSModule) {
+        sinon = require("../sinon");
+    }
+
+    if (!sinon || !Object.prototype.hasOwnProperty) {
+        return;
+    }
+
+    function createTest(property, setUp, tearDown) {
+        return function () {
+            if (setUp) {
+                setUp.apply(this, arguments);
+            }
+
+            var exception, result;
+
+            try {
+                result = property.apply(this, arguments);
+            } catch (e) {
+                exception = e;
+            }
+
+            if (tearDown) {
+                tearDown.apply(this, arguments);
             }
 
             if (exception) {
-              throw exception;
-            }
-        },
-
-        reset: function reset() {
-            this.timeouts = {};
-        },
-
-        Date: (function () {
-            var NativeDate = Date;
-
-            function ClockDate(year, month, date, hour, minute, second, ms) {
-                // Defensive and verbose to avoid potential harm in passing
-                // explicit undefined when user does not pass argument
-                switch (arguments.length) {
-                case 0:
-                    return new NativeDate(ClockDate.clock.now);
-                case 1:
-                    return new NativeDate(year);
-                case 2:
-                    return new NativeDate(year, month);
-                case 3:
-                    return new NativeDate(year, month, date);
-                case 4:
-                    return new NativeDate(year, month, date, hour);
-                case 5:
-                    return new NativeDate(year, month, date, hour, minute);
-                case 6:
-                    return new NativeDate(year, month, date, hour, minute, second);
-                default:
-                    return new NativeDate(year, month, date, hour, minute, second, ms);
-                }
+                throw exception;
             }
 
-            return mirrorDateProperties(ClockDate, NativeDate);
-        }())
-    };
-
-    function mirrorDateProperties(target, source) {
-        if (source.now) {
-            target.now = function now() {
-                return target.clock.now;
-            };
-        } else {
-            delete target.now;
-        }
-
-        if (source.toSource) {
-            target.toSource = function toSource() {
-                return source.toSource();
-            };
-        } else {
-            delete target.toSource;
-        }
-
-        target.toString = function toString() {
-            return source.toString();
+            return result;
         };
+    }
 
-        target.prototype = source.prototype;
-        target.parse = source.parse;
-        target.UTC = source.UTC;
-        target.prototype.toUTCString = source.prototype.toUTCString;
-
-        for (var prop in source) {
-            if (source.hasOwnProperty(prop)) {
-                target[prop] = source[prop];
-            }
+    function testCase(tests, prefix) {
+        /*jsl:ignore*/
+        if (!tests || typeof tests != "object") {
+            throw new TypeError("sinon.testCase needs an object with test functions");
         }
+        /*jsl:end*/
 
-        return target;
-    }
+        prefix = prefix || "test";
+        var rPrefix = new RegExp("^" + prefix);
+        var methods = {}, testName, property, method;
+        var setUp = tests.setUp;
+        var tearDown = tests.tearDown;
 
-    var methods = ["Date", "setTimeout", "setInterval",
-                   "clearTimeout", "clearInterval"];
+        for (testName in tests) {
+            if (tests.hasOwnProperty(testName)) {
+                property = tests[testName];
 
-    if (typeof global.setImmediate !== "undefined") {
-        methods.push("setImmediate");
-    }
+                if (/^(setUp|tearDown)$/.test(testName)) {
+                    continue;
+                }
 
-    if (typeof global.clearImmediate !== "undefined") {
-        methods.push("clearImmediate");
-    }
+                if (typeof property == "function" && rPrefix.test(testName)) {
+                    method = property;
 
-    function restore() {
-        var method;
+                    if (setUp || tearDown) {
+                        method = createTest(property, setUp, tearDown);
+                    }
 
-        for (var i = 0, l = this.methods.length; i < l; i++) {
-            method = this.methods[i];
-
-            if (global[method].hadOwnProperty) {
-                global[method] = this["_" + method];
-            } else {
-                try {
-                    delete global[method];
-                } catch (e) {}
-            }
-        }
-
-        // Prevent multiple executions which will completely remove these props
-        this.methods = [];
-    }
-
-    function stubGlobal(method, clock) {
-        clock[method].hadOwnProperty = Object.prototype.hasOwnProperty.call(global, method);
-        clock["_" + method] = global[method];
-
-        if (method == "Date") {
-            var date = mirrorDateProperties(clock[method], global[method]);
-            global[method] = date;
-        } else {
-            global[method] = function () {
-                return clock[method].apply(clock, arguments);
-            };
-
-            for (var prop in clock[method]) {
-                if (clock[method].hasOwnProperty(prop)) {
-                    global[method][prop] = clock[method][prop];
+                    methods[testName] = sinon.test(method);
+                } else {
+                    methods[testName] = tests[testName];
                 }
             }
         }
 
-        global[method].clock = clock;
+        return methods;
     }
 
-    sinon.useFakeTimers = function useFakeTimers(now) {
-        var clock = sinon.clock.create(now);
-        clock.restore = restore;
-        clock.methods = Array.prototype.slice.call(arguments,
-                                                   typeof now == "number" ? 1 : 0);
+    if (commonJSModule) {
+        module.exports = testCase;
+    } else {
+        sinon.testCase = testCase;
+    }
+}(typeof sinon == "object" && sinon || null));
 
-        if (clock.methods.length === 0) {
-            clock.methods = methods;
+})()
+},{"../sinon":12}],50:[function(require,module,exports){
+(function(){/**
+ * @depend ../sinon.js
+ * @depend stub.js
+ * @depend mock.js
+ * @depend sandbox.js
+ */
+/*jslint eqeqeq: false, onevar: false, forin: true, plusplus: false*/
+/*global module, require, sinon*/
+/**
+ * Test function, sandboxes fakes
+ *
+ * @author Christian Johansen (christian@cjohansen.no)
+ * @license BSD
+ *
+ * Copyright (c) 2010-2013 Christian Johansen
+ */
+"use strict";
+
+(function (sinon) {
+    var commonJSModule = typeof module !== 'undefined' && module.exports;
+
+    if (!sinon && commonJSModule) {
+        sinon = require("../sinon");
+    }
+
+    if (!sinon) {
+        return;
+    }
+
+    function test(callback) {
+        var type = typeof callback;
+
+        if (type != "function") {
+            throw new TypeError("sinon.test needs to wrap a test function, got " + type);
         }
 
-        for (var i = 0, l = clock.methods.length; i < l; i++) {
-            stubGlobal(clock.methods[i], clock);
-        }
+        return function () {
+            var config = sinon.getConfig(sinon.config);
+            config.injectInto = config.injectIntoThis && this || config.injectInto;
+            var sandbox = sinon.sandbox.create(config);
+            var exception, result;
+            var args = Array.prototype.slice.call(arguments).concat(sandbox.args);
 
-        return clock;
+            try {
+                result = callback.apply(this, args);
+            } catch (e) {
+                exception = e;
+            }
+
+            if (typeof exception !== "undefined") {
+                sandbox.restore();
+                throw exception;
+            }
+            else {
+                sandbox.verifyAndRestore();
+            }
+
+            return result;
+        };
+    }
+
+    test.config = {
+        injectIntoThis: true,
+        injectInto: null,
+        properties: ["spy", "stub", "mock", "clock", "server", "requests"],
+        useFakeTimers: true,
+        useFakeServer: true
     };
-}(typeof global != "undefined" && typeof global !== "function" ? global : this));
 
-sinon.timers = {
-    setTimeout: setTimeout,
-    clearTimeout: clearTimeout,
-    setImmediate: (typeof setImmediate !== "undefined" ? setImmediate : undefined),
-    clearImmediate: (typeof clearImmediate !== "undefined" ? clearImmediate: undefined),
-    setInterval: setInterval,
-    clearInterval: clearInterval,
-    Date: Date
-};
+    if (commonJSModule) {
+        module.exports = test;
+    } else {
+        sinon.test = test;
+    }
+}(typeof sinon == "object" && sinon || null));
+
+})()
+},{"../sinon":12}],44:[function(require,module,exports){
+(function(){/* @depend ../sinon.js */
+/*jslint eqeqeq: false, onevar: false, plusplus: false*/
+/*global module, require, sinon*/
+/**
+ * Match functions
+ *
+ * @author Maximilian Antoni (mail@maxantoni.de)
+ * @license BSD
+ *
+ * Copyright (c) 2012 Maximilian Antoni
+ */
+"use strict";
+
+(function (sinon) {
+    var commonJSModule = typeof module !== 'undefined' && module.exports;
+
+    if (!sinon && commonJSModule) {
+        sinon = require("../sinon");
+    }
+
+    if (!sinon) {
+        return;
+    }
+
+    function assertType(value, type, name) {
+        var actual = sinon.typeOf(value);
+        if (actual !== type) {
+            throw new TypeError("Expected type of " + name + " to be " +
+                type + ", but was " + actual);
+        }
+    }
+
+    var matcher = {
+        toString: function () {
+            return this.message;
+        }
+    };
+
+    function isMatcher(object) {
+        return matcher.isPrototypeOf(object);
+    }
+
+    function matchObject(expectation, actual) {
+        if (actual === null || actual === undefined) {
+            return false;
+        }
+        for (var key in expectation) {
+            if (expectation.hasOwnProperty(key)) {
+                var exp = expectation[key];
+                var act = actual[key];
+                if (match.isMatcher(exp)) {
+                    if (!exp.test(act)) {
+                        return false;
+                    }
+                } else if (sinon.typeOf(exp) === "object") {
+                    if (!matchObject(exp, act)) {
+                        return false;
+                    }
+                } else if (!sinon.deepEqual(exp, act)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    matcher.or = function (m2) {
+        if (!isMatcher(m2)) {
+            throw new TypeError("Matcher expected");
+        }
+        var m1 = this;
+        var or = sinon.create(matcher);
+        or.test = function (actual) {
+            return m1.test(actual) || m2.test(actual);
+        };
+        or.message = m1.message + ".or(" + m2.message + ")";
+        return or;
+    };
+
+    matcher.and = function (m2) {
+        if (!isMatcher(m2)) {
+            throw new TypeError("Matcher expected");
+        }
+        var m1 = this;
+        var and = sinon.create(matcher);
+        and.test = function (actual) {
+            return m1.test(actual) && m2.test(actual);
+        };
+        and.message = m1.message + ".and(" + m2.message + ")";
+        return and;
+    };
+
+    var match = function (expectation, message) {
+        var m = sinon.create(matcher);
+        var type = sinon.typeOf(expectation);
+        switch (type) {
+        case "object":
+            if (typeof expectation.test === "function") {
+                m.test = function (actual) {
+                    return expectation.test(actual) === true;
+                };
+                m.message = "match(" + sinon.functionName(expectation.test) + ")";
+                return m;
+            }
+            var str = [];
+            for (var key in expectation) {
+                if (expectation.hasOwnProperty(key)) {
+                    str.push(key + ": " + expectation[key]);
+                }
+            }
+            m.test = function (actual) {
+                return matchObject(expectation, actual);
+            };
+            m.message = "match(" + str.join(", ") + ")";
+            break;
+        case "number":
+            m.test = function (actual) {
+                return expectation == actual;
+            };
+            break;
+        case "string":
+            m.test = function (actual) {
+                if (typeof actual !== "string") {
+                    return false;
+                }
+                return actual.indexOf(expectation) !== -1;
+            };
+            m.message = "match(\"" + expectation + "\")";
+            break;
+        case "regexp":
+            m.test = function (actual) {
+                if (typeof actual !== "string") {
+                    return false;
+                }
+                return expectation.test(actual);
+            };
+            break;
+        case "function":
+            m.test = expectation;
+            if (message) {
+                m.message = message;
+            } else {
+                m.message = "match(" + sinon.functionName(expectation) + ")";
+            }
+            break;
+        default:
+            m.test = function (actual) {
+              return sinon.deepEqual(expectation, actual);
+            };
+        }
+        if (!m.message) {
+            m.message = "match(" + expectation + ")";
+        }
+        return m;
+    };
+
+    match.isMatcher = isMatcher;
+
+    match.any = match(function () {
+        return true;
+    }, "any");
+
+    match.defined = match(function (actual) {
+        return actual !== null && actual !== undefined;
+    }, "defined");
+
+    match.truthy = match(function (actual) {
+        return !!actual;
+    }, "truthy");
+
+    match.falsy = match(function (actual) {
+        return !actual;
+    }, "falsy");
+
+    match.same = function (expectation) {
+        return match(function (actual) {
+            return expectation === actual;
+        }, "same(" + expectation + ")");
+    };
+
+    match.typeOf = function (type) {
+        assertType(type, "string", "type");
+        return match(function (actual) {
+            return sinon.typeOf(actual) === type;
+        }, "typeOf(\"" + type + "\")");
+    };
+
+    match.instanceOf = function (type) {
+        assertType(type, "function", "type");
+        return match(function (actual) {
+            return actual instanceof type;
+        }, "instanceOf(" + sinon.functionName(type) + ")");
+    };
+
+    function createPropertyMatcher(propertyTest, messagePrefix) {
+        return function (property, value) {
+            assertType(property, "string", "property");
+            var onlyProperty = arguments.length === 1;
+            var message = messagePrefix + "(\"" + property + "\"";
+            if (!onlyProperty) {
+                message += ", " + value;
+            }
+            message += ")";
+            return match(function (actual) {
+                if (actual === undefined || actual === null ||
+                        !propertyTest(actual, property)) {
+                    return false;
+                }
+                return onlyProperty || sinon.deepEqual(value, actual[property]);
+            }, message);
+        };
+    }
+
+    match.has = createPropertyMatcher(function (actual, property) {
+        if (typeof actual === "object") {
+            return property in actual;
+        }
+        return actual[property] !== undefined;
+    }, "has");
+
+    match.hasOwn = createPropertyMatcher(function (actual, property) {
+        return actual.hasOwnProperty(property);
+    }, "hasOwn");
+
+    match.bool = match.typeOf("boolean");
+    match.number = match.typeOf("number");
+    match.string = match.typeOf("string");
+    match.object = match.typeOf("object");
+    match.func = match.typeOf("function");
+    match.array = match.typeOf("array");
+    match.regexp = match.typeOf("regexp");
+    match.date = match.typeOf("date");
+
+    if (commonJSModule) {
+        module.exports = match;
+    } else {
+        sinon.match = match;
+    }
+}(typeof sinon == "object" && sinon || null));
+
+})()
+},{"../sinon":12}],51:[function(require,module,exports){
+(function(){/**
+ * @depend ../sinon.js
+ * @depend collection.js
+ * @depend util/fake_timers.js
+ * @depend util/fake_server_with_clock.js
+ */
+/*jslint eqeqeq: false, onevar: false, plusplus: false*/
+/*global require, module*/
+/**
+ * Manages fake collections as well as fake utilities such as Sinon's
+ * timers and fake XHR implementation in one convenient object.
+ *
+ * @author Christian Johansen (christian@cjohansen.no)
+ * @license BSD
+ *
+ * Copyright (c) 2010-2013 Christian Johansen
+ */
+"use strict";
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = sinon;
+    var sinon = require("../sinon");
+    sinon.extend(sinon, require("./util/fake_timers"));
 }
 
-})(window)
-},{}],25:[function(require,module,exports){
+(function () {
+    var push = [].push;
+
+    function exposeValue(sandbox, config, key, value) {
+        if (!value) {
+            return;
+        }
+
+        if (config.injectInto && !(key in config.injectInto) ) {
+            config.injectInto[key] = value;
+        } else {
+            push.call(sandbox.args, value);
+        }
+    }
+
+    function prepareSandboxFromConfig(config) {
+        var sandbox = sinon.create(sinon.sandbox);
+
+        if (config.useFakeServer) {
+            if (typeof config.useFakeServer == "object") {
+                sandbox.serverPrototype = config.useFakeServer;
+            }
+
+            sandbox.useFakeServer();
+        }
+
+        if (config.useFakeTimers) {
+            if (typeof config.useFakeTimers == "object") {
+                sandbox.useFakeTimers.apply(sandbox, config.useFakeTimers);
+            } else {
+                sandbox.useFakeTimers();
+            }
+        }
+
+        return sandbox;
+    }
+
+    sinon.sandbox = sinon.extend(sinon.create(sinon.collection), {
+        useFakeTimers: function useFakeTimers() {
+            this.clock = sinon.useFakeTimers.apply(sinon, arguments);
+
+            return this.add(this.clock);
+        },
+
+        serverPrototype: sinon.fakeServer,
+
+        useFakeServer: function useFakeServer() {
+            var proto = this.serverPrototype || sinon.fakeServer;
+
+            if (!proto || !proto.create) {
+                return null;
+            }
+
+            this.server = proto.create();
+            return this.add(this.server);
+        },
+
+        inject: function (obj) {
+            sinon.collection.inject.call(this, obj);
+
+            if (this.clock) {
+                obj.clock = this.clock;
+            }
+
+            if (this.server) {
+                obj.server = this.server;
+                obj.requests = this.server.requests;
+            }
+
+            return obj;
+        },
+
+        create: function (config) {
+            if (!config) {
+                return sinon.create(sinon.sandbox);
+            }
+
+            var sandbox = prepareSandboxFromConfig(config);
+            sandbox.args = sandbox.args || [];
+            var prop, value, exposed = sandbox.inject({});
+
+            if (config.properties) {
+                for (var i = 0, l = config.properties.length; i < l; i++) {
+                    prop = config.properties[i];
+                    value = exposed[prop] || prop == "sandbox" && sandbox;
+                    exposeValue(sandbox, config, prop, value);
+                }
+            } else {
+                exposeValue(sandbox, config, "sandbox", value);
+            }
+
+            return sandbox;
+        }
+    });
+
+    sinon.sandbox.useFakeXMLHttpRequest = sinon.sandbox.useFakeServer;
+
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = sinon.sandbox;
+    }
+}());
+
+})()
+},{"./util/fake_timers":53,"../sinon":12}],24:[function(require,module,exports){
 (function(){function SlowBuffer (size) {
     this.length = size;
 };
@@ -15726,7 +14982,1092 @@ SlowBuffer.prototype.writeDoubleLE = Buffer.prototype.writeDoubleLE;
 SlowBuffer.prototype.writeDoubleBE = Buffer.prototype.writeDoubleBE;
 
 })()
-},{"assert":23,"./buffer_ieee754":39,"base64-js":55}],54:[function(require,module,exports){
+},{"assert":23,"./buffer_ieee754":39,"base64-js":54}],53:[function(require,module,exports){
+(function(global){/*jslint eqeqeq: false, plusplus: false, evil: true, onevar: false, browser: true, forin: false*/
+/*global module, require, window*/
+/**
+ * Fake timer API
+ * setTimeout
+ * setInterval
+ * clearTimeout
+ * clearInterval
+ * tick
+ * reset
+ * Date
+ *
+ * Inspired by jsUnitMockTimeOut from JsUnit
+ *
+ * @author Christian Johansen (christian@cjohansen.no)
+ * @license BSD
+ *
+ * Copyright (c) 2010-2013 Christian Johansen
+ */
+"use strict";
+
+if (typeof sinon == "undefined") {
+    var sinon = {};
+}
+
+(function (global) {
+    var id = 1;
+
+    function addTimer(args, recurring) {
+        if (args.length === 0) {
+            throw new Error("Function requires at least 1 parameter");
+        }
+
+        if (typeof args[0] === "undefined") {
+            throw new Error("Callback must be provided to timer calls");
+        }
+
+        var toId = id++;
+        var delay = args[1] || 0;
+
+        if (!this.timeouts) {
+            this.timeouts = {};
+        }
+
+        this.timeouts[toId] = {
+            id: toId,
+            func: args[0],
+            callAt: this.now + delay,
+            invokeArgs: Array.prototype.slice.call(args, 2)
+        };
+
+        if (recurring === true) {
+            this.timeouts[toId].interval = delay;
+        }
+
+        return toId;
+    }
+
+    function parseTime(str) {
+        if (!str) {
+            return 0;
+        }
+
+        var strings = str.split(":");
+        var l = strings.length, i = l;
+        var ms = 0, parsed;
+
+        if (l > 3 || !/^(\d\d:){0,2}\d\d?$/.test(str)) {
+            throw new Error("tick only understands numbers and 'h:m:s'");
+        }
+
+        while (i--) {
+            parsed = parseInt(strings[i], 10);
+
+            if (parsed >= 60) {
+                throw new Error("Invalid time " + str);
+            }
+
+            ms += parsed * Math.pow(60, (l - i - 1));
+        }
+
+        return ms * 1000;
+    }
+
+    function createObject(object) {
+        var newObject;
+
+        if (Object.create) {
+            newObject = Object.create(object);
+        } else {
+            var F = function () {};
+            F.prototype = object;
+            newObject = new F();
+        }
+
+        newObject.Date.clock = newObject;
+        return newObject;
+    }
+
+    sinon.clock = {
+        now: 0,
+
+        create: function create(now) {
+            var clock = createObject(this);
+
+            if (typeof now == "number") {
+                clock.now = now;
+            }
+
+            if (!!now && typeof now == "object") {
+                throw new TypeError("now should be milliseconds since UNIX epoch");
+            }
+
+            return clock;
+        },
+
+        setTimeout: function setTimeout(callback, timeout) {
+            return addTimer.call(this, arguments, false);
+        },
+
+        clearTimeout: function clearTimeout(timerId) {
+            if (!this.timeouts) {
+                this.timeouts = [];
+            }
+
+            if (timerId in this.timeouts) {
+                delete this.timeouts[timerId];
+            }
+        },
+
+        setInterval: function setInterval(callback, timeout) {
+            return addTimer.call(this, arguments, true);
+        },
+
+        clearInterval: function clearInterval(timerId) {
+            this.clearTimeout(timerId);
+        },
+
+        setImmediate: function setImmediate(callback) {
+            var passThruArgs = Array.prototype.slice.call(arguments, 1);
+
+            return addTimer.call(this, [callback, 0].concat(passThruArgs), false);
+        },
+
+        clearImmediate: function clearImmediate(timerId) {
+            this.clearTimeout(timerId);
+        },
+
+        tick: function tick(ms) {
+            ms = typeof ms == "number" ? ms : parseTime(ms);
+            var tickFrom = this.now, tickTo = this.now + ms, previous = this.now;
+            var timer = this.firstTimerInRange(tickFrom, tickTo);
+
+            var firstException;
+            while (timer && tickFrom <= tickTo) {
+                if (this.timeouts[timer.id]) {
+                    tickFrom = this.now = timer.callAt;
+                    try {
+                      this.callTimer(timer);
+                    } catch (e) {
+                      firstException = firstException || e;
+                    }
+                }
+
+                timer = this.firstTimerInRange(previous, tickTo);
+                previous = tickFrom;
+            }
+
+            this.now = tickTo;
+
+            if (firstException) {
+              throw firstException;
+            }
+
+            return this.now;
+        },
+
+        firstTimerInRange: function (from, to) {
+            var timer, smallest = null, originalTimer;
+
+            for (var id in this.timeouts) {
+                if (this.timeouts.hasOwnProperty(id)) {
+                    if (this.timeouts[id].callAt < from || this.timeouts[id].callAt > to) {
+                        continue;
+                    }
+
+                    if (smallest === null || this.timeouts[id].callAt < smallest) {
+                        originalTimer = this.timeouts[id];
+                        smallest = this.timeouts[id].callAt;
+
+                        timer = {
+                            func: this.timeouts[id].func,
+                            callAt: this.timeouts[id].callAt,
+                            interval: this.timeouts[id].interval,
+                            id: this.timeouts[id].id,
+                            invokeArgs: this.timeouts[id].invokeArgs
+                        };
+                    }
+                }
+            }
+
+            return timer || null;
+        },
+
+        callTimer: function (timer) {
+            if (typeof timer.interval == "number") {
+                this.timeouts[timer.id].callAt += timer.interval;
+            } else {
+                delete this.timeouts[timer.id];
+            }
+
+            try {
+                if (typeof timer.func == "function") {
+                    timer.func.apply(null, timer.invokeArgs);
+                } else {
+                    eval(timer.func);
+                }
+            } catch (e) {
+              var exception = e;
+            }
+
+            if (!this.timeouts[timer.id]) {
+                if (exception) {
+                  throw exception;
+                }
+                return;
+            }
+
+            if (exception) {
+              throw exception;
+            }
+        },
+
+        reset: function reset() {
+            this.timeouts = {};
+        },
+
+        Date: (function () {
+            var NativeDate = Date;
+
+            function ClockDate(year, month, date, hour, minute, second, ms) {
+                // Defensive and verbose to avoid potential harm in passing
+                // explicit undefined when user does not pass argument
+                switch (arguments.length) {
+                case 0:
+                    return new NativeDate(ClockDate.clock.now);
+                case 1:
+                    return new NativeDate(year);
+                case 2:
+                    return new NativeDate(year, month);
+                case 3:
+                    return new NativeDate(year, month, date);
+                case 4:
+                    return new NativeDate(year, month, date, hour);
+                case 5:
+                    return new NativeDate(year, month, date, hour, minute);
+                case 6:
+                    return new NativeDate(year, month, date, hour, minute, second);
+                default:
+                    return new NativeDate(year, month, date, hour, minute, second, ms);
+                }
+            }
+
+            return mirrorDateProperties(ClockDate, NativeDate);
+        }())
+    };
+
+    function mirrorDateProperties(target, source) {
+        if (source.now) {
+            target.now = function now() {
+                return target.clock.now;
+            };
+        } else {
+            delete target.now;
+        }
+
+        if (source.toSource) {
+            target.toSource = function toSource() {
+                return source.toSource();
+            };
+        } else {
+            delete target.toSource;
+        }
+
+        target.toString = function toString() {
+            return source.toString();
+        };
+
+        target.prototype = source.prototype;
+        target.parse = source.parse;
+        target.UTC = source.UTC;
+        target.prototype.toUTCString = source.prototype.toUTCString;
+
+        for (var prop in source) {
+            if (source.hasOwnProperty(prop)) {
+                target[prop] = source[prop];
+            }
+        }
+
+        return target;
+    }
+
+    var methods = ["Date", "setTimeout", "setInterval",
+                   "clearTimeout", "clearInterval"];
+
+    if (typeof global.setImmediate !== "undefined") {
+        methods.push("setImmediate");
+    }
+
+    if (typeof global.clearImmediate !== "undefined") {
+        methods.push("clearImmediate");
+    }
+
+    function restore() {
+        var method;
+
+        for (var i = 0, l = this.methods.length; i < l; i++) {
+            method = this.methods[i];
+
+            if (global[method].hadOwnProperty) {
+                global[method] = this["_" + method];
+            } else {
+                try {
+                    delete global[method];
+                } catch (e) {}
+            }
+        }
+
+        // Prevent multiple executions which will completely remove these props
+        this.methods = [];
+    }
+
+    function stubGlobal(method, clock) {
+        clock[method].hadOwnProperty = Object.prototype.hasOwnProperty.call(global, method);
+        clock["_" + method] = global[method];
+
+        if (method == "Date") {
+            var date = mirrorDateProperties(clock[method], global[method]);
+            global[method] = date;
+        } else {
+            global[method] = function () {
+                return clock[method].apply(clock, arguments);
+            };
+
+            for (var prop in clock[method]) {
+                if (clock[method].hasOwnProperty(prop)) {
+                    global[method][prop] = clock[method][prop];
+                }
+            }
+        }
+
+        global[method].clock = clock;
+    }
+
+    sinon.useFakeTimers = function useFakeTimers(now) {
+        var clock = sinon.clock.create(now);
+        clock.restore = restore;
+        clock.methods = Array.prototype.slice.call(arguments,
+                                                   typeof now == "number" ? 1 : 0);
+
+        if (clock.methods.length === 0) {
+            clock.methods = methods;
+        }
+
+        for (var i = 0, l = clock.methods.length; i < l; i++) {
+            stubGlobal(clock.methods[i], clock);
+        }
+
+        return clock;
+    };
+}(typeof global != "undefined" && typeof global !== "function" ? global : this));
+
+sinon.timers = {
+    setTimeout: setTimeout,
+    clearTimeout: clearTimeout,
+    setImmediate: (typeof setImmediate !== "undefined" ? setImmediate : undefined),
+    clearImmediate: (typeof clearImmediate !== "undefined" ? clearImmediate: undefined),
+    setInterval: setInterval,
+    clearInterval: clearInterval,
+    Date: Date
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = sinon;
+}
+
+})(window)
+},{}],7:[function(require,module,exports){
+var sinon = require('sinon')
+  , EventEmitter = require('events').EventEmitter
+  , SlideshowView = require('../../../src/remark/views/slideshowView')
+  , Slideshow = require('../../../src/remark/models/slideshow')
+  , utils = require('../../../src/remark/utils')
+  ;
+
+describe('SlideshowView', function () {
+  var events
+    , model
+    , containerElement
+    , view
+    ;
+
+  beforeEach(function () {
+    events = new EventEmitter();
+    model = new Slideshow(events);
+    containerElement = document.createElement('div');
+  });
+
+  describe('container element configuration', function () {
+    beforeEach(function () {
+      view = new SlideshowView(events, containerElement, model);
+    });
+
+    it('should style element', function () {
+      containerElement.className.should.include('remark-container');
+    });
+
+    it('should position element', function () {
+      containerElement.style.position.should.equal('absolute');
+    });
+
+    it('should make element focusable', function () {
+      containerElement.tabIndex.should.equal(-1);
+    });
+
+    describe('proxying of element events', function () {
+      it('should proxy keydown event', function (done) {
+        events.on('keydown', function () {
+          done();
+        });
+
+        triggerEvent(containerElement, 'keydown');
+      });
+
+      it('should proxy keypress event', function (done) {
+        events.on('keypress', function () {
+          done();
+        });
+
+        triggerEvent(containerElement, 'keypress');
+      });
+
+      it('should proxy mousewheel event', function (done) {
+        events.on('mousewheel', function () {
+          done();
+        });
+
+        triggerEvent(containerElement, 'mousewheel');
+      });
+
+      it('should proxy touchstart event', function (done) {
+        events.on('touchstart', function () {
+          done();
+        });
+
+        triggerEvent(containerElement, 'touchstart');
+      });
+
+      it('should proxy touchmove event', function (done) {
+        events.on('touchmove', function () {
+          done();
+        });
+
+        triggerEvent(containerElement, 'touchmove');
+      });
+
+      it('should proxy touchend event', function (done) {
+        events.on('touchend', function () {
+          done();
+        });
+
+        triggerEvent(containerElement, 'touchend');
+      });
+    });
+  });
+
+  describe('document.body container element configuration', function () {
+    var html, body;
+
+    beforeEach(function () {
+      html = document.createElement('html');
+      body = document.createElement('body');
+
+      // Stub to prevent altering test runner DOM
+      sinon.stub(utils, 'getHTMLElement').returns(html);
+      sinon.stub(utils, 'getBodyElement').returns(body);
+
+      containerElement = body;
+      view = new SlideshowView(events, containerElement, model);
+    });
+
+    afterEach(function () {
+      utils.getHTMLElement.restore();
+      utils.getBodyElement.restore();
+    });
+
+    it('should style HTML element', function () {
+      var html = utils.getHTMLElement();
+      html.className.should.include('remark-container');
+    });
+
+    it('should not position element', function () {
+      containerElement.style.position.should.not.equal('absolute');
+    });
+
+    describe('proxying of element events', function () {
+      it('should proxy resize event', function (done) {
+        events.on('resize', function () {
+          done();
+        });
+
+        triggerEvent(window, 'resize');
+      });
+
+      it('should proxy hashchange event', function (done) {
+        events.on('hashchange', function () {
+          done();
+        });
+
+        triggerEvent(window, 'hashchange');
+      });
+
+      it('should proxy keydown event', function (done) {
+        events.on('keydown', function () {
+          done();
+        });
+
+        triggerEvent(window, 'keydown');
+      });
+
+      it('should proxy keypress event', function (done) {
+        events.on('keypress', function () {
+          done();
+        });
+
+        triggerEvent(window, 'keypress');
+      });
+
+      it('should proxy mousewheel event', function (done) {
+        events.on('mousewheel', function () {
+          done();
+        });
+
+        triggerEvent(window, 'mousewheel');
+      });
+
+      it('should proxy touchstart event', function (done) {
+        events.on('touchstart', function () {
+          done();
+        });
+
+        triggerEvent(body, 'touchstart');
+      });
+
+      it('should proxy touchmove event', function (done) {
+        events.on('touchmove', function () {
+          done();
+        });
+
+        triggerEvent(body, 'touchmove');
+      });
+
+      it('should proxy touchend event', function (done) {
+        events.on('touchend', function () {
+          done();
+        });
+
+        triggerEvent(body, 'touchend');
+      });
+    });
+  });
+
+  describe('ratio calculation', function () {
+    it('should calculate element size for 4:3', function () {
+      model = new Slideshow(events, {ratio: '4:3'});
+
+      view = new SlideshowView(events, containerElement, model);
+
+      view.slideViews[0].scalingElement.style.width.should.equal('908px');
+      view.slideViews[0].scalingElement.style.height.should.equal('681px');
+    });
+
+    it('should calculate element size for 16:9', function () {
+      model = new Slideshow(events, {ratio: '16:9'});
+
+      view = new SlideshowView(events, containerElement, model);
+
+      view.slideViews[0].scalingElement.style.width.should.equal('1210px');
+      view.slideViews[0].scalingElement.style.height.should.equal('681px');
+    });
+  });
+
+  describe('model synchronization', function () {
+    beforeEach(function () {
+      view = new SlideshowView(events, containerElement, model);
+    });
+
+    it('should create initial slide views', function () {
+      view.slideViews.length.should.equal(1);
+    });
+
+    it('should replace slide views on slideshow update', function () {
+      model.loadFromString('a\n---\nb');
+
+      view.slideViews.length.should.equal(2);
+    });
+  });
+
+  describe('timer updates', function () {
+    beforeEach(function () {
+      view = new SlideshowView(events, containerElement, model);
+    });
+
+    it('should do nothing if the timer has not started', function () {
+      view.timerElement.innerHTML.should.equal('0:00:00');
+    });
+
+    it('should show progress time if the slideshow has started', function () {
+      // Force a specific start time and update
+      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
+      view.updateTimer();
+      // Timer output should match forced time
+      view.timerElement.innerHTML.should.equal('2:34:56');
+    });
+
+    it('should compensate for a pause in progress', function () {
+      // Force a specific start time and update, including an in-progress pause
+      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
+      view.pauseStart = new Date() - (1*3600000 + 23 * 60000 + 45 * 1000);
+      view.updateTimer();
+      // Timer output should match forced time
+      view.timerElement.innerHTML.should.equal('1:11:11');
+    });
+
+    it('should compensate for paused time', function () {
+      // Force a specific start time and update, including a recorded pause
+      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
+      view.pauseLength = (5 * 60000 + 6 * 1000);
+      view.updateTimer();
+      // Timer output should match forced time
+      view.timerElement.innerHTML.should.equal('2:29:50');
+    });
+
+
+    it('should compensate for a pause in progress in addition to previous pauses', function () {
+      // Force a specific start time and update, including a recorded pause
+      // and an in-progress pause
+      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
+      view.pauseLength = (5 * 60000 + 6 * 1000);
+      view.pauseStart = new Date() - (1*3600000 + 23 * 60000 + 45 * 1000);
+      view.updateTimer();
+      // Timer output should match forced time
+      view.timerElement.innerHTML.should.equal('1:06:05');
+    });
+
+  });
+
+  describe('timer events', function () {
+    beforeEach(function () {
+      view = new SlideshowView(events, containerElement, model);
+    });
+
+    it('should respond to a start event', function () {
+      events.emit('start');
+      view.startTime.should.not.equal(null);
+    });
+
+    it('should reset on demand', function () {
+      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
+      events.emit('resetTimer');
+      view.timerElement.innerHTML.should.equal('0:00:00');
+      // BDD seems to make this really easy test impossible...
+      // view.startTime.should.equal(null);
+      // view.pauseStart.should.equal(null);
+      view.pauseLength.should.equal(0);
+    });
+
+    it('should track pause start end time', function () {
+      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
+
+      events.emit('pause');
+      view.pauseStart.should.not.equal(null);
+      view.pauseLength.should.equal(0);
+    });
+
+    it('should accumulate pause duration at pause end', function () {
+      view.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
+      view.pauseStart = new Date() - (12 * 1000);
+      view.pauseLength = 100000;
+
+      events.emit('resume');
+      // BDD seems to make this really easy test impossible...
+      //view.pauseStart.should.equal(null);
+      // Microsecond accuracy is a possible problem here, so
+      // allow a 5 microsecond window just in case.
+      view.pauseLength.should.be.approximately(112000, 5);
+    });
+  });
+
+  function triggerEvent(element, eventName) {
+    var event = document.createEvent('HTMLEvents');
+    event.initEvent(eventName, true, true);
+    element.dispatchEvent(event);
+  }
+});
+
+},{"events":14,"../../../src/remark/views/slideshowView":35,"../../../src/remark/models/slideshow":18,"../../../src/remark/utils":21,"sinon":12}],54:[function(require,module,exports){
+(function (exports) {
+	'use strict';
+
+	var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+	function b64ToByteArray(b64) {
+		var i, j, l, tmp, placeHolders, arr;
+	
+		if (b64.length % 4 > 0) {
+			throw 'Invalid string. Length must be a multiple of 4';
+		}
+
+		// the number of equal signs (place holders)
+		// if there are two placeholders, than the two characters before it
+		// represent one byte
+		// if there is only one, then the three characters before it represent 2 bytes
+		// this is just a cheap hack to not do indexOf twice
+		placeHolders = b64.indexOf('=');
+		placeHolders = placeHolders > 0 ? b64.length - placeHolders : 0;
+
+		// base64 is 4/3 + up to two characters of the original data
+		arr = [];//new Uint8Array(b64.length * 3 / 4 - placeHolders);
+
+		// if there are placeholders, only get up to the last complete 4 chars
+		l = placeHolders > 0 ? b64.length - 4 : b64.length;
+
+		for (i = 0, j = 0; i < l; i += 4, j += 3) {
+			tmp = (lookup.indexOf(b64[i]) << 18) | (lookup.indexOf(b64[i + 1]) << 12) | (lookup.indexOf(b64[i + 2]) << 6) | lookup.indexOf(b64[i + 3]);
+			arr.push((tmp & 0xFF0000) >> 16);
+			arr.push((tmp & 0xFF00) >> 8);
+			arr.push(tmp & 0xFF);
+		}
+
+		if (placeHolders === 2) {
+			tmp = (lookup.indexOf(b64[i]) << 2) | (lookup.indexOf(b64[i + 1]) >> 4);
+			arr.push(tmp & 0xFF);
+		} else if (placeHolders === 1) {
+			tmp = (lookup.indexOf(b64[i]) << 10) | (lookup.indexOf(b64[i + 1]) << 4) | (lookup.indexOf(b64[i + 2]) >> 2);
+			arr.push((tmp >> 8) & 0xFF);
+			arr.push(tmp & 0xFF);
+		}
+
+		return arr;
+	}
+
+	function uint8ToBase64(uint8) {
+		var i,
+			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
+			output = "",
+			temp, length;
+
+		function tripletToBase64 (num) {
+			return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F];
+		};
+
+		// go through the array every three bytes, we'll deal with trailing stuff later
+		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
+			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
+			output += tripletToBase64(temp);
+		}
+
+		// pad the end with zeros, but make sure to not forget the extra bytes
+		switch (extraBytes) {
+			case 1:
+				temp = uint8[uint8.length - 1];
+				output += lookup[temp >> 2];
+				output += lookup[(temp << 4) & 0x3F];
+				output += '==';
+				break;
+			case 2:
+				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1]);
+				output += lookup[temp >> 10];
+				output += lookup[(temp >> 4) & 0x3F];
+				output += lookup[(temp << 2) & 0x3F];
+				output += '=';
+				break;
+		}
+
+		return output;
+	}
+
+	module.exports.toByteArray = b64ToByteArray;
+	module.exports.fromByteArray = uint8ToBase64;
+}());
+
+},{}],55:[function(require,module,exports){
+var Stream = require('stream');
+
+var Response = module.exports = function (res) {
+    this.offset = 0;
+    this.readable = true;
+};
+
+Response.prototype = new Stream;
+
+var capable = {
+    streaming : true,
+    status2 : true
+};
+
+function parseHeaders (res) {
+    var lines = res.getAllResponseHeaders().split(/\r?\n/);
+    var headers = {};
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (line === '') continue;
+        
+        var m = line.match(/^([^:]+):\s*(.*)/);
+        if (m) {
+            var key = m[1].toLowerCase(), value = m[2];
+            
+            if (headers[key] !== undefined) {
+            
+                if (isArray(headers[key])) {
+                    headers[key].push(value);
+                }
+                else {
+                    headers[key] = [ headers[key], value ];
+                }
+            }
+            else {
+                headers[key] = value;
+            }
+        }
+        else {
+            headers[line] = true;
+        }
+    }
+    return headers;
+}
+
+Response.prototype.getResponse = function (xhr) {
+    var respType = String(xhr.responseType).toLowerCase();
+    if (respType === 'blob') return xhr.responseBlob || xhr.response;
+    if (respType === 'arraybuffer') return xhr.response;
+    return xhr.responseText;
+}
+
+Response.prototype.getHeader = function (key) {
+    return this.headers[key.toLowerCase()];
+};
+
+Response.prototype.handle = function (res) {
+    if (res.readyState === 2 && capable.status2) {
+        try {
+            this.statusCode = res.status;
+            this.headers = parseHeaders(res);
+        }
+        catch (err) {
+            capable.status2 = false;
+        }
+        
+        if (capable.status2) {
+            this.emit('ready');
+        }
+    }
+    else if (capable.streaming && res.readyState === 3) {
+        try {
+            if (!this.statusCode) {
+                this.statusCode = res.status;
+                this.headers = parseHeaders(res);
+                this.emit('ready');
+            }
+        }
+        catch (err) {}
+        
+        try {
+            this._emitData(res);
+        }
+        catch (err) {
+            capable.streaming = false;
+        }
+    }
+    else if (res.readyState === 4) {
+        if (!this.statusCode) {
+            this.statusCode = res.status;
+            this.emit('ready');
+        }
+        this._emitData(res);
+        
+        if (res.error) {
+            this.emit('error', this.getResponse(res));
+        }
+        else this.emit('end');
+        
+        this.emit('close');
+    }
+};
+
+Response.prototype._emitData = function (res) {
+    var respBody = this.getResponse(res);
+    if (respBody.toString().match(/ArrayBuffer/)) {
+        this.emit('data', new Uint8Array(respBody, this.offset));
+        this.offset = respBody.byteLength;
+        return;
+    }
+    if (respBody.length > this.offset) {
+        this.emit('data', respBody.slice(this.offset));
+        this.offset = respBody.length;
+    }
+};
+
+var isArray = Array.isArray || function (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+},{"stream":40}],17:[function(require,module,exports){
+var marked = require('marked')
+  , converter = module.exports = {}
+  ;
+
+marked.setOptions({
+  gfm: true,
+  tables: true,
+  breaks: false,
+  pedantic: false,
+  sanitize: false,
+  smartLists: true,
+  langPrefix: ''
+});
+
+converter.convertMarkdown = function (source) {
+  // Unescape block-quotes before conversion (&gt; => >)
+  source = source.replace(/(^|\n)( *)&gt;/g, '$1$2>');
+
+  // Perform the actual Markdown conversion
+  source = marked(source.replace(/^\s+/, ''));
+
+  // Unescape HTML escaped by the browser; &lt;, &gt;, ...
+  source = source.replace(/&[l|g]t;/g,
+    function (match) {
+      return match === '&lt;' ? '<' : '>';
+    });
+
+  // ... and &amp;
+  source = source.replace(/&amp;/g, '&');
+  
+  // ... and &quot;
+  source = source.replace(/&quot;/g, '"');
+
+  return source;
+};
+
+},{"marked":56}],28:[function(require,module,exports){
+(function(){var Stream = require('stream');
+var Response = require('./response');
+var concatStream = require('concat-stream')
+var Buffer = require('buffer')
+
+var Request = module.exports = function (xhr, params) {
+    var self = this;
+    self.writable = true;
+    self.xhr = xhr;
+    self.body = concatStream()
+    
+    var uri = params.host
+        + (params.port ? ':' + params.port : '')
+        + (params.path || '/')
+    ;
+    
+    xhr.open(
+        params.method || 'GET',
+        (params.scheme || 'http') + '://' + uri,
+        true
+    );
+    
+    if (params.headers) {
+        var keys = objectKeys(params.headers);
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            if (!self.isSafeRequestHeader(key)) continue;
+            var value = params.headers[key];
+            if (isArray(value)) {
+                for (var j = 0; j < value.length; j++) {
+                    xhr.setRequestHeader(key, value[j]);
+                }
+            }
+            else xhr.setRequestHeader(key, value)
+        }
+    }
+    
+    if (params.auth) {
+        //basic auth
+        this.setHeader('Authorization', 'Basic ' + new Buffer(params.auth).toString('base64'));
+    }
+
+    var res = new Response;
+    res.on('close', function () {
+        self.emit('close');
+    });
+    
+    res.on('ready', function () {
+        self.emit('response', res);
+    });
+    
+    xhr.onreadystatechange = function () {
+        res.handle(xhr);
+    };
+};
+
+Request.prototype = new Stream;
+
+Request.prototype.setHeader = function (key, value) {
+    if (isArray(value)) {
+        for (var i = 0; i < value.length; i++) {
+            this.xhr.setRequestHeader(key, value[i]);
+        }
+    }
+    else {
+        this.xhr.setRequestHeader(key, value);
+    }
+};
+
+Request.prototype.write = function (s) {
+    this.body.write(s);
+};
+
+Request.prototype.destroy = function (s) {
+    this.xhr.abort();
+    this.emit('close');
+};
+
+Request.prototype.end = function (s) {
+    if (s !== undefined) this.body.write(s);
+    this.body.end()
+    this.xhr.send(this.body.getBody());
+};
+
+// Taken from http://dxr.mozilla.org/mozilla/mozilla-central/content/base/src/nsXMLHttpRequest.cpp.html
+Request.unsafeHeaders = [
+    "accept-charset",
+    "accept-encoding",
+    "access-control-request-headers",
+    "access-control-request-method",
+    "connection",
+    "content-length",
+    "cookie",
+    "cookie2",
+    "content-transfer-encoding",
+    "date",
+    "expect",
+    "host",
+    "keep-alive",
+    "origin",
+    "referer",
+    "te",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+    "user-agent",
+    "via"
+];
+
+Request.prototype.isSafeRequestHeader = function (headerName) {
+    if (!headerName) return false;
+    return indexOf(Request.unsafeHeaders, headerName.toLowerCase()) === -1;
+};
+
+var objectKeys = Object.keys || function (obj) {
+    var keys = [];
+    for (var key in obj) keys.push(key);
+    return keys;
+};
+
+var isArray = Array.isArray || function (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+var indexOf = function (xs, x) {
+    if (xs.indexOf) return xs.indexOf(x);
+    for (var i = 0; i < xs.length; i++) {
+        if (xs[i] === x) return i;
+    }
+    return -1;
+};
+
+})()
+},{"stream":40,"buffer":24,"./response":55,"concat-stream":57}],56:[function(require,module,exports){
 (function(global){/**
  * marked - a markdown parser
  * Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)
@@ -16995,348 +17336,58 @@ if (typeof exports === 'object') {
 }());
 
 })(window)
-},{}],56:[function(require,module,exports){
-var Stream = require('stream');
+},{}],57:[function(require,module,exports){
+(function(Buffer){var stream = require('stream')
+var util = require('util')
 
-var Response = module.exports = function (res) {
-    this.offset = 0;
-    this.readable = true;
-};
-
-Response.prototype = new Stream;
-
-var capable = {
-    streaming : true,
-    status2 : true
-};
-
-function parseHeaders (res) {
-    var lines = res.getAllResponseHeaders().split(/\r?\n/);
-    var headers = {};
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if (line === '') continue;
-        
-        var m = line.match(/^([^:]+):\s*(.*)/);
-        if (m) {
-            var key = m[1].toLowerCase(), value = m[2];
-            
-            if (headers[key] !== undefined) {
-            
-                if (isArray(headers[key])) {
-                    headers[key].push(value);
-                }
-                else {
-                    headers[key] = [ headers[key], value ];
-                }
-            }
-            else {
-                headers[key] = value;
-            }
-        }
-        else {
-            headers[line] = true;
-        }
-    }
-    return headers;
+function ConcatStream(cb) {
+  stream.Stream.call(this)
+  this.writable = true
+  if (cb) this.cb = cb
+  this.body = []
+  if (this.cb) this.on('error', cb)
 }
 
-Response.prototype.getResponse = function (xhr) {
-    var respType = String(xhr.responseType).toLowerCase();
-    if (respType === 'blob') return xhr.responseBlob || xhr.response;
-    if (respType === 'arraybuffer') return xhr.response;
-    return xhr.responseText;
+util.inherits(ConcatStream, stream.Stream)
+
+ConcatStream.prototype.write = function(chunk) {
+  this.body.push(chunk)
 }
 
-Response.prototype.getHeader = function (key) {
-    return this.headers[key.toLowerCase()];
-};
+ConcatStream.prototype.arrayConcat = function(arrs) {
+  if (arrs.length === 0) return []
+  if (arrs.length === 1) return arrs[0]
+  return arrs.reduce(function (a, b) { return a.concat(b) })
+}
 
-Response.prototype.handle = function (res) {
-    if (res.readyState === 2 && capable.status2) {
-        try {
-            this.statusCode = res.status;
-            this.headers = parseHeaders(res);
-        }
-        catch (err) {
-            capable.status2 = false;
-        }
-        
-        if (capable.status2) {
-            this.emit('ready');
-        }
-    }
-    else if (capable.streaming && res.readyState === 3) {
-        try {
-            if (!this.statusCode) {
-                this.statusCode = res.status;
-                this.headers = parseHeaders(res);
-                this.emit('ready');
-            }
-        }
-        catch (err) {}
-        
-        try {
-            this._emitData(res);
-        }
-        catch (err) {
-            capable.streaming = false;
-        }
-    }
-    else if (res.readyState === 4) {
-        if (!this.statusCode) {
-            this.statusCode = res.status;
-            this.emit('ready');
-        }
-        this._emitData(res);
-        
-        if (res.error) {
-            this.emit('error', this.getResponse(res));
-        }
-        else this.emit('end');
-        
-        this.emit('close');
-    }
-};
+ConcatStream.prototype.isArray = function(arr) {
+  var isArray = Array.isArray(arr)
+  var isTypedArray = arr.toString().match(/Array/)
+  return isArray || isTypedArray
+}
 
-Response.prototype._emitData = function (res) {
-    var respBody = this.getResponse(res);
-    if (respBody.toString().match(/ArrayBuffer/)) {
-        this.emit('data', new Uint8Array(respBody, this.offset));
-        this.offset = respBody.byteLength;
-        return;
-    }
-    if (respBody.length > this.offset) {
-        this.emit('data', respBody.slice(this.offset));
-        this.offset = respBody.length;
-    }
-};
+ConcatStream.prototype.getBody = function () {
+  if (this.body.length === 0) return
+  if (typeof(this.body[0]) === "string") return this.body.join('')
+  if (this.isArray(this.body[0])) return this.arrayConcat(this.body)
+  if (typeof(Buffer) !== "undefined" && Buffer.isBuffer(this.body[0])) {
+    return Buffer.concat(this.body)
+  }
+  return this.body
+}
 
-var isArray = Array.isArray || function (xs) {
-    return Object.prototype.toString.call(xs) === '[object Array]';
-};
+ConcatStream.prototype.end = function() {
+  if (this.cb) this.cb(false, this.getBody())
+}
 
-},{"stream":53}],55:[function(require,module,exports){
-(function (exports) {
-	'use strict';
+module.exports = function(cb) {
+  return new ConcatStream(cb)
+}
 
-	var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+module.exports.ConcatStream = ConcatStream
 
-	function b64ToByteArray(b64) {
-		var i, j, l, tmp, placeHolders, arr;
-	
-		if (b64.length % 4 > 0) {
-			throw 'Invalid string. Length must be a multiple of 4';
-		}
-
-		// the number of equal signs (place holders)
-		// if there are two placeholders, than the two characters before it
-		// represent one byte
-		// if there is only one, then the three characters before it represent 2 bytes
-		// this is just a cheap hack to not do indexOf twice
-		placeHolders = b64.indexOf('=');
-		placeHolders = placeHolders > 0 ? b64.length - placeHolders : 0;
-
-		// base64 is 4/3 + up to two characters of the original data
-		arr = [];//new Uint8Array(b64.length * 3 / 4 - placeHolders);
-
-		// if there are placeholders, only get up to the last complete 4 chars
-		l = placeHolders > 0 ? b64.length - 4 : b64.length;
-
-		for (i = 0, j = 0; i < l; i += 4, j += 3) {
-			tmp = (lookup.indexOf(b64[i]) << 18) | (lookup.indexOf(b64[i + 1]) << 12) | (lookup.indexOf(b64[i + 2]) << 6) | lookup.indexOf(b64[i + 3]);
-			arr.push((tmp & 0xFF0000) >> 16);
-			arr.push((tmp & 0xFF00) >> 8);
-			arr.push(tmp & 0xFF);
-		}
-
-		if (placeHolders === 2) {
-			tmp = (lookup.indexOf(b64[i]) << 2) | (lookup.indexOf(b64[i + 1]) >> 4);
-			arr.push(tmp & 0xFF);
-		} else if (placeHolders === 1) {
-			tmp = (lookup.indexOf(b64[i]) << 10) | (lookup.indexOf(b64[i + 1]) << 4) | (lookup.indexOf(b64[i + 2]) >> 2);
-			arr.push((tmp >> 8) & 0xFF);
-			arr.push(tmp & 0xFF);
-		}
-
-		return arr;
-	}
-
-	function uint8ToBase64(uint8) {
-		var i,
-			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
-			output = "",
-			temp, length;
-
-		function tripletToBase64 (num) {
-			return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F];
-		};
-
-		// go through the array every three bytes, we'll deal with trailing stuff later
-		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
-			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
-			output += tripletToBase64(temp);
-		}
-
-		// pad the end with zeros, but make sure to not forget the extra bytes
-		switch (extraBytes) {
-			case 1:
-				temp = uint8[uint8.length - 1];
-				output += lookup[temp >> 2];
-				output += lookup[(temp << 4) & 0x3F];
-				output += '==';
-				break;
-			case 2:
-				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1]);
-				output += lookup[temp >> 10];
-				output += lookup[(temp >> 4) & 0x3F];
-				output += lookup[(temp << 2) & 0x3F];
-				output += '=';
-				break;
-		}
-
-		return output;
-	}
-
-	module.exports.toByteArray = b64ToByteArray;
-	module.exports.fromByteArray = uint8ToBase64;
-}());
-
-},{}],36:[function(require,module,exports){
-(function(){var Stream = require('stream');
-var Response = require('./response');
-var concatStream = require('concat-stream')
-var Buffer = require('buffer')
-
-var Request = module.exports = function (xhr, params) {
-    var self = this;
-    self.writable = true;
-    self.xhr = xhr;
-    self.body = concatStream()
-    
-    var uri = params.host
-        + (params.port ? ':' + params.port : '')
-        + (params.path || '/')
-    ;
-    
-    xhr.open(
-        params.method || 'GET',
-        (params.scheme || 'http') + '://' + uri,
-        true
-    );
-    
-    if (params.headers) {
-        var keys = objectKeys(params.headers);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            if (!self.isSafeRequestHeader(key)) continue;
-            var value = params.headers[key];
-            if (isArray(value)) {
-                for (var j = 0; j < value.length; j++) {
-                    xhr.setRequestHeader(key, value[j]);
-                }
-            }
-            else xhr.setRequestHeader(key, value)
-        }
-    }
-    
-    if (params.auth) {
-        //basic auth
-        this.setHeader('Authorization', 'Basic ' + new Buffer(params.auth).toString('base64'));
-    }
-
-    var res = new Response;
-    res.on('close', function () {
-        self.emit('close');
-    });
-    
-    res.on('ready', function () {
-        self.emit('response', res);
-    });
-    
-    xhr.onreadystatechange = function () {
-        res.handle(xhr);
-    };
-};
-
-Request.prototype = new Stream;
-
-Request.prototype.setHeader = function (key, value) {
-    if (isArray(value)) {
-        for (var i = 0; i < value.length; i++) {
-            this.xhr.setRequestHeader(key, value[i]);
-        }
-    }
-    else {
-        this.xhr.setRequestHeader(key, value);
-    }
-};
-
-Request.prototype.write = function (s) {
-    this.body.write(s);
-};
-
-Request.prototype.destroy = function (s) {
-    this.xhr.abort();
-    this.emit('close');
-};
-
-Request.prototype.end = function (s) {
-    if (s !== undefined) this.body.write(s);
-    this.body.end()
-    this.xhr.send(this.body.getBody());
-};
-
-// Taken from http://dxr.mozilla.org/mozilla/mozilla-central/content/base/src/nsXMLHttpRequest.cpp.html
-Request.unsafeHeaders = [
-    "accept-charset",
-    "accept-encoding",
-    "access-control-request-headers",
-    "access-control-request-method",
-    "connection",
-    "content-length",
-    "cookie",
-    "cookie2",
-    "content-transfer-encoding",
-    "date",
-    "expect",
-    "host",
-    "keep-alive",
-    "origin",
-    "referer",
-    "te",
-    "trailer",
-    "transfer-encoding",
-    "upgrade",
-    "user-agent",
-    "via"
-];
-
-Request.prototype.isSafeRequestHeader = function (headerName) {
-    if (!headerName) return false;
-    return indexOf(Request.unsafeHeaders, headerName.toLowerCase()) === -1;
-};
-
-var objectKeys = Object.keys || function (obj) {
-    var keys = [];
-    for (var key in obj) keys.push(key);
-    return keys;
-};
-
-var isArray = Array.isArray || function (xs) {
-    return Object.prototype.toString.call(xs) === '[object Array]';
-};
-
-var indexOf = function (xs, x) {
-    if (xs.indexOf) return xs.indexOf(x);
-    for (var i = 0; i < xs.length; i++) {
-        if (xs[i] === x) return i;
-    }
-    return -1;
-};
-
-})()
-},{"stream":53,"buffer":25,"./response":56,"concat-stream":57}],52:[function(require,module,exports){
+})(require("__browserify_buffer").Buffer)
+},{"stream":40,"util":22,"__browserify_buffer":29}],52:[function(require,module,exports){
 (function(global){((typeof define === "function" && define.amd && function (m) {
     define("formatio", ["samsam"], m);
 }) || (typeof module === "object" && function (m) {
@@ -17538,58 +17589,7 @@ var indexOf = function (xs, x) {
 });
 
 })(window)
-},{"samsam":58}],57:[function(require,module,exports){
-(function(Buffer){var stream = require('stream')
-var util = require('util')
-
-function ConcatStream(cb) {
-  stream.Stream.call(this)
-  this.writable = true
-  if (cb) this.cb = cb
-  this.body = []
-  if (this.cb) this.on('error', cb)
-}
-
-util.inherits(ConcatStream, stream.Stream)
-
-ConcatStream.prototype.write = function(chunk) {
-  this.body.push(chunk)
-}
-
-ConcatStream.prototype.arrayConcat = function(arrs) {
-  if (arrs.length === 0) return []
-  if (arrs.length === 1) return arrs[0]
-  return arrs.reduce(function (a, b) { return a.concat(b) })
-}
-
-ConcatStream.prototype.isArray = function(arr) {
-  var isArray = Array.isArray(arr)
-  var isTypedArray = arr.toString().match(/Array/)
-  return isArray || isTypedArray
-}
-
-ConcatStream.prototype.getBody = function () {
-  if (this.body.length === 0) return
-  if (typeof(this.body[0]) === "string") return this.body.join('')
-  if (this.isArray(this.body[0])) return this.arrayConcat(this.body)
-  if (typeof(Buffer) !== "undefined" && Buffer.isBuffer(this.body[0])) {
-    return Buffer.concat(this.body)
-  }
-  return this.body
-}
-
-ConcatStream.prototype.end = function() {
-  if (this.cb) this.cb(false, this.getBody())
-}
-
-module.exports = function(cb) {
-  return new ConcatStream(cb)
-}
-
-module.exports.ConcatStream = ConcatStream
-
-})(require("__browserify_buffer").Buffer)
-},{"stream":53,"util":24,"__browserify_buffer":38}],58:[function(require,module,exports){
+},{"samsam":58}],58:[function(require,module,exports){
 (function(){((typeof define === "function" && define.amd && function (m) { define("samsam", m); }) ||
  (typeof module === "object" &&
       function (m) { module.exports = m(); }) || // Node
@@ -17970,5 +17970,5 @@ module.exports.ConcatStream = ConcatStream
 });
 
 })()
-},{}]},{},[3])
+},{}]},{},[1])
 ;

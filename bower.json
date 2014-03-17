@@ -1,6 +1,6 @@
 {
   "name": "remark",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "homepage": "http://remarkjs.com/",
   "authors": [
     "Ole Petter Bang <olepbang@gmail.com>"
@@ -26,6 +26,7 @@
     "node_modules",
     "src",
     "test",
-    "vendor"
+    "vendor",
+    "out/tests.js"
   ]
 }

@@ -1,3 +1,11 @@
+### 0.6.1
+* #81: Introduce boilerplate HTML files ([gurjeet](https://github.com/gurjeet)).
+* #83: Always include background colors and images.
+* #91: Bundle Haskell syntax highlighting ([sol](https://github.com/sol)).
+* #92: Use official highlight.js ([nanoant](https://github.com/nanoant)).
+* #96: Add Bower integration ([trumbitta](https://github.com/trumbitta)).
+* Run tests using PhantomJS, which enables running tests on Windows.
+
 ### 0.6.0
 * #73: Fix infinite loop issue for cloned views ([peter50216](https://github.com/peter50216)).
 * #71: Make `img { max-with: 100%}` work in Firefox ([obfusk](https://github.com/obfusk)).
