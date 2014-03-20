@@ -55,6 +55,10 @@ function SlideshowView (events, containerElement, slideshow) {
     utils.toggleClass(self.containerElement, 'remark-help-mode');
   });
 
+  events.on('hideOverlay', function () {
+    utils.removeClass(self.containerElement, 'remark-help-mode');
+  });
+
   events.on('start', function () {
     // When we do the first slide change, start the clock.
     self.startTime = new Date();
