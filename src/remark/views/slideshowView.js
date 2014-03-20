@@ -259,7 +259,7 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
   slideView.show();
 
-  self.notesElement.innerHTML = slideView.notesMarkup;
+  self.notesElement.innerHTML = slideView.notesElement.innerHTML;
 
   if (nextSlideView) {
     self.previewArea.innerHTML = nextSlideView.containerElement.outerHTML;

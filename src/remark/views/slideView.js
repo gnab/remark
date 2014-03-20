@@ -13,8 +13,6 @@ function SlideView (events, slideshow, scaler, slide) {
   self.scaler = scaler;
   self.slide = slide;
 
-  self.notesMarkup = createNotesMarkup(slideshow, slide.notes);
-
   self.configureElements();
   self.updateDimensions();
 
@@ -70,6 +68,7 @@ SlideView.prototype.configureElements = function () {
   self.element.className = 'remark-slide';
 
   self.contentElement = createContentElement(self.events, self.slideshow, self.slide);
+  self.notesElement = createNotesElement(self.slideshow, self.slide.notes);
 
   self.numberElement = document.createElement('div');
   self.numberElement.className = 'remark-slide-number';
@@ -77,6 +76,7 @@ SlideView.prototype.configureElements = function () {
 
   self.contentElement.appendChild(self.numberElement);
   self.element.appendChild(self.contentElement);
+  self.element.appendChild(self.notesElement);
   self.scalingElement.appendChild(self.element);
   self.containerElement.appendChild(self.scalingElement);
 };
@@ -139,15 +139,17 @@ function styleContentElement (slideshow, element, properties) {
   setBackgroundFromProperties(element, properties);
 }
 
-function createNotesMarkup (slideshow, notes) {
+function createNotesElement (slideshow, notes) {
   var element = document.createElement('div');
+
+  element.style.display = 'none';
 
   element.innerHTML = converter.convertMarkdown(notes);
   element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);
 
-  return element.innerHTML;
+  return element;
 }
 
 function setBackgroundFromProperties (element, properties) {
