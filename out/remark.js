@@ -78,309 +78,7 @@ function extend (object) {
     return result;
   };
 }
-},{}],5:[function(require,module,exports){
-/* Automatically generated */
-
-module.exports = {
-  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;-webkit-print-color-adjust:exact;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:absolute;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background-color:transparent;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;table-layout:fixed;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide .remark-slide-content{background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide .remark-slide-content .left{display:block;text-align:left;}.remark-slide .remark-slide-content .center{display:block;text-align:center;}.remark-slide .remark-slide-content .right{display:block;text-align:right;}.remark-slide .remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-slide-content{background-color:#fff;}.remark-visible{display:block;z-index:2;}.remark-fading{display:block;z-index:1;}.remark-fading .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;background:#000;z-index:2;}.remark-pause{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;}.remark-pause .remark-pause-lozenge{margin-top:30%;text-align:center;}.remark-pause .remark-pause-lozenge span{color:white;background:black;border:2px solid black;border-radius:20px;padding:20px 30px;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:42pt;font-weight:bold;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-pause{display:block;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-backdrop{display:block;opacity:0.5;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:0px;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;opacity:0.95;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-notes-area .remark-notes{clear:both;margin-top:30px;}.remark-toolbar{color:#979892;padding-bottom:1em;vertical-align:middle;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-toolbar .remark-toolbar-timer{border:2px solid black;border-radius:10px;background:black;color:white;display:inline-block;float:right;padding:10px;font-family:sans-serif;font-weight:bold;font-size:200%;text-decoration:none;text-align:center;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;background-color:#fff;} .remark-slide-container{display:block;position:relative;} .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}}@page {size:908px 681px;margin:0;}",
-  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n    <span class=\"remark-toolbar-timer\">0:00:00</span>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-pause\">\n  <div class=\"remark-pause-lozenge\">\n    <span>Paused</span>\n  </div>\n</div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">k</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">j</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">f</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">c</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">p</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">w</span>\n        </td>\n        <td>Pause/Resume the presentation</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">t</span>\n        </td>\n        <td>Restart the presentation timer</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>,\n          <span class=\"key\">h</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
-};
-
-},{}],6:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-
-},{}],7:[function(require,module,exports){
-(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
-
-var EventEmitter = exports.EventEmitter = process.EventEmitter;
-var isArray = typeof Array.isArray === 'function'
-    ? Array.isArray
-    : function (xs) {
-        return Object.prototype.toString.call(xs) === '[object Array]'
-    }
-;
-function indexOf (xs, x) {
-    if (xs.indexOf) return xs.indexOf(x);
-    for (var i = 0; i < xs.length; i++) {
-        if (x === xs[i]) return i;
-    }
-    return -1;
-}
-
-// By default EventEmitters will print a warning if more than
-// 10 listeners are added to it. This is a useful default which
-// helps finding memory leaks.
-//
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-var defaultMaxListeners = 10;
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!this._events) this._events = {};
-  this._events.maxListeners = n;
-};
-
-
-EventEmitter.prototype.emit = function(type) {
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events || !this._events.error ||
-        (isArray(this._events.error) && !this._events.error.length))
-    {
-      if (arguments[1] instanceof Error) {
-        throw arguments[1]; // Unhandled 'error' event
-      } else {
-        throw new Error("Uncaught, unspecified 'error' event.");
-      }
-      return false;
-    }
-  }
-
-  if (!this._events) return false;
-  var handler = this._events[type];
-  if (!handler) return false;
-
-  if (typeof handler == 'function') {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        var args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-    return true;
-
-  } else if (isArray(handler)) {
-    var args = Array.prototype.slice.call(arguments, 1);
-
-    var listeners = handler.slice();
-    for (var i = 0, l = listeners.length; i < l; i++) {
-      listeners[i].apply(this, args);
-    }
-    return true;
-
-  } else {
-    return false;
-  }
-};
-
-// EventEmitter is defined in src/node_events.cc
-// EventEmitter.prototype.emit() is also defined there.
-EventEmitter.prototype.addListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('addListener only takes instances of Function');
-  }
-
-  if (!this._events) this._events = {};
-
-  // To avoid recursion in the case that type == "newListeners"! Before
-  // adding it to the listeners, first emit "newListeners".
-  this.emit('newListener', type, listener);
-
-  if (!this._events[type]) {
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  } else if (isArray(this._events[type])) {
-
-    // Check for listener leak
-    if (!this._events[type].warned) {
-      var m;
-      if (this._events.maxListeners !== undefined) {
-        m = this._events.maxListeners;
-      } else {
-        m = defaultMaxListeners;
-      }
-
-      if (m && m > 0 && this._events[type].length > m) {
-        this._events[type].warned = true;
-        console.error('(node) warning: possible EventEmitter memory ' +
-                      'leak detected. %d listeners added. ' +
-                      'Use emitter.setMaxListeners() to increase limit.',
-                      this._events[type].length);
-        console.trace();
-      }
-    }
-
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  } else {
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  var self = this;
-  self.on(type, function g() {
-    self.removeListener(type, g);
-    listener.apply(this, arguments);
-  });
-
-  return this;
-};
-
-EventEmitter.prototype.removeListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('removeListener only takes instances of Function');
-  }
-
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (!this._events || !this._events[type]) return this;
-
-  var list = this._events[type];
-
-  if (isArray(list)) {
-    var i = indexOf(list, listener);
-    if (i < 0) return this;
-    list.splice(i, 1);
-    if (list.length == 0)
-      delete this._events[type];
-  } else if (this._events[type] === listener) {
-    delete this._events[type];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  if (arguments.length === 0) {
-    this._events = {};
-    return this;
-  }
-
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (type && this._events && this._events[type]) this._events[type] = null;
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  if (!this._events) this._events = {};
-  if (!this._events[type]) this._events[type] = [];
-  if (!isArray(this._events[type])) {
-    this._events[type] = [this._events[type]];
-  }
-  return this._events[type];
-};
-
-})(require("__browserify_process"))
-},{"__browserify_process":6}],2:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , highlighter = require('./highlighter')
-  , Slideshow = require('./models/slideshow')
-  , SlideshowView = require('./views/slideshowView')
-  , Controller = require('./controller')
-  , utils = require('./utils')
-  ;
-
-// Expose highlighter to allow enumerating available styles and
-// including external language grammars
-module.exports.highlighter = highlighter;
-
-// Creates slideshow initialized from options
-module.exports.create = function (options) {
-  var events
-    , slideshow
-    , slideshowView
-    , controller
-    ;
-
-  options = applyDefaults(options);
-
-  events = new EventEmitter();
-  events.setMaxListeners(0);
-
-  slideshow = new Slideshow(events, options);
-  slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = options.controller || new Controller(events, slideshowView);
-
-  return slideshow;
-};
-
-function applyDefaults (options) {
-  var sourceElement;
-
-  options = options || {};
-
-  if (!options.hasOwnProperty('source')) {
-    sourceElement = document.getElementById('source');
-    if (sourceElement) {
-      options.source = sourceElement.innerHTML;
-      sourceElement.style.display = 'none';
-    }
-  }
-
-  if (!(options.container instanceof window.HTMLElement)) {
-    options.container = utils.getBodyElement();
-  }
-
-  return options;
-}
-
-},{"events":7,"./highlighter":3,"./models/slideshow":8,"./views/slideshowView":9,"./controller":10,"./utils":11}],3:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function(){/* Automatically generated */
 
 var hljs = new (/*
@@ -2922,7 +2620,309 @@ module.exports = {
 };
 
 })()
-},{}],11:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+/* Automatically generated */
+
+module.exports = {
+  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;-webkit-print-color-adjust:exact;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:absolute;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background-color:transparent;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;table-layout:fixed;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide-content{background-color:#fff;background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide-content .left{display:block;text-align:left;}.remark-slide-content .center{display:block;text-align:center;}.remark-slide-content .right{display:block;text-align:right;}.remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-visible{display:block;z-index:2;}.remark-fading{display:block;z-index:1;}.remark-fading .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;background:#000;z-index:2;}.remark-pause{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;}.remark-pause .remark-pause-lozenge{margin-top:30%;text-align:center;}.remark-pause .remark-pause-lozenge span{color:white;background:black;border:2px solid black;border-radius:20px;padding:20px 30px;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:42pt;font-weight:bold;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-pause{display:block;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-backdrop{display:block;opacity:0.5;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:0px;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;opacity:0.95;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-notes-area .remark-notes{clear:both;margin-top:30px;}.remark-toolbar{color:#979892;padding-bottom:1em;vertical-align:middle;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-toolbar .remark-toolbar-timer{border:2px solid black;border-radius:10px;background:black;color:white;display:inline-block;float:right;padding:10px;font-family:sans-serif;font-weight:bold;font-size:200%;text-decoration:none;text-align:center;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;background-color:#fff;} .remark-slide-container{display:block;position:relative;} .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}}@page {size:908px 681px;margin:0;}",
+  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n    <span class=\"remark-toolbar-timer\">0:00:00</span>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-pause\">\n  <div class=\"remark-pause-lozenge\">\n    <span>Paused</span>\n  </div>\n</div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">k</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">j</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">f</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">c</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">p</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">w</span>\n        </td>\n        <td>Pause/Resume the presentation</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">t</span>\n        </td>\n        <td>Restart the presentation timer</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>,\n          <span class=\"key\">h</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
+};
+
+},{}],6:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],7:[function(require,module,exports){
+(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+
+var EventEmitter = exports.EventEmitter = process.EventEmitter;
+var isArray = typeof Array.isArray === 'function'
+    ? Array.isArray
+    : function (xs) {
+        return Object.prototype.toString.call(xs) === '[object Array]'
+    }
+;
+function indexOf (xs, x) {
+    if (xs.indexOf) return xs.indexOf(x);
+    for (var i = 0; i < xs.length; i++) {
+        if (x === xs[i]) return i;
+    }
+    return -1;
+}
+
+// By default EventEmitters will print a warning if more than
+// 10 listeners are added to it. This is a useful default which
+// helps finding memory leaks.
+//
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+var defaultMaxListeners = 10;
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!this._events) this._events = {};
+  this._events.maxListeners = n;
+};
+
+
+EventEmitter.prototype.emit = function(type) {
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events || !this._events.error ||
+        (isArray(this._events.error) && !this._events.error.length))
+    {
+      if (arguments[1] instanceof Error) {
+        throw arguments[1]; // Unhandled 'error' event
+      } else {
+        throw new Error("Uncaught, unspecified 'error' event.");
+      }
+      return false;
+    }
+  }
+
+  if (!this._events) return false;
+  var handler = this._events[type];
+  if (!handler) return false;
+
+  if (typeof handler == 'function') {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        var args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+    return true;
+
+  } else if (isArray(handler)) {
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    var listeners = handler.slice();
+    for (var i = 0, l = listeners.length; i < l; i++) {
+      listeners[i].apply(this, args);
+    }
+    return true;
+
+  } else {
+    return false;
+  }
+};
+
+// EventEmitter is defined in src/node_events.cc
+// EventEmitter.prototype.emit() is also defined there.
+EventEmitter.prototype.addListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('addListener only takes instances of Function');
+  }
+
+  if (!this._events) this._events = {};
+
+  // To avoid recursion in the case that type == "newListeners"! Before
+  // adding it to the listeners, first emit "newListeners".
+  this.emit('newListener', type, listener);
+
+  if (!this._events[type]) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  } else if (isArray(this._events[type])) {
+
+    // Check for listener leak
+    if (!this._events[type].warned) {
+      var m;
+      if (this._events.maxListeners !== undefined) {
+        m = this._events.maxListeners;
+      } else {
+        m = defaultMaxListeners;
+      }
+
+      if (m && m > 0 && this._events[type].length > m) {
+        this._events[type].warned = true;
+        console.error('(node) warning: possible EventEmitter memory ' +
+                      'leak detected. %d listeners added. ' +
+                      'Use emitter.setMaxListeners() to increase limit.',
+                      this._events[type].length);
+        console.trace();
+      }
+    }
+
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  } else {
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  var self = this;
+  self.on(type, function g() {
+    self.removeListener(type, g);
+    listener.apply(this, arguments);
+  });
+
+  return this;
+};
+
+EventEmitter.prototype.removeListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('removeListener only takes instances of Function');
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (!this._events || !this._events[type]) return this;
+
+  var list = this._events[type];
+
+  if (isArray(list)) {
+    var i = indexOf(list, listener);
+    if (i < 0) return this;
+    list.splice(i, 1);
+    if (list.length == 0)
+      delete this._events[type];
+  } else if (this._events[type] === listener) {
+    delete this._events[type];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  if (arguments.length === 0) {
+    this._events = {};
+    return this;
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (type && this._events && this._events[type]) this._events[type] = null;
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  if (!this._events) this._events = {};
+  if (!this._events[type]) this._events[type] = [];
+  if (!isArray(this._events[type])) {
+    this._events[type] = [this._events[type]];
+  }
+  return this._events[type];
+};
+
+})(require("__browserify_process"))
+},{"__browserify_process":6}],2:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , highlighter = require('./highlighter')
+  , Slideshow = require('./models/slideshow')
+  , SlideshowView = require('./views/slideshowView')
+  , Controller = require('./controller')
+  , utils = require('./utils')
+  ;
+
+// Expose highlighter to allow enumerating available styles and
+// including external language grammars
+module.exports.highlighter = highlighter;
+
+// Creates slideshow initialized from options
+module.exports.create = function (options) {
+  var events
+    , slideshow
+    , slideshowView
+    , controller
+    ;
+
+  options = applyDefaults(options);
+
+  events = new EventEmitter();
+  events.setMaxListeners(0);
+
+  slideshow = new Slideshow(events, options);
+  slideshowView = new SlideshowView(events, options.container, slideshow);
+  controller = options.controller || new Controller(events, slideshowView);
+
+  return slideshow;
+};
+
+function applyDefaults (options) {
+  var sourceElement;
+
+  options = options || {};
+
+  if (!options.hasOwnProperty('source')) {
+    sourceElement = document.getElementById('source');
+    if (sourceElement) {
+      options.source = sourceElement.innerHTML;
+      sourceElement.style.display = 'none';
+    }
+  }
+
+  if (!(options.container instanceof window.HTMLElement)) {
+    options.container = utils.getBodyElement();
+  }
+
+  return options;
+}
+
+},{"events":7,"./highlighter":3,"./views/slideshowView":8,"./controller":9,"./utils":10,"./models/slideshow":11}],10:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -2978,7 +2978,7 @@ exports.getLocationHash = function () {
 exports.setLocationHash = function (hash) {
   window.location.hash = hash;
 };
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var utils = require('./utils');
 
 module.exports = Controller;
@@ -3172,151 +3172,7 @@ function addTouchEventListeners (events) {
   });
 }
 
-},{"./utils":11}],8:[function(require,module,exports){
-var Navigation = require('./slideshow/navigation')
-  , Events = require('./slideshow/events')
-  , utils = require('../utils')
-  , Slide = require('./slide')
-  , Parser = require('../parser')
-  ;
-
-module.exports = Slideshow;
-
-function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
-
-  options = options || {};
-
-  // Extend slideshow functionality
-  Events.call(self, events);
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-
-  self.togglePresenterMode = togglePresenterMode;
-  self.toggleHelp = toggleHelp;
-  self.toggleFullscreen = toggleFullscreen;
-  self.createClone = createClone;
-
-  self.resetTimer = resetTimer;
-
-  self.getRatio = getOrDefault('ratio', '4:3');
-  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
-  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
-
-  function togglePresenterMode () {
-    events.emit('togglePresenterMode');
-  }
-
-  function toggleHelp () {
-    events.emit('toggleHelp');
-  }
-
-  function toggleFullscreen () {
-    events.emit('toggleFullscreen');
-  }
-
-  function createClone () {
-    events.emit('createClone');
-  }
-
-  function resetTimer () {
-    events.emit('resetTimer');
-  }
-
-  function getOrDefault (key, defaultValue) {
-    return function () {
-      if (options[key] === undefined) {
-        return defaultValue;
-      }
-
-      return options[key];
-    };
-  }
-}
-
-function createSlides (slideshowSource) {
-  var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource)
-    , slides = []
-    , byName = {}
-    , layoutSlide
-    ;
-
-  slides.byName = {};
-
-  parsedSlides.forEach(function (slide, i) {
-    var template, slideViewModel;
-
-    if (slide.properties.continued === 'true' && i > 0) {
-      template = slides[slides.length - 1];
-    }
-    else if (byName[slide.properties.template]) {
-      template = byName[slide.properties.template];
-    }
-    else if (slide.properties.layout === 'false') {
-      layoutSlide = undefined;
-    }
-    else if (layoutSlide && slide.properties.layout !== 'true') {
-      template = layoutSlide;
-    }
-
-    slideViewModel = new Slide(slides.length + 1, slide, template);
-
-    if (slide.properties.layout === 'true') {
-      layoutSlide = slideViewModel;
-    }
-
-    if (slide.properties.name) {
-      byName[slide.properties.name] = slideViewModel;
-    }
-
-    if (slide.properties.layout !== 'true') {
-      slides.push(slideViewModel);
-      if (slide.properties.name) {
-        slides.byName[slide.properties.name] = slideViewModel;
-      }
-    }
-  });
-
-  return slides;
-}
-
-function expandVariables (slides) {
-  slides.forEach(function (slide) {
-    slide.expandVariables();
-  });
-}
-
-},{"./slideshow/navigation":12,"./slideshow/events":13,"../utils":11,"./slide":14,"../parser":15}],9:[function(require,module,exports){
+},{"./utils":10}],8:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -3644,7 +3500,230 @@ SlideshowView.prototype.scaleElements = function () {
   self.scaler.scaleToFit(self.pauseElement, self.containerElement);
 };
 
-},{"./slideView":16,"../scaler":17,"../resources":5,"../utils":11}],12:[function(require,module,exports){
+},{"./slideView":12,"../scaler":13,"../resources":5,"../utils":10}],11:[function(require,module,exports){
+var Navigation = require('./slideshow/navigation')
+  , Events = require('./slideshow/events')
+  , utils = require('../utils')
+  , Slide = require('./slide')
+  , Parser = require('../parser')
+  ;
+
+module.exports = Slideshow;
+
+function Slideshow (events, options) {
+  var self = this
+    , slides = []
+    ;
+
+  options = options || {};
+
+  // Extend slideshow functionality
+  Events.call(self, events);
+  Navigation.call(self, events);
+
+  self.loadFromString = loadFromString;
+  self.getSlides = getSlides;
+  self.getSlideCount = getSlideCount;
+  self.getSlideByName = getSlideByName;
+
+  self.togglePresenterMode = togglePresenterMode;
+  self.toggleHelp = toggleHelp;
+  self.toggleFullscreen = toggleFullscreen;
+  self.createClone = createClone;
+
+  self.resetTimer = resetTimer;
+
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
+
+  loadFromString(options.source);
+
+  function loadFromString (source) {
+    source = source || '';
+
+    slides = createSlides(source);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  }
+
+  function getSlides () {
+    return slides.map(function (slide) { return slide; });
+  }
+
+  function getSlideCount () {
+    return slides.length;
+  }
+
+  function getSlideByName (name) {
+    return slides.byName[name];
+  }
+
+  function togglePresenterMode () {
+    events.emit('togglePresenterMode');
+  }
+
+  function toggleHelp () {
+    events.emit('toggleHelp');
+  }
+
+  function toggleFullscreen () {
+    events.emit('toggleFullscreen');
+  }
+
+  function createClone () {
+    events.emit('createClone');
+  }
+
+  function resetTimer () {
+    events.emit('resetTimer');
+  }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
+  }
+}
+
+function createSlides (slideshowSource) {
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
+    , byName = {}
+    , layoutSlide
+    ;
+
+  slides.byName = {};
+
+  parsedSlides.forEach(function (slide, i) {
+    var template, slideViewModel;
+
+    if (slide.properties.continued === 'true' && i > 0) {
+      template = slides[slides.length - 1];
+    }
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
+    }
+    else if (slide.properties.layout === 'false') {
+      layoutSlide = undefined;
+    }
+    else if (layoutSlide && slide.properties.layout !== 'true') {
+      template = layoutSlide;
+    }
+
+    slideViewModel = new Slide(slides.length + 1, slide, template);
+
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
+    }
+
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
+    }
+
+    if (slide.properties.layout !== 'true') {
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
+      }
+    }
+  });
+
+  return slides;
+}
+
+function expandVariables (slides) {
+  slides.forEach(function (slide) {
+    slide.expandVariables();
+  });
+}
+
+},{"./slideshow/navigation":14,"../utils":10,"./slide":15,"../parser":16,"./slideshow/events":17}],13:[function(require,module,exports){
+var referenceWidth = 908
+  , referenceHeight = 681
+  , referenceRatio = referenceWidth / referenceHeight
+  ;
+
+module.exports = Scaler;
+
+function Scaler (events, slideshow) {
+  var self = this;
+
+  self.events = events;
+  self.slideshow = slideshow;
+  self.ratio = getRatio(slideshow);
+  self.dimensions = getDimensions(self.ratio);
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.ratio = getRatio(slideshow);
+      self.dimensions = getDimensions(self.ratio);
+    }
+  });
+}
+
+Scaler.prototype.scaleToFit = function (element, container) {
+  var self = this
+    , containerHeight = container.clientHeight
+    , containerWidth = container.clientWidth
+    , scale
+    , scaledWidth
+    , scaledHeight
+    , ratio = self.ratio
+    , dimensions = self.dimensions
+    , direction
+    , left
+    , top
+    ;
+
+  if (containerWidth / ratio.width > containerHeight / ratio.height) {
+    scale = containerHeight / dimensions.height;
+  }
+  else {
+    scale = containerWidth / dimensions.width;
+  }
+
+  scaledWidth = dimensions.width * scale;
+  scaledHeight = dimensions.height * scale;
+
+  left = (containerWidth - scaledWidth) / 2;
+  top = (containerHeight - scaledHeight) / 2;
+
+  element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  element.style.MozTransform = 'scale(' + scale + ')';
+  element.style.left = Math.max(left, 0) + 'px';
+  element.style.top = Math.max(top, 0) + 'px';
+};
+
+function getRatio (slideshow) {
+  var ratioComponents = slideshow.getRatio().split(':')
+    , ratio
+    ;
+
+  ratio = {
+    width: parseInt(ratioComponents[0], 10)
+  , height: parseInt(ratioComponents[1], 10)
+  };
+
+  ratio.ratio = ratio.width / ratio.height;
+
+  return ratio;
+}
+
+function getDimensions (ratio) {
+  return {
+    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
+  , height: referenceHeight
+  };
+}
+
+},{}],14:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3783,32 +3862,7 @@ function Navigation (events) {
   }
 }
 
-},{}],13:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
-
-module.exports = Events;
-
-function Events (events) {
-  var self = this
-    , externalEvents = new EventEmitter()
-    ;
-
-  externalEvents.setMaxListeners(0);
-
-  self.on = function () {
-    externalEvents.on.apply(externalEvents, arguments);
-    return self;
-  };
-
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
-    events.on(eventName, function (slideIndex) {
-      var slide = self.getSlides()[slideIndex];
-      externalEvents.emit(eventName, slide);
-    });
-  });
-}
-
-},{"events":7}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = Slide;
 
 function Slide (slideNo, slide, template) {
@@ -3914,172 +3968,31 @@ Slide.prototype.expandVariables = function (contentOnly) {
 };
 
 },{}],17:[function(require,module,exports){
-var referenceWidth = 908
-  , referenceHeight = 681
-  , referenceRatio = referenceWidth / referenceHeight
-  ;
+var EventEmitter = require('events').EventEmitter;
 
-module.exports = Scaler;
+module.exports = Events;
 
-function Scaler (events, slideshow) {
-  var self = this;
-
-  self.events = events;
-  self.slideshow = slideshow;
-  self.ratio = getRatio(slideshow);
-  self.dimensions = getDimensions(self.ratio);
-
-  self.events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('ratio')) {
-      self.ratio = getRatio(slideshow);
-      self.dimensions = getDimensions(self.ratio);
-    }
-  });
-}
-
-Scaler.prototype.scaleToFit = function (element, container) {
+function Events (events) {
   var self = this
-    , containerHeight = container.clientHeight
-    , containerWidth = container.clientWidth
-    , scale
-    , scaledWidth
-    , scaledHeight
-    , ratio = self.ratio
-    , dimensions = self.dimensions
-    , direction
-    , left
-    , top
+    , externalEvents = new EventEmitter()
     ;
 
-  if (containerWidth / ratio.width > containerHeight / ratio.height) {
-    scale = containerHeight / dimensions.height;
-  }
-  else {
-    scale = containerWidth / dimensions.width;
-  }
+  externalEvents.setMaxListeners(0);
 
-  scaledWidth = dimensions.width * scale;
-  scaledHeight = dimensions.height * scale;
-
-  left = (containerWidth - scaledWidth) / 2;
-  top = (containerHeight - scaledHeight) / 2;
-
-  element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  element.style.MozTransform = 'scale(' + scale + ')';
-  element.style.left = Math.max(left, 0) + 'px';
-  element.style.top = Math.max(top, 0) + 'px';
-};
-
-function getRatio (slideshow) {
-  var ratioComponents = slideshow.getRatio().split(':')
-    , ratio
-    ;
-
-  ratio = {
-    width: parseInt(ratioComponents[0], 10)
-  , height: parseInt(ratioComponents[1], 10)
+  self.on = function () {
+    externalEvents.on.apply(externalEvents, arguments);
+    return self;
   };
 
-  ratio.ratio = ratio.width / ratio.height;
-
-  return ratio;
-}
-
-function getDimensions (ratio) {
-  return {
-    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
-  , height: referenceHeight
-  };
-}
-
-},{}],15:[function(require,module,exports){
-var Lexer = require('./lexer'),
-    converter = require('./converter');
-
-module.exports = Parser;
-
-function Parser () { }
-
-Parser.prototype.parse = function (src) {
-  var lexer = new Lexer(),
-      tokens = lexer.lex(src),
-      slides = [],
-      slide = createSlide(),
-      tag,
-      classes;
-
-  tokens.forEach(function (token) {
-    switch (token.type) {
-      case 'text':
-      case 'code':
-      case 'fences':
-        appendTo(slide, token.text);
-        break;
-      case 'content_start':
-        tag = token.block ? 'div' : 'span';
-        classes = token.classes.join(' ');
-        appendTo(slide, '&lt;' + tag + ' class="' + classes + '"&gt;');
-        break;
-      case 'content_end':
-        tag = token.block ? 'div' : 'span';
-        appendTo(slide, '&lt;/' + tag + '&gt;');
-        break;
-      case 'separator':
-        slides.push(slide);
-        slide = createSlide();
-        slide.properties.continued = (token.text === '--').toString();
-        break;
-      case 'notes_separator':
-        slide.notes = '';
-        break;
-    }
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+    events.on(eventName, function (slideIndex) {
+      var slide = self.getSlides()[slideIndex];
+      externalEvents.emit(eventName, slide);
+    });
   });
-
-  slides.push(slide);
-
-  slides.forEach(function (slide) {
-    slide.source = extractProperties(slide.source, slide.properties);
-  });
-
-  return slides;
-};
-
-function createSlide () {
-  return {
-    source: '', 
-    properties: { 
-      continued: 'false'
-    }
-  };
 }
 
-function appendTo (slide, content) {
-  if (slide.notes !== undefined) {
-    slide.notes += content;
-  }
-  else {
-    slide.source += content;
-  }
-}
-
-function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
-    , match
-    ;
-
-  while ((match = propertyFinder.exec(source)) !== null) {
-    source = source.substr(0, match.index) +
-      source.substr(match.index + match[0].length);
-
-    properties[match[1].trim()] = match[2].trim();
-
-    propertyFinder.lastIndex = match.index;
-  }
-
-  return source;
-}
-
-},{"./lexer":18,"./converter":19}],16:[function(require,module,exports){
+},{"events":7}],12:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -4278,7 +4191,94 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":19,"../highlighter":3,"../utils":11}],18:[function(require,module,exports){
+},{"../converter":18,"../utils":10,"../highlighter":3}],16:[function(require,module,exports){
+var Lexer = require('./lexer'),
+    converter = require('./converter');
+
+module.exports = Parser;
+
+function Parser () { }
+
+Parser.prototype.parse = function (src) {
+  var lexer = new Lexer(),
+      tokens = lexer.lex(src),
+      slides = [],
+      slide = createSlide(),
+      tag,
+      classes;
+
+  tokens.forEach(function (token) {
+    switch (token.type) {
+      case 'text':
+      case 'code':
+      case 'fences':
+        appendTo(slide, token.text);
+        break;
+      case 'content_start':
+        tag = token.block ? 'div' : 'span';
+        classes = token.classes.join(' ');
+        appendTo(slide, '&lt;' + tag + ' class="' + classes + '"&gt;');
+        break;
+      case 'content_end':
+        tag = token.block ? 'div' : 'span';
+        appendTo(slide, '&lt;/' + tag + '&gt;');
+        break;
+      case 'separator':
+        slides.push(slide);
+        slide = createSlide();
+        slide.properties.continued = (token.text === '--').toString();
+        break;
+      case 'notes_separator':
+        slide.notes = '';
+        break;
+    }
+  });
+
+  slides.push(slide);
+
+  slides.forEach(function (slide) {
+    slide.source = extractProperties(slide.source, slide.properties);
+  });
+
+  return slides;
+};
+
+function createSlide () {
+  return {
+    source: '', 
+    properties: { 
+      continued: 'false'
+    }
+  };
+}
+
+function appendTo (slide, content) {
+  if (slide.notes !== undefined) {
+    slide.notes += content;
+  }
+  else {
+    slide.source += content;
+  }
+}
+
+function extractProperties (source, properties) {
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+    , match
+    ;
+
+  while ((match = propertyFinder.exec(source)) !== null) {
+    source = source.substr(0, match.index) +
+      source.substr(match.index + match[0].length);
+
+    properties[match[1].trim()] = match[2].trim();
+
+    propertyFinder.lastIndex = match.index;
+  }
+
+  return source;
+}
+
+},{"./lexer":19,"./converter":18}],19:[function(require,module,exports){
 module.exports = Lexer;
 
 var CODE = 1,
@@ -4409,7 +4409,7 @@ function getTextInBrackets (src, offset) {
   }
 }
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var marked = require('marked')
   , converter = module.exports = {}
   ;
