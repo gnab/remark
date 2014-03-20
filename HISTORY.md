@@ -1,3 +1,9 @@
+### 0.6.2
+* #77: Enable Matjax for slide notes by keeping notes HTML in DOM.
+* #82: Hide help screen when hitting Escape.
+* #85, #87: No longer operate on escaped HTML.
+* #98: Flatten CSS hierarchy for `remark-slide-content` to ease styling.
+
 ### 0.6.1
 * #81: Introduce boilerplate HTML files ([gurjeet](https://github.com/gurjeet)).
 * #83: Always include background colors and images.
