@@ -78,6 +78,14 @@ function extend (object) {
     return result;
   };
 }
+},{}],5:[function(require,module,exports){
+/* Automatically generated */
+
+module.exports = {
+  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;-webkit-print-color-adjust:exact;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:absolute;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background-color:transparent;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;table-layout:fixed;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide-content{background-color:#fff;background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide-content .left{display:block;text-align:left;}.remark-slide-content .center{display:block;text-align:center;}.remark-slide-content .right{display:block;text-align:right;}.remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-visible{display:block;z-index:2;}.remark-fading{display:block;z-index:1;}.remark-fading .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;background:#000;z-index:2;}.remark-pause{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;}.remark-pause .remark-pause-lozenge{margin-top:30%;text-align:center;}.remark-pause .remark-pause-lozenge span{color:white;background:black;border:2px solid black;border-radius:20px;padding:20px 30px;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:42pt;font-weight:bold;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-pause{display:block;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-backdrop{display:block;opacity:0.5;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:5%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;opacity:0.95;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-notes-area .remark-notes{clear:both;margin-top:30px;}.remark-toolbar{color:#979892;padding-bottom:1em;vertical-align:middle;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-toolbar .remark-toolbar-timer{border:2px solid black;border-radius:10px;background:black;color:white;display:inline-block;float:right;padding:10px;font-family:sans-serif;font-weight:bold;font-size:200%;text-decoration:none;text-align:center;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;background-color:#fff;} .remark-slide-container{display:block;position:relative;} .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}}@page {size:908px 681px;margin:0;}",
+  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n    <span class=\"remark-toolbar-timer\">0:00:00</span>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-pause\">\n  <div class=\"remark-pause-lozenge\">\n    <span>Paused</span>\n  </div>\n</div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">k</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">j</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">f</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">c</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">p</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">w</span>\n        </td>\n        <td>Pause/Resume the presentation</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">t</span>\n        </td>\n        <td>Restart the presentation timer</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>,\n          <span class=\"key\">h</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
+};
+
 },{}],3:[function(require,module,exports){
 (function(){/* Automatically generated */
 
@@ -2620,14 +2628,6 @@ module.exports = {
 };
 
 })()
-},{}],5:[function(require,module,exports){
-/* Automatically generated */
-
-module.exports = {
-  documentStyles: "html.remark-container,body.remark-container{height:100%;width:100%;-webkit-print-color-adjust:exact;}.remark-container{background:#d7d8d2;margin:0;overflow:hidden;}.remark-container:focus{outline-style:solid;outline-width:1px;}:-webkit-full-screen .remark-container{width:100%;height:100%;}.remark-slides-area{position:relative;height:100%;width:100%;}.remark-slide-container{display:none;position:absolute;height:100%;width:100%;page-break-after:always;}.remark-slide-scaler{background-color:transparent;overflow:hidden;position:absolute;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;-moz-box-shadow:0 0 30px #888;-webkit-box-shadow:0 0 30px #888;box-shadow:0 0 30px #888;}.remark-slide{height:100%;width:100%;display:table;table-layout:fixed;}.remark-slide>.left{text-align:left;}.remark-slide>.center{text-align:center;}.remark-slide>.right{text-align:right;}.remark-slide>.top{vertical-align:top;}.remark-slide>.middle{vertical-align:middle;}.remark-slide>.bottom{vertical-align:bottom;}.remark-slide-content{background-color:#fff;background-position:center;background-repeat:no-repeat;display:table-cell;padding:1em 4em 1em 4em;}.remark-slide-content .left{display:block;text-align:left;}.remark-slide-content .center{display:block;text-align:center;}.remark-slide-content .right{display:block;text-align:right;}.remark-slide-number{bottom:12px;opacity:0.5;position:absolute;right:20px;}.remark-visible{display:block;z-index:2;}.remark-fading{display:block;z-index:1;}.remark-fading .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}.remark-backdrop{position:absolute;top:0;bottom:0;left:0;right:0;display:none;background:#000;z-index:2;}.remark-pause{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;}.remark-pause .remark-pause-lozenge{margin-top:30%;text-align:center;}.remark-pause .remark-pause-lozenge span{color:white;background:black;border:2px solid black;border-radius:20px;padding:20px 30px;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:42pt;font-weight:bold;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-pause{display:block;}.remark-container.remark-presenter-mode.remark-pause-mode .remark-backdrop{display:block;opacity:0.5;}.remark-help{bottom:0;top:0;right:0;left:0;display:none;position:absolute;z-index:1000;-webkit-transform-origin:top left;-moz-transform-origin:top left;transform-origin:top-left;}.remark-help .remark-help-content{color:white;font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:12pt;position:absolute;top:5%;bottom:10%;left:10%;height:10%;}.remark-help .remark-help-content td{color:white;font-size:12pt;padding:10px;}.remark-help .remark-help-content td:first-child{padding-left:0;}.remark-help .remark-help-content .key{background:white;color:black;min-width:1em;display:inline-block;padding:3px 6px;text-align:center;border-radius:4px;}.remark-help .dismiss{top:85%;}.remark-container.remark-help-mode .remark-help{display:block;}.remark-container.remark-help-mode .remark-backdrop{display:block;opacity:0.95;}.remark-preview-area{bottom:2%;left:2%;display:none;opacity:0.5;position:absolute;height:47.25%;width:48%;}.remark-preview-area .remark-slide-container{display:block;}.remark-notes-area{background:#e7e8e2;bottom:0;display:none;left:52%;overflow:hidden;padding:1.5em;position:absolute;right:0;top:0;}.remark-notes-area .remark-notes{clear:both;margin-top:30px;}.remark-toolbar{color:#979892;padding-bottom:1em;vertical-align:middle;}.remark-toolbar .remark-toolbar-link{border:2px solid #d7d8d2;color:#979892;display:inline-block;padding:2px 2px;text-decoration:none;text-align:center;min-width:20px;}.remark-toolbar .remark-toolbar-link:hover{border-color:#979892;color:#676862;}.remark-toolbar .remark-toolbar-timer{border:2px solid black;border-radius:10px;background:black;color:white;display:inline-block;float:right;padding:10px;font-family:sans-serif;font-weight:bold;font-size:200%;text-decoration:none;text-align:center;}.remark-container.remark-presenter-mode .remark-slides-area{top:2%;left:2%;height:47.25%;width:48%;}.remark-container.remark-presenter-mode .remark-preview-area{display:block;}.remark-container.remark-presenter-mode .remark-notes-area{display:block;}@media print{.remark-container{overflow:visible;background-color:#fff;} .remark-slide-container{display:block;position:relative;} .remark-slide-scaler{-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}}@page {size:908px 681px;margin:0;}",
-  containerLayout: "<div class=\"remark-notes-area\">\n  <div class=\"remark-toolbar\">\n    <a class=\"remark-toolbar-link\" href=\"#increase\">+</a>\n    <a class=\"remark-toolbar-link\" href=\"#decrease\">-</a>\n    <span class=\"remark-toolbar-timer\">0:00:00</span>\n  </div>\n  <div class=\"remark-notes\"></div>\n</div>\n<div class=\"remark-slides-area\">\n\n</div>\n<div class=\"remark-preview-area\">\n</div>\n<div class=\"remark-backdrop\"></div>\n<div class=\"remark-pause\">\n  <div class=\"remark-pause-lozenge\">\n    <span>Paused</span>\n  </div>\n</div>\n<div class=\"remark-help\">\n  <div class=\"remark-help-content\">\n    <h1>Help</h1>\n    <p><b>Keyboard shortcuts</b></p>\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\"><b>&uarr;</b></span>,\n          <span class=\"key\"><b>&larr;</b></span>,\n          <span class=\"key\">Pg Up</span>,\n          <span class=\"key\">k</span>\n        </td>\n        <td>Go to previous slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\"><b>&darr;</b></span>,\n          <span class=\"key\"><b>&rarr;</b></span>,\n          <span class=\"key\">Pg Dn</span>,\n          <span class=\"key\">Space</span>,\n          <span class=\"key\">j</span>\n        </td>\n        <td>Go to next slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">Home</span>\n        </td>\n        <td>Go to first slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">End</span>\n        </td>\n        <td>Go to last slide</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">f</span>\n        </td>\n        <td>Toggle fullscreen mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">c</span>\n        </td>\n        <td>Clone slideshow</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">p</span>\n        </td>\n        <td>Toggle presenter mode</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">w</span>\n        </td>\n        <td>Pause/Resume the presentation</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">t</span>\n        </td>\n        <td>Restart the presentation timer</td>\n      </tr>\n      <tr>\n        <td>\n          <span class=\"key\">?</span>,\n          <span class=\"key\">h</span>\n        </td>\n        <td>Toggle this help</td>\n      </tr>\n    </table>\n  </div>\n  <div class=\"content dismiss\">\n    <table class=\"light-keys\">\n      <tr>\n        <td>\n          <span class=\"key\">Esc</span>\n        </td>\n        <td>Back to slideshow</td>\n      </tr>\n    </table>\n  </div>\n</div>\n"
-};
-
 },{}],6:[function(require,module,exports){
 // shim for using process in browser
 
@@ -2897,7 +2897,8 @@ module.exports.create = function (options) {
 
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = options.controller || new Controller(events, slideshowView);
+  controller = options.controller || new Controller(events, slideshowView,
+    options.navigation);
 
   return slideshow;
 };
@@ -2934,7 +2935,7 @@ function unescape (source) {
   return source;
 }
 
-},{"events":7,"./models/slideshow":8,"./highlighter":3,"./views/slideshowView":9,"./controller":10,"./utils":11}],11:[function(require,module,exports){
+},{"events":7,"./views/slideshowView":8,"./models/slideshow":9,"./highlighter":3,"./controller":10,"./utils":11}],11:[function(require,module,exports){
 exports.addClass = function (element, className) {
   element.className = exports.getClasses(element)
     .concat([className])
@@ -2995,12 +2996,14 @@ var utils = require('./utils');
 
 module.exports = Controller;
 
-function Controller (events, slideshowView) {
+function Controller (events, slideshowView, options) {
+  options = options || {};
+
   addApiEventListeners(events, slideshowView);
   addNavigationEventListeners(events, slideshowView);
   addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
+  addMouseEventListeners(events, options);
+  addTouchEventListeners(events, options);
 }
 
 function addApiEventListeners(events, slideshowView) {
@@ -3116,17 +3119,18 @@ function removeMouseEventListeners(events) {
   events.removeAllListeners("mousewheel");
 }
 
-function addMouseEventListeners (events) {
-  events.on('mousewheel', function (event) {
-    if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
-    }
-    else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
-    }
-  });
+function addMouseEventListeners (events, options) {
+  if (options.scroll !== false) {
+    events.on('mousewheel', function (event) {
+      if (event.wheelDeltaY > 0) {
+        events.emit('gotoPreviousSlide');
+      }
+      else if (event.wheelDeltaY < 0) {
+        events.emit('gotoNextSlide');
+      }
+    });
+  }
 }
-
 
 function removeTouchEventListeners(events) {
   events.removeAllListeners("touchstart");
@@ -3134,12 +3138,15 @@ function removeTouchEventListeners(events) {
   events.removeAllListeners("touchmove");
 }
 
-
-function addTouchEventListeners (events) {
+function addTouchEventListeners (events, options) {
   var touch
     , startX
     , endX
     ;
+
+  if (options.touch === false) {
+    return;
+  }
 
   var isTap = function () {
     return Math.abs(startX - endX) < 10;
@@ -3185,150 +3192,6 @@ function addTouchEventListeners (events) {
 }
 
 },{"./utils":11}],8:[function(require,module,exports){
-var Navigation = require('./slideshow/navigation')
-  , Events = require('./slideshow/events')
-  , utils = require('../utils')
-  , Slide = require('./slide')
-  , Parser = require('../parser')
-  ;
-
-module.exports = Slideshow;
-
-function Slideshow (events, options) {
-  var self = this
-    , slides = []
-    ;
-
-  options = options || {};
-
-  // Extend slideshow functionality
-  Events.call(self, events);
-  Navigation.call(self, events);
-
-  self.loadFromString = loadFromString;
-  self.getSlides = getSlides;
-  self.getSlideCount = getSlideCount;
-  self.getSlideByName = getSlideByName;
-
-  self.togglePresenterMode = togglePresenterMode;
-  self.toggleHelp = toggleHelp;
-  self.toggleFullscreen = toggleFullscreen;
-  self.createClone = createClone;
-
-  self.resetTimer = resetTimer;
-
-  self.getRatio = getOrDefault('ratio', '4:3');
-  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
-  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
-
-  loadFromString(options.source);
-
-  function loadFromString (source) {
-    source = source || '';
-
-    slides = createSlides(source);
-    expandVariables(slides);
-
-    events.emit('slidesChanged');
-  }
-
-  function getSlides () {
-    return slides.map(function (slide) { return slide; });
-  }
-
-  function getSlideCount () {
-    return slides.length;
-  }
-
-  function getSlideByName (name) {
-    return slides.byName[name];
-  }
-
-  function togglePresenterMode () {
-    events.emit('togglePresenterMode');
-  }
-
-  function toggleHelp () {
-    events.emit('toggleHelp');
-  }
-
-  function toggleFullscreen () {
-    events.emit('toggleFullscreen');
-  }
-
-  function createClone () {
-    events.emit('createClone');
-  }
-
-  function resetTimer () {
-    events.emit('resetTimer');
-  }
-
-  function getOrDefault (key, defaultValue) {
-    return function () {
-      if (options[key] === undefined) {
-        return defaultValue;
-      }
-
-      return options[key];
-    };
-  }
-}
-
-function createSlides (slideshowSource) {
-  var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource)
-    , slides = []
-    , byName = {}
-    , layoutSlide
-    ;
-
-  slides.byName = {};
-
-  parsedSlides.forEach(function (slide, i) {
-    var template, slideViewModel;
-
-    if (slide.properties.continued === 'true' && i > 0) {
-      template = slides[slides.length - 1];
-    }
-    else if (byName[slide.properties.template]) {
-      template = byName[slide.properties.template];
-    }
-    else if (slide.properties.layout === 'false') {
-      layoutSlide = undefined;
-    }
-    else if (layoutSlide && slide.properties.layout !== 'true') {
-      template = layoutSlide;
-    }
-
-    slideViewModel = new Slide(slides.length + 1, slide, template);
-
-    if (slide.properties.layout === 'true') {
-      layoutSlide = slideViewModel;
-    }
-
-    if (slide.properties.name) {
-      byName[slide.properties.name] = slideViewModel;
-    }
-
-    if (slide.properties.layout !== 'true') {
-      slides.push(slideViewModel);
-      if (slide.properties.name) {
-        slides.byName[slide.properties.name] = slideViewModel;
-      }
-    }
-  });
-
-  return slides;
-}
-
-function expandVariables (slides) {
-  slides.forEach(function (slide) {
-    slide.expandVariables();
-  });
-}
-
-},{"./slideshow/navigation":12,"./slideshow/events":13,"../utils":11,"./slide":14,"../parser":15}],9:[function(require,module,exports){
 var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
@@ -3660,7 +3523,151 @@ SlideshowView.prototype.scaleElements = function () {
   self.scaler.scaleToFit(self.pauseElement, self.containerElement);
 };
 
-},{"./slideView":16,"../resources":5,"../scaler":17,"../utils":11}],12:[function(require,module,exports){
+},{"./slideView":12,"../scaler":13,"../resources":5,"../utils":11}],9:[function(require,module,exports){
+var Navigation = require('./slideshow/navigation')
+  , Events = require('./slideshow/events')
+  , utils = require('../utils')
+  , Slide = require('./slide')
+  , Parser = require('../parser')
+  ;
+
+module.exports = Slideshow;
+
+function Slideshow (events, options) {
+  var self = this
+    , slides = []
+    ;
+
+  options = options || {};
+
+  // Extend slideshow functionality
+  Events.call(self, events);
+  Navigation.call(self, events);
+
+  self.loadFromString = loadFromString;
+  self.getSlides = getSlides;
+  self.getSlideCount = getSlideCount;
+  self.getSlideByName = getSlideByName;
+
+  self.togglePresenterMode = togglePresenterMode;
+  self.toggleHelp = toggleHelp;
+  self.toggleFullscreen = toggleFullscreen;
+  self.createClone = createClone;
+
+  self.resetTimer = resetTimer;
+
+  self.getRatio = getOrDefault('ratio', '4:3');
+  self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
+
+  loadFromString(options.source);
+
+  function loadFromString (source) {
+    source = source || '';
+
+    slides = createSlides(source);
+    expandVariables(slides);
+
+    events.emit('slidesChanged');
+  }
+
+  function getSlides () {
+    return slides.map(function (slide) { return slide; });
+  }
+
+  function getSlideCount () {
+    return slides.length;
+  }
+
+  function getSlideByName (name) {
+    return slides.byName[name];
+  }
+
+  function togglePresenterMode () {
+    events.emit('togglePresenterMode');
+  }
+
+  function toggleHelp () {
+    events.emit('toggleHelp');
+  }
+
+  function toggleFullscreen () {
+    events.emit('toggleFullscreen');
+  }
+
+  function createClone () {
+    events.emit('createClone');
+  }
+
+  function resetTimer () {
+    events.emit('resetTimer');
+  }
+
+  function getOrDefault (key, defaultValue) {
+    return function () {
+      if (options[key] === undefined) {
+        return defaultValue;
+      }
+
+      return options[key];
+    };
+  }
+}
+
+function createSlides (slideshowSource) {
+  var parser = new Parser()
+   ,  parsedSlides = parser.parse(slideshowSource)
+    , slides = []
+    , byName = {}
+    , layoutSlide
+    ;
+
+  slides.byName = {};
+
+  parsedSlides.forEach(function (slide, i) {
+    var template, slideViewModel;
+
+    if (slide.properties.continued === 'true' && i > 0) {
+      template = slides[slides.length - 1];
+    }
+    else if (byName[slide.properties.template]) {
+      template = byName[slide.properties.template];
+    }
+    else if (slide.properties.layout === 'false') {
+      layoutSlide = undefined;
+    }
+    else if (layoutSlide && slide.properties.layout !== 'true') {
+      template = layoutSlide;
+    }
+
+    slideViewModel = new Slide(slides.length + 1, slide, template);
+
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
+    }
+
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
+    }
+
+    if (slide.properties.layout !== 'true') {
+      slides.push(slideViewModel);
+      if (slide.properties.name) {
+        slides.byName[slide.properties.name] = slideViewModel;
+      }
+    }
+  });
+
+  return slides;
+}
+
+function expandVariables (slides) {
+  slides.forEach(function (slide) {
+    slide.expandVariables();
+  });
+}
+
+},{"./slideshow/navigation":14,"./slideshow/events":15,"../utils":11,"./slide":16,"../parser":17}],14:[function(require,module,exports){
 module.exports = Navigation;
 
 function Navigation (events) {
@@ -3800,6 +3807,85 @@ function Navigation (events) {
 }
 
 },{}],13:[function(require,module,exports){
+var referenceWidth = 908
+  , referenceHeight = 681
+  , referenceRatio = referenceWidth / referenceHeight
+  ;
+
+module.exports = Scaler;
+
+function Scaler (events, slideshow) {
+  var self = this;
+
+  self.events = events;
+  self.slideshow = slideshow;
+  self.ratio = getRatio(slideshow);
+  self.dimensions = getDimensions(self.ratio);
+
+  self.events.on('propertiesChanged', function (changes) {
+    if (changes.hasOwnProperty('ratio')) {
+      self.ratio = getRatio(slideshow);
+      self.dimensions = getDimensions(self.ratio);
+    }
+  });
+}
+
+Scaler.prototype.scaleToFit = function (element, container) {
+  var self = this
+    , containerHeight = container.clientHeight
+    , containerWidth = container.clientWidth
+    , scale
+    , scaledWidth
+    , scaledHeight
+    , ratio = self.ratio
+    , dimensions = self.dimensions
+    , direction
+    , left
+    , top
+    ;
+
+  if (containerWidth / ratio.width > containerHeight / ratio.height) {
+    scale = containerHeight / dimensions.height;
+  }
+  else {
+    scale = containerWidth / dimensions.width;
+  }
+
+  scaledWidth = dimensions.width * scale;
+  scaledHeight = dimensions.height * scale;
+
+  left = (containerWidth - scaledWidth) / 2;
+  top = (containerHeight - scaledHeight) / 2;
+
+  element.style['-webkit-transform'] = 'scale(' + scale + ')';
+  element.style.MozTransform = 'scale(' + scale + ')';
+  element.style.left = Math.max(left, 0) + 'px';
+  element.style.top = Math.max(top, 0) + 'px';
+};
+
+function getRatio (slideshow) {
+  var ratioComponents = slideshow.getRatio().split(':')
+    , ratio
+    ;
+
+  ratio = {
+    width: parseInt(ratioComponents[0], 10)
+  , height: parseInt(ratioComponents[1], 10)
+  };
+
+  ratio.ratio = ratio.width / ratio.height;
+
+  return ratio;
+}
+
+function getDimensions (ratio) {
+  return {
+    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
+  , height: referenceHeight
+  };
+}
+
+},{}],15:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 
 module.exports = Events;
@@ -3824,7 +3910,7 @@ function Events (events) {
   });
 }
 
-},{"events":7}],14:[function(require,module,exports){
+},{"events":7}],16:[function(require,module,exports){
 module.exports = Slide;
 
 function Slide (slideNo, slide, template) {
@@ -3942,85 +4028,6 @@ Slide.prototype.expandVariables = function (contentOnly, content, expandResult) 
 
 
 },{}],17:[function(require,module,exports){
-var referenceWidth = 908
-  , referenceHeight = 681
-  , referenceRatio = referenceWidth / referenceHeight
-  ;
-
-module.exports = Scaler;
-
-function Scaler (events, slideshow) {
-  var self = this;
-
-  self.events = events;
-  self.slideshow = slideshow;
-  self.ratio = getRatio(slideshow);
-  self.dimensions = getDimensions(self.ratio);
-
-  self.events.on('propertiesChanged', function (changes) {
-    if (changes.hasOwnProperty('ratio')) {
-      self.ratio = getRatio(slideshow);
-      self.dimensions = getDimensions(self.ratio);
-    }
-  });
-}
-
-Scaler.prototype.scaleToFit = function (element, container) {
-  var self = this
-    , containerHeight = container.clientHeight
-    , containerWidth = container.clientWidth
-    , scale
-    , scaledWidth
-    , scaledHeight
-    , ratio = self.ratio
-    , dimensions = self.dimensions
-    , direction
-    , left
-    , top
-    ;
-
-  if (containerWidth / ratio.width > containerHeight / ratio.height) {
-    scale = containerHeight / dimensions.height;
-  }
-  else {
-    scale = containerWidth / dimensions.width;
-  }
-
-  scaledWidth = dimensions.width * scale;
-  scaledHeight = dimensions.height * scale;
-
-  left = (containerWidth - scaledWidth) / 2;
-  top = (containerHeight - scaledHeight) / 2;
-
-  element.style['-webkit-transform'] = 'scale(' + scale + ')';
-  element.style.MozTransform = 'scale(' + scale + ')';
-  element.style.left = Math.max(left, 0) + 'px';
-  element.style.top = Math.max(top, 0) + 'px';
-};
-
-function getRatio (slideshow) {
-  var ratioComponents = slideshow.getRatio().split(':')
-    , ratio
-    ;
-
-  ratio = {
-    width: parseInt(ratioComponents[0], 10)
-  , height: parseInt(ratioComponents[1], 10)
-  };
-
-  ratio.ratio = ratio.width / ratio.height;
-
-  return ratio;
-}
-
-function getDimensions (ratio) {
-  return {
-    width: Math.floor(referenceWidth / referenceRatio * ratio.ratio)
-  , height: referenceHeight
-  };
-}
-
-},{}],15:[function(require,module,exports){
 (function(){var Lexer = require('./lexer');
 
 module.exports = Parser;
@@ -4167,7 +4174,7 @@ function extractProperties (source, properties) {
 }
 
 })()
-},{"./lexer":18}],16:[function(require,module,exports){
+},{"./lexer":18}],12:[function(require,module,exports){
 var converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
@@ -4368,7 +4375,7 @@ function highlightCodeBlocks (content, slideshow) {
   });
 }
 
-},{"../converter":19,"../highlighter":3,"../utils":11}],18:[function(require,module,exports){
+},{"../converter":19,"../utils":11,"../highlighter":3}],18:[function(require,module,exports){
 module.exports = Lexer;
 
 var CODE = 1,

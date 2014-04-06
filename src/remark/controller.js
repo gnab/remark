@@ -2,12 +2,14 @@ var utils = require('./utils');
 
 module.exports = Controller;
 
-function Controller (events, slideshowView) {
+function Controller (events, slideshowView, options) {
+  options = options || {};
+
   addApiEventListeners(events, slideshowView);
   addNavigationEventListeners(events, slideshowView);
   addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
+  addMouseEventListeners(events, options);
+  addTouchEventListeners(events, options);
 }
 
 function addApiEventListeners(events, slideshowView) {
@@ -123,17 +125,18 @@ function removeMouseEventListeners(events) {
   events.removeAllListeners("mousewheel");
 }
 
-function addMouseEventListeners (events) {
-  events.on('mousewheel', function (event) {
-    if (event.wheelDeltaY > 0) {
-      events.emit('gotoPreviousSlide');
-    }
-    else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
-    }
-  });
+function addMouseEventListeners (events, options) {
+  if (options.scroll !== false) {
+    events.on('mousewheel', function (event) {
+      if (event.wheelDeltaY > 0) {
+        events.emit('gotoPreviousSlide');
+      }
+      else if (event.wheelDeltaY < 0) {
+        events.emit('gotoNextSlide');
+      }
+    });
+  }
 }
-
 
 function removeTouchEventListeners(events) {
   events.removeAllListeners("touchstart");
@@ -141,12 +144,15 @@ function removeTouchEventListeners(events) {
   events.removeAllListeners("touchmove");
 }
 
-
-function addTouchEventListeners (events) {
+function addTouchEventListeners (events, options) {
   var touch
     , startX
     , endX
     ;
+
+  if (options.touch === false) {
+    return;
+  }
 
   var isTap = function () {
     return Math.abs(startX - endX) < 10;

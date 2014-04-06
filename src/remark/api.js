@@ -25,7 +25,8 @@ module.exports.create = function (options) {
 
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, options.container, slideshow);
-  controller = options.controller || new Controller(events, slideshowView);
+  controller = options.controller || new Controller(events, slideshowView,
+    options.navigation);
 
   return slideshow;
 };
