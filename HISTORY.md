@@ -1,3 +1,6 @@
+### 0.6.3
+* #101: Make navigation using scroll configurable.
+
 ### 0.6.2
 * #77: Enable Matjax for slide notes by keeping notes HTML in DOM.
 * #82: Hide help screen when hitting Escape.
