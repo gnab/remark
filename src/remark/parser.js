@@ -32,7 +32,7 @@ function Parser () { }
  */
 Parser.prototype.parse = function (src) {
   var lexer = new Lexer(),
-      tokens = lexer.lex(src),
+      tokens = lexer.lex(cleanInput(src)),
       slides = [],
 
       // The last item on the stack contains the current slide or
@@ -141,4 +141,18 @@ function extractProperties (source, properties) {
   }
 
   return source;
+}
+
+function cleanInput(source) {
+  // If all lines are indented, we should trim them all to the same point so that code doesn't
+  // need to start at column 0 in the source (see GitHub Issue #105)
+  
+  // Calculate the minimum leading whitespace
+  var leadingWhitespacePattern = /^(\s*)/gm;
+  var whitespace = source.match(leadingWhitespacePattern).map(function (s) { return s.length; });
+  var minWhitespace = Math.min.apply(Math, whitespace);
+  
+  // Trim off the exact amount of whitespace
+  var trimWhitespacePattern = new RegExp('^\\s{' + minWhitespace + '}', 'gm');
+  return source.replace(trimWhitespacePattern, '');
 }

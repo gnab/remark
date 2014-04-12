@@ -173,14 +173,14 @@ describe('Parser', function () {
       var slides = parser.parse('      1\n      ---\n          2\n      ---\n      3');
 
       slides[0].content.should.eql(['1']);
-      slides[1].content.should.eql(['    2']);
+      slides[1].content.should.eql(['    2\n']); // Note: lexer includes trailing newines in code blocks
       slides[2].content.should.eql(['3']);
     });
 
     it('should preserve leading whitespace that goes beyond the minimum whitespace on the first line', function () {
       var slides = parser.parse('          1\n      ---\n      2\n      ---\n      3');
       
-      slides[0].content.should.eql(['    1']);
+      slides[0].content.should.eql(['    1\n']); // Note: lexer includes trailing newines in code blocks
       slides[1].content.should.eql(['2']);
       slides[2].content.should.eql(['3']);
     });
