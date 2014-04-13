@@ -150,7 +150,7 @@ function cleanInput(source) {
   // Helper to extract captures from the regex
   var getMatchCaptures = function (source, pattern) {
     var results = [], match;
-    while (match = pattern.exec(source))
+    while ((match = pattern.exec(source)) !== null)
       results.push(match[1]);
     return results;
   };
