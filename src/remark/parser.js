@@ -32,7 +32,7 @@ function Parser () { }
  */
 Parser.prototype.parse = function (src) {
   var lexer = new Lexer(),
-      tokens = lexer.lex(src),
+      tokens = lexer.lex(cleanInput(src)),
       slides = [],
 
       // The last item on the stack contains the current slide or
@@ -141,4 +141,27 @@ function extractProperties (source, properties) {
   }
 
   return source;
+}
+
+function cleanInput(source) {
+  // If all lines are indented, we should trim them all to the same point so that code doesn't
+  // need to start at column 0 in the source (see GitHub Issue #105)
+
+  // Helper to extract captures from the regex
+  var getMatchCaptures = function (source, pattern) {
+    var results = [], match;
+    while ((match = pattern.exec(source)) !== null)
+      results.push(match[1]);
+    return results;
+  };
+
+  // Calculate the minimum leading whitespace
+  // Ensure there's at least one char that's not newline to ignore blank lines
+  var leadingWhitespacePattern = /^([ \t]*)[^\n]/gm;
+  var whitespace = getMatchCaptures(source, leadingWhitespacePattern).map(function (s) { return s.length; });
+  var minWhitespace = Math.min.apply(Math, whitespace);
+
+  // Trim off the exact amount of whitespace
+  var trimWhitespacePattern = new RegExp('^[ \\t]{' + minWhitespace + '}', 'gm');
+  return source.replace(trimWhitespacePattern, '');
 }

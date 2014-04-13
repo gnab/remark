@@ -61,7 +61,7 @@ describe('Parser', function () {
     });
 
     it('should ignore content class inside code', function () {
-      parser.parse('    .class[x]')[0].content.should.eql(['    .class[x]']);
+      parser.parse('some code\n    .class[x]')[0].content.should.eql(['some code\n    .class[x]']);
     });
   });
 
@@ -157,6 +157,48 @@ describe('Parser', function () {
 
     it('should extract properties from source', function () {
       parser.parse('name: a\nclass:b\n1')[0].content.should.eql(['\n1']);
+    });
+  });
+
+  describe('parsing content that is indented', function () {
+    it('should handle leading whitespace on all lines', function () {
+      var slides = parser.parse('      1\n      ---\n      2\n      ---\n      3');
+      
+      slides[0].content.should.eql(['1']);
+      slides[1].content.should.eql(['2']);
+      slides[2].content.should.eql(['3']);
+    });
+
+    it('should ignore lines with no content when calculating whitespace to trim', function () {
+      var slides = parser.parse('      1\n\n      1\n      ---\n      2\n      ---\n      3');
+
+      slides[0].content.should.eql(['1\n\n1']);
+      slides[1].content.should.eql(['2']);
+      slides[2].content.should.eql(['3']);
+    });
+
+    it('should preserve leading whitespace that goes beyond the minimum whitespace on inner lines', function () {
+      var slides = parser.parse('      1\n      ---\n          2\n      ---\n      3');
+
+      slides[0].content.should.eql(['1']);
+      slides[1].content.should.eql(['    2\n']); // Note: lexer includes trailing newines in code blocks
+      slides[2].content.should.eql(['3']);
+    });
+
+    it('should preserve leading whitespace that goes beyond the minimum whitespace on the first line', function () {
+      var slides = parser.parse('          1\n      ---\n      2\n      ---\n      3');
+      
+      slides[0].content.should.eql(['    1\n']); // Note: lexer includes trailing newines in code blocks
+      slides[1].content.should.eql(['2']);
+      slides[2].content.should.eql(['3']);
+    });
+
+    it('should preserve leading whitespace that goes beyond the minimum whitespace on the last line', function () {
+      var slides = parser.parse('      1\n      ---\n      2\n      ---\n          3');
+      
+      slides[0].content.should.eql(['1']);
+      slides[1].content.should.eql(['2']);
+      slides[2].content.should.eql(['    3']);
     });
   });
 
