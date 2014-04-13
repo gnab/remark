@@ -1,3 +1,6 @@
+### 0.6.4
+* #105/106: Support indented source code ([DanTup](https://github.com/DanTup)).
+
 ### 0.6.3
 * #101: Make navigation using scroll configurable.
 
