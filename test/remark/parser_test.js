@@ -169,6 +169,14 @@ describe('Parser', function () {
       slides[2].content.should.eql(['3']);
     });
 
+    it('should ignore lines with no content when calculating whitespace to trim', function () {
+      var slides = parser.parse('      1\n\n      1\n      ---\n      2\n      ---\n      3');
+
+      slides[0].content.should.eql(['1\n\n1']);
+      slides[1].content.should.eql(['2']);
+      slides[2].content.should.eql(['3']);
+    });
+
     it('should preserve leading whitespace that goes beyond the minimum whitespace on inner lines', function () {
       var slides = parser.parse('      1\n      ---\n          2\n      ---\n      3');
 
