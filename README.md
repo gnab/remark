@@ -1,5 +1,7 @@
 # remark
 
+![Build status](https://api.travis-ci.org/gnab/remark.svg?branch=master)
+
 A simple, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
 
 - Markdown formatting, with smart extensions
