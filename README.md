@@ -1,6 +1,6 @@
 # remark
 
-![Build status](https://api.travis-ci.org/gnab/remark.svg?branch=master)
+[![](https://api.travis-ci.org/gnab/remark.svg?branch=master)](https://travis-ci.org/gnab/remark)
 
 A simple, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
 
