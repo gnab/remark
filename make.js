@@ -4,8 +4,6 @@ require('shelljs/global');
 // Targets
 
 target.all = function () {
-  target.lint();
-  target.bundle();
   target.test();
   target.minify();
   target.boilerplate();
@@ -16,9 +14,24 @@ target.highlighter = function () {
   bundleHighlighter('src/remark/highlighter.js');
 };
 
+target.test = function () {
+  target['lint']();
+  target['bundle']();
+  target['test-bundle']();
+
+  console.log('Running tests...');
+  run('mocha-phantomjs test/runner.html');
+};
+
 target.lint = function () {
   console.log('Linting...');
   run('jshint src', {silent: true});
+};
+
+target.bundle = function () {
+  console.log('Bundling...');
+  bundleResources('src/remark/resources.js');
+  run('browserify src/remark.js', {silent: true}).output.to('out/remark.js');
 };
 
 target['test-bundle'] = function () {
@@ -37,19 +50,6 @@ target['test-bundle'] = function () {
 
   run('browserify _tests.js', {silent: true}).output.to('out/tests.js');
   rm('_tests.js');
-};
-
-target.test = function () {
-  target['test-bundle']();
-
-  console.log('Running tests...');
-  run('mocha-phantomjs test/runner.html');
-};
-
-target.bundle = function () {
-  console.log('Bundling...');
-  bundleResources('src/remark/resources.js');
-  run('browserify src/remark.js', {silent: true}).output.to('out/remark.js');
 };
 
 target.boilerplate = function () {
