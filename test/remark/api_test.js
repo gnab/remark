@@ -74,4 +74,23 @@ describe('API', function () {
     utils.setLocationHash.restore();
     document.body.removeChild(source);
   });
+
+  it('should allow creating slideshow from source url', function () {
+    var html = document.createElement('html');
+    var body = document.createElement('body');
+    
+    // Stub to prevent altering test runner DOM
+    sinon.stub(utils, 'getHTMLElement').returns(html);
+    sinon.stub(utils, 'getBodyElement').returns(body);
+    sinon.stub(utils, 'setLocationHash');
+    
+    var slides = api.create({ sourceUrl: 'test-slides-source-url.txt' }).getSlides();
+    slides.length.should.eql(2);
+    slides[0].content.should.eql(['5']);
+    slides[1].content.should.eql(['6']);
+    
+    utils.getHTMLElement.restore();
+    utils.getBodyElement.restore();
+    utils.setLocationHash.restore();
+  });
 });
