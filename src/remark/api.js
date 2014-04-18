@@ -40,7 +40,7 @@ function applyDefaults (options) {
     var req = new XMLHttpRequest();
     req.open('GET', options.sourceUrl, false);
     req.send();
-    options.source = req.responseText;
+    options.source = req.responseText.replace(/\r\n/g, '\n');
   }
   else if (!options.hasOwnProperty('source')) {
     sourceElement = document.getElementById('source');

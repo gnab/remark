@@ -75,7 +75,26 @@ describe('API', function () {
     document.body.removeChild(source);
   });
 
-  it('should allow creating slideshow from source url', function () {
+  it('should allow creating slideshow from source url with linux newlines', function () {
+  	var html = document.createElement('html');
+  	var body = document.createElement('body');
+
+  	// Stub to prevent altering test runner DOM
+  	sinon.stub(utils, 'getHTMLElement').returns(html);
+  	sinon.stub(utils, 'getBodyElement').returns(body);
+  	sinon.stub(utils, 'setLocationHash');
+
+  	var slides = api.create({ sourceUrl: 'test-slides-source-url-linux-newlines.txt' }).getSlides();
+  	slides.length.should.eql(2);
+  	slides[0].content.should.eql(['5']);
+  	slides[1].content.should.eql(['6']);
+
+  	utils.getHTMLElement.restore();
+  	utils.getBodyElement.restore();
+  	utils.setLocationHash.restore();
+  });
+
+  it('should allow creating slideshow from source url with windows newlines', function () {
     var html = document.createElement('html');
     var body = document.createElement('body');
     
@@ -84,7 +103,7 @@ describe('API', function () {
     sinon.stub(utils, 'getBodyElement').returns(body);
     sinon.stub(utils, 'setLocationHash');
     
-    var slides = api.create({ sourceUrl: 'test-slides-source-url.txt' }).getSlides();
+    var slides = api.create({ sourceUrl: 'test-slides-source-url-windows-newlines.txt' }).getSlides();
     slides.length.should.eql(2);
     slides[0].content.should.eql(['5']);
     slides[1].content.should.eql(['6']);
