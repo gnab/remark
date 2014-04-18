@@ -36,7 +36,13 @@ function applyDefaults (options) {
 
   options = options || {};
 
-  if (!options.hasOwnProperty('source')) {
+  if (options.hasOwnProperty('sourceUrl')) {
+    var req = new XMLHttpRequest();
+    req.open('GET', options.sourceUrl, false);
+    req.send();
+    options.source = req.responseText.replace(/\r\n/g, '\n');
+  }
+  else if (!options.hasOwnProperty('source')) {
     sourceElement = document.getElementById('source');
     if (sourceElement) {
       options.source = unescape(sourceElement.innerHTML);
