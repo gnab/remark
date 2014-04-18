@@ -178,7 +178,6 @@ html.remark-container, body.remark-container {
   }
 }
 
-
 /********/
 /* Help */
 /********/
@@ -202,8 +201,13 @@ html.remark-container, body.remark-container {
     position: absolute;
     top: 5%;
     bottom: 10%;
-    left: 10%;
     height: 10%;
+    left: 5%;
+    width: 90%;
+
+    h1 {
+      font-size: 36px;
+    }
 
     td {
       color: white;
@@ -221,6 +225,7 @@ html.remark-container, body.remark-container {
       padding: 3px 6px;
       text-align: center;
       border-radius: 4px;
+      font-size: 14px,
     }
   }
 
@@ -322,6 +327,17 @@ html.remark-container, body.remark-container {
   }
   .remark-notes-area {
     display: block;
+  }
+}
+
+/************/
+/* Blackout */
+/************/
+
+.remark-container.remark-blackout-mode {
+  .remark-backdrop {
+    display: block;
+    opacity: 0.99;
   }
 }
 

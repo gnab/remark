@@ -56,7 +56,12 @@ function SlideshowView (events, dom, containerElement, slideshow) {
     utils.toggleClass(self.containerElement, 'remark-help-mode');
   });
 
+  events.on('toggleBlackout', function () {
+    utils.toggleClass(self.containerElement, 'remark-blackout-mode');
+  });
+
   events.on('hideOverlay', function () {
+    utils.removeClass(self.containerElement, 'remark-blackout-mode');
     utils.removeClass(self.containerElement, 'remark-help-mode');
   });
 

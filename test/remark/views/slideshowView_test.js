@@ -2,6 +2,7 @@ var EventEmitter = require('events').EventEmitter
   , TestDom = require('../../test_dom')
   , SlideshowView = require('../../../src/remark/views/slideshowView')
   , Slideshow = require('../../../src/remark/models/slideshow')
+  , utils = require('../../../src/remark/utils')
   ;
 
 describe('SlideshowView', function () {
@@ -295,6 +296,25 @@ describe('SlideshowView', function () {
       // Microsecond accuracy is a possible problem here, so
       // allow a 5 microsecond window just in case.
       view.pauseLength.should.be.approximately(112000, 5);
+    });
+  });
+
+  describe('modes', function () {
+    beforeEach(function () {
+      view = new SlideshowView(events, dom, containerElement, model);
+    });
+
+    it('should toggle blackout on event', function () {
+      events.emit('toggleBlackout');
+
+      utils.hasClass(containerElement, 'remark-blackout-mode').should.equal(true);
+    });
+
+    it('should leave blackout mode on event', function () {
+      utils.addClass(containerElement, 'remark-blackout-mode');
+      events.emit('hideOverlay');
+
+      utils.hasClass(containerElement, 'remark-blackout-mode').should.equal(false);
     });
   });
 

@@ -99,6 +99,9 @@ function addKeyboardEventListeners (events) {
       case 'k':
         events.emit('gotoPreviousSlide');
         break;
+      case 'b':
+        events.emit('toggleBlackout');
+        break;
       case 'c':
         events.emit('createClone');
         break;

@@ -101,6 +101,17 @@ describe('Controller', function () {
     });
   });
 
+  describe('commands', function () {
+    it('should toggle blackout mode when pressing "b"', function () {
+      events.emit('keypress', {which: 98});
+      events.emit.should.be.calledWithExactly('toggleBlackout');
+    });
+
+    beforeEach(function () {
+      createController();
+    });
+  });
+
   describe('custom controller', function () {
     it('should do nothing when pressing page up', function () {
       events.emit('keydown', {keyCode: 33});
