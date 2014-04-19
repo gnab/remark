@@ -6,10 +6,11 @@ var SlideView = require('./slideView')
 
 module.exports = SlideshowView;
 
-function SlideshowView (events, containerElement, slideshow) {
+function SlideshowView (events, dom, containerElement, slideshow) {
   var self = this;
 
   self.events = events;
+  self.dom = dom;
   self.slideshow = slideshow;
   self.scaler = new Scaler(events, slideshow);
   self.slideViews = [];
@@ -106,7 +107,7 @@ function handleFullscreen(self) {
 }
 
 SlideshowView.prototype.isEmbedded = function () {
-  return this.containerElement !== utils.getBodyElement();
+  return this.containerElement !== this.dom.getBodyElement();
 };
 
 SlideshowView.prototype.configureContainerElement = function (element) {
@@ -116,8 +117,8 @@ SlideshowView.prototype.configureContainerElement = function (element) {
 
   utils.addClass(element, 'remark-container');
 
-  if (element === utils.getBodyElement()) {
-    utils.addClass(utils.getHTMLElement(), 'remark-container');
+  if (element === self.dom.getBodyElement()) {
+    utils.addClass(self.dom.getHTMLElement(), 'remark-container');
 
     forwardEvents(self.events, window, [
       'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel', 'message'

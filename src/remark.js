@@ -1,11 +1,11 @@
-var api = require('./remark/api')
+var Api = require('./remark/api')
   , highlighter = require('./remark/highlighter')
   , polyfills = require('./polyfills')
   , resources = require('./remark/resources')
   ;
 
 // Expose API as `remark`
-window.remark = api;
+window.remark = new Api();
 
 // Apply polyfills as needed
 polyfills.apply();

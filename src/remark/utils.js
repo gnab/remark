@@ -37,19 +37,3 @@ exports.getPrefixedProperty = function (element, propertyName) {
   return element[propertyName] || element['moz' + capitalizedPropertName] ||
     element['webkit' + capitalizedPropertName];
 };
-
-exports.getHTMLElement = function () {
-  return document.getElementsByTagName('html')[0];
-};
-
-exports.getBodyElement = function () {
-  return document.body;
-};
-
-exports.getLocationHash = function () {
-  return window.location.hash;
-};
-
-exports.setLocationHash = function (hash) {
-  window.location.hash = hash;
-};

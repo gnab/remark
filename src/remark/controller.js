@@ -1,12 +1,10 @@
-var utils = require('./utils');
-
 module.exports = Controller;
 
-function Controller (events, slideshowView, options) {
+function Controller (events, dom, slideshowView, options) {
   options = options || {};
 
   addApiEventListeners(events, slideshowView);
-  addNavigationEventListeners(events, slideshowView);
+  addNavigationEventListeners(events, dom, slideshowView);
   addKeyboardEventListeners(events);
   addMouseEventListeners(events, options);
   addTouchEventListeners(events, options);
@@ -26,7 +24,7 @@ function addApiEventListeners(events, slideshowView) {
   });
 }
 
-function addNavigationEventListeners (events, slideshowView) {
+function addNavigationEventListeners (events, dom, slideshowView) {
   if (slideshowView.isEmbedded()) {
     events.emit('gotoSlide', 1);
   }
@@ -40,12 +38,12 @@ function addNavigationEventListeners (events, slideshowView) {
   events.on('message', navigateByMessage);
 
   function navigateByHash () {
-    var slideNoOrName = (utils.getLocationHash() || '').substr(1);
+    var slideNoOrName = (dom.getLocationHash() || '').substr(1);
     events.emit('gotoSlide', slideNoOrName);
   }
 
   function updateHash (slideNoOrName) {
-    utils.setLocationHash('#' + slideNoOrName);
+    dom.setLocationHash('#' + slideNoOrName);
   }
 
   function navigateByMessage(message) {

@@ -1,12 +1,12 @@
-var sinon = require('sinon')
-  , EventEmitter = require('events').EventEmitter
+var EventEmitter = require('events').EventEmitter
+  , TestDom = require('../../test_dom')
   , SlideshowView = require('../../../src/remark/views/slideshowView')
   , Slideshow = require('../../../src/remark/models/slideshow')
-  , utils = require('../../../src/remark/utils')
   ;
 
 describe('SlideshowView', function () {
   var events
+    , dom
     , model
     , containerElement
     , view
@@ -14,13 +14,14 @@ describe('SlideshowView', function () {
 
   beforeEach(function () {
     events = new EventEmitter();
+    dom = new TestDom();
     model = new Slideshow(events);
     containerElement = document.createElement('div');
   });
 
   describe('container element configuration', function () {
     beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
+      view = new SlideshowView(events, dom, containerElement, model);
     });
 
     it('should style element', function () {
@@ -87,28 +88,16 @@ describe('SlideshowView', function () {
   });
 
   describe('document.body container element configuration', function () {
-    var html, body;
+    var body;
 
     beforeEach(function () {
-      html = document.createElement('html');
-      body = document.createElement('body');
-
-      // Stub to prevent altering test runner DOM
-      sinon.stub(utils, 'getHTMLElement').returns(html);
-      sinon.stub(utils, 'getBodyElement').returns(body);
-
+      body = dom.getBodyElement();
       containerElement = body;
-      view = new SlideshowView(events, containerElement, model);
-    });
-
-    afterEach(function () {
-      utils.getHTMLElement.restore();
-      utils.getBodyElement.restore();
+      view = new SlideshowView(events, dom, containerElement, model);
     });
 
     it('should style HTML element', function () {
-      var html = utils.getHTMLElement();
-      html.className.should.include('remark-container');
+      dom.getHTMLElement().className.should.include('remark-container');
     });
 
     it('should not position element', function () {
@@ -186,7 +175,7 @@ describe('SlideshowView', function () {
     it('should calculate element size for 4:3', function () {
       model = new Slideshow(events, {ratio: '4:3'});
 
-      view = new SlideshowView(events, containerElement, model);
+      view = new SlideshowView(events, dom, containerElement, model);
 
       view.slideViews[0].scalingElement.style.width.should.equal('908px');
       view.slideViews[0].scalingElement.style.height.should.equal('681px');
@@ -195,7 +184,7 @@ describe('SlideshowView', function () {
     it('should calculate element size for 16:9', function () {
       model = new Slideshow(events, {ratio: '16:9'});
 
-      view = new SlideshowView(events, containerElement, model);
+      view = new SlideshowView(events, dom, containerElement, model);
 
       view.slideViews[0].scalingElement.style.width.should.equal('1210px');
       view.slideViews[0].scalingElement.style.height.should.equal('681px');
@@ -204,7 +193,7 @@ describe('SlideshowView', function () {
 
   describe('model synchronization', function () {
     beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
+      view = new SlideshowView(events, dom, containerElement, model);
     });
 
     it('should create initial slide views', function () {
@@ -220,7 +209,7 @@ describe('SlideshowView', function () {
 
   describe('timer updates', function () {
     beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
+      view = new SlideshowView(events, dom, containerElement, model);
     });
 
     it('should do nothing if the timer has not started', function () {
@@ -269,7 +258,7 @@ describe('SlideshowView', function () {
 
   describe('timer events', function () {
     beforeEach(function () {
-      view = new SlideshowView(events, containerElement, model);
+      view = new SlideshowView(events, dom, containerElement, model);
     });
 
     it('should respond to a start event', function () {
