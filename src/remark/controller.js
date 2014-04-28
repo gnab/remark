@@ -123,7 +123,9 @@ function addKeyboardEventListeners (events) {
 }
 
 function removeMouseEventListeners(events) {
-  events.removeAllListeners("mousewheel");
+  events.removeAllListeners('click');
+  events.removeAllListeners('contextmenu');
+  events.removeAllListeners('mousewheel');
 }
 
 function addMouseEventListeners (events, options) {
