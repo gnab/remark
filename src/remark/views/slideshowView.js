@@ -129,7 +129,7 @@ SlideshowView.prototype.configureContainerElement = function (element) {
       'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel', 'message'
     ]);
     forwardEvents(self.events, self.containerElement, [
-      'touchstart', 'touchmove', 'touchend'
+      'touchstart', 'touchmove', 'touchend', 'click', 'contextmenu'
     ]);
   }
   else {

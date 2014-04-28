@@ -127,6 +127,18 @@ function removeMouseEventListeners(events) {
 }
 
 function addMouseEventListeners (events, options) {
+  if (options.click) {
+    events.on('click', function (event) {
+      if (event.button === 0) {
+        events.emit('gotoNextSlide');
+      }
+    });
+    events.on('contextmenu', function (event) {
+      event.preventDefault();
+      events.emit('gotoPreviousSlide');
+    });
+  }
+
   if (options.scroll !== false) {
     events.on('mousewheel', function (event) {
       if (event.wheelDeltaY > 0) {
