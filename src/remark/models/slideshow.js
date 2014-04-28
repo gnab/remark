@@ -25,6 +25,7 @@ function Slideshow (events, options) {
 
   self.togglePresenterMode = togglePresenterMode;
   self.toggleHelp = toggleHelp;
+  self.toggleBlackout = toggleBlackout;
   self.toggleFullscreen = toggleFullscreen;
   self.createClone = createClone;
 
@@ -63,6 +64,10 @@ function Slideshow (events, options) {
 
   function toggleHelp () {
     events.emit('toggleHelp');
+  }
+
+  function toggleBlackout () {
+    events.emit('toggleBlackout');
   }
 
   function toggleFullscreen () {
