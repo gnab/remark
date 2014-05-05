@@ -37,6 +37,12 @@ function Slideshow (events, options) {
 
   loadFromString(options.source);
 
+  events.on('toggleBlackout', function () {
+    if (self.clone && !self.clone.closed) {
+      self.clone.postMessage('toggleBlackout', '*');
+    }
+  });
+
   function loadFromString (source) {
     source = source || '';
 

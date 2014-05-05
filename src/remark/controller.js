@@ -4,6 +4,7 @@ function Controller (events, dom, slideshowView, options) {
   options = options || {};
 
   addApiEventListeners(events, slideshowView);
+  addMessageEventListeners(events);
   addNavigationEventListeners(events, dom, slideshowView);
   addKeyboardEventListeners(events);
   addMouseEventListeners(events, options);
@@ -24,6 +25,21 @@ function addApiEventListeners(events, slideshowView) {
   });
 }
 
+function addMessageEventListeners (events) {
+  events.on('message', navigateByMessage);
+
+  function navigateByMessage(message) {
+    var cap;
+
+    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
+      events.emit('gotoSlide', parseInt(cap[1], 10), true);
+    }
+    else if (message.data === 'toggleBlackout') {
+      events.emit('toggleBlackout');
+    }
+  }
+}
+
 function addNavigationEventListeners (events, dom, slideshowView) {
   if (slideshowView.isEmbedded()) {
     events.emit('gotoSlide', 1);
@@ -35,8 +51,6 @@ function addNavigationEventListeners (events, dom, slideshowView) {
     navigateByHash();
   }
 
-  events.on('message', navigateByMessage);
-
   function navigateByHash () {
     var slideNoOrName = (dom.getLocationHash() || '').substr(1);
     events.emit('gotoSlide', slideNoOrName);
@@ -44,14 +58,6 @@ function addNavigationEventListeners (events, dom, slideshowView) {
 
   function updateHash (slideNoOrName) {
     dom.setLocationHash('#' + slideNoOrName);
-  }
-
-  function navigateByMessage(message) {
-    var cap;
-
-    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
-      events.emit('gotoSlide', parseInt(cap[1], 10), true);
-    }
   }
 }
 
