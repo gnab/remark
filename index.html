@@ -8,19 +8,19 @@
     <style type="text/css">
       @import url(http://fonts.googleapis.com/css?family=Droid+Serif);
       @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
       body {
         font-family: 'Droid Serif';
-        font-size: 20px;
       }
       h1, h2, h3 {
         font-family: 'Yanone Kaffeesatz';
         font-weight: 400;
         margin-bottom: 0;
       }
-      h1 { font-size: 4em; }
-      h2 { font-size: 2em; }
-      h3 { font-size: 1.6em; }
+      .remark-slide-content h1 { font-size: 3em; }
+      .remark-slide-content h2 { font-size: 2em; }
+      .remark-slide-content h3 { font-size: 1.6em; }
       .footnote {
         position: absolute;
         bottom: 3em;
@@ -37,8 +37,9 @@
         -web-border-radius: 5px;
         background: #e7e8e2;
         border-radius: 5px;
-        font-size: 16px;
       }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
       .pull-left {
         float: left;
         width: 47%;
@@ -254,13 +255,13 @@ A simple HTML document is needed for hosting the styles, Markdown and the genera
     </style>
   </head>
   <body>
-    <textarea id="source">
+*    <textarea id="source">
       <!-- Slideshow Markdown -->
     &lt;/textarea&gt;
-    <script type="text/javascript" src="remark.js">
+*    <script type="text/javascript" src="remark.js">
     </script>
     <script type="text/javascript">
-      var slideshow = remark.create();
+*      var slideshow = remark.create();
     </script>
   </body>
 </html>
@@ -393,7 +394,7 @@ three question marks separate slide content from slide notes:
 ```
 Slide 1 content
 
-???
+*???
 
 Slide 1 notes
 
@@ -401,7 +402,7 @@ Slide 1 notes
 
 Slide 2 content
 
-???
+*???
 
 Slide 2 notes
 ```
@@ -460,7 +461,7 @@ template: inverse
 
 Slideshow created using [remark](http://github.com/gnab/remark).
     </textarea>
-    <script src="http://gnab.github.com/remark/downloads/remark-latest.min.js" type="text/javascript"></script>
+    <script src="http://gnab.github.com/remark/downloads/remark-0.6.5.min.js" type="text/javascript"></script>
     <script type="text/javascript">
       var hljs = remark.highlighter.engine;
     </script>
