@@ -8,6 +8,7 @@ describe('SlideView', function () {
   var slideshow = {
         getHighlightStyle: function () { return 'default'; }
       , getSlides: function () { return []; }
+      , getHighlightLanguage: function () { }
       }
     , scaler = {
         dimensions: {width: 10, height: 10}
@@ -103,4 +104,16 @@ describe('SlideView', function () {
     });
   });
 
+  describe('code line highlighting', function () {
+    it('should add class to prefixed lines', function () {
+      var slide = new Slide(1, { content: ['```\nline 1\n*line 2\nline 3\n```'] })
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+
+      var lines = slideView.element.getElementsByClassName('remark-code-line-highlighted');
+
+      lines.length.should.equal(1);
+      lines[0].innerHTML.should.equal('line 2');
+    });
+  });
 });

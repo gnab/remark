@@ -191,10 +191,46 @@ function highlightCodeBlocks (content, slideshow) {
       block.className = slideshow.getHighlightLanguage();
     }
 
+    var meta = extractMetadata(block);
+
     if (block.className !== '') {
       highlighter.engine.highlightBlock(block, '  ');
     }
 
+    wrapLines(block);
+    highlightBlockLines(block, meta.highlightedLines);
+
     utils.addClass(block, 'remark-code');
+  });
+}
+
+function extractMetadata (block) {
+  var highlightedLines = [];
+
+  block.innerHTML = block.innerHTML.split(/\r?\n/).map(function (line, i) {
+    if (line.indexOf('*') === 0) {
+      highlightedLines.push(i);
+      return line.substr(1);
+    }
+
+    return line;
+  }).join('\n');
+
+  return {
+    highlightedLines: highlightedLines
+  };
+}
+
+function wrapLines (block) {
+  var lines = block.innerHTML.split(/\r?\n/).map(function (line) {
+    return '<div class="remark-code-line">' + line + '</div>';
+  });
+
+  block.innerHTML = lines.join('');
+}
+
+function highlightBlockLines (block, lines) {
+  lines.forEach(function (i) {
+    utils.addClass(block.childNodes[i], 'remark-code-line-highlighted');
   });
 }
