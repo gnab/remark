@@ -183,6 +183,7 @@ function highlightCodeBlocks (content, slideshow) {
 
   codeBlocks.forEach(function (block) {
     if (block.parentElement.tagName !== 'PRE') {
+      utils.addClass(block, 'remark-inline-code');
       return;
     }
 
