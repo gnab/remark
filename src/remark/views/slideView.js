@@ -226,6 +226,11 @@ function wrapLines (block) {
     return '<div class="remark-code-line">' + line + '</div>';
   });
 
+  // Remove empty last line (due to last \n)
+  if (lines.length && lines[lines.length - 1].indexOf('><') !== -1) {
+    lines.pop();
+  }
+
   block.innerHTML = lines.join('');
 }
 

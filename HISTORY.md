@@ -1,3 +1,11 @@
+### 0.6.5
+* #115: Highlight *-prefixed code block lines.
+* #110: Enable click navigation when configured.
+* #108: Add `sourceUrl` configuration option ([DanTup](https://github.com/DanTup)).
+* #107: Add blackout mode.
+* #104: Increase default font sizes.
+* #102: Add default fonts to templates.
+
 ### 0.6.4
 * #105/106: Support indented source code ([DanTup](https://github.com/DanTup)).
 
