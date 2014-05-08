@@ -156,12 +156,12 @@ function cleanInput(source) {
   };
 
   // Calculate the minimum leading whitespace
-  // Ensure there's at least one char that's not newline to ignore blank lines
-  var leadingWhitespacePattern = /^([ \t]*)[^\n]/gm;
+  // Ensure there's at least one char that's not newline nor whitespace to ignore empty and blank lines
+  var leadingWhitespacePattern = /^([ \t]*)[^ \t\n]/gm;
   var whitespace = getMatchCaptures(source, leadingWhitespacePattern).map(function (s) { return s.length; });
   var minWhitespace = Math.min.apply(Math, whitespace);
 
-  // Trim off the exact amount of whitespace
-  var trimWhitespacePattern = new RegExp('^[ \\t]{' + minWhitespace + '}', 'gm');
+  // Trim off the exact amount of whitespace, or less for blank lines (non-empty)
+  var trimWhitespacePattern = new RegExp('^[ \\t]{0,' + minWhitespace + '}', 'gm');
   return source.replace(trimWhitespacePattern, '');
 }

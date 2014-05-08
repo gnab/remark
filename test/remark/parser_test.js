@@ -163,14 +163,22 @@ describe('Parser', function () {
   describe('parsing content that is indented', function () {
     it('should handle leading whitespace on all lines', function () {
       var slides = parser.parse('      1\n      ---\n      2\n      ---\n      3');
-      
+
       slides[0].content.should.eql(['1']);
       slides[1].content.should.eql(['2']);
       slides[2].content.should.eql(['3']);
     });
 
-    it('should ignore lines with no content when calculating whitespace to trim', function () {
+    it('should ignore empty lines when calculating whitespace to trim', function () {
       var slides = parser.parse('      1\n\n      1\n      ---\n      2\n      ---\n      3');
+
+      slides[0].content.should.eql(['1\n\n1']);
+      slides[1].content.should.eql(['2']);
+      slides[2].content.should.eql(['3']);
+    });
+
+    it('should ignore blank lines when calculating whitespace to trim', function () {
+      var slides = parser.parse('      1\n \n      1\n      ---\n      2\n      ---\n      3');
 
       slides[0].content.should.eql(['1\n\n1']);
       slides[1].content.should.eql(['2']);
@@ -187,7 +195,7 @@ describe('Parser', function () {
 
     it('should preserve leading whitespace that goes beyond the minimum whitespace on the first line', function () {
       var slides = parser.parse('          1\n      ---\n      2\n      ---\n      3');
-      
+
       slides[0].content.should.eql(['    1\n']); // Note: lexer includes trailing newines in code blocks
       slides[1].content.should.eql(['2']);
       slides[2].content.should.eql(['3']);
@@ -195,7 +203,7 @@ describe('Parser', function () {
 
     it('should preserve leading whitespace that goes beyond the minimum whitespace on the last line', function () {
       var slides = parser.parse('      1\n      ---\n      2\n      ---\n          3');
-      
+
       slides[0].content.should.eql(['1']);
       slides[1].content.should.eql(['2']);
       slides[2].content.should.eql(['    3']);
