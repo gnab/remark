@@ -1,3 +1,0 @@
-[submodule "vendor/highlight.js"]
-	path = vendor/highlight.js
-	url = https://github.com/isagalaev/highlight.js
