@@ -11,6 +11,16 @@ target.all = function () {
 
 target.highlighter = function () {
   console.log('Bundling highlighter...');
+
+  rm('-rf', 'vendor/highlight.js');
+  mkdir('-p', 'vendor');
+  pushd('vendor');
+  exec('git clone https://github.com/isagalaev/highlight.js.git');
+  pushd('highlight.js');
+  exec('git checkout tags/8.0');
+  popd();
+  popd();
+
   bundleHighlighter('src/remark/highlighter.js');
 };
 
