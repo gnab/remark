@@ -177,6 +177,10 @@ SlideshowView.prototype.configureChildElements = function () {
   self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
   self.toolbarElement = self.notesArea.getElementsByClassName('remark-toolbar')[0];
 
+  self.notesElement.addEventListener('mousewheel', function (event) {
+    event.stopPropagation();
+  });
+
   var commands = {
     increase: function () {
       self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) + 0.1 + 'em';
