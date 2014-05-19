@@ -87,7 +87,7 @@ function bundleResources (target) {
           cat('src/remark.html'))
       };
 
-  cat('src/resources.js.template')
+  cat('src/templates/resources.js.template')
     .replace(/%(\w+)%/g, function (match, key) {
       return resources[key];
     })
@@ -108,7 +108,7 @@ function bundleHighlighter (target) {
           }).join(',')
       };
 
-  cat('src/highlighter.js.template')
+  cat('src/templates/highlighter.js.template')
     .replace(/%(\w+)%/g, function (match, key) {
       return resources[key];
     })
@@ -123,7 +123,7 @@ function generateBoilerplateSingle(target) {
                               .replace('"</script>"', '"</" + "script>"'))
       };
 
-  cat('src/boilerplate-single.html.template')
+  cat('src/templates/boilerplate-single.html.template')
     .replace(/%(\w+)%/g, function (match, key) {
       return resources[key];
     })
