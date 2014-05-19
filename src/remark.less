@@ -283,25 +283,83 @@ html.remark-container, body.remark-container {
   display: none;
   left: 52%;
   overflow: hidden;
-  padding: 1.5em;
   position: absolute;
   right: 0;
   top: 0;
 
-  .remark-notes {
-    clear:both;
+  .remark-top-area {
+    height: 50px;
+    left: 20px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+
+  .remark-bottom-area {
     position: absolute;
     top: 75px;
     bottom: 10px;
+    left: 20px;
     right: 10px;
-    left: 24px;
-    overflow-y: auto;
+
+    .remark-toggle {
+      display: block;
+      text-decoration: none;
+      font-family: Helvetica,arial,freesans,clean,sans-serif;
+      border-bottom: 1px solid #ccc;
+      height: 21px;
+      font-size: 0.75em;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #666;
+      text-shadow: #f5f5f5 1px 1px 1px;
+    }
+
+    .remark-notes-current-area {
+      height: 70%;
+      position: relative;
+
+      .remark-notes {
+        clear:both;
+        border-top: 1px solid #f5f5f5;
+        position: absolute;
+        top: 22px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+      }
+    }
+
+    .remark-notes-preview-area {
+      height: 30%;
+      position: relative;
+
+      .remark-notes-preview {
+        border-top: 1px solid #f5f5f5;
+        position: absolute;
+        top: 22px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        overflow-y: auto;
+      }
+    }
+
+    .remark-notes > *:first-child,
+    .remark-notes-preview > *:first-child {
+      margin-top: 5px;
+    }
+    .remark-notes > *:last-child,
+    .remark-notes-preview > *:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 
 .remark-toolbar {
   color: #979892;
-  padding-bottom: 1em;
   vertical-align: middle;
 
   .remark-toolbar-link {

@@ -175,18 +175,25 @@ SlideshowView.prototype.configureChildElements = function () {
   self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
   self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
   self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
+  self.notesPreviewElement = self.notesArea.getElementsByClassName('remark-notes-preview')[0];
   self.toolbarElement = self.notesArea.getElementsByClassName('remark-toolbar')[0];
 
   self.notesElement.addEventListener('mousewheel', function (event) {
     event.stopPropagation();
   });
 
+  self.notesPreviewElement.addEventListener('mousewheel', function (event) {
+    event.stopPropagation();
+  });
+
   var commands = {
     increase: function () {
       self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) + 0.1 + 'em';
+      self.notesPreviewElement.style.fontsize = self.notesElement.style.fontSize;
     },
     decrease: function () {
       self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) - 0.1 + 'em';
+      self.notesPreviewElement.style.fontsize = self.notesElement.style.fontSize;
     }
   };
 
@@ -273,9 +280,11 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
   if (nextSlideView) {
     self.previewArea.innerHTML = nextSlideView.containerElement.outerHTML;
+    self.notesPreviewElement.innerHTML = nextSlideView.notesElement.innerHTML;
   }
   else {
     self.previewArea.innerHTML = '';
+    self.notesPreviewElement.innerHTML = '';
   }
 
   self.events.emit("afterShowSlide", slideIndex);
