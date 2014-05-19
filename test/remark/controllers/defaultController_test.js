@@ -1,7 +1,7 @@
 var sinon = require('sinon')
   , EventEmitter = require('events').EventEmitter
-  , TestDom = require('../test_dom')
-  , Controller = require('../../src/remark/controller')
+  , TestDom = require('../../test_dom')
+  , Controller = require('../../../src/remark/controllers/defaultController')
   ;
 
 describe('Controller', function () {

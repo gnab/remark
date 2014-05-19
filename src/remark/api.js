@@ -2,7 +2,7 @@ var EventEmitter = require('events').EventEmitter
   , highlighter = require('./highlighter')
   , Slideshow = require('./models/slideshow')
   , SlideshowView = require('./views/slideshowView')
-  , Controller = require('./controller')
+  , DefaultController = require('./controllers/defaultController')
   , Dom = require('./dom')
   ;
 
@@ -31,7 +31,7 @@ Api.prototype.create = function (options) {
 
   slideshow = new Slideshow(events, options);
   slideshowView = new SlideshowView(events, this.dom, options.container, slideshow);
-  controller = options.controller || new Controller(events, this.dom, slideshowView, options.navigation);
+  controller = options.controller || new DefaultController(events, this.dom, slideshowView, options.navigation);
 
   return slideshow;
 };
