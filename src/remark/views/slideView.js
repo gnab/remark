@@ -124,7 +124,6 @@ function createContentElement (events, slideshow, slide) {
   styleContentElement(slideshow, element, slide.properties);
 
   element.innerHTML = converter.convertMarkdown(slide.content);
-  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);
 
@@ -145,7 +144,6 @@ function createNotesElement (slideshow, notes) {
   element.style.display = 'none';
 
   element.innerHTML = converter.convertMarkdown(notes);
-  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
 
   highlightCodeBlocks(element, slideshow);
 

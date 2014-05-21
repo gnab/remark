@@ -112,4 +112,3 @@ Slide.prototype.expandVariables = function (contentOnly, content, expandResult) 
 
   return expandResult;
 };
-

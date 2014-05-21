@@ -17,7 +17,13 @@ marked.setOptions({
   langPrefix: ''
 });
 
-converter.convertMarkdown = function (content, insideContentClass) {
+converter.convertMarkdown = function (content) {
+  element.innerHTML = convertMarkdown(content);
+  element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
+  return element.innerHTML;
+};
+
+function convertMarkdown (content, insideContentClass) {
   var i, tag, markdown = '', html;
 
   for (i = 0; i < content.length; ++i) {
@@ -27,7 +33,7 @@ converter.convertMarkdown = function (content, insideContentClass) {
     else {
       tag = content[i].block ? 'div' : 'span';
       markdown += '<' + tag + ' class="' + content[i].class + '">';
-      markdown += this.convertMarkdown(content[i].content, true);
+      markdown += convertMarkdown(content[i].content, true);
       markdown += '</' + tag + '>';
     }
   }
@@ -42,4 +48,4 @@ converter.convertMarkdown = function (content, insideContentClass) {
   }
 
   return html;
-};
+}

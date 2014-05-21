@@ -1,4 +1,5 @@
 var SlideView = require('./slideView')
+  , NotesView = require('./notesView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
   , utils = require('../utils')
@@ -174,35 +175,9 @@ SlideshowView.prototype.configureChildElements = function () {
   self.elementArea = self.containerElement.getElementsByClassName('remark-slides-area')[0];
   self.previewArea = self.containerElement.getElementsByClassName('remark-preview-area')[0];
   self.notesArea = self.containerElement.getElementsByClassName('remark-notes-area')[0];
-  self.notesElement = self.notesArea.getElementsByClassName('remark-notes')[0];
-  self.notesPreviewElement = self.notesArea.getElementsByClassName('remark-notes-preview')[0];
-  self.toolbarElement = self.notesArea.getElementsByClassName('remark-toolbar')[0];
 
-  self.notesElement.addEventListener('mousewheel', function (event) {
-    event.stopPropagation();
-  });
-
-  self.notesPreviewElement.addEventListener('mousewheel', function (event) {
-    event.stopPropagation();
-  });
-
-  var commands = {
-    increase: function () {
-      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) + 0.1 + 'em';
-      self.notesPreviewElement.style.fontsize = self.notesElement.style.fontSize;
-    },
-    decrease: function () {
-      self.notesElement.style.fontSize = (parseFloat(self.notesElement.style.fontSize) || 1) - 0.1 + 'em';
-      self.notesPreviewElement.style.fontsize = self.notesElement.style.fontSize;
-    }
-  };
-
-  self.toolbarElement.getElementsByTagName('a').forEach(function (link) {
-    link.addEventListener('click', function (e) {
-      var command = e.target.hash.substr(1);
-      commands[command]();
-      e.preventDefault();
-    });
+  self.notesView = new NotesView (self.events, self.notesArea, function () {
+    return self.slideViews;
   });
 
   self.backdropElement = self.containerElement.getElementsByClassName('remark-backdrop')[0];
@@ -270,21 +245,18 @@ SlideshowView.prototype.scaleSlideBackgroundImages = function (dimensions) {
 SlideshowView.prototype.showSlide =  function (slideIndex) {
   var self = this
     , slideView = self.slideViews[slideIndex]
-    , nextSlideView = self.slideViews[slideIndex + 1];
+    , nextSlideView = self.slideViews[slideIndex + 1]
+    ;
 
   self.events.emit("beforeShowSlide", slideIndex);
 
   slideView.show();
 
-  self.notesElement.innerHTML = slideView.notesElement.innerHTML;
-
   if (nextSlideView) {
     self.previewArea.innerHTML = nextSlideView.containerElement.outerHTML;
-    self.notesPreviewElement.innerHTML = nextSlideView.notesElement.innerHTML;
   }
   else {
     self.previewArea.innerHTML = '';
-    self.notesPreviewElement.innerHTML = '';
   }
 
   self.events.emit("afterShowSlide", slideIndex);
@@ -292,7 +264,8 @@ SlideshowView.prototype.showSlide =  function (slideIndex) {
 
 SlideshowView.prototype.hideSlide = function (slideIndex) {
   var self = this
-    , slideView = self.slideViews[slideIndex];
+    , slideView = self.slideViews[slideIndex]
+    ;
 
   self.events.emit("beforeHideSlide", slideIndex);
   slideView.hide();
