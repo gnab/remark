@@ -208,7 +208,7 @@ function extractMetadata (block) {
   block.innerHTML = block.innerHTML.split(/\r?\n/).map(function (line, i) {
     if (line.indexOf('*') === 0) {
       highlightedLines.push(i);
-      return line.substr(1);
+      return line.replace(/^\*/, ' ');
     }
 
     return line;
