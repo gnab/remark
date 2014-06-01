@@ -17,10 +17,10 @@ marked.setOptions({
   langPrefix: ''
 });
 
-converter.convertMarkdown = function (content) {
-  element.innerHTML = convertMarkdown(content);
+converter.convertMarkdown = function (content, inline) {
+  element.innerHTML = convertMarkdown(content, inline);
   element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
-  return element.innerHTML;
+  return element.innerHTML.replace(/\n\r?$/, '');
 };
 
 function convertMarkdown (content, insideContentClass) {

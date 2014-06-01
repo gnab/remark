@@ -1,5 +1,7 @@
 var EventEmitter = require('events').EventEmitter
   , highlighter = require('./highlighter')
+  , converter = require('./converter')
+  , Parser = require('./Parser')
   , Slideshow = require('./models/slideshow')
   , SlideshowView = require('./views/slideshowView')
   , DefaultController = require('./controllers/defaultController')
@@ -15,6 +17,14 @@ function Api (dom) {
 // Expose highlighter to allow enumerating available styles and
 // including external language grammars
 Api.prototype.highlighter = highlighter;
+
+Api.prototype.convert = function (markdown) {
+  var parser = new Parser()
+    , content = parser.parse(markdown || '')[0].content
+    ;
+
+  return converter.convertMarkdown(content, true);
+};
 
 // Creates slideshow initialized from options
 Api.prototype.create = function (options) {

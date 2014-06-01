@@ -8,7 +8,7 @@ describe('Converter', function () {
 
   it('should convert paragraph', function () {
     var content = ['paragraph'];
-    converter.convertMarkdown(content).should.equal('<p>paragraph</p>\n');
+    converter.convertMarkdown(content).should.equal('<p>paragraph</p>');
   });
 
   it('should convert paragraph with inline content class', function () {
@@ -18,6 +18,6 @@ describe('Converter', function () {
       ' after'
     ];
     converter.convertMarkdown(content).should.equal(
-      '<p>before <span class="whatever">some <em>fancy</em> content</span> after</p>\n');
+      '<p>before <span class="whatever">some <em>fancy</em> content</span> after</p>');
   });
 });
