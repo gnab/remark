@@ -19,6 +19,7 @@ function Slideshow (events, options) {
   Navigation.call(self, events);
 
   self.loadFromString = loadFromString;
+  self.update = update;
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
@@ -50,6 +51,10 @@ function Slideshow (events, options) {
     expandVariables(slides);
 
     events.emit('slidesChanged');
+  }
+
+  function update () {
+    events.emit('resize');
   }
 
   function getSlides () {
