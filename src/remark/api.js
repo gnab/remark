@@ -1,7 +1,7 @@
 var EventEmitter = require('events').EventEmitter
   , highlighter = require('./highlighter')
   , converter = require('./converter')
-  , Parser = require('./Parser')
+  , Parser = require('./parser')
   , Slideshow = require('./models/slideshow')
   , SlideshowView = require('./views/slideshowView')
   , DefaultController = require('./controllers/defaultController')
