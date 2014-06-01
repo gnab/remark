@@ -87,6 +87,7 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
     , backgroundImage = styles.backgroundImage
     , match
     , image
+    , scale
     ;
 
   if ((match = /^url\(("?)([^\)]+?)\1\)/.exec(backgroundImage)) !== null) {
@@ -98,14 +99,27 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
         if (!self.originalBackgroundSize) {
           // No custom background size has been set
           self.originalBackgroundSize = self.contentElement.style.backgroundSize;
+          self.originalBackgroundPosition = self.contentElement.style.backgroundPosition;
           self.backgroundSizeSet = true;
-          self.contentElement.style.backgroundSize = 'contain';
+
+          if (dimensions.width / image.width < dimensions.height / image.height) {
+            scale = dimensions.width / image.width;
+          }
+          else {
+            scale = dimensions.height / image.height;
+          }
+
+          self.contentElement.style.backgroundSize = image.width * scale +
+            'px ' + image.height * scale + 'px';
+          self.contentElement.style.backgroundPosition = '50% ' +
+            ((dimensions.height - (image.height * scale)) / 2) + 'px';
         }
       }
       else {
         // Revert to previous background size setting
         if (self.backgroundSizeSet) {
           self.contentElement.style.backgroundSize = self.originalBackgroundSize;
+          self.contentElement.style.backgroundPosition = self.originalBackgroundPosition;
           self.backgroundSizeSet = false;
         }
       }
