@@ -211,6 +211,7 @@ function highlightCodeBlocks (content, slideshow) {
 
     wrapLines(block);
     highlightBlockLines(block, meta.highlightedLines);
+    highlightBlockSpans(block);
 
     utils.addClass(block, 'remark-code');
   });
@@ -249,5 +250,15 @@ function wrapLines (block) {
 function highlightBlockLines (block, lines) {
   lines.forEach(function (i) {
     utils.addClass(block.childNodes[i], 'remark-code-line-highlighted');
+  });
+}
+
+function highlightBlockSpans (block) {
+  var pattern = /([^\\`])`([^`]+?)`/g
+    , replacement = '$1<span class="remark-code-span-highlighted">$2</span>'
+    ;
+
+  block.childNodes.forEach(function (element) {
+    element.innerHTML = element.innerHTML.replace(pattern, replacement);
   });
 }
