@@ -137,7 +137,7 @@ function createContentElement (events, slideshow, slide) {
 
   styleContentElement(slideshow, element, slide.properties);
 
-  element.innerHTML = converter.convertMarkdown(slide.content);
+  element.innerHTML = converter.convertMarkdown(slide.content, slideshow.getLinks());
 
   highlightCodeBlocks(element, slideshow);
 

@@ -8,6 +8,7 @@ describe('SlideView', function () {
   var slideshow = {
         getHighlightStyle: function () { return 'default'; }
       , getSlides: function () { return []; }
+      , getLinks: function () { return {}; }
       , getHighlightLanguage: function () { }
       }
     , scaler = {

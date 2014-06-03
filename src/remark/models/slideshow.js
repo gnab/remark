@@ -10,6 +10,7 @@ module.exports = Slideshow;
 function Slideshow (events, options) {
   var self = this
     , slides = []
+    , links = {}
     ;
 
   options = options || {};
@@ -20,6 +21,7 @@ function Slideshow (events, options) {
 
   self.loadFromString = loadFromString;
   self.update = update;
+  self.getLinks = getLinks;
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
@@ -50,11 +52,24 @@ function Slideshow (events, options) {
     slides = createSlides(source);
     expandVariables(slides);
 
+    links = {};
+    slides.forEach(function (slide) {
+      for (var id in slide.links) {
+        if (slide.links.hasOwnProperty(id)) {
+          links[id] = slide.links[id];
+        }
+      }
+    });
+
     events.emit('slidesChanged');
   }
 
   function update () {
     events.emit('resize');
+  }
+
+  function getLinks () {
+    return links;
   }
 
   function getSlides () {

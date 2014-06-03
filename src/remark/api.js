@@ -23,7 +23,7 @@ Api.prototype.convert = function (markdown) {
     , content = parser.parse(markdown || '')[0].content
     ;
 
-  return converter.convertMarkdown(content, true);
+  return converter.convertMarkdown(content, {}, true);
 };
 
 // Creates slideshow initialized from options
