@@ -18,6 +18,11 @@ function Parser () { }
  *      },
  *      // Notes (optional, same format as content list)
  *      notes: [...],
+ *      // Link definitions
+ *      links: {
+ *        id: { href: 'url', title: 'optional title' },
+ *        ...
+ *      ],
  *      content: [
  *        // Any content but content classes are represented as strings
  *        'plain text ',
@@ -44,11 +49,18 @@ Parser.prototype.parse = function (src) {
       case 'text':
       case 'code':
       case 'fences':
-        // Code, fenced code and all other content except for content
-        // classes is appended to its parent as string literals, and
-        // is only included in the parse process in order to reason about
-        // structure (like ignoring a slide separator inside fenced code).
+        // Text, code and fenced code tokens are appended to their
+        // respective parents as string literals, and are only included
+        // in the parse process in order to reason about structure
+        // (like ignoring a slide separator inside fenced code).
         appendTo(stack[stack.length - 1], token.text);
+        break;
+      case 'def':
+        // Link definition
+        stack[0].links[token.id] = {
+          href: token.href,
+          title: token.title
+        };
         break;
       case 'content_start':
         // Entering content class, so create stack entry for appending
@@ -96,7 +108,8 @@ function createSlide () {
     content: [],
     properties: {
       continued: 'false'
-    }
+    },
+    links: {}
   };
 }
 

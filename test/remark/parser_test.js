@@ -79,6 +79,13 @@ describe('Parser', function () {
     });
   });
 
+  describe('parsing link definitions', function () {
+    it('should extract link definitions', function () {
+      parser.parse('[id]: http://url.com "title"')[0].links.id
+        .should.eql({ href: 'http://url.com', title: 'title' });
+    });
+  });
+
   describe('parsing content classes', function () {
     it('should convert block content classes', function () {
       parser.parse('1 .class[\nx\n] 2')[0].content
