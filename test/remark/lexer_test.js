@@ -102,6 +102,17 @@ describe('Lexer', function () {
         {type: 'content_end', block: false}
       ]);
     });
+
+    it('should recognize link definition', function () {
+      lexer.lex('[id]: http://url.com "website"').should.eql([
+        {
+          type: 'def',
+          id: 'id',
+          href: 'http://url.com',
+          title: 'website'
+        }
+      ]);
+    });
   });
 
   var lexer;

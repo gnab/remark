@@ -3,18 +3,20 @@ module.exports = Lexer;
 var CODE = 1,
     CONTENT = 2,
     FENCES = 3,
-    SEPARATOR = 4,
-    NOTES_SEPARATOR = 5;
+    DEF = 4,
+    SEPARATOR = 7,
+    NOTES_SEPARATOR = 8;
 
 var regexByName = {
     CODE: /(?:^|\n)( {4}[^\n]+\n*)+/,
     CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
     FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/,
+    DEF: /(?:^|\n) *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
     SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
     NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
   };
 
-var block = replace(/CODE|CONTENT|FENCES|SEPARATOR|NOTES_SEPARATOR/, regexByName),
+var block = replace(/CODE|CONTENT|FENCES|DEF|SEPARATOR|NOTES_SEPARATOR/, regexByName),
     inline = replace(/CODE|CONTENT|FENCES/, regexByName);
 
 function Lexer () { }
@@ -56,6 +58,14 @@ function lex (src, regex, tokens) {
       tokens.push({
         type: 'fences',
         text: cap[0]
+      });
+    }
+    else if (cap[DEF]) {
+      tokens.push({
+        type: 'def',
+        id: cap[4],
+        href: cap[5],
+        title: cap[6]
       });
     }
     else if (cap[SEPARATOR]) {
