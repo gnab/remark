@@ -1,5 +1,5 @@
 var SlideView = require('./slideView')
-  , Timer = require('../components/timer/viewModel')
+  , Timer = require('components/timer')
   , NotesView = require('./notesView')
   , Scaler = require('../scaler')
   , resources = require('../resources')

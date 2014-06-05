@@ -1,5 +1,5 @@
 var EventEmitter = require('events').EventEmitter
-  , Timer = require('../../../src/remark/components/timer/viewModel')
+  , Timer = require('components/timer')
   ;
 
 describe('Timer', function () {

@@ -41,8 +41,21 @@ target.lint = function () {
 target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
-  run('browserify src/remark.js', {silent: true}).output.to('out/remark.js');
+
+  run('browserify ' + components() + ' src/remark.js',
+      {silent: true}).output.to('out/remark.js');
 };
+
+function components () {
+  var componentsPath = './src/remark/components';
+
+  return ls(componentsPath)
+    .map(function (component) {
+      return '-r ' + componentsPath + '/' + component + '/' + component +
+        '.js:' + 'components/' + component;
+    })
+    .join(' ');
+}
 
 target['test-bundle'] = function () {
   console.log('Bundling tests...');
@@ -58,7 +71,8 @@ target['test-bundle'] = function () {
       .join('\n')
       .to('_tests.js');
 
-  run('browserify _tests.js', {silent: true}).output.to('out/tests.js');
+  run('browserify ' + components() + ' _tests.js',
+      {silent: true}).output.to('out/tests.js');
   rm('_tests.js');
 };
 
