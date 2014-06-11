@@ -4,6 +4,8 @@ var CODE = 1,
     CONTENT = 2,
     FENCES = 3,
     DEF = 4,
+    DEF_HREF = 5,
+    DEF_TITLE = 6,
     SEPARATOR = 7,
     NOTES_SEPARATOR = 8;
 
@@ -63,9 +65,9 @@ function lex (src, regex, tokens) {
     else if (cap[DEF]) {
       tokens.push({
         type: 'def',
-        id: cap[4],
-        href: cap[5],
-        title: cap[6]
+        id: cap[DEF],
+        href: cap[DEF_HREF],
+        title: cap[DEF_TITLE]
       });
     }
     else if (cap[SEPARATOR]) {
