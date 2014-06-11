@@ -97,7 +97,7 @@ Parser.prototype.parse = function (src) {
   slides.push(stack[0]);
 
   slides.forEach(function (slide) {
-    slide.content[0] = extractProperties(slide.content[0], slide.properties);
+    slide.content[0] = extractProperties(slide.content[0] || '', slide.properties);
   });
 
   return slides;
