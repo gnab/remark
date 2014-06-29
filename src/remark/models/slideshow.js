@@ -37,6 +37,7 @@ function Slideshow (events, options) {
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
+  self.getSlideNumberFormat = getOrDefault('slideNumberFormat', '%current% / %total%');
 
   loadFromString(options.source);
 

@@ -72,7 +72,7 @@ SlideView.prototype.configureElements = function () {
 
   self.numberElement = document.createElement('div');
   self.numberElement.className = 'remark-slide-number';
-  self.numberElement.innerHTML = self.slide.number + ' / ' + self.slideshow.getSlides().length;
+  self.numberElement.innerHTML = formatSlideNumber(self.slide, self.slideshow);
 
   self.contentElement.appendChild(self.numberElement);
   self.element.appendChild(self.contentElement);
@@ -80,6 +80,21 @@ SlideView.prototype.configureElements = function () {
   self.scalingElement.appendChild(self.element);
   self.containerElement.appendChild(self.scalingElement);
 };
+
+function formatSlideNumber (slide, slideshow) {
+  var format = slideshow.getSlideNumberFormat()
+    , current = slide.number
+    , total = slideshow.getSlides().length
+    ;
+
+  if (typeof format === 'function') {
+    return format(current, total);
+  }
+
+  return format
+      .replace('%current%', current)
+      .replace('%total%', total);
+}
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   var self = this

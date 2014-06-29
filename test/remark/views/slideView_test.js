@@ -10,6 +10,7 @@ describe('SlideView', function () {
       , getSlides: function () { return []; }
       , getLinks: function () { return {}; }
       , getHighlightLanguage: function () { }
+      , getSlideNumberFormat: function () { return '%current% / %total%'; }
       }
     , scaler = {
         dimensions: {width: 10, height: 10}
@@ -115,6 +116,17 @@ describe('SlideView', function () {
 
       lines.length.should.equal(1);
       lines[0].innerHTML.should.equal('  line 2');
+    });
+  });
+
+  describe('slide numbering', function () {
+    it('should display according to format', function () {
+      var slide = new Slide(1, { content: [] })
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+      ;
+
+      slideshow.getSlideNumberFormat = function () { return '%current% / %total%'; };
+      slideView.numberElement.innerHTML.should.equal('1 / 0');
     });
   });
 });
