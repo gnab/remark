@@ -100,7 +100,15 @@ Parser.prototype.parse = function (src) {
     slide.content[0] = extractProperties(slide.content[0] || '', slide.properties);
   });
 
-  return slides;
+  return slides.filter(function (slide) {
+    var exclude = (slide.properties.exclude || '').toLowerCase();
+
+    if (exclude === 'true') {
+      return false;
+    }
+
+    return true;
+  });
 };
 
 function createSlide () {

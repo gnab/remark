@@ -37,6 +37,13 @@ describe('Parser', function () {
       slides[2].content.should.eql(['3']);
     });
 
+    it('should ignore excluded slides', function () {
+      var slides = parser.parse('1\n---\nexclude: true\n2\n---\n3');
+
+      slides[0].content.should.eql(['1']);
+      slides[1].content.should.eql(['3']);
+    });
+
     it('should handle empty source', function () {
       parser.parse('')[0].content.should.eql(['']);
     });
