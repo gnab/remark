@@ -1,4 +1,5 @@
-var converter = require('../converter')
+var SlideNumber = require('components/slide-number')
+  , converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
   ;
@@ -12,6 +13,8 @@ function SlideView (events, slideshow, scaler, slide) {
   self.slideshow = slideshow;
   self.scaler = scaler;
   self.slide = slide;
+
+  self.slideNumber = new SlideNumber(slide, slideshow);
 
   self.configureElements();
   self.updateDimensions();
@@ -70,31 +73,12 @@ SlideView.prototype.configureElements = function () {
   self.contentElement = createContentElement(self.events, self.slideshow, self.slide);
   self.notesElement = createNotesElement(self.slideshow, self.slide.notes);
 
-  self.numberElement = document.createElement('div');
-  self.numberElement.className = 'remark-slide-number';
-  self.numberElement.innerHTML = formatSlideNumber(self.slide, self.slideshow);
-
-  self.contentElement.appendChild(self.numberElement);
+  self.contentElement.appendChild(self.slideNumber.element);
   self.element.appendChild(self.contentElement);
   self.element.appendChild(self.notesElement);
   self.scalingElement.appendChild(self.element);
   self.containerElement.appendChild(self.scalingElement);
 };
-
-function formatSlideNumber (slide, slideshow) {
-  var format = slideshow.getSlideNumberFormat()
-    , current = slide.number
-    , total = slideshow.getSlides().length
-    ;
-
-  if (typeof format === 'function') {
-    return format(current, total);
-  }
-
-  return format
-      .replace('%current%', current)
-      .replace('%total%', total);
-}
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   var self = this
