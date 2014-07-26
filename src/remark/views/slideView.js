@@ -75,9 +75,9 @@ SlideView.prototype.configureElements = function () {
 
   self.contentElement.appendChild(self.slideNumber.element);
   self.element.appendChild(self.contentElement);
-  self.element.appendChild(self.notesElement);
   self.scalingElement.appendChild(self.element);
   self.containerElement.appendChild(self.scalingElement);
+  self.containerElement.appendChild(self.notesElement);
 };
 
 SlideView.prototype.scaleBackgroundImage = function (dimensions) {
@@ -154,7 +154,7 @@ function styleContentElement (slideshow, element, properties) {
 function createNotesElement (slideshow, notes) {
   var element = document.createElement('div');
 
-  element.style.display = 'none';
+  element.className = 'remark-slide-notes';
 
   element.innerHTML = converter.convertMarkdown(notes);
 

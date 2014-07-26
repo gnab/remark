@@ -4,6 +4,7 @@ var SlideView = require('./slideView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
   , utils = require('../utils')
+  , printing = require('components/printing')
   ;
 
 module.exports = SlideshowView;
@@ -47,6 +48,13 @@ function SlideshowView (events, dom, containerElement, slideshow) {
   events.on('togglePresenterMode', function () {
     utils.toggleClass(self.containerElement, 'remark-presenter-mode');
     self.scaleElements();
+
+    if (utils.hasClass(self.containerElement, 'remark-presenter-mode')) {
+      printing.setPageOrientation('portrait');
+    }
+    else {
+      printing.setPageOrientation('landscape');
+    }
   });
 
   events.on('toggleHelp', function () {
@@ -174,21 +182,34 @@ SlideshowView.prototype.configureChildElements = function () {
 
   self.events.on('resize', onResize);
 
-  if (window.matchMedia) {
-    window.matchMedia('print').addListener(function (e) {
-      if (e.matches) {
-        self.slideViews.forEach(function (slideView) {
-          slideView.scale({
-            clientWidth: 908,
-            clientHeight: 681
-          });
-        });
-      }
-    });
-  }
+  printing.init();
+  printing.on('print', onPrint);
 
   function onResize () {
     self.scaleElements();
+  }
+
+  function onPrint (e) {
+    var slideHeight;
+
+    if (e.isPortrait) {
+      slideHeight = e.pageHeight * 0.4;
+    }
+    else {
+      slideHeight = e.pageHeight;
+    }
+
+    self.slideViews.forEach(function (slideView) {
+      slideView.scale({
+        clientWidth: e.pageWidth,
+        clientHeight: slideHeight
+      });
+
+      if (e.isPortrait) {
+        slideView.scalingElement.style.top = '20px';
+        slideView.notesElement.style.top = slideHeight + 40 + 'px';
+      }
+    });
   }
 };
 

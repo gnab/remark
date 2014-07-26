@@ -114,6 +114,12 @@ html.remark-container, body.remark-container {
   right: 20px;
 }
 
+.remark-slide-notes {
+  border-top: 3px solid black;
+  position: absolute;
+  display: none;
+}
+
 .remark-code {
   font-size: 18px;
 }
@@ -432,6 +438,27 @@ html.remark-container, body.remark-container {
     overflow: visible;
     background-color: #fff;
   }
+  .remark-container.remark-presenter-mode {
+    .remark-slides-area {
+      top: 0px;
+      left: 0px;
+      height: 100%;
+      /*
+        NOTE: 100% doesn't match @page size width or height
+              681px matching @page size/width does, however
+      */
+      width: 681px;
+    }
+    .remark-preview-area,
+    .remark-notes-area {
+      display: none;
+    }
+    .remark-slide-notes {
+      display: block;
+      margin-left: 30px;
+      width: 621px;
+    }
+  }
   .remark-slide-container {
     display: block;
     position: relative;
@@ -443,6 +470,5 @@ html.remark-container, body.remark-container {
   }
 }
 @page {
-  size: 908px 681px;
   margin: 0;
 }
