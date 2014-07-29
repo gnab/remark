@@ -1,3 +1,15 @@
+### 0.7.0
+* #70: Add support for printing including presenter notes.
+* #75: Enable cross-slide reference links.
+* #106: Fix handling of blank, non-empty lines.
+* #111: Add vertical scrollbar to presenter notes on overflow.
+* #114: Include notes for upcoming slide in presenter mode.
+* #116: Add support for highlighting code lines and spans.
+* #117: Fix slide background positioning bug.
+* #124: Fix blank slide bug.
+* #130: Add support for customizing slide number format.
+* #131: Add support for `exclude: true` slide class to exclude slide.
+
 ### 0.6.5
 * #115: Highlight *-prefixed code block lines.
 * #110: Enable click navigation when configured.
