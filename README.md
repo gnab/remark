@@ -109,5 +109,5 @@ Other interesting stuff:
 
 ### License
 
-remark is licensed under the MIT license. See LICENCE for further
+remark is licensed under the MIT license. See LICENSE for further
 details.
