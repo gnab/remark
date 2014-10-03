@@ -21,5 +21,10 @@ Dom.prototype.getLocationHash = function () {
 };
 
 Dom.prototype.setLocationHash = function (hash) {
-  window.location.hash = hash;
+  if (typeof window.history.replaceState === 'function') {
+    window.history.replaceState(undefined, undefined, hash);
+  }
+  else {
+    window.location.hash = hash;
+  }
 };
