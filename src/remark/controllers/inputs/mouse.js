@@ -9,11 +9,19 @@ exports.unregister = function (events) {
 function addMouseEventListeners (events, options) {
   if (options.click) {
     events.on('click', function (event) {
-      if (event.button === 0) {
+      if (event.target.nodeName === 'A') {
+        // Don't interfere when clicking link
+        return;
+      }
+      else if (event.button === 0) {
         events.emit('gotoNextSlide');
       }
     });
     events.on('contextmenu', function (event) {
+      if (event.target.nodeName === 'A') {
+        // Don't interfere when right-clicking link
+        return;
+      }
       event.preventDefault();
       events.emit('gotoPreviousSlide');
     });
