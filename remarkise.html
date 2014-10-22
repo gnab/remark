@@ -9,15 +9,15 @@
     <meta name="description" content="Render your markdown as remark slides, in real time">
     <meta name="keywords" content="remark,markdown,md,slide,slideshow,remarkise,tripu">
     <meta name="author" content="tripu - http://tripu.info">
-    <title>Remarkise</title>
+    <title>Remarkise&nbsp;&mdash;&nbsp;render your markdown as remark slides, in real time</title>
 
     <style type="text/css">
 
       /******************************** Original style */
 
-      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-      @import url(http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-      @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+      @import url('//fonts.googleapis.com/css?family=Yanone+Kaffeesatz');
+      @import url('//fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic');
+      @import url('//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic');
 
       body {
         font-family:       'Droid Serif';
@@ -66,7 +66,6 @@
 
       div#front-page > div > input {
         margin-bottom:     0;
-        width:             50%;
       }
 
       textarea#source {
@@ -82,7 +81,7 @@
     <div id="front-page">
       <div>
         <h1>Remark<span>ise</span></h1>
-        <p>Render your <a href="">markdown</a> as <a href="">remark</a> slides, in real time</p>
+        <p>Render your <a href="">markdown</a> as <a href="">remark</a> slides&nbsp;&mdash;&nbsp;in real time</p>
         <input id="url" placeholder="https://raw.githubusercontent.com/tripu/remark/develop/README.md" />
       </div>
     </div>
@@ -98,17 +97,21 @@
 
         $('input').keypress(function(event) {
 
-          console.log(event);
-          console.log(event.target);
-          console.log(event.target.value);
+          if (event && 13 === event.keyCode && event.target && event.target.value) {
+            console.log('Fetching ' + event.target.value + '...');
+            $('div#front-page > div > p').text('Fetching...');
 
-          if (event && 13 === event.keyCode) {
-
-            $.get({url: event.target.value,
-              success: function(data) {
+            $.get({url: event.target.value})
+              .done(function(data) {
+                console.log('success');
                 console.log(data);
-              }
-            });
+                $('div#front-page').hide();
+                remark.create();
+              })
+              .fail(function(data) {
+                console.log('failed');
+                console.log(data);
+              });
 
           }
 
