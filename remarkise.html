@@ -68,10 +68,6 @@
         margin-bottom:     0;
       }
 
-      /* textarea#source {
-        display:           none;
-      } */
-
     </style>
 
   </head>
@@ -82,13 +78,10 @@
       <div>
         <h1>Remark<span>ise</span></h1>
         <p>Render your <a href="">markdown</a> as <a href="">remark</a> slides&nbsp;&mdash;&nbsp;in real time</p>
-        <input id="url" placeholder="https://raw.githubusercontent.com/tripu/remark/develop/README.md" />
+        <input id="url" placeholder="URL of a markdown file" />
       </div>
     </div>
 
-    <!-- textarea id="source"></textarea -->
-
-    <!-- script type="text/javascript" src="editor/js/jquery-1.9.1.min.js"></script -->
     <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="downloads/remark-latest.min.js"></script>
 
@@ -99,14 +92,12 @@
         $('input').keypress(function(event) {
 
           if (event && 13 === event.keyCode && event.target && event.target.value) {
-            console.log('Fetching ' + event.target.value + '...');
-            $('div#front-page > div > p').text('Fetching...');
+            $('div#front-page > div > input').prop('disabled', true);
+            $('div#front-page > div > p').text('Fetching&hellip;');
 
             $.get(event.target.value,
               null,
               function(data) {
-                console.log('success');
-                console.log(data);
                 $('div#front-page').hide();
                 remark.create({source: data});
               });
