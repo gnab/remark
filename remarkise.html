@@ -102,16 +102,13 @@
             console.log('Fetching ' + event.target.value + '...');
             $('div#front-page > div > p').text('Fetching...');
 
-            $.get({url: event.target.value})
-              .done(function(data) {
+            $.get(event.target.value,
+              null,
+              function(data) {
                 console.log('success');
                 console.log(data);
                 $('div#front-page').hide();
                 remark.create();
-              })
-              .fail(function(data) {
-                console.log('failed');
-                console.log(data);
               });
 
           }
