@@ -68,9 +68,9 @@
         margin-bottom:     0;
       }
 
-      textarea#source {
+      /* textarea#source {
         display:           none;
-      }
+      } */
 
     </style>
 
@@ -86,7 +86,7 @@
       </div>
     </div>
 
-    <textarea id="source"></textarea>
+    <!-- textarea id="source"></textarea -->
 
     <!-- script type="text/javascript" src="editor/js/jquery-1.9.1.min.js"></script -->
     <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -108,7 +108,7 @@
                 console.log('success');
                 console.log(data);
                 $('div#front-page').hide();
-                remark.create();
+                remark.create({source: data});
               });
 
           }
