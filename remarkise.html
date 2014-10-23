@@ -121,7 +121,11 @@
               console.log('error', data);
             },
             success: function(data) {
-              history.pushState({}, 'foo', window.location.href + '?' + $.param({url: url}));
+
+              if (!window.location.search || !window.location.search.match(/\?url=.+/)) {
+                history.pushState({}, 'foo', window.location.href + '?' + $.param({url: url}));
+              }
+
               $('div#front-page').hide();
               remark.create({source: data});
             }});
