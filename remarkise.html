@@ -95,7 +95,7 @@
       $(document).ready(function() {
 
         if (window.location.search && window.location.search.match(/\?url=.+/)) {
-          remarkise(window.location.search.split('=')[1]);
+          remarkise(decodeURIComponent(window.location.search.split('=')[1]));
         } else {
 
           $('input').keypress(function(event) {
