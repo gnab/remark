@@ -121,7 +121,7 @@
               console.log('error', data);
             },
             success: function(data) {
-              window.location.href += '?' + $.param({url: url});
+              history.pushState({}, 'foo', window.location.href + '?' + $.param({url: url});
               $('div#front-page').hide();
               remark.create({source: data});
             }});
