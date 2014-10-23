@@ -94,7 +94,7 @@
 
       $(document).ready(function() {
 
-        if (window.location.search && window.location.search.match(/?url=.+/)) {
+        if (window.location.search && window.location.search.match(/\?url=.+/)) {
           remarkise(window.location.search.split('=')[1]);
         } else {
 
