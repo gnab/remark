@@ -94,22 +94,39 @@
 
       $(document).ready(function() {
 
-        $('input').keypress(function(event) {
+        if (window.location.search && window.location.search.match(/?url=.+/) {
+          remarkise(window.location.search.split('=')[1]);
+        } else {
 
-          if (event && 13 === event.keyCode && event.target && event.target.value) {
-            $('div#front-page > div > input').prop('disabled', true);
-            $('div#front-page > div > p').text('Fetching&hellip;');
+          $('input').keypress(function(event) {
 
-            $.get(event.target.value,
-              null,
-              function(data) {
-                $('div#front-page').hide();
-                remark.create({source: data});
-              });
+            if (event && 13 === event.keyCode && event.target && event.target.value) {
+              remarkise(event.target.value);
+            }
 
-          }
+          });
 
-        });
+        }
+
+        function remarkise(url) {
+
+          $('div#front-page > div > input').prop('disabled', true);
+          $('div#front-page > div > p').text('Fetching markdown…');
+
+          $.ajax({url: url,
+            error: function(data) {
+              /* var REGEX1 = /\/\/raw\.githubusercontent\.com\//;
+              var REGEX2 = /\/\/github.com\//;
+              var alternateUrl = url */
+              console.log('error', data);
+            },
+            success: function(data) {
+              window.location.href += '?' + $.param({url: url});
+              $('div#front-page').hide();
+              remark.create({source: data});
+            }});
+
+        }
 
       });
 
