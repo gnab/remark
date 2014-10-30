@@ -83,7 +83,7 @@
           Render your <a href="http://commonmark.org/">markdown</a> as
           <a href="https://github.com/tripu/remark">remark</a> slides&nbsp;&mdash;&nbsp;in real time
         </p>
-        <input id="url" placeholder="URL of a markdown file" />
+        <input id="url" placeholder="URL of a markdown file" autofocus="autofocus" />
       </div>
     </div>
 
@@ -93,6 +93,65 @@
     <script type="text/javascript">
 
       $(document).ready(function() {
+
+        var FIXES = [
+          {
+            message: 'Oops, error! But wait — I\'m fetching the “raw” GitHub version instead…'
+          , patterns: [
+              [/\/\/(www\.)?github.com\//, '//raw.githubusercontent.com/']
+            , [/\/blob\//, '/']
+            ]
+          }
+        , {
+            message: 'Oops, error! But wait — I\'m fetching through RawGit…'
+          , patterns: [
+              [/\/\/raw\.githubusercontent\.com\//, '//rawgit.com/']
+            ]
+          }
+        ];
+
+        var nextFix = 0
+          , currentFix
+          , newUrl;
+
+        function remarkise(url) {
+
+          $('div#front-page > div > input').prop('disabled', true);
+          $('div#front-page > div > p').text('Fetching markdown…');
+
+          $.ajax({
+            url: url,
+            error: function(data) {
+              // console.log(url + ' failed!');
+
+              if(nextFix < FIXES.length) {
+                currentFix = FIXES[nextFix];
+                $('div#front-page > div > p').text(currentFix.message);
+                newUrl = url;
+
+                for(var pattern in currentFix.patterns) {
+                  newUrl = newUrl.replace(currentFix.patterns[pattern][0], currentFix.patterns[pattern][1]);
+                }
+
+                nextFix ++;
+                // console.log('Trying ' + newUrl);
+                remarkise(newUrl);
+              } else {
+                $('div#front-page > div > p').text('Error!');
+              }
+
+            },
+            success: function(data) {
+              if (!window.location.search || !window.location.search.match(/\?url=.+/)) {
+                history.pushState({}, null, window.location.href + '?' + $.param({url: url}));
+              }
+
+              $('div#front-page').hide();
+              remark.create({source: data});
+            }
+          });
+
+        }
 
         if (window.location.search && window.location.search.match(/\?url=.+/)) {
           remarkise(decodeURIComponent(window.location.search.split('=')[1]));
@@ -105,30 +164,6 @@
             }
 
           });
-
-        }
-
-        function remarkise(url) {
-
-          $('div#front-page > div > input').prop('disabled', true);
-          $('div#front-page > div > p').text('Fetching markdown…');
-
-          $.ajax({url: url,
-            error: function(data) {
-              /* var REGEX1 = /\/\/raw\.githubusercontent\.com\//;
-              var REGEX2 = /\/\/github.com\//;
-              var alternateUrl = url */
-              console.log('error', data);
-            },
-            success: function(data) {
-
-              if (!window.location.search || !window.location.search.match(/\?url=.+/)) {
-                history.pushState({}, 'foo', window.location.href + '?' + $.param({url: url}));
-              }
-
-              $('div#front-page').hide();
-              remark.create({source: data});
-            }});
 
         }
 
