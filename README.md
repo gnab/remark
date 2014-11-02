@@ -29,9 +29,9 @@ Below is a boilerplate HTML file to get you started:
     <title>Title</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <style type="text/css">
-      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-      @import url(http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-      @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+      @import url(//fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(//fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
       body { font-family: 'Droid Serif'; }
       h1, h2, h3 {
@@ -61,9 +61,9 @@ class: center, middle
 # Introduction
 
     </textarea>
-    <script src="http://gnab.github.io/remark/downloads/remark-latest.min.js" type="text/javascript">
+    <script src="//gnab.github.io/remark/downloads/remark-latest.min.js">
     </script>
-    <script type="text/javascript">
+    <script>
       var slideshow = remark.create();
     </script>
   </body>
