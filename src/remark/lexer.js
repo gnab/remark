@@ -6,20 +6,24 @@ var CODE = 1,
     DEF = 4,
     DEF_HREF = 5,
     DEF_TITLE = 6,
-    SEPARATOR = 7,
-    NOTES_SEPARATOR = 8;
+    MACRO = 7,
+    MACRO_ARGS = 8,
+    MACRO_OBJ = 9,
+    SEPARATOR = 10,
+    NOTES_SEPARATOR = 11;
 
 var regexByName = {
     CODE: /(?:^|\n)( {4}[^\n]+\n*)+/,
     CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
     FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/,
     DEF: /(?:^|\n) *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
+    MACRO: /!\[:([^\] ]+)([^\]]*)\](?:\(([^\)]*)\))?/,
     SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
     NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
   };
 
-var block = replace(/CODE|CONTENT|FENCES|DEF|SEPARATOR|NOTES_SEPARATOR/, regexByName),
-    inline = replace(/CODE|CONTENT|FENCES/, regexByName);
+var block = replace(/CODE|CONTENT|FENCES|DEF|MACRO|SEPARATOR|NOTES_SEPARATOR/, regexByName),
+    inline = replace(/CODE|CONTENT|FENCES|DEF|MACRO/, regexByName);
 
 function Lexer () { }
 
@@ -68,6 +72,14 @@ function lex (src, regex, tokens) {
         id: cap[DEF],
         href: cap[DEF_HREF],
         title: cap[DEF_TITLE]
+      });
+    }
+    else if (cap[MACRO]) {
+      tokens.push({
+        type: 'macro',
+        name: cap[MACRO],
+        args: (cap[MACRO_ARGS] || '').split(',').map(trim),
+        obj: cap[MACRO_OBJ]
       });
     }
     else if (cap[SEPARATOR]) {
@@ -122,6 +134,14 @@ function replace (regex, replacements) {
   return new RegExp(regex.source.replace(/\w{2,}/g, function (key) {
     return replacements[key].source;
   }));
+}
+
+function trim (text) {
+  if (typeof text === 'string') {
+    return text.trim();
+  }
+
+  return text;
 }
 
 function getTextInBrackets (src, offset) {

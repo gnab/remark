@@ -3,6 +3,7 @@ var Navigation = require('./slideshow/navigation')
   , utils = require('../utils')
   , Slide = require('./slide')
   , Parser = require('../parser')
+  , macros = require('../macros')
   ;
 
 module.exports = Slideshow;
@@ -122,7 +123,7 @@ function Slideshow (events, options) {
 
 function createSlides (slideshowSource) {
   var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource)
+   ,  parsedSlides = parser.parse(slideshowSource, macros)
     , slides = []
     , byName = {}
     , layoutSlide

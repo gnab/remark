@@ -35,7 +35,7 @@ function Parser () { }
  *    ...
  *  ]
  */
-Parser.prototype.parse = function (src) {
+Parser.prototype.parse = function (src, macros) {
   var lexer = new Lexer(),
       tokens = lexer.lex(cleanInput(src)),
       slides = [],
@@ -43,6 +43,8 @@ Parser.prototype.parse = function (src) {
       // The last item on the stack contains the current slide or
       // content class we're currently appending content to.
       stack = [createSlide()];
+
+  macros = macros || {};
 
   tokens.forEach(function (token) {
     switch (token.type) {
@@ -61,6 +63,18 @@ Parser.prototype.parse = function (src) {
           href: token.href,
           title: token.title
         };
+        break;
+      case 'macro':
+        // Macro
+        var macro = macros[token.name];
+        if (typeof macro !== 'function') {
+          throw new Error('Macro "' + token.name + '" not found. ' +
+              'You need to define macro using remark.macros[\'' +
+              token.name + '\'] = function () { ... };');
+        }
+        var value = macro.apply(token.obj, token.args);
+        appendTo(stack[stack.length - 1], value === undefined ?
+            '' : value.toString());
         break;
       case 'content_start':
         // Entering content class, so create stack entry for appending

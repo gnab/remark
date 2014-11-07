@@ -113,6 +113,17 @@ describe('Lexer', function () {
         }
       ]);
     });
+
+    it('should recognise macro', function () {
+      lexer.lex('![:piechart a, b, c](d)').should.eql([
+        {
+          type: 'macro',
+          name: 'piechart',
+          args: ['a', 'b', 'c'],
+          obj: 'd'
+        }
+      ]);
+    });
   });
 
   var lexer;

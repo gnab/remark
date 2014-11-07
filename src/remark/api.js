@@ -6,12 +6,14 @@ var EventEmitter = require('events').EventEmitter
   , SlideshowView = require('./views/slideshowView')
   , DefaultController = require('./controllers/defaultController')
   , Dom = require('./dom')
+  , macros = require('./macros')
   ;
 
 module.exports = Api;
 
 function Api (dom) {
   this.dom = dom || new Dom();
+  this.macros = macros;
 }
 
 // Expose highlighter to allow enumerating available styles and
@@ -20,7 +22,7 @@ Api.prototype.highlighter = highlighter;
 
 Api.prototype.convert = function (markdown) {
   var parser = new Parser()
-    , content = parser.parse(markdown || '')[0].content
+    , content = parser.parse(markdown || '', macros)[0].content
     ;
 
   return converter.convertMarkdown(content, {}, true);
