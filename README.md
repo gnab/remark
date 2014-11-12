@@ -12,7 +12,7 @@ A simple, in-browser, markdown-driven slideshow tool targeted at people who know
 
 Check out [this remark slideshow](http://gnab.github.com/remark) for a brief introduction.
 
-You an also render your remark slides on the fly using [Remarkise](https://gnab.github.io/remark/remarkise).
+To render your Markdown-based slideshow on the fly, checkout [Remarkise](https://gnab.github.io/remark/remarkise).
 
 ### Getting Started
 
