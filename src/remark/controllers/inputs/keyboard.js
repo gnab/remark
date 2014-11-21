@@ -8,6 +8,11 @@ exports.unregister = function (events) {
 
 function addKeyboardEventListeners (events) {
   events.on('keydown', function (event) {
+    if (event.metaKey || event.ctrlKey) {
+      // Bail out if meta or ctrl key was pressed
+      return;
+    }
+
     switch (event.keyCode) {
       case 33: // Page up
       case 37: // Left
