@@ -108,11 +108,16 @@
               [/\/\/raw\.githubusercontent\.com\//, '//rawgit.com/']
             ]
           }
-        ];
+        ]
+        ,   CSS = /<style[^>]*>[^<]*<\/style>/ig
+        ;
 
         var nextFix = 0
-          , currentFix
-          , newUrl;
+        ,   currentFix
+        ,   newUrl
+        ,   css
+        ,   i
+        ;
 
         function remarkise(url) {
 
@@ -147,6 +152,13 @@
               }
 
               $('div#front-page').hide();
+              css = data.match(CSS);
+              if (css) {
+                  data = data.replace(CSS, '');
+                  for (i in css) {
+                      $('head').append(css[i]);
+                  }
+              }
               remark.create({source: data});
             }
           });
