@@ -65,6 +65,10 @@ function SlideshowView (events, dom, containerElement, slideshow) {
     utils.toggleClass(self.containerElement, 'remark-blackout-mode');
   });
 
+  events.on('toggleMirrored', function () {
+    utils.toggleClass(self.containerElement, 'remark-mirrored-mode');
+  });
+
   events.on('hideOverlay', function () {
     utils.removeClass(self.containerElement, 'remark-blackout-mode');
     utils.removeClass(self.containerElement, 'remark-help-mode');

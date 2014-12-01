@@ -225,6 +225,20 @@ describe('SlideshowView', function () {
 
       utils.hasClass(containerElement, 'remark-blackout-mode').should.equal(false);
     });
+
+    it('should toggle mirrored on event', function () {
+      events.emit('toggleMirrored');
+
+      utils.hasClass(containerElement, 'remark-mirrored-mode').should.equal(true);
+    });
+
+    it('should leave toggle mirrored on event', function () {
+      utils.addClass(containerElement, 'remark-mirrored-mode');
+      events.emit('toggleMirrored');
+
+      utils.hasClass(containerElement, 'remark-mirrored-mode').should.equal(false);
+    });
+
   });
 
   function triggerEvent(element, eventName) {
