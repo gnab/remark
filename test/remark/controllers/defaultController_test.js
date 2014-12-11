@@ -107,6 +107,11 @@ describe('Controller', function () {
       events.emit.should.be.calledWithExactly('toggleBlackout');
     });
 
+    it('should toggle mirrored mode when pressing "m"', function () {
+      events.emit('keypress', {which: 109});
+      events.emit.should.be.calledWithExactly('toggleMirrored');
+    });
+
     beforeEach(function () {
       createController();
     });

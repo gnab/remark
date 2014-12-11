@@ -53,6 +53,9 @@ function addKeyboardEventListeners (events) {
       case 'b':
         events.emit('toggleBlackout');
         break;
+      case 'm':
+        events.emit('toggleMirrored');
+        break;
       case 'c':
         events.emit('createClone');
         break;
