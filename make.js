@@ -108,7 +108,7 @@ target.deploy = function () {
   git('add -f out');
   git('checkout head');
   git('commit -m "Deploy version ' + version + '."');
-  git('tag -a v' + ' -m "Version ' + version + '."');
+  git('tag -a v' + version + ' -m "Version ' + version + '."');
   git('checkout ' + currentBranch);
   git('push origin --tags');
 };
