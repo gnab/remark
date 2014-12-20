@@ -63,7 +63,7 @@ class: center, middle
 # Introduction
 
     </textarea>
-    <script src="http://gnab.github.io/remark/downloads/remark-latest.min.js">
+    <script src="//gnab.github.io/remark/downloads/remark-latest.min.js">
     </script>
     <script>
       var slideshow = remark.create();
@@ -71,6 +71,9 @@ class: center, middle
   </body>
 </html>
 ```
+
+Note that when opening the above boilerplate HTML file locally, the URL
+for remark should be prefixed with `http:` for it to be able to load.
 
 ### Moving On
 
