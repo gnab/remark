@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en-GB">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="application-name" content="Remarkise">
+    <meta name="description" content="Render your markdown as remark slides, in real time">
+    <meta name="keywords" content="remark,markdown,md,slide,slideshow,remarkise,tripu">
+    <meta name="author" content="tripu - http://tripu.info">
+    <title>Remarkise&nbsp;&mdash;&nbsp;render your markdown as remark slides, in real time</title>
+
+    <style type="text/css">
+
+      /******************************** Original style */
+
+      @import url('//fonts.googleapis.com/css?family=Yanone+Kaffeesatz');
+      @import url('//fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic');
+      @import url('//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic');
+
+      body {
+        font-family:       'Droid Serif';
+      }
+
+      h1, h2, h3 {
+        font-family:       'Yanone Kaffeesatz';
+        font-weight:       normal;
+      }
+
+      .remark-code,        .remark-inline-code {
+        font-family:       'Ubuntu Mono';
+      }
+
+      /******************************** tripu's additions */
+
+      div#front-page {
+        position:          absolute;
+        width:             100%;
+        height:            100%;
+      }
+
+      div#front-page > div {
+        position:          relative;
+        top:               50%;
+        -webkit-transform: translateY(-50%);
+        -moz-transform:    translateY(-50%);
+        -ms-transform:     translateY(-50%);
+        -o-transform:      translateY(-50%);
+        transform:         translateY(-50%);
+        text-align:        center;
+      }
+
+      div#front-page > div > h1 {
+        margin-top:        0;
+        font-weight:       bold;
+      }
+
+      div#front-page > div > h1 > span {
+        color:             #c00000;
+      }
+
+      div#front-page > div > p {
+        font-style:        italic;
+      }
+
+      div#front-page > div > input {
+        min-width:         30em;
+        max-width:         80%;
+        margin-bottom:     0;
+      }
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <div id="front-page">
+      <div>
+        <h1>Remark<span>ise</span></h1>
+        <p>
+          Render your <a href="http://commonmark.org/">markdown</a> as
+          <a href="https://github.com/tripu/remark">remark</a> slides&nbsp;&mdash;&nbsp;in real time
+        </p>
+        <input id="url" placeholder="URL of a markdown file" autofocus="autofocus" />
+      </div>
+    </div>
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="downloads/remark-latest.min.js"></script>
+
+    <script type="text/javascript">
+
+      $(document).ready(function() {
+
+        var FIXES = [
+          {
+            message: 'Oops, error! But wait — I\'m fetching the “raw” GitHub version instead…'
+          , patterns: [
+              [/\/\/(www\.)?github.com\//, '//raw.githubusercontent.com/']
+            , [/\/blob\//, '/']
+            ]
+          }
+        , {
+            message: 'Oops, error! But wait — I\'m fetching through RawGit…'
+          , patterns: [
+              [/\/\/raw\.githubusercontent\.com\//, '//rawgit.com/']
+            ]
+          }
+        ]
+        ,   CSS = /<style[^>]*>[^<]*<\/style>/ig
+        ;
+
+        var nextFix = 0
+        ,   currentFix
+        ,   newUrl
+        ,   css
+        ,   i
+        ;
+
+        function remarkise(url) {
+
+          $('div#front-page > div > input').prop('disabled', true);
+          $('div#front-page > div > p').text('Fetching markdown…');
+
+          $.ajax({
+            url: url,
+            error: function(data) {
+              // console.log(url + ' failed!');
+
+              if(nextFix < FIXES.length) {
+                currentFix = FIXES[nextFix];
+                $('div#front-page > div > p').text(currentFix.message);
+                newUrl = url;
+
+                for(var pattern in currentFix.patterns) {
+                  newUrl = newUrl.replace(currentFix.patterns[pattern][0], currentFix.patterns[pattern][1]);
+                }
+
+                nextFix ++;
+                // console.log('Trying ' + newUrl);
+                remarkise(newUrl);
+              } else {
+                $('div#front-page > div > p').text('Error!');
+              }
+
+            },
+            success: function(data) {
+              if (!window.location.search || !window.location.search.match(/\?url=.+/)) {
+                history.pushState({}, null, window.location.href + '?' + $.param({url: url}));
+              }
+
+              $('div#front-page').hide();
+              css = data.match(CSS);
+              if (css) {
+                  data = data.replace(CSS, '');
+                  for (i in css) {
+                      $('head').append(css[i]);
+                  }
+              }
+              remark.create({source: data});
+            }
+          });
+
+        }
+
+        if (window.location.search && window.location.search.match(/\?url=.+/)) {
+          remarkise(decodeURIComponent(window.location.search.split('=')[1]));
+        } else {
+
+          $('input').keypress(function(event) {
+
+            if (event && 13 === event.keyCode && event.target && event.target.value) {
+              remarkise(event.target.value);
+            }
+
+          });
+
+        }
+
+      });
+
+    </script>
+
+  </body>
+
+</html>
+
+<!-- EOF -->
+
