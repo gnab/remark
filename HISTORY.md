@@ -1,3 +1,10 @@
+### 0.8.0
+* #72: Add initial support for macros.
+* #143: Prevent generating navigation history.
+* #144: Prevent navigation when clicking links.
+* #170: Ignore keydown with meta and ctrl modifiers.
+* #175: Add mirrored mode.
+
 ### 0.7.0
 * #70: Add support for printing including presenter notes.
 * #75: Enable cross-slide reference links.
