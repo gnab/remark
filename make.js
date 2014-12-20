@@ -42,6 +42,8 @@ target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
 
+  mkdir('out');
+
   run('browserify ' + components() + ' src/remark.js',
       {silent: true}).output.to('out/remark.js');
 };
@@ -84,6 +86,31 @@ target.boilerplate = function () {
 target.minify = function () {
   console.log('Minifying...');
   run('uglifyjs out/remark.js', {silent: true}).output.to('out/remark.min.js');
+};
+
+target.deploy = function () {
+  var currentBranch = git('branch')
+    .split('\n')
+    .filter(function (line) {
+      return line[0] === '*';
+    })[0]
+    .substr(2);
+
+  var version = require('./package.json').version;
+  var tagForVersion = git('tag -l v' + version);
+
+  if (tagForVersion) {
+    console.log('Update version in package.json before deploying.');
+    return;
+  }
+
+  git('add package.json');
+  git('add -f out');
+  git('checkout head');
+  git('commit -m "Deploy version ' + version + '."');
+  git('tag -a v' + ' -m "Version ' + version + '."');
+  git('checkout ' + currentBranch);
+  git('push origin --tags');
 };
 
 // Helper functions
@@ -160,6 +187,10 @@ function mapStyle (map, file) {
 
 function less (file) {
   return run('lessc -x ' + file, {silent: true}).output.replace(/\n/g, '');
+}
+
+function git (cmd) {
+  return exec('git ' + cmd, {silent: true}).output;
 }
 
 function run (command, options) {
