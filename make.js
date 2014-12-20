@@ -42,7 +42,7 @@ target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
 
-  mkdir('out');
+  mkdir('-p', 'out');
 
   run('browserify ' + components() + ' src/remark.js',
       {silent: true}).output.to('out/remark.js');
