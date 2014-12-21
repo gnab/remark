@@ -31,9 +31,9 @@ Below is a boilerplate HTML file to get you started:
     <title>Title</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <style type="text/css">
-      @import url(//fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-      @import url(//fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-      @import url(//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
       body { font-family: 'Droid Serif'; }
       h1, h2, h3 {
@@ -63,7 +63,7 @@ class: center, middle
 # Introduction
 
     </textarea>
-    <script src="//gnab.github.io/remark/downloads/remark-latest.min.js">
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
     </script>
     <script>
       var slideshow = remark.create();
@@ -71,9 +71,6 @@ class: center, middle
   </body>
 </html>
 ```
-
-Note that when opening the above boilerplate HTML file locally, the URL
-for remark should be prefixed with `http:` for it to be able to load.
 
 ### Moving On
 
