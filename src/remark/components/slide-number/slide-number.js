@@ -18,7 +18,7 @@ function formatSlideNumber (slide, slideshow) {
     ;
 
   if (typeof format === 'function') {
-    return format(current, total);
+    return format.call(slideshow, current, total);
   }
 
   return format
