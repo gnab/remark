@@ -1,3 +1,6 @@
+### 0.8.1
+* #180: Expand macros recursively
+
 ### 0.8.0
 * #72: Add initial support for macros.
 * #143: Prevent generating navigation history.

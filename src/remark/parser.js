@@ -36,7 +36,8 @@ function Parser () { }
  *  ]
  */
 Parser.prototype.parse = function (src, macros) {
-  var lexer = new Lexer(),
+  var self = this,
+      lexer = new Lexer(),
       tokens = lexer.lex(cleanInput(src)),
       slides = [],
 
@@ -73,8 +74,14 @@ Parser.prototype.parse = function (src, macros) {
               token.name + '\'] = function () { ... };');
         }
         var value = macro.apply(token.obj, token.args);
-        appendTo(stack[stack.length - 1], value === undefined ?
-            '' : value.toString());
+        if (typeof value === 'string') {
+          value = self.parse(value, macros);
+          appendTo(stack[stack.length - 1], value[0].content[0]);
+        }
+        else {
+          appendTo(stack[stack.length - 1], value === undefined ?
+              '' : value.toString());
+        }
         break;
       case 'content_start':
         // Entering content class, so create stack entry for appending

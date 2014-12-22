@@ -1,4 +1,4 @@
-var Parser = require('../../src/remark/parser');
+ear Parser = require('../../src/remark/parser');
 
 describe('Parser', function () {
 
@@ -106,6 +106,19 @@ describe('Parser', function () {
       };
       parser.parse('a ![:sum 1, 2, 3] b', macros)[0].content
         .should.eql(['a 6 b']);
+    });
+
+    it('should expand macro recursively', function () {
+      var macros = {
+        upper: function () {
+          return this.toUpperCase();
+        },
+        addupper: function () {
+          return "![:upper](word)";
+        }
+      };
+      parser.parse('Uppercase: ![:addupper](word)', macros)[0].content
+        .should.eql(['Uppercase: WORD']);
     });
   });
 
