@@ -1,5 +1,6 @@
 ### 0.8.1
-* #180: Expand macros recursively
+* #163: Call slide number format function with this set to slideshow.
+* #180: Expand macros recursively.
 
 ### 0.8.0
 * #72: Add initial support for macros.
