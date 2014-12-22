@@ -1,4 +1,4 @@
-ear Parser = require('../../src/remark/parser');
+var Parser = require('../../src/remark/parser');
 
 describe('Parser', function () {
 
@@ -117,8 +117,8 @@ describe('Parser', function () {
           return "![:upper](word)";
         }
       };
-      parser.parse('Uppercase: ![:addupper](word)', macros)[0].content
-        .should.eql(['Uppercase: WORD']);
+      parser.parse('Uppercase => ![:addupper](word)', macros)[0].content
+        .should.eql(['Uppercase => WORD']);
     });
   });
 
