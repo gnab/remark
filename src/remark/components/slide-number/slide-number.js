@@ -36,5 +36,5 @@ function getSlideNo (slide, slideshow) {
     }
   }
 
-  return slideNo;
+  return Math.max(1, slideNo);
 }
