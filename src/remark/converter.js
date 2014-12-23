@@ -1,5 +1,4 @@
 var marked = require('marked')
-  , macros = require('./macros')
   , converter = module.exports = {}
   , element = document.createElement('div')
   ;
@@ -41,7 +40,7 @@ function convertMarkdown (content, links, insideContentClass) {
 
   var tokens = marked.Lexer.lex(markdown.replace(/^\s+/, ''));
   tokens.links = links;
-  html = marked.Parser.parse(tokens, macros);
+  html = marked.Parser.parse(tokens);
 
   if (insideContentClass) {
     element.innerHTML = html;
