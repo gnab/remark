@@ -1,3 +1,6 @@
+### 0.8.2
+* #182: Fix markdown rendering bug.
+
 ### 0.8.1
 * #163: Call slide number format function with this set to slideshow.
 * #180: Expand macros recursively.
