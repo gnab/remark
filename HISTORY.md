@@ -1,3 +1,6 @@
+### 0.9.1
+* #177: Always start slide numbering at one.
+
 ### 0.9.0
 * #177: Enable not counting specific slides.
 
