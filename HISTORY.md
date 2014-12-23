@@ -1,3 +1,6 @@
+### 0.9.0
+* #177: Enable not counting specific slides.
+
 ### 0.8.2
 * #182: Fix markdown rendering bug.
 
