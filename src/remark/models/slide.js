@@ -1,15 +1,14 @@
 module.exports = Slide;
 
-function Slide (slideNo, slide, template) {
+function Slide (slideIndex, slide, template) {
   var self = this;
 
   self.properties = slide.properties || {};
   self.links = slide.links || {};
   self.content = slide.content || [];
   self.notes = slide.notes || '';
-  self.number = slideNo;
 
-  self.getSlideNo = function () { return slideNo; };
+  self.getSlideIndex = function () { return slideIndex; };
 
   if (template) {
     inherit(self, template);
@@ -47,7 +46,8 @@ function inheritProperties (slide, template) {
 
 function ignoreProperty (property) {
   return property === 'name' ||
-    property === 'layout';
+    property === 'layout' ||
+    property === 'count';
 }
 
 function inheritContent (slide, template) {

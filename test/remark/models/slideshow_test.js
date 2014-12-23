@@ -23,6 +23,12 @@ describe('Slideshow', function () {
       slideshow.loadFromString('a\n---\nb\n---\nc');
       slideshow.getSlides().length.should.equal(3);
     });
+
+    it('should mark continued slide as non-markable', function () {
+      slideshow = new Slideshow(events, {countIncrementalSlides: false});
+      slideshow.loadFromString('a\n--\nb');
+      slideshow.getSlides()[1].properties.count.should.equal('false');
+    });
   });
 
   describe('continued slides', function () {

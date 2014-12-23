@@ -6,8 +6,9 @@ var EventEmitter = require('events').EventEmitter
 
 describe('SlideView', function () {
   var slideshow = {
-        getHighlightStyle: function () { return 'default'; }
-      , getSlides: function () { return []; }
+        slides: []
+      , getHighlightStyle: function () { return 'default'; }
+      , getSlides: function () { return this.slides; }
       , getLinks: function () { return {}; }
       , getHighlightLanguage: function () { }
       , getSlideNumberFormat: function () { return '%current% / %total%'; }
@@ -22,20 +23,22 @@ describe('SlideView', function () {
       var slide = new Slide(1, {
             source: '',
             properties: {'background-image': 'url(image.jpg)'}
-          })
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
+          });
 
-        slideView.contentElement.style.backgroundImage.should.match(/^url\(.*image\.jpg\)$/);
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      slideView.contentElement.style.backgroundImage.should.match(/^url\(.*image\.jpg\)$/);
     });
   });
 
   describe('classes', function () {
     it('should contain "content" class by default', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        , classes = utils.getClasses(slideView.contentElement)
-        ;
+      var slide = new Slide(1, {source: ''});
+
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+      var classes = utils.getClasses(slideView.contentElement)
 
       classes.should.include('remark-slide-content');
     });
@@ -44,10 +47,11 @@ describe('SlideView', function () {
       var slide = new Slide(1, {
             source: '',
             properties: {'class': 'middle, center'}
-          })
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        , classes = utils.getClasses(slideView.contentElement)
-        ;
+          });
+
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+      var classes = utils.getClasses(slideView.contentElement)
 
       classes.should.include('remark-slide-content');
       classes.should.include('middle');
@@ -58,7 +62,9 @@ describe('SlideView', function () {
   describe('empty paragraph removal', function () {
     it('should have empty paragraphs removed', function () {
       var slide = new Slide(1, {source: '&lt;p&gt; &lt;/p&gt;'})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
       slideView.contentElement.innerHTML.should.not.include('<p></p>');
     });
@@ -66,43 +72,45 @@ describe('SlideView', function () {
 
   describe('show slide', function () {
     it('should set the slide visible', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
+      var slide = new Slide(1, {source: ''});
 
-        slideView.show();
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+      slideView.show();
 
-        var classes = utils.getClasses(slideView.containerElement);
-        classes.should.include('remark-visible');
-        classes.should.not.include('remark-fading');
+      var classes = utils.getClasses(slideView.containerElement);
+      classes.should.include('remark-visible');
+      classes.should.not.include('remark-fading');
     });
 
     it('should remove any fading element', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
-        utils.addClass(slideView.containerElement, 'remark-fading');
+      var slide = new Slide(1, {source: ''});
 
-        slideView.show();
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
-        var classes = utils.getClasses(slideView.containerElement);
-        classes.should.include('remark-visible');
-        classes.should.not.include('remark-fading');
+      utils.addClass(slideView.containerElement, 'remark-fading');
+      slideView.show();
+
+      var classes = utils.getClasses(slideView.containerElement);
+      classes.should.include('remark-visible');
+      classes.should.not.include('remark-fading');
     });
   });
 
   describe('hide slide', function () {
     it('should mark the slide as fading', function () {
-      var slide = new Slide(1, {source: ''})
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
-        utils.addClass(slideView.containerElement, 'remark-visible');
+      var slide = new Slide(1, {source: ''});
 
-        slideView.hide();
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
-        var classes = utils.getClasses(slideView.containerElement);
-        classes.should.not.include('remark-visible');
-        classes.should.include('remark-fading');
+      utils.addClass(slideView.containerElement, 'remark-visible');
+      slideView.hide();
+
+      var classes = utils.getClasses(slideView.containerElement);
+      classes.should.not.include('remark-visible');
+      classes.should.include('remark-fading');
     });
   });
 

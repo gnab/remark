@@ -52,7 +52,7 @@ function Slideshow (events, options) {
   function loadFromString (source) {
     source = source || '';
 
-    slides = createSlides(source);
+    slides = createSlides(source, options);
     expandVariables(slides);
 
     links = {};
@@ -126,7 +126,7 @@ function Slideshow (events, options) {
   }
 }
 
-function createSlides (slideshowSource) {
+function createSlides (slideshowSource, options) {
   var parser = new Parser()
    ,  parsedSlides = parser.parse(slideshowSource, macros)
     , slides = []
@@ -152,7 +152,13 @@ function createSlides (slideshowSource) {
       template = layoutSlide;
     }
 
-    slideViewModel = new Slide(slides.length + 1, slide, template);
+    if (slide.properties.continued === 'true' &&
+        options.countIncrementalSlides === false &&
+        slide.properties.count === undefined) {
+      slide.properties.count = 'false';
+    }
+
+    slideViewModel = new Slide(slides.length, slide, template);
 
     if (slide.properties.layout === 'true') {
       layoutSlide = slideViewModel;

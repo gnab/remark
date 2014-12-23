@@ -234,8 +234,8 @@ SlideshowView.prototype.updateSlideViews = function () {
 
   self.updateDimensions();
 
-  if (self.slideshow.getCurrentSlideNo() > 0) {
-    self.showSlide(self.slideshow.getCurrentSlideNo() - 1);
+  if (self.slideshow.getCurrentSlideIndex() > -1) {
+    self.showSlide(self.slideshow.getCurrentSlideIndex());
   }
 };
 
