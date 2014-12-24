@@ -1,21 +1,7 @@
-var marked = require('marked')
+var commonmark = require('commonmark')
   , converter = module.exports = {}
   , element = document.createElement('div')
   ;
-
-marked.setOptions({
-  gfm: true,
-  tables: true,
-  breaks: false,
-
-  // Without this set to true, converting something like
-  // <p>*</p><p>*</p> will become <p><em></p><p></em></p>
-  pedantic: true,
-
-  sanitize: false,
-  smartLists: true,
-  langPrefix: ''
-});
 
 converter.convertMarkdown = function (content, links, inline) {
   element.innerHTML = convertMarkdown(content, links || {}, inline);
@@ -38,9 +24,7 @@ function convertMarkdown (content, links, insideContentClass) {
     }
   }
 
-  var tokens = marked.Lexer.lex(markdown.replace(/^\s+/, ''));
-  tokens.links = links;
-  html = marked.Parser.parse(tokens);
+  html = markdownToHtml(markdown, links);
 
   if (insideContentClass) {
     element.innerHTML = html;
@@ -50,4 +34,32 @@ function convertMarkdown (content, links, insideContentClass) {
   }
 
   return html;
+}
+
+function markdownToHtml (markdown, links) {
+  var refmap = {};
+
+  for (var ref in links) {
+    refmap[
+        '[' +
+        ref.trim().replace(/\s+/, ' ').toUpperCase() +
+        ']'] = {
+      destination: links[ref].href,
+      title: links[ref].title
+    };
+  }
+
+  var reader = new commonmark.DocParser();
+
+  // Patch inline parser to use custom refmap
+  var parse = reader.inlineParser.parse;
+  reader.inlineParser.parse = function (s/*, refmap*/) {
+    return parse.call(this, s, refmap);
+  };
+
+  var writer = new commonmark.HtmlRenderer();
+  var parsed = reader.parse(markdown);
+  var result = writer.render(parsed);
+
+  return result;
 }
