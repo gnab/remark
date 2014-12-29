@@ -99,6 +99,7 @@ Other interesting stuff:
 
 ### Other systems integrating with remark
 
+- [http://platon.io](http://platon.io)
 - [http://markdowner.com](http://markdowner.com)
 - [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
 
