@@ -1,4 +1,3 @@
 language: node_js
 node_js:
   - "0.10"
-after_success: curl -X POST -F "branch=$TRAVIS_BRANCH" -F "commit=$TRAVIS_COMMIT" -F "file=@out/remark.js" $DEPLOY
