@@ -1,3 +1,7 @@
+### 0.10.0
+* #188: Add direct URL to presenter mode.
+* #187: Fix scroll wheel in Firefox.
+
 ### 0.9.1
 * #177: Always start slide numbering at one.
 
