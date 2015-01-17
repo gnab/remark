@@ -128,7 +128,8 @@ SlideshowView.prototype.configureContainerElement = function (element) {
     utils.addClass(self.dom.getHTMLElement(), 'remark-container');
 
     forwardEvents(self.events, window, [
-      'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel', 'message'
+      'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel',
+      'message', 'DOMMouseScroll'
     ]);
     forwardEvents(self.events, self.containerElement, [
       'touchstart', 'touchmove', 'touchend', 'click', 'contextmenu'

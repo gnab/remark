@@ -28,14 +28,19 @@ function addMouseEventListeners (events, options) {
   }
 
   if (options.scroll !== false) {
-    events.on('mousewheel', function (event) {
-      if (event.wheelDeltaY > 0) {
+    var scrollHandler = function (event) {
+      if (event.wheelDeltaY > 0 || event.detail < 0) {
         events.emit('gotoPreviousSlide');
       }
-      else if (event.wheelDeltaY < 0) {
+      else if (event.wheelDeltaY < 0 || event.detail > 0) {
         events.emit('gotoNextSlide');
       }
-    });
+    };
+
+    // IE9, Chrome, Safari, Opera
+    events.on('mousewheel', scrollHandler);
+    // Firefox
+    events.on('DOMMouseScroll', scrollHandler);
   }
 }
 
