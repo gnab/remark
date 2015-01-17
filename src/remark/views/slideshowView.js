@@ -45,6 +45,15 @@ function SlideshowView (events, dom, containerElement, slideshow) {
     self.showSlide(slideIndex);
   });
 
+  events.on('forcePresenterMode', function () {
+
+    if (!utils.hasClass(self.containerElement, 'remark-presenter-mode')) {
+      utils.toggleClass(self.containerElement, 'remark-presenter-mode');
+      self.scaleElements();
+      printing.setPageOrientation('landscape');
+    }
+  });
+
   events.on('togglePresenterMode', function () {
     utils.toggleClass(self.containerElement, 'remark-presenter-mode');
     self.scaleElements();

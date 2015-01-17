@@ -133,6 +133,11 @@ function Navigation (events) {
       return slideNo - 1;
     }
 
+    if(slideNoOrName.match(/^p\d+$/)){
+      events.emit('forcePresenterMode');
+      return parseInt(slideNoOrName.substr(1), 10)-1;
+    }
+
     slide = self.getSlideByName(slideNoOrName);
     if (slide) {
       return slide.getSlideIndex();
