@@ -1,3 +1,6 @@
+### 0.10.1
+* #171: Remove non-working 'w' shortcut.
+
 ### 0.10.0
 * #188: Add direct URL to presenter mode.
 * #187: Fix scroll wheel in Firefox.
