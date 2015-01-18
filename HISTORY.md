@@ -1,3 +1,6 @@
+### 0.10.2
+* #123: Don't expand content class inside inline code.
+
 ### 0.10.1
 * #171: Remove non-working 'w' shortcut.
 
