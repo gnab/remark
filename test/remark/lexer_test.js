@@ -87,6 +87,12 @@ describe('Lexer', function () {
       ]);
     });
 
+    it('should leave content class inside inline code as-is', function () {
+      lexer.lex('`.class[x]`').should.eql([
+        {type: 'text', text: '`.class[x]`'}
+      ]);
+    });
+
     it('should leave content class inside fences as-is', function () {
       lexer.lex('```\n.class[x]\n```').should.eql([
         {type: 'fences', text: '```\n.class[x]\n```'}

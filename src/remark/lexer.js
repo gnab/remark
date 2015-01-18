@@ -1,29 +1,31 @@
 module.exports = Lexer;
 
 var CODE = 1,
-    CONTENT = 2,
-    FENCES = 3,
-    DEF = 4,
-    DEF_HREF = 5,
-    DEF_TITLE = 6,
-    MACRO = 7,
-    MACRO_ARGS = 8,
-    MACRO_OBJ = 9,
-    SEPARATOR = 10,
-    NOTES_SEPARATOR = 11;
+    INLINE_CODE = 2,
+    CONTENT = 3,
+    FENCES = 4,
+    DEF = 5,
+    DEF_HREF = 6,
+    DEF_TITLE = 7,
+    MACRO = 8,
+    MACRO_ARGS = 9,
+    MACRO_OBJ = 10,
+    SEPARATOR = 11,
+    NOTES_SEPARATOR = 12;
 
 var regexByName = {
     CODE: /(?:^|\n)( {4}[^\n]+\n*)+/,
+    INLINE_CODE: /`([^`]+?)`/,
     CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
-    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\3 *(?:\n+|$)/,
+    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\4 *(?:\n+|$)/,
     DEF: /(?:^|\n) *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
     MACRO: /!\[:([^\] ]+)([^\]]*)\](?:\(([^\)]*)\))?/,
     SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
     NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
   };
 
-var block = replace(/CODE|CONTENT|FENCES|DEF|MACRO|SEPARATOR|NOTES_SEPARATOR/, regexByName),
-    inline = replace(/CODE|CONTENT|FENCES|DEF|MACRO/, regexByName);
+var block = replace(/CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO|SEPARATOR|NOTES_SEPARATOR/, regexByName),
+    inline = replace(/CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO/, regexByName);
 
 function Lexer () { }
 
@@ -57,6 +59,12 @@ function lex (src, regex, tokens) {
     if (cap[CODE]) {
       tokens.push({
         type: 'code',
+        text: cap[0]
+      });
+    }
+    else if (cap[INLINE_CODE]) {
+      tokens.push({
+        type: 'text',
         text: cap[0]
       });
     }
