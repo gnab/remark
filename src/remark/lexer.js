@@ -106,16 +106,25 @@ function lex (src, regex, tokens) {
       text = getTextInBrackets(src, cap.index + cap[0].length);
       if (text !== undefined) {
         src = src.substring(text.length + 1);
-        tokens.push({
-          type: 'content_start',
-          classes: cap[CONTENT].substring(1).split('.'),
-          block: text.indexOf('\n') !== -1
-        });
-        lex(text, inline, tokens);
-        tokens.push({
-          type: 'content_end',
-          block: text.indexOf('\n') !== -1
-        });
+
+        if (cap[0][0] !== '\\') {
+          tokens.push({
+            type: 'content_start',
+            classes: cap[CONTENT].substring(1).split('.'),
+            block: text.indexOf('\n') !== -1
+          });
+          lex(text, inline, tokens);
+          tokens.push({
+            type: 'content_end',
+            block: text.indexOf('\n') !== -1
+          });
+        }
+        else {
+          tokens.push({
+            type: 'text',
+            text: cap[0].substring(1) + text + ']'
+          });
+        }
       }
       else {
         tokens.push({

@@ -53,11 +53,17 @@ describe('Lexer', function () {
       ]);
     });
 
-    it('should recignize multiple content classes', function () {
+    it('should recognize multiple content classes', function () {
       lexer.lex('.c1.c2[content]').should.eql([
         {type: 'content_start', classes: ['c1', 'c2'], block: false},
         {type: 'text', text: 'content'},
         {type: 'content_end', block: false}
+      ]);
+    });
+
+    it('should ignore escaped content class', function () {
+      lexer.lex('\\.class[content]').should.eql([
+        {type: 'text', text: '.class[content]'},
       ]);
     });
 
