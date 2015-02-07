@@ -19,7 +19,7 @@ describe('SlideView', function () {
     ;
 
   describe('background', function () {
-    it('should be set from background slide property', function () {
+    it('should be set from background-image slide property', function () {
       var slide = new Slide(1, {
             source: '',
             properties: {'background-image': 'url(image.jpg)'}
@@ -29,6 +29,18 @@ describe('SlideView', function () {
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
       slideView.contentElement.style.backgroundImage.should.match(/^url\(.*image\.jpg\)$/);
+    });
+
+    it('should be set by background-image slide property', function () {
+      var slide = new Slide(1, {
+            source: '',
+            properties: {'background-color': 'red'}
+          });
+
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      slideView.contentElement.style.backgroundColor.should.match(/^red$/);
     });
   });
 

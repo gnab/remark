@@ -165,9 +165,13 @@ function createNotesElement (slideshow, notes) {
 
 function setBackgroundFromProperties (element, properties) {
   var backgroundImage = properties['background-image'];
+  var backgroundColor = properties['background-color'];
 
   if (backgroundImage) {
     element.style.backgroundImage = backgroundImage;
+  }
+  if (backgroundColor) {
+    element.style.backgroundColor = backgroundColor;
   }
 }
 
