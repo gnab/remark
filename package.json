@@ -1,6 +1,6 @@
 {
-  "name": "remark"
-, "version" : "0.10.2"
+  "name": "remark",
+  "version" : "0.10.2",
   "dependencies": {
     "commonmark": "^0.12.0"
   },
