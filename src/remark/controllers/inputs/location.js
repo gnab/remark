@@ -1,3 +1,5 @@
+var utils = require('../../utils.js');
+
 exports.register = function (events, dom, slideshowView) {
   addLocationEventListeners(events, dom, slideshowView);
 };
@@ -24,6 +26,11 @@ function addLocationEventListeners (events, dom, slideshowView) {
   }
 
   function updateHash (slideNoOrName) {
-    dom.setLocationHash('#' + slideNoOrName);
+    if(utils.hasClass(slideshowView.containerElement, 'remark-presenter-mode')){
+      dom.setLocationHash('#p' + slideNoOrName);
+    }
+    else{
+      dom.setLocationHash('#' + slideNoOrName);
+    }
   }
 }
