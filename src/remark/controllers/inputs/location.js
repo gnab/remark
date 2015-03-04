@@ -16,6 +16,7 @@ function addLocationEventListeners (events, dom, slideshowView) {
   else {
     events.on('hashchange', navigateByHash);
     events.on('slideChanged', updateHash);
+    events.on('toggledPresenter', updateHash);
 
     navigateByHash();
   }

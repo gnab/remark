@@ -57,6 +57,7 @@ function SlideshowView (events, dom, containerElement, slideshow) {
   events.on('togglePresenterMode', function () {
     utils.toggleClass(self.containerElement, 'remark-presenter-mode');
     self.scaleElements();
+    events.emit('toggledPresenter', self.slideshow.getCurrentSlideIndex() + 1);
 
     if (utils.hasClass(self.containerElement, 'remark-presenter-mode')) {
       printing.setPageOrientation('portrait');
