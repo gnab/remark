@@ -43,7 +43,7 @@ function addKeyboardEventListeners (events) {
       return;
     }
 
-    switch (String.fromCharCode(event.which)) {
+    switch (String.fromCharCode(event.which).toLowerCase()) {
       case 'j':
         events.emit('gotoNextSlide');
         break;
