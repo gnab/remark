@@ -10,7 +10,7 @@ describe('SlideView', function () {
       , getHighlightStyle: function () { return 'default'; }
       , getSlides: function () { return this.slides; }
       , getLinks: function () { return {}; }
-      , getHighlightLanguage: function () { }
+      , getHighlightLanguage: function () { return ''; }
       , getSlideNumberFormat: function () { return '%current% / %total%'; }
       }
     , scaler = {
@@ -136,6 +136,17 @@ describe('SlideView', function () {
 
       lines.length.should.equal(1);
       lines[0].innerHTML.should.equal('  line 2');
+    });
+  });
+
+  describe('code block span highlighting', function () {
+    it('should allow escaping first backtick', function () {
+      var slide = new Slide(1, { content: ['```\na \\`f` b\n```'] });
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      var lines = slideView.element.getElementsByClassName('remark-code-line');
+      lines[0].innerHTML.should.equal('a `f` b');
     });
   });
 });

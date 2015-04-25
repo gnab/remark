@@ -257,11 +257,16 @@ function highlightBlockLines (block, lines) {
 }
 
 function highlightBlockSpans (block) {
-  var pattern = /([^\\`])`([^`]+?)`/g
-    , replacement = '$1<span class="remark-code-span-highlighted">$2</span>'
-    ;
+  var pattern = /([^`])`([^`]+?)`/g ;
 
   block.childNodes.forEach(function (element) {
-    element.innerHTML = element.innerHTML.replace(pattern, replacement);
+    element.innerHTML = element.innerHTML.replace(pattern,
+      function (m,e,c) {
+        if (e === '\\') {
+          return m.substr(1);
+        }
+        return e + '<span class="remark-code-span-highlighted">' +
+          c + '</span>';
+      });
   });
 }
