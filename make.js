@@ -116,13 +116,16 @@ target.deploy = function () {
 // Helper functions
 
 var path = require('path')
-  , config = require('./package.json').config
+  , package = require('./package.json')
+  , version = package.version
+  , config = package.config
   , ignoredStyles = ['brown_paper', 'school_book', 'pojoaque']
   ;
 
 function bundleResources (target) {
   var resources = {
-        DOCUMENT_STYLES: JSON.stringify(
+        VERSION: version
+      , DOCUMENT_STYLES: JSON.stringify(
           less('src/remark.less'))
       , CONTAINER_LAYOUT: JSON.stringify(
           cat('src/remark.html'))
