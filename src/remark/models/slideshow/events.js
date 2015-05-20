@@ -14,7 +14,7 @@ function Events (events) {
     return self;
   };
 
-  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide'].map(function (eventName) {
+  ['showSlide', 'hideSlide', 'beforeShowSlide', 'afterShowSlide', 'beforeHideSlide', 'afterHideSlide', 'toggledPresenter'].map(function (eventName) {
     events.on(eventName, function (slideIndex) {
       var slide = self.getSlides()[slideIndex];
       externalEvents.emit(eventName, slide);
