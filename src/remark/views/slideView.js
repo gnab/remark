@@ -193,10 +193,12 @@ function setClassFromProperties (element, properties) {
 }
 
 function highlightCodeBlocks (content, slideshow) {
-  var codeBlocks = content.getElementsByTagName('code')
-    ;
+  var codeBlocks = content.getElementsByTagName('code');
+  var highlightLines = slideshow.getHighlightLines();
 
   codeBlocks.forEach(function (block) {
+    var meta;
+
     if (block.parentElement.tagName !== 'PRE') {
       utils.addClass(block, 'remark-inline-code');
       return;
@@ -206,14 +208,20 @@ function highlightCodeBlocks (content, slideshow) {
       block.className = slideshow.getHighlightLanguage();
     }
 
-    var meta = extractMetadata(block);
+    if (highlightLines) {
+      meta = extractMetadata(block);
+    }
 
     if (block.className !== '') {
       highlighter.engine.highlightBlock(block, '  ');
     }
 
     wrapLines(block);
-    highlightBlockLines(block, meta.highlightedLines);
+
+    if (highlightLines) {
+      highlightBlockLines(block, meta.highlightedLines);
+    }
+
     highlightBlockSpans(block);
 
     utils.addClass(block, 'remark-code');
