@@ -85,7 +85,7 @@ target.boilerplate = function () {
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs out/remark.js', {silent: true}).output.to('out/remark.min.js');
+  run('uglifyjs -m -c -o out/remark.min.js out/remark.js', {silent: true});
 };
 
 target.deploy = function () {
@@ -189,7 +189,7 @@ function mapStyle (map, file) {
 }
 
 function less (file) {
-  return run('lessc -x ' + file, {silent: true}).output.replace(/\n/g, '');
+  return run('lessc -x -s ' + file, {silent: true}).output.replace(/\n/g, '');
 }
 
 function git (cmd) {
