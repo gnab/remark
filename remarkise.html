@@ -98,14 +98,14 @@
           {
             message: 'Oops, error! But wait — I\'m fetching the “raw” GitHub version instead…'
           , patterns: [
-              [/\/\/(www\.)?github.com\//, '//raw.githubusercontent.com/']
-            , [/\/blob\//, '/']
+              [/\/\/(www\.)?github.com\//i, '//raw.githubusercontent.com/']
+            , [/\/blob\//i, '/']
             ]
           }
         , {
-            message: 'Oops, error! But wait — I\'m fetching through RawGit…'
+            message: 'Oops, error! But wait — I\'m fetching it through RawGit…'
           , patterns: [
-              [/\/\/raw\.githubusercontent\.com\//, '//rawgit.com/']
+              [/\/\/raw\.githubusercontent\.com\//i, '//rawgit.com/']
             ]
           }
         ]
@@ -119,6 +119,14 @@
         ,   i
         ;
 
+        function reset() {
+
+          nextFix = 0;
+          $('div#front-page > div > input').prop('disabled', false);
+          $('input')[0].value = '';
+
+        };
+
         function remarkise(url) {
 
           $('div#front-page > div > input').prop('disabled', true);
@@ -127,22 +135,28 @@
           $.ajax({
             url: url,
             error: function(data) {
-              // console.log(url + ' failed!');
+              newUrl = url;
 
-              if(nextFix < FIXES.length) {
+              while (nextFix < FIXES.length && newUrl.toLowerCase() === url.toLowerCase()) {
                 currentFix = FIXES[nextFix];
-                $('div#front-page > div > p').text(currentFix.message);
-                newUrl = url;
 
                 for(var pattern in currentFix.patterns) {
                   newUrl = newUrl.replace(currentFix.patterns[pattern][0], currentFix.patterns[pattern][1]);
                 }
 
-                nextFix ++;
-                // console.log('Trying ' + newUrl);
+                if (newUrl.toLowerCase() === url.toLowerCase()) {
+                  nextFix ++;
+                } else {
+                  $('div#front-page > div > p').text(currentFix.message);
+                }
+
+              }
+
+              if (newUrl.toLowerCase() !== url.toLowerCase()) {
                 remarkise(newUrl);
               } else {
                 $('div#front-page > div > p').text('Error!');
+                reset();
               }
 
             },
