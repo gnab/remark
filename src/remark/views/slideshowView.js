@@ -152,7 +152,7 @@ SlideshowView.prototype.configureContainerElement = function (element) {
   // container width is needed to determine
   // whether to move backwards or forwards
   self.events.on('tap', function (endX) {
-    if (endX < self.getContainerWidth() / 2) {
+    if (endX < self.containerElement.clientWidth / 2) {
       self.slideshow.gotoPreviousSlide();
     }
     else {
