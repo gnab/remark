@@ -1,3 +1,12 @@
+### 0.11.0
+* #190: Add background-color slide property.
+* #192: Make highlighting of code lines and spans configurable and disabled by default.
+* #215: Enable slide properties inside HTML comment tags.
+* #220: Enable escaping code span highlighting.
+* #221: Update highlight.js to version 8.5.
+* #224: Set presenter notes area font color to black.
+* #225: Add `remark.version` property showing the current version of remark.
+
 ### 0.10.2
 * #123: Don't expand content class inside inline code.
 
