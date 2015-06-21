@@ -38,6 +38,8 @@ function Slideshow (events, options) {
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
+  self.getHighlightLines = getOrDefault('highlightLines', false);
+  self.getHighlightSpans = getOrDefault('highlightSpans', false);
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
   self.getSlideNumberFormat = getOrDefault('slideNumberFormat', '%current% / %total%');
 

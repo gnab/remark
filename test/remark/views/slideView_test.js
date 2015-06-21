@@ -9,6 +9,8 @@ describe('SlideView', function () {
         slides: []
       , getHighlightStyle: function () { return 'default'; }
       , getSlides: function () { return this.slides; }
+      , getHighlightLines: function () { return true; }
+      , getHighlightSpans: function () { return true; }
       , getLinks: function () { return {}; }
       , getHighlightLanguage: function () { return ''; }
       , getSlideNumberFormat: function () { return '%current% / %total%'; }
@@ -137,11 +139,34 @@ describe('SlideView', function () {
       lines.length.should.equal(1);
       lines[0].innerHTML.should.equal('  line 2');
     });
+
+    it('should be possible to disable', function () {
+      slideshow.getHighlightLines = function () { return false; };
+
+      var slide = new Slide(1, { content: ['```\n* line\n```'] })
+        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
+        ;
+
+      var lines = slideView.element.getElementsByClassName('remark-code-line');
+
+      lines[0].innerHTML.should.equal('* line');
+    });
   });
 
   describe('code block span highlighting', function () {
     it('should allow escaping first backtick', function () {
       var slide = new Slide(1, { content: ['```\na \\`f` b\n```'] });
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      var lines = slideView.element.getElementsByClassName('remark-code-line');
+      lines[0].innerHTML.should.equal('a `f` b');
+    });
+
+    it('should be possible to disable', function () {
+      slideshow.getHighlightSpans = function () { return false; };
+
+      var slide = new Slide(1, { content: ['```\na `f` b\n```'] });
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
