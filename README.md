@@ -102,6 +102,7 @@ Other interesting stuff:
 - [http://platon.io](http://platon.io)
 - [http://markdowner.com](http://markdowner.com)
 - [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
+- [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
 
 ### Credits
 
