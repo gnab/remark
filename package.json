@@ -38,6 +38,7 @@
       , "perl"
       , "cpp"
       , "objectivec"
+      , "powershell"
       , "cs"
       , "sql"
       , "xml"
