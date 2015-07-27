@@ -105,12 +105,35 @@ Other interesting stuff:
 - [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
 - [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
 
-### Credits
+### Contributors
 
-- [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
-- [kjbekkelund](https://github.com/kjbekkelund), for numerous pull requests.
-- [gureckis](https://github.com/gureckis), for several pull requests.
-- [freakboy3742](https://github.com/freakboy3742), for several pull requests.
+- [kjbekkelund](https://github.com/kjbekkelund)
+- [DanTup](https://github.com/DanTup)
+- [freakboy3742](https://github.com/freakboy3742)
+- [nanoant](https://github.com/nanoant)
+- [gurjeet](https://github.com/gurjeet)
+- [torgeir](https://github.com/torgeir)
+- [junderhill](https://github.com/junderhill)
+- [gureckis](https://github.com/gureckis)
+- [hfukada](https://github.com/hfukada)
+- [danielstankiewicz](https://github.com/danielstankiewicz)
+- [andrewgaul](https://github.com/andrewgaul)
+- [tripu](https://github.com/tripu)
+- [kud](https://github.com/kud)
+- [toenuff](https://github.com/toenuff)
+- [obfusk](https://github.com/obfusk)
+- [trumbitta](https://github.com/trumbitta)
+- [peter50216](https://github.com/peter50216)
+- [mhor](https://github.com/mhor)
+- [roberto](https://github.com/roberto)
+- [camerond](https://github.com/camerond)
+- [avdv](https://github.com/avdv)
+- [WouterSioen](https://github.com/WouterSioen)
+- [tchajed](https://github.com/tchajed)
+- [venthur](https://github.com/venthur)
+- [mathiasbynens](https://github.com/mathiasbynens)
+- [aminb](https://github.com/aminb)
+- [sol](https://github.com/sol)
 
 ### License
 
