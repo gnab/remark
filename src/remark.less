@@ -16,10 +16,25 @@ html.remark-container, body.remark-container {
   outline-style: solid;
   outline-width: 1px;
 }
+
 :-webkit-full-screen .remark-container {
   width: 100%;
   height: 100%;
 }
+:-moz-full-screen .remark-container {
+  width: 100%;
+  height: 100%;
+}
+:-ms-fullscreen .remark-container {
+  width: 100%;
+  height: 100%;
+}
+:fullscreen .remark-container {
+  width: 100%;
+  height: 100%;
+}
+
+
 
 /**********/
 /* Slides */
@@ -43,9 +58,13 @@ html.remark-container, body.remark-container {
   position: absolute;
   -webkit-transform-origin: top left;
   -moz-transform-origin: top left;
+  -ms-transform-origin: top left;
+  -o-transform-origin: top left;
   transform-origin: top-left;
-  -moz-box-shadow: 0 0 30px #888;
   -webkit-box-shadow: 0 0 30px #888;
+  -moz-box-shadow: 0 0 30px #888;
+  -ms-box-shadow: 0 0 30px #888;
+  -o-box-shadow: 0 0 30px #888;
   box-shadow: 0 0 30px #888;
 }
 .remark-slide {
@@ -142,8 +161,10 @@ html.remark-container, body.remark-container {
   display: block;
   z-index: 1;
   .remark-slide-scaler {
-    -moz-box-shadow: none;
     -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -ms-box-shadow: none;
+    -o-box-shadow: none;
     box-shadow: none;
   }
 }
@@ -217,6 +238,8 @@ html.remark-container, body.remark-container {
   z-index: 1000;
   -webkit-transform-origin: top left;
   -moz-transform-origin: top left;
+  -ms-transform-origin: top left;
+  -o-transform-origin: top left;
   transform-origin: top-left;
 
   .remark-help-content {
@@ -440,6 +463,7 @@ html.remark-container, body.remark-container {
     -moz-transform: scaleX(-1);
     -ms-transform: scaleX(-1);
     -o-transform: scaleX(-1);
+    transform: scaleX(-1);
   }
 }
 
@@ -478,8 +502,10 @@ html.remark-container, body.remark-container {
     position: relative;
   }
   .remark-slide-scaler {
-    -moz-box-shadow: none;
     -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -ms-box-shadow: none;
+    -o-box-shadow: none;
     box-shadow: none;
   }
 }
