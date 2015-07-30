@@ -35,9 +35,11 @@ exports.hasClass = function (element, className) {
 };
 
 exports.getPrefixedProperty = function (element, propertyName) {
-  var capitalizedPropertName = propertyName[0].toUpperCase() +
+  var capitalizedPropertyName = propertyName[0].toUpperCase() +
     propertyName.slice(1);
 
-  return element[propertyName] || element['moz' + capitalizedPropertName] ||
-    element['webkit' + capitalizedPropertName];
+  return element[propertyName] ||
+    element['webkit' + capitalizedPropertyName] ||
+    element['moz' + capitalizedPropertyName] ||
+    element['ms' + capitalizedPropertyName];
 };

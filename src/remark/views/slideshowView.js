@@ -96,19 +96,28 @@ function SlideshowView (events, dom, containerElement, slideshow) {
 }
 
 function handleFullscreen(self) {
-  var requestFullscreen = utils.getPrefixedProperty(self.containerElement, 'requestFullScreen')
-    , cancelFullscreen = utils.getPrefixedProperty(document, 'cancelFullScreen')
+  var requestFullscreen =
+	      utils.getPrefixedProperty(self.containerElement, 'requestFullscreen') ||
+        utils.getPrefixedProperty(self.containerElement, 'requestFullScreen')
+    , exitFullscreen =
+		    utils.getPrefixedProperty(document, 'exitFullscreen') ||
+        utils.getPrefixedProperty(document, 'cancelFullScreen')
     ;
-
   self.events.on('toggleFullscreen', function () {
-    var fullscreenElement = utils.getPrefixedProperty(document, 'fullscreenElement') ||
-      utils.getPrefixedProperty(document, 'fullScreenElement');
+    var fullscreenElement = utils.getPrefixedProperty(document, 'fullscreenElement');
+		if (fullscreenElement === undefined) {
+      fullscreenElement = utils.getPrefixedProperty(document, 'fullScreenElement');
+		}
 
     if (!fullscreenElement && requestFullscreen) {
-      requestFullscreen.call(self.containerElement, Element.ALLOW_KEYBOARD_INPUT);
+			if (Element.ALLOW_KEYBOARD_INPUT === undefined) {
+				requestFullscreen.call(self.containerElement);
+			} else {
+				requestFullscreen.call(self.containerElement, Element.ALLOW_KEYBOARD_INPUT);
+			}
     }
-    else if (cancelFullscreen) {
-      cancelFullscreen.call(document);
+    else if (exitFullscreen) {
+      exitFullscreen.call(document);
     }
     self.scaleElements();
   });
