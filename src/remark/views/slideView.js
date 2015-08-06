@@ -165,9 +165,13 @@ function createNotesElement (slideshow, notes) {
 
 function setBackgroundFromProperties (element, properties) {
   var backgroundImage = properties['background-image'];
+  var backgroundColor = properties['background-color'];
 
   if (backgroundImage) {
     element.style.backgroundImage = backgroundImage;
+  }
+  if (backgroundColor) {
+    element.style.backgroundColor = backgroundColor;
   }
 }
 
@@ -189,8 +193,10 @@ function setClassFromProperties (element, properties) {
 }
 
 function highlightCodeBlocks (content, slideshow) {
-  var codeBlocks = content.getElementsByTagName('code')
-    ;
+  var codeBlocks = content.getElementsByTagName('code'),
+      highlightLines = slideshow.getHighlightLines(),
+      highlightSpans = slideshow.getHighlightSpans(),
+      meta;
 
   codeBlocks.forEach(function (block) {
     if (block.parentElement.tagName !== 'PRE') {
@@ -202,15 +208,23 @@ function highlightCodeBlocks (content, slideshow) {
       block.className = slideshow.getHighlightLanguage();
     }
 
-    var meta = extractMetadata(block);
+    if (highlightLines) {
+      meta = extractMetadata(block);
+    }
 
     if (block.className !== '') {
       highlighter.engine.highlightBlock(block, '  ');
     }
 
     wrapLines(block);
-    highlightBlockLines(block, meta.highlightedLines);
-    highlightBlockSpans(block);
+
+    if (highlightLines) {
+      highlightBlockLines(block, meta.highlightedLines);
+    }
+
+    if (highlightSpans) {
+      highlightBlockSpans(block);
+    }
 
     utils.addClass(block, 'remark-code');
   });
@@ -253,11 +267,16 @@ function highlightBlockLines (block, lines) {
 }
 
 function highlightBlockSpans (block) {
-  var pattern = /([^\\`])`([^`]+?)`/g
-    , replacement = '$1<span class="remark-code-span-highlighted">$2</span>'
-    ;
+  var pattern = /([^`])`([^`]+?)`/g ;
 
   block.childNodes.forEach(function (element) {
-    element.innerHTML = element.innerHTML.replace(pattern, replacement);
+    element.innerHTML = element.innerHTML.replace(pattern,
+      function (m,e,c) {
+        if (e === '\\') {
+          return m.substr(1);
+        }
+        return e + '<span class="remark-code-span-highlighted">' +
+          c + '</span>';
+      });
   });
 }

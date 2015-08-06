@@ -169,7 +169,7 @@ function appendTo (element, content) {
 }
 
 function extractProperties (source, properties) {
-  var propertyFinder = /^\n*([-\w]+):([^$\n]*)/i
+  var propertyFinder = /^\n*([-\w]+):([^$\n]*)|\n*(?:<!--\s*)([-\w]+):([^$\n]*?)(?:\s*-->)/i
     , match
     ;
 
@@ -177,7 +177,12 @@ function extractProperties (source, properties) {
     source = source.substr(0, match.index) +
       source.substr(match.index + match[0].length);
 
-    properties[match[1].trim()] = match[2].trim();
+    if (match[1] !== undefined) {
+      properties[match[1].trim()] = match[2].trim();
+    }
+    else {
+      properties[match[3].trim()] = match[4].trim();
+    }
 
     propertyFinder.lastIndex = match.index;
   }

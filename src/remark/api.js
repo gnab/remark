@@ -1,6 +1,7 @@
 var EventEmitter = require('events').EventEmitter
   , highlighter = require('./highlighter')
   , converter = require('./converter')
+  , resources = require('./resources')
   , Parser = require('./parser')
   , Slideshow = require('./models/slideshow')
   , SlideshowView = require('./views/slideshowView')
@@ -14,6 +15,7 @@ module.exports = Api;
 function Api (dom) {
   this.dom = dom || new Dom();
   this.macros = macros;
+  this.version = resources.version;
 }
 
 // Expose highlighter to allow enumerating available styles and

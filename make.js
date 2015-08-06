@@ -17,7 +17,7 @@ target.highlighter = function () {
   pushd('vendor');
   exec('git clone https://github.com/isagalaev/highlight.js.git');
   pushd('highlight.js');
-  exec('git checkout tags/8.0');
+  exec('git checkout tags/8.5');
   popd();
   popd();
 
@@ -85,7 +85,7 @@ target.boilerplate = function () {
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs out/remark.js', {silent: true}).output.to('out/remark.min.js');
+  run('uglifyjs -m -c -o out/remark.min.js out/remark.js', {silent: true});
 };
 
 target.deploy = function () {
@@ -116,13 +116,16 @@ target.deploy = function () {
 // Helper functions
 
 var path = require('path')
-  , config = require('./package.json').config
+  , package = require('./package.json')
+  , version = package.version
+  , config = package.config
   , ignoredStyles = ['brown_paper', 'school_book', 'pojoaque']
   ;
 
 function bundleResources (target) {
   var resources = {
-        DOCUMENT_STYLES: JSON.stringify(
+        VERSION: version
+      , DOCUMENT_STYLES: JSON.stringify(
           less('src/remark.less'))
       , CONTAINER_LAYOUT: JSON.stringify(
           cat('src/remark.html'))
@@ -186,7 +189,7 @@ function mapStyle (map, file) {
 }
 
 function less (file) {
-  return run('lessc -x ' + file, {silent: true}).output.replace(/\n/g, '');
+  return run('lessc -x -s ' + file, {silent: true}).output.replace(/\n/g, '');
 }
 
 function git (cmd) {

@@ -1,6 +1,7 @@
 # remark
 
 [![Build Status](https://travis-ci.org/gnab/remark.svg?branch=develop)](https://travis-ci.org/gnab/remark)
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4ADT275DY7JTG)
 
 A simple, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
 
@@ -29,8 +30,8 @@ Below is a boilerplate HTML file to get you started:
 <html>
   <head>
     <title>Title</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <style type="text/css">
+    <meta charset="utf-8">
+    <style>
       @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
       @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
       @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
@@ -102,13 +103,37 @@ Other interesting stuff:
 - [http://platon.io](http://platon.io)
 - [http://markdowner.com](http://markdowner.com)
 - [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
+- [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
 
-### Credits
+### Contributors
 
-- [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
-- [kjbekkelund](https://github.com/kjbekkelund), for numerous pull requests.
-- [gureckis](https://github.com/gureckis), for several pull requests.
-- [freakboy3742](https://github.com/freakboy3742), for several pull requests.
+- [kjbekkelund](https://github.com/kjbekkelund)
+- [DanTup](https://github.com/DanTup)
+- [freakboy3742](https://github.com/freakboy3742)
+- [nanoant](https://github.com/nanoant)
+- [gurjeet](https://github.com/gurjeet)
+- [torgeir](https://github.com/torgeir)
+- [junderhill](https://github.com/junderhill)
+- [gureckis](https://github.com/gureckis)
+- [hfukada](https://github.com/hfukada)
+- [danielstankiewicz](https://github.com/danielstankiewicz)
+- [andrewgaul](https://github.com/andrewgaul)
+- [tripu](https://github.com/tripu)
+- [kud](https://github.com/kud)
+- [toenuff](https://github.com/toenuff)
+- [obfusk](https://github.com/obfusk)
+- [trumbitta](https://github.com/trumbitta)
+- [peter50216](https://github.com/peter50216)
+- [mhor](https://github.com/mhor)
+- [roberto](https://github.com/roberto)
+- [camerond](https://github.com/camerond)
+- [avdv](https://github.com/avdv)
+- [WouterSioen](https://github.com/WouterSioen)
+- [tchajed](https://github.com/tchajed)
+- [venthur](https://github.com/venthur)
+- [mathiasbynens](https://github.com/mathiasbynens)
+- [aminb](https://github.com/aminb)
+- [sol](https://github.com/sol)
 
 ### License
 

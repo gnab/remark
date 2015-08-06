@@ -57,6 +57,7 @@ function SlideshowView (events, dom, containerElement, slideshow) {
   events.on('togglePresenterMode', function () {
     utils.toggleClass(self.containerElement, 'remark-presenter-mode');
     self.scaleElements();
+    events.emit('toggledPresenter', self.slideshow.getCurrentSlideIndex() + 1);
 
     if (utils.hasClass(self.containerElement, 'remark-presenter-mode')) {
       printing.setPageOrientation('portrait');
@@ -151,7 +152,7 @@ SlideshowView.prototype.configureContainerElement = function (element) {
   // container width is needed to determine
   // whether to move backwards or forwards
   self.events.on('tap', function (endX) {
-    if (endX < self.getContainerWidth() / 2) {
+    if (endX < self.containerElement.clientWidth / 2) {
       self.slideshow.gotoPreviousSlide();
     }
     else {

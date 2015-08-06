@@ -1,6 +1,10 @@
 /* Automatically generated */
 
-var hljs = new (%HIGHLIGHTER_ENGINE%)()
+var hljs = (function() {
+      var exports = {};
+      %HIGHLIGHTER_ENGINE%;
+      return exports;
+    }())
   , languages = [%HIGHLIGHTER_LANGUAGES%]
   ;
 
