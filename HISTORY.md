@@ -1,3 +1,10 @@
+### 0.12
+* #155: Fix tap navigation.
+* #268: Don't use History API for document.origin 'null' documents.
+* Add Powershell syntax highlighting support ([toenuff](https://github.com/toenuff)).
+* Increase contrast of presenter notes ([bkeepers](https://github.com/bkeepers)).
+* Make background black in fullscreen mode ([dirkhusemann](https://github.com/dirkhusemann)).
+
 ### 0.11
 * #190: Add background-color slide property.
 * #192: Make highlighting of code lines and spans configurable and disabled by default.
