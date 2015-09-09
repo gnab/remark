@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <meta name="keywords" content="remark,remarkjs,markdown,slideshow,presentation" />
     <meta name="description" content="A simple, in-browser, markdown-driven slideshow tool." />
     <title>Remark</title>
-    <style type="text/css">
-      @import url(http://fonts.googleapis.com/css?family=Droid+Serif);
-      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
       body {
         font-family: 'Droid Serif';
-        font-size: 20px;
       }
       h1, h2, h3 {
         font-family: 'Yanone Kaffeesatz';
         font-weight: 400;
         margin-bottom: 0;
       }
-      h1 { font-size: 4em; }
-      h2 { font-size: 2em; }
-      h3 { font-size: 1.6em; }
+      .remark-slide-content h1 { font-size: 3em; }
+      .remark-slide-content h2 { font-size: 2em; }
+      .remark-slide-content h3 { font-size: 1.6em; }
       .footnote {
         position: absolute;
         bottom: 3em;
@@ -33,12 +33,11 @@
         text-decoration: none;
       }
       code {
-        -moz-border-radius: 5px;
-        -web-border-radius: 5px;
         background: #e7e8e2;
         border-radius: 5px;
-        font-size: 16px;
       }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
       .pull-left {
         float: left;
         width: 47%;
@@ -127,7 +126,7 @@ class: center, middle, inverse
 ---
 #remark
 [ri-mahrk]
-.footnote[Go to directly to [project site](https://github.com/gnab/remark)]
+.footnote[Go directly to [project site](https://github.com/gnab/remark)]
 ---
 ## What is it and why should I be using it?
 ---
@@ -254,19 +253,19 @@ A simple HTML document is needed for hosting the styles, Markdown and the genera
     </style>
   </head>
   <body>
-    <textarea id="source">
+*    <textarea id="source">
       <!-- Slideshow Markdown -->
     &lt;/textarea&gt;
-    <script type="text/javascript" src="remark.js">
+*    <script src="remark.js">
     </script>
-    <script type="text/javascript">
-      var slideshow = remark.create();
+    <script>
+*      var slideshow = remark.create();
     </script>
   </body>
 </html>
 ```
 
-You may download remark to have your slideshow not depend on any online resources, or reference the [latest version](https://github.com/gnab/remark/releases) online directly.
+You may download remark to have your slideshow not depend on any online resources, or reference the [latest version](http://remarkjs.com/downloads/remark-latest.min.js) online directly.
 ]
 ---
 template: inverse
@@ -311,7 +310,7 @@ Slide properties serve multiple purposes:
 
 * Expansion of `{{ property }}` expressions to property values
 
-See the [complete list](https://github.com/gnab/remark/wiki/Slide-Properties) of slide properties.
+See the [complete list](https://github.com/gnab/remark/wiki/Markdown#slide-properties) of slide properties.
 ]
 ---
 .left-column[
@@ -342,7 +341,7 @@ Resulting HTML extract:
   ### - Syntax Highlighting
 ]
 .right-column[
-Code blocks can be syntax highlighted by specifying a language from the set of [supported languages](https://github.com/gnab/remark/wiki/Configuration-Options#wiki-highlighting).
+Code blocks can be syntax highlighted by specifying a language from the set of [supported languages](https://github.com/gnab/remark/wiki/Configuration#highlighting).
 
 Using [GFM](http://github.github.com/github-flavored-markdown/) fenced code blocks you can easily specify highlighting language:
 
@@ -363,7 +362,7 @@ end
 ```</code></pre>
 ]
 
-A number of highlighting [styles](https://github.com/gnab/remark/wiki/Configuration-Options#wiki-highlighting) are available, including several well-known themes from different editors and IDEs.
+A number of highlighting [styles](https://github.com/gnab/remark/wiki/Configuration#highlighting) are available, including several well-known themes from different editors and IDEs.
 
 ]
 ---
@@ -393,7 +392,7 @@ three question marks separate slide content from slide notes:
 ```
 Slide 1 content
 
-???
+*???
 
 Slide 1 notes
 
@@ -401,7 +400,7 @@ Slide 1 notes
 
 Slide 2 content
 
-???
+*???
 
 Slide 2 notes
 ```
@@ -460,27 +459,28 @@ template: inverse
 
 Slideshow created using [remark](http://github.com/gnab/remark).
     </textarea>
-    <script src="http://gnab.github.com/remark/downloads/remark-0.6.3.min.js" type="text/javascript"></script>
-    <script type="text/javascript">
+    <script src="downloads/remark-latest.min.js"></script>
+    <script>
       var hljs = remark.highlighter.engine;
     </script>
-    <script src="remark.language.js" type="text/javascript"></script>
-    <script type="text/javascript">
+    <script src="remark.language.js"></script>
+    <script>
       var slideshow = remark.create({
           highlightStyle: 'monokai',
           highlightLanguage: 'remark'
         }) ;
     </script>
-    <script type="text/javascript">
+    <script>
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-44561333-1']);
       _gaq.push(['_trackPageview']);
 
       (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
+        var ga = document.createElement('script');
+        ga.src = 'https://ssl.google-analytics.com/ga.js';
+        var s = document.scripts[0];
+        s.parentNode.insertBefore(ga, s);
+      }());
     </script>
   </body>
 </html>
