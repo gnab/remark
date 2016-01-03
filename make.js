@@ -146,9 +146,9 @@ function bundleHighlighter (target) {
       , HIGHLIGHTER_ENGINE:
           cat(highlightjs + 'highlight.js')
       , HIGHLIGHTER_LANGUAGES:
-          config.highlighter.languages.map(function (language) {
-            return '{name:"' + language + '",create:' +
-              cat(highlightjs + 'languages/' + language + '.js') + '}';
+          ls(highlightjs + 'languages/*.js').map(function (file) {
+            var language = path.basename(file, path.extname(file))
+            return '{name:"' + language + '",create:' + cat(file) + '}';
           }).join(',')
       };
 
