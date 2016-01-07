@@ -98,6 +98,7 @@ Other interesting stuff:
 - [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
 - [http://asmeurer.github.io/python3-presentation/slides.html](http://asmeurer.github.io/python3-presentation/slides.html)
 - [Lecture notes using remark](http://ozan.keysan.me/ee361/)
+- [Big Data in Time - Progress and Challenges from Oceanography](http://www.jmlilly.net/talks/bigdata16.html)
 
 ### Other systems integrating with remark
 
