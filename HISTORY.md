@@ -1,3 +1,9 @@
+### 0.13
+* #217: Create .npmignore ([chadrien](https://github.com/chadrien)).
+* Upgrade to Highlight.js 9.0.0.
+* #275: Bundle all languages supported by Highlight.js.
+* #288: Address printing issue in Chrome ([tbrannam](https://github.com/tbrannam)).
+
 ### 0.12
 * #155: Fix tap navigation.
 * #268: Don't use History API for document.origin 'null' documents.
