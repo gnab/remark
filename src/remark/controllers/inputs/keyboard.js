@@ -1,12 +1,25 @@
-exports.register = function (events) {
-  addKeyboardEventListeners(events);
+module.exports = Keyboard;
+
+function Keyboard(events) {
+  this._events = events;
+  
+  this.activate();
+}
+
+Keyboard.prototype.activate = function () {
+  this._gotoSlideNumber = '';
+  
+  this.addKeyboardEventListeners();
 };
 
-exports.unregister = function (events) {
-  removeKeyboardEventListeners(events);
+Keyboard.prototype.deactivate = function () {
+  this.removeKeyboardEventListeners();
 };
 
-function addKeyboardEventListeners (events) {
+Keyboard.prototype.addKeyboardEventListeners = function () {
+  var self = this;
+  var events = this._events;
+  
   events.on('keydown', function (event) {
     if (event.metaKey || event.ctrlKey) {
       // Bail out if meta or ctrl key was pressed
@@ -34,6 +47,12 @@ function addKeyboardEventListeners (events) {
       case 27: // Escape
         events.emit('hideOverlay');
         break;
+      case 13: // Return
+        if (self._gotoSlideNumber) {
+          events.emit('gotoSlide', self._gotoSlideNumber);
+          self._gotoSlideNumber = '';
+        }
+        break;
     }
   });
 
@@ -42,8 +61,10 @@ function addKeyboardEventListeners (events) {
       // Bail out if meta or ctrl key was pressed
       return;
     }
+    
+    var key = String.fromCharCode(event.which).toLowerCase();
 
-    switch (String.fromCharCode(event.which).toLowerCase()) {
+    switch (key) {
       case 'j':
         events.emit('gotoNextSlide');
         break;
@@ -68,15 +89,29 @@ function addKeyboardEventListeners (events) {
       case 't':
         events.emit('resetTimer');
         break;
+      case '1': 
+      case '2': 
+      case '3': 
+      case '4': 
+      case '5':
+      case '6': 
+      case '7': 
+      case '8': 
+      case '9': 
+      case '0':
+        self._gotoSlideNumber += key;
+        break;
       case 'h':
       case '?':
         events.emit('toggleHelp');
         break;
     }
   });
-}
+};
 
-function removeKeyboardEventListeners(events) {
+Keyboard.prototype.removeKeyboardEventListeners = function () {
+  var events = this._events;
+  
   events.removeAllListeners("keydown");
   events.removeAllListeners("keypress");
-}
+};
