@@ -16,7 +16,7 @@ describe('SlideshowView', function () {
   beforeEach(function () {
     events = new EventEmitter();
     dom = new TestDom();
-    model = new Slideshow(events);
+    model = new Slideshow(events, dom);
     containerElement = document.createElement('div');
   });
 
@@ -174,7 +174,7 @@ describe('SlideshowView', function () {
 
   describe('ratio calculation', function () {
     it('should calculate element size for 4:3', function () {
-      model = new Slideshow(events, {ratio: '4:3'});
+      model = new Slideshow(events, dom, {ratio: '4:3'});
 
       view = new SlideshowView(events, dom, containerElement, model);
 
@@ -183,7 +183,7 @@ describe('SlideshowView', function () {
     });
 
     it('should calculate element size for 16:9', function () {
-      model = new Slideshow(events, {ratio: '16:9'});
+      model = new Slideshow(events, dom, {ratio: '16:9'});
 
       view = new SlideshowView(events, dom, containerElement, model);
 

@@ -31,8 +31,9 @@ Api.prototype.convert = function (markdown) {
 };
 
 // Creates slideshow initialized from options
-Api.prototype.create = function (options) {
-  var events
+Api.prototype.create = function (options, callback) {
+  var self = this
+    , events
     , slideshow
     , slideshowView
     , controller
@@ -43,9 +44,13 @@ Api.prototype.create = function (options) {
   events = new EventEmitter();
   events.setMaxListeners(0);
 
-  slideshow = new Slideshow(events, options);
-  slideshowView = new SlideshowView(events, this.dom, options.container, slideshow);
-  controller = options.controller || new DefaultController(events, this.dom, slideshowView, options.navigation);
+  slideshow = new Slideshow(events, this.dom, options, function (slideshow) {
+    slideshowView = new SlideshowView(events, self.dom, options.container, slideshow);
+    controller = options.controller || new DefaultController(events, self.dom, slideshowView, options.navigation);
+    if (typeof callback === 'function') {
+      callback(slideshow);
+    }
+  });
 
   return slideshow;
 };
@@ -55,13 +60,7 @@ function applyDefaults (dom, options) {
 
   options = options || {};
 
-  if (options.hasOwnProperty('sourceUrl')) {
-    var req = new dom.XMLHttpRequest();
-    req.open('GET', options.sourceUrl, false);
-    req.send();
-    options.source = req.responseText.replace(/\r\n/g, '\n');
-  }
-  else if (!options.hasOwnProperty('source')) {
+  if (!options.hasOwnProperty('source')) {
     sourceElement = dom.getElementById('source');
     if (sourceElement) {
       options.source = unescape(sourceElement.innerHTML);

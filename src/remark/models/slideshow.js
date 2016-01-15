@@ -8,12 +8,13 @@ var Navigation = require('./slideshow/navigation')
 
 module.exports = Slideshow;
 
-function Slideshow (events, options) {
+function Slideshow (events, dom, options, callback) {
   var self = this
     , slides = []
     , links = {}
     ;
 
+  slides.byName = {};
   options = options || {};
 
   // Extend slideshow functionality
@@ -21,6 +22,7 @@ function Slideshow (events, options) {
   Navigation.call(self, events);
 
   self.loadFromString = loadFromString;
+  self.loadFromUrl = loadFromUrl;
   self.update = update;
   self.getLinks = getLinks;
   self.getSlides = getSlides;
@@ -43,13 +45,21 @@ function Slideshow (events, options) {
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
   self.getSlideNumberFormat = getOrDefault('slideNumberFormat', '%current% / %total%');
 
-  loadFromString(options.source);
-
   events.on('toggleBlackout', function () {
     if (self.clone && !self.clone.closed) {
       self.clone.postMessage('toggleBlackout', '*');
     }
   });
+
+  if (options.sourceUrl) {
+    loadFromUrl(options.sourceUrl, callback);
+  }
+  else {
+    loadFromString(options.source);
+    if (typeof callback === 'function') {
+      callback(self);
+    }
+  }
 
   function loadFromString (source) {
     source = source || '';
@@ -67,6 +77,29 @@ function Slideshow (events, options) {
     });
 
     events.emit('slidesChanged');
+  }
+  
+  function loadFromUrl (url, callback) {
+    var xhr = new dom.XMLHttpRequest();
+    xhr.open('GET', options.sourceUrl, true);
+    xhr.onload = function (e) {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          options.source = xhr.responseText.replace(/\r\n/g, '\n');
+          loadFromString(options.source);
+          if (typeof callback === 'function') {
+            callback(self);
+          }
+        } else {
+          throw Error(xhr.statusText);
+        }
+      }
+    };
+    xhr.onerror = function (e) {
+      throw Error(xhr.statusText);
+    };
+    xhr.send(null);
+    return xhr;
   }
 
   function update () {

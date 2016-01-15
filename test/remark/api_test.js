@@ -43,20 +43,4 @@ describe('API', function () {
     slides[0].content.should.eql(['3']);
     slides[1].content.should.eql(['4']);
   });
-
-  it('should allow creating slideshow from source url with linux newlines', function () {
-    dom.XMLHttpRequest.responseText = '5\n---\n6';
-    var slides = api.create({ sourceUrl: 'some-file-with-linux-newlines.txt' }).getSlides();
-    slides.length.should.eql(2);
-    slides[0].content.should.eql(['5']);
-    slides[1].content.should.eql(['6']);
-  });
-
-  it('should allow creating slideshow from source url with windows newlines', function () {
-    dom.XMLHttpRequest.responseText = '7\r\n---\r\n8';
-    var slides = api.create({ sourceUrl: 'some-file-with-windows-newlines.txt' }).getSlides();
-    slides.length.should.eql(2);
-    slides[0].content.should.eql(['7']);
-    slides[1].content.should.eql(['8']);
-  });
 });

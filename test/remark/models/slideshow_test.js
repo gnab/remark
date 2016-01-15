@@ -6,11 +6,24 @@ var EventEmitter = require('events').EventEmitter
 describe('Slideshow', function () {
   var events
     , slideshow
+    , dom
     ;
 
   beforeEach(function () {
     events = new EventEmitter();
-    slideshow = new Slideshow(events);
+    dom = {
+      XMLHttpRequest: function () {
+        this.open = function () {};
+        this.send = function () {};
+        this.success = function (responseText) {
+          this.readyState = 4;
+          this.status = 200;
+          this.responseText = responseText;
+          this.onload();
+        };
+      } 
+    }
+    slideshow = new Slideshow(events, dom);
   });
 
   describe('loading from source', function () {
@@ -25,9 +38,29 @@ describe('Slideshow', function () {
     });
 
     it('should mark continued slide as non-markable', function () {
-      slideshow = new Slideshow(events, {countIncrementalSlides: false});
+      slideshow = new Slideshow(events, null, {countIncrementalSlides: false});
       slideshow.loadFromString('a\n--\nb');
       slideshow.getSlides()[1].properties.count.should.equal('false');
+    });
+  });
+  
+  describe('loading from url', function () {
+    it('should download source with \\n line separators from url', function () {
+      var xhr = slideshow.loadFromUrl('url');
+      xhr.success('a\n---\nb');
+      var slides = slideshow.getSlides();
+      slides.length.should.eql(2);
+      slides[0].content.should.eql(['a']);
+      slides[1].content.should.eql(['b']);
+    });
+    
+    it('should download source with \\r\\n line separators from url', function () {
+      var xhr = slideshow.loadFromUrl('url');
+      xhr.success('a\r\n---\r\nb');
+      var slides = slideshow.getSlides();
+      slides.length.should.eql(2);
+      slides[0].content.should.eql(['a']);
+      slides[1].content.should.eql(['b']);
     });
   });
 
