@@ -26,7 +26,7 @@ describe('SlideshowView', function () {
     });
 
     it('should style element', function () {
-      containerElement.className.should.include('remark-container');
+      containerElement.className.should.containEql('remark-container');
     });
 
     it('should position element', function () {
@@ -98,7 +98,7 @@ describe('SlideshowView', function () {
     });
 
     it('should style HTML element', function () {
-      dom.getHTMLElement().className.should.include('remark-container');
+      dom.getHTMLElement().className.should.containEql('remark-container');
     });
 
     it('should not position element', function () {

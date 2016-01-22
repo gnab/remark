@@ -28,7 +28,7 @@ describe('Controller', function () {
       dom.getLocationHash = function () { return '#3'; };
       events.emit('hashchange');
 
-      events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
+      events.emit.should.be.neverCalledWith('gotoSlide', '3');
     });
 
     it('should navigate by hash when slideshow is not embedded', function () {

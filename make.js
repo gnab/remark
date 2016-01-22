@@ -28,7 +28,7 @@ target.test = function () {
   target['lint']();
   target['bundle']();
   target['test-bundle']();
-
+ 
   console.log('Running tests...');
   run('mocha-phantomjs test/runner.html');
 };
@@ -64,7 +64,8 @@ target['test-bundle'] = function () {
 
   [
     "require('should');",
-    "require('sinon');"
+    "require('sinon');",
+    "require('should-sinon');"
   ]
     .concat(find('./test')
       .filter(function(file) { return file.match(/\.js$/); })

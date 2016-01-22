@@ -29,8 +29,8 @@ describe('SlideView', function () {
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-
-      slideView.contentElement.style.backgroundImage.should.match(/^url\(.*image\.jpg\)$/);
+      
+      slideView.contentElement.style.backgroundImage.should.match(/^url\((['|"]?).*image\.jpg\1\)$/);
     });
 
     it('should be set by background-image slide property', function () {
@@ -54,7 +54,7 @@ describe('SlideView', function () {
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
       var classes = utils.getClasses(slideView.contentElement)
 
-      classes.should.include('remark-slide-content');
+      classes.should.containEql('remark-slide-content');
     });
 
     it('should contain additional classes from slide properties', function () {
@@ -67,9 +67,9 @@ describe('SlideView', function () {
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
       var classes = utils.getClasses(slideView.contentElement)
 
-      classes.should.include('remark-slide-content');
-      classes.should.include('middle');
-      classes.should.include('center');
+      classes.should.containEql('remark-slide-content');
+      classes.should.containEql('middle');
+      classes.should.containEql('center');
     });
   });
 
@@ -80,7 +80,7 @@ describe('SlideView', function () {
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
-      slideView.contentElement.innerHTML.should.not.include('<p></p>');
+      slideView.contentElement.innerHTML.should.not.containEql('<p></p>');
     });
   });
 
@@ -93,8 +93,8 @@ describe('SlideView', function () {
       slideView.show();
 
       var classes = utils.getClasses(slideView.containerElement);
-      classes.should.include('remark-visible');
-      classes.should.not.include('remark-fading');
+      classes.should.containEql('remark-visible');
+      classes.should.not.containEql('remark-fading');
     });
 
     it('should remove any fading element', function () {
@@ -107,8 +107,8 @@ describe('SlideView', function () {
       slideView.show();
 
       var classes = utils.getClasses(slideView.containerElement);
-      classes.should.include('remark-visible');
-      classes.should.not.include('remark-fading');
+      classes.should.containEql('remark-visible');
+      classes.should.not.containEql('remark-fading');
     });
   });
 
@@ -123,8 +123,8 @@ describe('SlideView', function () {
       slideView.hide();
 
       var classes = utils.getClasses(slideView.containerElement);
-      classes.should.not.include('remark-visible');
-      classes.should.include('remark-fading');
+      classes.should.not.containEql('remark-visible');
+      classes.should.containEql('remark-fading');
     });
   });
 
