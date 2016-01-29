@@ -3,7 +3,6 @@
 <html lang="en-GB">
 
   <head>
-
     <meta charset="utf-8">
     <meta name="application-name" content="Remarkise">
     <meta name="description" content="Render your markdown as remark slides, in real time">
@@ -70,6 +69,29 @@
         margin-bottom:     0;
       }
 
+      /******************************** konstantinkobs' additions */
+
+      div#front-page > div > p#drop-area {
+        width: 30em;
+        max-width: 80%;
+        border: 0.2em dashed #999;
+        border-radius: 1em;
+        padding: 2em 0.5em;
+        margin: 1em auto;
+      }
+
+      div#front-page > div > p#drop-area.hover {
+        background: #eee;
+      }
+
+      div#front-page > div > p#drop-area.fail {
+        display: none;
+      }
+
+      div#front-page > div > p#drop-area.success {
+        display: block;
+      }
+
     </style>
 
   </head>
@@ -84,6 +106,9 @@
           <a href="https://github.com/tripu/remark">remark</a> slides&nbsp;&mdash;&nbsp;in real time
         </p>
         <input id="url" placeholder="URL of a markdown file" autofocus="autofocus" />
+        <p id="drop-area">
+          or drop a local markdown file here.
+        </p>
       </div>
     </div>
 
@@ -127,6 +152,18 @@
 
         };
 
+        function createPresentationFromText(data) {
+            $('div#front-page').hide();
+            css = data.match(CSS);
+            if (css) {
+                data = data.replace(CSS, '');
+                for (i in css) {
+                    $('head').append(css[i]);
+                }
+            }
+            remark.create({source: data});
+        }
+
         function remarkise(url) {
 
           $('div#front-page > div > input').prop('disabled', true);
@@ -164,16 +201,6 @@
               if (!window.location.search || !window.location.search.match(/\?url=.+/)) {
                 history.pushState({}, null, window.location.href + '?' + $.param({url: url}));
               }
-
-              $('div#front-page').hide();
-              css = data.match(CSS);
-              if (css) {
-                  data = data.replace(CSS, '');
-                  for (i in css) {
-                      $('head').append(css[i]);
-                  }
-              }
-              remark.create({source: data});
             }
           });
 
@@ -193,6 +220,46 @@
 
         }
 
+        /******************************** konstantinkobs' additions for drag and drop */
+        var dropArea = $("div#front-page > div > p#drop-area");
+
+        if (typeof window.FileReader === 'undefined') {
+          dropArea.removeClass('success');
+          dropArea.addClass('fail');
+        } else {
+          dropArea.removeClass('fail');
+          dropArea.addClass('success');
+        }
+
+        dropArea.on("dragover", function(){
+          $(this).addClass("hover");
+          return false;
+        });
+
+        dropArea.on("dragend", function(){
+          $(this).removeClass("hover");
+          return false;
+        });
+
+        dropArea.on("drop", function(e){
+          $(this).removeClass("hover");
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          var file = e.originalEvent.dataTransfer.files[0],
+              reader = new FileReader();
+
+          reader.onloadend = function(){
+            // load presentation from text
+            createPresentationFromText(reader.result);
+          };
+
+          reader.readAsText(file);
+
+          return false;
+        });
+
       });
 
     </script>
@@ -202,4 +269,3 @@
 </html>
 
 <!-- EOF -->
-
