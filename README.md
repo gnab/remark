@@ -50,30 +50,34 @@ Below is a boilerplate HTML file to get you started:
        * https://daneden.github.io/animate.css/
        */  
        
-      /* Navigating forwards transitions */
-  
-      /* Navigate to slide */
-	  .remark-visible.remark-navigating-backwards {
-      	animation: slideInLeft 0.5s forwards;
-	  }
-	  
-      /* Navigate from slide */
-      .remark-fading.remark-navigating-backwards {
-      	animation: slideOutRight 0.5s forwards;
-      }
-  
-      /* Navigating backwards transitions */
-  
-      /* Navigate to slide */ 
-      .remark-visible.remark-navigating-forwards {
-      	animation: slideInRight 0.5s forwards;
-      }
-  
-      /* Navigate from slide */ 
-	  .remark-fading.remark-navigating-forwards {
-      	animation: slideOutLeft 0.5s forwards;
-	  }
+       /* Browsing forwards transition */
     
+       /* Browse to slide */
+       .remark-visible.remark-browsing-backwards {
+           animation: slideInDown 0.5s forwards;
+       }
+       /* Browse from slide */
+         .remark-fading.remark-browsing-backwards {
+           animation: slideOutDown 0.5s forwards;
+         }
+    
+       /* Browsing backwards transition */
+    
+       /* Browse to slide */ 
+         .remark-visible.remark-browsing-forwards {
+           animation: slideInUp 0.5s forwards;
+         }
+    
+       /* Browse from slide */ 
+       .remark-fading.remark-browsing-forwards {
+           animation: slideOutUp 0.5s forwards;
+       }
+       
+       /* disable transitions in presenter mode */
+       .remark-presenter-mode * {
+         animation: none !important;
+       }
+       
     </style>
   </head>
   <body>
