@@ -31,6 +31,7 @@ Below is a boilerplate HTML file to get you started:
   <head>
     <title>Title</title>
     <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.min.css">
     <style>
       @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
       @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
@@ -42,6 +43,37 @@ Below is a boilerplate HTML file to get you started:
         font-weight: normal;
       }
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      
+      /*
+       * Transitions between slides by using Animate.css
+       * Find interesting transition animations here!
+       * https://daneden.github.io/animate.css/
+       */  
+       
+      /* Navigating forwards transitions */
+  
+      /* Navigate to slide */
+	  .remark-visible.remark-navigating-backwards {
+      	animation: slideInLeft 0.5s forwards;
+	  }
+	  
+      /* Navigate from slide */
+      .remark-fading.remark-navigating-backwards {
+      	animation: slideOutRight 0.5s forwards;
+      }
+  
+      /* Navigating backwards transitions */
+  
+      /* Navigate to slide */ 
+      .remark-visible.remark-navigating-forwards {
+      	animation: slideInRight 0.5s forwards;
+      }
+  
+      /* Navigate from slide */ 
+	  .remark-fading.remark-navigating-forwards {
+      	animation: slideOutLeft 0.5s forwards;
+	  }
+    
     </style>
   </head>
   <body>
@@ -136,6 +168,7 @@ Other interesting stuff:
 - [mathiasbynens](https://github.com/mathiasbynens)
 - [aminb](https://github.com/aminb)
 - [sol](https://github.com/sol)
+- [presidenten](https://github.com/presidenten)
 
 ### License
 
