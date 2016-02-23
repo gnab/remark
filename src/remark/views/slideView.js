@@ -84,10 +84,18 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
   var self = this
     , styles = window.getComputedStyle(this.contentElement)
     , backgroundImage = styles.backgroundImage
+    , backgroundSize = styles.backgroundSize
+    , backgroundPosition = styles.backgroundPosition
     , match
     , image
     , scale
     ;
+
+  // If the user explicitly sets the backgroundSize or backgroundPosition, let
+  // that win and early return here.
+  if ((backgroundSize || backgroundPosition) && !self.backgroundSizeSet) {
+    return;
+  }
 
   if ((match = /^url\(("?)([^\)]+?)\1\)/.exec(backgroundImage)) !== null) {
     image = new Image();
@@ -166,12 +174,20 @@ function createNotesElement (slideshow, notes) {
 function setBackgroundFromProperties (element, properties) {
   var backgroundImage = properties['background-image'];
   var backgroundColor = properties['background-color'];
+  var backgroundSize = properties['background-size'];
+  var backgroundPosition = properties['background-position'];
 
   if (backgroundImage) {
     element.style.backgroundImage = backgroundImage;
   }
   if (backgroundColor) {
     element.style.backgroundColor = backgroundColor;
+  }
+  if (backgroundSize) {
+    element.style.backgroundSize = backgroundSize;
+  }
+  if (backgroundPosition) {
+    element.style.backgroundPosition = backgroundPosition;
   }
 }
 

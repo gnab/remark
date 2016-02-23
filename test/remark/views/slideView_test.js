@@ -44,6 +44,30 @@ describe('SlideView', function () {
 
       slideView.contentElement.style.backgroundColor.should.match(/^red$/);
     });
+
+    it('should be set from background-size slide property', function () {
+      var slide = new Slide(1, {
+            source: '',
+            properties: {'background-size': 'cover'}
+          });
+
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+      
+      slideView.contentElement.style.backgroundSize.should.match(/^cover$/);
+    });
+
+    it('should be set from background-position slide property', function () {
+      var slide = new Slide(1, {
+            source: '',
+            properties: {'background-position': '2% 98%'}
+          });
+
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+      
+      slideView.contentElement.style.backgroundPosition.should.match(/^2% 98%$/);
+    });
   });
 
   describe('classes', function () {
