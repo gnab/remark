@@ -123,40 +123,36 @@
 
       $(document).ready(function() {
 
-        var FIXES = [
+        const FIXES = [
           {
-            message: "Oops, error! But wait&nbsp;&mdash;&nbsp;I'm fetching the &ldquo;raw&rdquo; GitHub version instead&hellip;"
-          , patterns: [
-              [/\/\/(www\.)?github.com\//i, '//raw.githubusercontent.com/']
-            , [/\/blob\//i, '/']
+            message: "Oops, error! But wait&nbsp;&mdash;&nbsp;I'm fetching the &ldquo;raw&rdquo; GitHub version instead&hellip;",
+            patterns: [
+              [/\/\/(www\.)?github.com\//i, '//raw.githubusercontent.com/'],
+              [/\/blob\//i, '/']
             ]
-          }
-        , {
-            message: "Oops, error! But wait&nbsp;&mdash;&nbsp;I'm fetching it through RawGit&hellip;"
-          , patterns: [
+          },
+          {
+            message: "Oops, error! But wait&nbsp;&mdash;&nbsp;I'm fetching it through RawGit&hellip;",
+            patterns: [
               [/\/\/raw\.githubusercontent\.com\//i, '//rawgit.com/']
             ]
           }
-        ]
-        ,   CSS = /<style[^>]*>[^<]*<\/style>/ig
-        ;
+        ];
+        const CSS = /<style[^>]*>[^<]*<\/style>/ig;
 
-        var nextFix = 0
-        ,   currentFix
-        ,   newUrl
-        ,   css
-        ,   i
-        ;
+        var nextFix = 0,
+            currentFix,
+            newUrl,
+            css,
+            i;
 
-        function reset() {
-
+        var reset = function() {
           nextFix = 0;
           $('div#front-page > div > input').prop('disabled', false);
           $('input')[0].value = '';
-
         };
 
-        function createPresentationFromText(data) {
+        var createPresentationFromText = function(data) {
             $('div#front-page').hide();
             css = data.match(CSS);
             if (css) {
@@ -166,9 +162,9 @@
                 }
             }
             remark.create({source: data});
-        }
+        };
 
-        function remarkise(url) {
+        var remarkise = function(url) {
 
           $('div#front-page > div > input').prop('disabled', true);
           $('div#front-page > div > p').html('Fetching markdown&hellip;');
@@ -209,20 +205,16 @@
             }
           });
 
-        }
+        };
 
         if (window.location.search && window.location.search.match(/\?url=.+/)) {
           remarkise(decodeURIComponent(window.location.search.split('=')[1]));
         } else {
-
           $('input').keypress(function(event) {
-
             if (event && 13 === event.keyCode && event.target && event.target.value) {
               remarkise(event.target.value);
             }
-
           });
-
         }
 
         /******************************** konstantinkobs' additions for drag and drop */
