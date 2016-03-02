@@ -65,10 +65,14 @@
         font-style:        italic;
       }
 
-      div#front-page input {
+      div#front-page input#url {
         min-width:         30em;
         max-width:         80%;
         margin-bottom:     0;
+      }
+
+      div#front-page input#button {
+        width:             2em;
       }
 
       /******************************** konstantinkobs' additions */
@@ -108,8 +112,9 @@
           <a href="https://github.com/tripu/remark">remark</a> slides&nbsp;&mdash;&nbsp;in real time
         </p>
         <input id="url" placeholder="URL of a markdown file" autofocus="autofocus" />
+        <input id="button" type="submit" value="&crarr;" />
         <p id="drop-area">
-          or drop a local markdown file here.
+          or drop a local markdown file here
         </p>
       </div>
     </div>
@@ -138,12 +143,15 @@
             ]
           }
         ];
+
         const CSS = /<style[^>]*>[^<]*<\/style>/ig,
-	      head = $('head'),
-	      frontPage = $('div#front-page'),
-	      message = $('div#front-page p#message'),
-	      input = $('div#front-page input#url'),
-	      dropArea = $('div#front-page p#drop-area');
+              HEAD = $('head'),
+              FRONT_PAGE = $('div#front-page'),
+              MESSAGE = $('div#front-page p#message'),
+              INPUT = $('div#front-page input#url'),
+              BUTTON = $('div#front-page input#button'),
+              DROP_AREA = $('div#front-page p#drop-area'),
+              URL_PATTERN = /^(file|https?):\/\/.+/i;
 
         var nextFix = 0,
             currentFix,
@@ -153,17 +161,27 @@
 
         var reset = function() {
           nextFix = 0;
-          input.prop('disabled', false);
-          input[0].value = '';
+          INPUT.prop('disabled', false);
+          INPUT[0].value = '';
+        };
+
+        var trigger = function(event) {
+          if (event && ('click' === event.type || ('keypress' === event.type && 13 === event.keyCode))) {
+            if (URL_PATTERN.test(INPUT[0].value)) {
+              remarkise(INPUT[0].value);
+            } else {
+              MESSAGE.html("That doesn't look like a valid URL :-/");
+            }
+          }
         };
 
         var createPresentationFromText = function(data) {
-            frontPage.hide();
+            FRONT_PAGE.hide();
             css = data.match(CSS);
             if (css) {
                 data = data.replace(CSS, '');
                 for (i in css) {
-                    head.append(css[i]);
+                    HEAD.append(css[i]);
                 }
             }
             remark.create({source: data});
@@ -171,8 +189,8 @@
 
         var remarkise = function(url) {
 
-          input.prop('disabled', true);
-          message.html('Fetching markdown&hellip;');
+          INPUT.prop('disabled', true);
+          MESSAGE.html('Fetching markdown&hellip;');
 
           $.ajax({
             url: url,
@@ -189,7 +207,7 @@
                 if (newUrl.toLowerCase() === url.toLowerCase()) {
                   nextFix ++;
                 } else {
-                  message.html(currentFix.message);
+                  MESSAGE.html(currentFix.message);
                 }
 
               }
@@ -197,7 +215,7 @@
               if (newUrl.toLowerCase() !== url.toLowerCase()) {
                 remarkise(newUrl);
               } else {
-                message.html('Error!');
+                MESSAGE.html('Error!');
                 reset();
               }
 
@@ -215,34 +233,31 @@
         if (window.location.search && window.location.search.match(/\?url=.+/)) {
           remarkise(decodeURIComponent(window.location.search.split('=')[1]));
         } else {
-          input.keypress(function(event) {
-            if (event && 13 === event.keyCode && event.target && event.target.value) {
-              remarkise(event.target.value);
-            }
-          });
+          INPUT.keypress(trigger);
+          BUTTON.click(trigger);
         }
 
         /******************************** konstantinkobs' additions for drag and drop */
 
         if (typeof window.FileReader === 'undefined') {
-          dropArea.removeClass('success');
-          dropArea.addClass('fail');
+          DROP_AREA.removeClass('success');
+          DROP_AREA.addClass('fail');
         } else {
-          dropArea.removeClass('fail');
-          dropArea.addClass('success');
+          DROP_AREA.removeClass('fail');
+          DROP_AREA.addClass('success');
         }
 
-        dropArea.on("dragover", function(){
+        DROP_AREA.on("dragover", function(){
           $(this).addClass("hover");
           return false;
         });
 
-        dropArea.on("dragend", function(){
+        DROP_AREA.on("dragend", function(){
           $(this).removeClass("hover");
           return false;
         });
 
-        dropArea.on("drop", function(e){
+        DROP_AREA.on("drop", function(e){
           $(this).removeClass("hover");
 
           e.preventDefault();
