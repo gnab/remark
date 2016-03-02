@@ -5,6 +5,7 @@
   <head>
 
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="application-name" content="Remarkise">
     <meta name="description" content="Render your markdown as remark slides, in real time">
     <meta name="keywords" content="remark,markdown,md,slide,slideshow,remarkise,tripu">
@@ -113,23 +114,25 @@
       </div>
     </div>
 
-    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.2.1.min.js"></script>
     <script type="text/javascript" src="downloads/remark-latest.min.js"></script>
 
     <script type="text/javascript">
+
+      'use strict';
 
       $(document).ready(function() {
 
         var FIXES = [
           {
-            message: 'Oops, error! But wait — I\'m fetching the “raw” GitHub version instead…'
+            message: "Oops, error! But wait&nbsp;&mdash;&nbsp;I'm fetching the &ldquo;raw&rdquo; GitHub version instead&hellip;"
           , patterns: [
               [/\/\/(www\.)?github.com\//i, '//raw.githubusercontent.com/']
             , [/\/blob\//i, '/']
             ]
           }
         , {
-            message: 'Oops, error! But wait — I\'m fetching it through RawGit…'
+            message: "Oops, error! But wait&nbsp;&mdash;&nbsp;I'm fetching it through RawGit&hellip;"
           , patterns: [
               [/\/\/raw\.githubusercontent\.com\//i, '//rawgit.com/']
             ]
@@ -168,7 +171,7 @@
         function remarkise(url) {
 
           $('div#front-page > div > input').prop('disabled', true);
-          $('div#front-page > div > p').text('Fetching markdown…');
+          $('div#front-page > div > p').html('Fetching markdown&hellip;');
 
           $.ajax({
             url: url,
@@ -185,7 +188,7 @@
                 if (newUrl.toLowerCase() === url.toLowerCase()) {
                   nextFix ++;
                 } else {
-                  $('div#front-page > div > p').text(currentFix.message);
+                  $('div#front-page > div > p').html(currentFix.message);
                 }
 
               }
@@ -193,7 +196,7 @@
               if (newUrl.toLowerCase() !== url.toLowerCase()) {
                 remarkise(newUrl);
               } else {
-                $('div#front-page > div > p').text('Error!');
+                $('div#front-page > div > p').html('Error!');
                 reset();
               }
 
