@@ -106,6 +106,7 @@ Other interesting stuff:
 - [http://www.markdowner.com](http://www.markdowner.com)
 - [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
 - [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
+- [Remark Boilerplate](https://github.com/brenopolanski/remark-boilerplate)
 
 ### Contributors
 
