@@ -107,6 +107,12 @@ Other interesting stuff:
 - [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
 - [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
 
+### Printing
+
+Converting to PDF is primarily supported via Chrome's Print to PDF feature. You may need to tweak a bit to have the PDF look as expected as Chrome's print preview tends to change with every new release of Chrome (See [#50](https://github.com/gnab/remark/issues/50) for some details).
+
+Alternatively, you can use [DeckTape](https://github.com/astefanutti/decktape), a PDF exporter for HTML presentation frameworks that provides support for remark.
+
 ### Contributors
 
 - [kjbekkelund](https://github.com/kjbekkelund)
