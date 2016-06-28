@@ -1,10 +1,10 @@
 var SlideView = require('./slideView')
-  , Timer = require('components/timer')
+  , Timer = require('../components/timer/timer')
   , NotesView = require('./notesView')
   , Scaler = require('../scaler')
   , resources = require('../resources')
   , utils = require('../utils')
-  , printing = require('components/printing')
+  , printing = require('../components/printing/printing')
   ;
 
 module.exports = SlideshowView;

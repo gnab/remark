@@ -1,5 +1,5 @@
 var EventEmitter = require('events').EventEmitter
-  , styler = require('components/styler')
+  , styler = require('../styler/styler')
   ;
 
 var LANDSCAPE = 'landscape'

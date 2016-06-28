@@ -1,4 +1,4 @@
-var SlideNumber = require('components/slide-number')
+var SlideNumber = require('../components/slide-number/slide-number')
   , converter = require('../converter')
   , highlighter = require('../highlighter')
   , utils = require('../utils')
