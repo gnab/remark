@@ -1,3 +1,5 @@
+var converter = require('../converter');
+
 module.exports = Slide;
 
 function Slide (slideIndex, slide, template) {
@@ -53,7 +55,12 @@ function ignoreProperty (property) {
 function inheritContent (slide, template) {
   var expandedVariables;
 
-  slide.properties.content = slide.content.slice();
+  slide.properties.content = slide.content.slice().reduce(function(content, chunk) {
+    if (typeof chunk !== 'string') {
+        chunk = converter.convertMarkdown([chunk], [], false);
+    }
+    return content + chunk;
+  }, "");
   slide.content = template.content.slice();
 
   expandedVariables = slide.expandVariables(/* contentOnly: */ true);
