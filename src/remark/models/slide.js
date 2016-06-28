@@ -55,13 +55,12 @@ function ignoreProperty (property) {
 function inheritContent (slide, template) {
   var expandedVariables;
 
-  slide.properties.content = slide.content.slice().reduce(function(content, chunk) {
-    if (typeof chunk !== 'string') {
-        chunk = converter.convertMarkdown([chunk], [], false);
-    }
-    return content + chunk;
-  }, "");
-  slide.content = template.content.slice();
+  function chunkEncoder(chunk) {
+    return converter.convertMarkdown(Array.isArray(chunk) ? chunk : [chunk], [], false);
+  }
+
+  slide.properties.content = slide.content.slice().map(chunkEncoder).reduce(function(a, c) { return a + c; }, "");
+  slide.content = template.content.slice().map(chunkEncoder);
 
   expandedVariables = slide.expandVariables(/* contentOnly: */ true);
 
