@@ -55,12 +55,8 @@ function ignoreProperty (property) {
 function inheritContent (slide, template) {
   var expandedVariables;
 
-  function chunkEncoder(chunk) {
-    return converter.convertMarkdown(Array.isArray(chunk) ? chunk : [chunk], [], false);
-  }
-
-  slide.properties.content = slide.content.slice().map(chunkEncoder).reduce(function(a, c) { return a + c; }, "");
-  slide.content = template.content.slice().map(chunkEncoder);
+  slide.properties.content = slide.content.slice();
+  slide.content = template.content.slice();
 
   expandedVariables = slide.expandVariables(/* contentOnly: */ true);
 
