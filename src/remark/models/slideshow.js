@@ -42,6 +42,7 @@ function Slideshow (events, dom, options, callback) {
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
   self.getHighlightLines = getOrDefault('highlightLines', false);
   self.getHighlightSpans = getOrDefault('highlightSpans', false);
+  self.getHighlightInlineCode = getOrDefault('highlightInlineCode', false);
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
   self.getSlideNumberFormat = getOrDefault('slideNumberFormat', '%current% / %total%');
 
