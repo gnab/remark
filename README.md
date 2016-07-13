@@ -97,14 +97,12 @@ Other interesting stuff:
 - [torgeir.github.com/busterjs-lightning-talk](http://torgeir.github.com/busterjs-lightning-talk)
 - [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
 - [http://asmeurer.github.io/python3-presentation/slides.html](http://asmeurer.github.io/python3-presentation/slides.html)
-- [Lecture notes using remark](http://ozan.keysan.me/ee361/)
+- [Lecture notes using remark](http://keysan.me/ee361/)
 - [Big Data in Time - Progress and Challenges from Oceanography](http://www.jmlilly.net/talks/bigdata16.html)
 
 ### Other systems integrating with remark
 
 - [http://platon.io](http://platon.io)
-- [http://www.markdowner.com](http://www.markdowner.com)
-- [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
 - [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
 
 ### Printing
