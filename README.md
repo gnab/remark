@@ -103,7 +103,6 @@ Other interesting stuff:
 ### Other systems integrating with remark
 
 - [http://platon.io](http://platon.io)
-- [http://www.markdowner.com](http://www.markdowner.com)
 - [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
 - [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
 
