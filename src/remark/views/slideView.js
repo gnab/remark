@@ -212,16 +212,20 @@ function highlightCodeBlocks (content, slideshow) {
   var codeBlocks = content.getElementsByTagName('code'),
       highlightLines = slideshow.getHighlightLines(),
       highlightSpans = slideshow.getHighlightSpans(),
+      highlightInline = slideshow.getHighlightInlineCode(),
       meta;
 
   codeBlocks.forEach(function (block) {
-    if (block.parentElement.tagName !== 'PRE') {
-      utils.addClass(block, 'remark-inline-code');
-      return;
-    }
-
     if (block.className === '') {
       block.className = slideshow.getHighlightLanguage();
+    }
+
+    if (block.parentElement.tagName !== 'PRE') {
+      utils.addClass(block, 'remark-inline-code');
+      if (highlightInline) {
+        highlighter.engine.highlightBlock(block, '');
+      }
+      return;
     }
 
     if (highlightLines) {
