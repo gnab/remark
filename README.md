@@ -104,6 +104,7 @@ Other interesting stuff:
 
 - [http://platon.io](http://platon.io)
 - [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
+- [Remark Boilerplate](https://github.com/brenopolanski/remark-boilerplate)
 
 ### Printing
 
