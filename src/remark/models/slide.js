@@ -1,3 +1,5 @@
+var converter = require('../converter');
+
 module.exports = Slide;
 
 function Slide (slideIndex, slide, template) {

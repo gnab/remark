@@ -33,7 +33,7 @@ function convertMarkdown (content, links, insideContentClass) {
     else {
       tag = content[i].block ? 'div' : 'span';
       markdown += '<' + tag + ' class="' + content[i].class + '">';
-      markdown += convertMarkdown(content[i].content, links, true);
+      markdown += convertMarkdown(content[i].content, links, !content[i].block);
       markdown += '</' + tag + '>';
     }
   }

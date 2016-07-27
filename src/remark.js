@@ -1,6 +1,6 @@
 var Api = require('./remark/api')
   , polyfills = require('./polyfills')
-  , styler = require('components/styler')
+  , styler = require('./remark/components/styler/styler')
   ;
 
 // Expose API as `remark`
