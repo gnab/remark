@@ -1,3 +1,10 @@
+### 0.14
+* #205: Jump to specific slide by pressing <number> + Return.
+* #277: Load source from URL asynchronously.
+* #317: Allow overriding background-size and -position ([jbeda](https://github.com/jbeda)).
+* #347: Add new highlightInlineCode option ([pospi](https://github.com/pospi)).
+* #348: Upgrade to Highlight.js 9.6.0.
+
 ### 0.13
 * #217: Create .npmignore ([chadrien](https://github.com/chadrien)).
 * Upgrade to Highlight.js 9.0.0.
