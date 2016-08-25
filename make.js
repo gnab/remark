@@ -17,7 +17,7 @@ target.highlighter = function () {
   pushd('vendor');
   exec('git clone https://github.com/isagalaev/highlight.js.git');
   pushd('highlight.js');
-  exec('git checkout tags/9.0.0');
+  exec('git checkout tags/9.6.0');
   popd();
   popd();
 
@@ -147,10 +147,15 @@ function bundleHighlighter (target) {
       , HIGHLIGHTER_ENGINE:
           cat(highlightjs + 'highlight.js')
       , HIGHLIGHTER_LANGUAGES:
-          ls(highlightjs + 'languages/*.js').map(function (file) {
-            var language = path.basename(file, path.extname(file))
-            return '{name:"' + language + '",create:' + cat(file) + '}';
-          }).join(',')
+          ls(highlightjs + 'languages/*.js')
+            .sort(function (a, b) {
+              // Other languages depend on cpp, so put it first
+              return a.indexOf('cpp.js') !== -1 ? -1 : 0;
+            })
+            .map(function (file) {
+              var language = path.basename(file, path.extname(file))
+              return '{name:"' + language + '",create:' + cat(file) + '}';
+            }).join(',')
       };
 
   cat('src/templates/highlighter.js.template')
