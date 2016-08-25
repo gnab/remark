@@ -11,6 +11,7 @@ describe('SlideView', function () {
       , getSlides: function () { return this.slides; }
       , getHighlightLines: function () { return true; }
       , getHighlightSpans: function () { return true; }
+      , getHighlightInlineCode: function () { return false; }
       , getLinks: function () { return {}; }
       , getHighlightLanguage: function () { return ''; }
       , getSlideNumberFormat: function () { return '%current% / %total%'; }
