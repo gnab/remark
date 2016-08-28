@@ -82,8 +82,8 @@ describe('Slideshow', function () {
 
   describe('templates', function () {
     it('should have properties inherited by referenced slide', function () {
-      slideshow.loadFromString('name: a\na\n---\ntemplate: a\nb');
-      slideshow.getSlides()[1].content.should.eql(['\na', '\nb']);
+      slideshow.loadFromString('name: a\nprop:val\na\n---\ntemplate: a\nb');
+      slideshow.getSlides()[1].properties.should.have.property('prop', 'val');
     });
 
     it('should have content inherited by referenced slide', function () {
