@@ -28,14 +28,14 @@ target.test = function () {
   target['lint']();
   target['bundle']();
   target['test-bundle']();
- 
+
   console.log('Running tests...');
-  run('mocha-phantomjs test/runner.html');
+  run('mocha-phantomjs test/runner.html', true);
 };
 
 target.lint = function () {
   console.log('Linting...');
-  run('jshint src', {silent: true});
+  run('jshint src');
 };
 
 target.bundle = function () {
@@ -44,8 +44,7 @@ target.bundle = function () {
 
   mkdir('-p', 'out');
 
-  run('browserify ' + components() + ' src/remark.js',
-      {silent: true}).output.to('out/remark.js');
+  run('browserify ' + components() + ' src/remark.js').stdout.to('out/remark.js');
 };
 
 function components () {
@@ -74,8 +73,7 @@ target['test-bundle'] = function () {
       .join('\n')
       .to('_tests.js');
 
-  run('browserify ' + components() + ' _tests.js',
-      {silent: true}).output.to('out/tests.js');
+  run('browserify ' + components() + ' _tests.js').stdout.to('out/tests.js');
   rm('_tests.js');
 };
 
@@ -86,7 +84,7 @@ target.boilerplate = function () {
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs -m -c -o out/remark.min.js out/remark.js', {silent: true});
+  run('uglifyjs -m -c -o out/remark.min.js out/remark.js');
 };
 
 target.deploy = function () {
@@ -195,19 +193,19 @@ function mapStyle (map, file) {
 }
 
 function less (file) {
-  return run('lessc -x -s ' + file, {silent: true}).output.replace(/\n/g, '');
+  return run('lessc -x -s ' + file).stdout.replace(/\n/g, '');
 }
 
 function git (cmd) {
-  return exec('git ' + cmd, {silent: true}).output;
+  return exec('git ' + cmd, {silent: true}).stdout;
 }
 
-function run (command, options) {
-  var result = exec(pwd() + '/node_modules/.bin/' + command, options);
+function run (command, loud) {
+  var result = exec(pwd() + '/node_modules/.bin/' + command, {silent: !loud, fatal: false});
 
   if (result.code !== 0) {
     if (!options || options.silent) {
-      console.error(result.output);
+      console.error(result.stdout);
     }
     exit(1);
   }
