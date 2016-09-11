@@ -45,6 +45,7 @@ function Slideshow (events, dom, options, callback) {
   self.getHighlightInlineCode = getOrDefault('highlightInlineCode', false);
   self.getHighlightLanguage = getOrDefault('highlightLanguage', '');
   self.getSlideNumberFormat = getOrDefault('slideNumberFormat', '%current% / %total%');
+  self.getCloneTarget = getOrDefault('cloneTarget', '_blank');
 
   events.on('toggleBlackout', function () {
     if (self.clone && !self.clone.closed) {

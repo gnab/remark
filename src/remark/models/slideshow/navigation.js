@@ -29,7 +29,7 @@ function Navigation (events) {
 
   events.on('createClone', function () {
     if (!self.clone || self.clone.closed) {
-      self.clone = window.open(location.href, '_blank', 'location=no');
+      self.clone = window.open(location.href, self.getCloneTarget(), 'location=no');
     }
     else {
       self.clone.focus();
