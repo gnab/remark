@@ -18,7 +18,6 @@
     "less": "^2.5.3",
     "mocha": "^2.3.4",
     "mocha-phantomjs": "^4.0.2",
-    "phantomjs": "1.9.19",
     "shelljs": "^0.7.0",
     "should": "^8.1.1",
     "sinon": "^1.17.2",
