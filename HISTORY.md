@@ -4,6 +4,7 @@
 * #317: Allow overriding background-size and -position ([jbeda](https://github.com/jbeda)).
 * #347: Add new highlightInlineCode option ([pospi](https://github.com/pospi)).
 * #348: Upgrade to Highlight.js 9.6.0.
+* #364: Implement `cloneTarget` configuration option ([jugglinmike](https://github.com/jugglinmike)).
 
 ### 0.13
 * #217: Create .npmignore ([chadrien](https://github.com/chadrien)).
