@@ -77,7 +77,7 @@ function lex (src, regex, tokens) {
     else if (cap[DEF]) {
       tokens.push({
         type: 'def',
-        id: cap[DEF],
+        id: cap[DEF].toLowerCase(),
         href: cap[DEF_HREF],
         title: cap[DEF_TITLE]
       });
