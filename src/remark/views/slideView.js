@@ -164,7 +164,7 @@ function createNotesElement (slideshow, notes) {
 
   element.className = 'remark-slide-notes';
 
-  element.innerHTML = converter.convertMarkdown(notes);
+  element.innerHTML = converter.convertMarkdown(notes, slideshow.getLinks());
 
   highlightCodeBlocks(element, slideshow);
 
