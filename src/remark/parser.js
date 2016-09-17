@@ -24,7 +24,7 @@ function Parser () { }
  *        ...
  *      ],
  *      content: [
- *        // Any content but content classes are represented as strings
+ *        // Any content except for content classes are represented as strings
  *        'plain text ',
  *        // Content classes are represented as objects
  *        { block: false, class: 'the-class', content: [...] },
