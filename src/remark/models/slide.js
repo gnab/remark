@@ -56,7 +56,7 @@ function inheritContent (slide, template) {
   var expandedVariables;
 
   slide.properties.content = slide.content.slice();
-  slide.content = template.content.slice();
+  deepCopyContent(slide, template.content);
 
   expandedVariables = slide.expandVariables(/* contentOnly: */ true);
 
@@ -65,6 +65,24 @@ function inheritContent (slide, template) {
   }
 
   delete slide.properties.content;
+}
+
+function deepCopyContent(target, content) {
+  var i;
+
+  target.content = [];
+  for (i = 0; i < content.length; ++i) {
+    if (typeof content[i] === 'string') {
+      target.content.push(content[i]);
+    }
+    else {
+      target.content.push({
+        block: content[i].block,
+        class: content[i].class,
+      });
+      deepCopyContent(target.content[target.content.length-1], content[i].content);
+    }
+  }
 }
 
 function inheritNotes (slide, template) {
