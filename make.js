@@ -153,8 +153,8 @@ function bundleHighlighter (target) {
       , HIGHLIGHTER_ENGINE:
           cat(highlightjs + 'highlight.js')
       , HIGHLIGHTER_LANGUAGES:
-          ls(highlightjs + 'languages/*.js')
-            .sort(function (a, b) {
+          Array.prototype.sort.call(ls(highlightjs + 'languages/*.js'),
+            function (a, b) {
               // Other languages depend on cpp, so put it first
               return a.indexOf('cpp.js') !== -1 ? -1 : 0;
             })
