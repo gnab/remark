@@ -10,6 +10,14 @@ target.all = function () {
 };
 
 target.highlighter = function () {
+  var config = require('./package.json').config;
+  if (config && config.highlighter === false) {
+    console.log('Bundling empty highlighter skeleton...');
+    "module.exports = {styles:[],engine:{highlightBlock:function(){}}};"
+      .to('src/remark/highlighter.js');
+    return;
+  }
+
   console.log('Bundling highlighter...');
 
   rm('-rf', 'vendor/highlight.js');
