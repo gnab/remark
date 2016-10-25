@@ -6,9 +6,10 @@
 A simple, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
 
 - Markdown formatting, with smart extensions
-- Presenter mode, with cloned slideshow view
+- Presenter mode with markdown formatted speaker notes and cloned slideshow view
 - Syntax highlighting, supporting a range of languages
 - Slide scaling, thus similar appearance on all devices / resolutions
+- Simple markdown templates for customized slides
 - Touch support for smart phones and pads, i.e. swipe to navigate slides
 
 Check out [this remark slideshow](http://gnab.github.com/remark) for a brief introduction.
@@ -19,11 +20,12 @@ To render your Markdown-based slideshow on the fly, checkout [Remarkise](https:/
 
 It takes only a few, simple steps to get up and running with remark:
 
-1. Create a HTML file to contain your slideshow (see below)
+1. Create an HTML file to contain your slideshow (see boilerplate below)
 2. Open the HTML file in a decent browser
 3. Edit the Markdown and/or CSS styles as needed, save and refresh!
+4. Press C to clone a display; then press P to switch to presenter mode
 
-Below is a boilerplate HTML file to get you started:
+See any of the boilerplate-*.html files, or just copy the boilerplate HTML below to start:
 
 ```html
 <!DOCTYPE html>
@@ -73,9 +75,9 @@ class: center, middle
 </html>
 ```
 
-### Moving On
+### How To Use remark
 
-For more information on using remark, please check out the [wiki](http://github.com/gnab/remark/wiki) pages.
+The [wiki](http://github.com/gnab/remark/wiki) pages contain all the how-to, templating, and API help.
 
 ### Real-world remark slideshows
 
@@ -108,7 +110,7 @@ Other interesting stuff:
 
 ### Printing
 
-Converting to PDF is primarily supported via Chrome's Print to PDF feature. You may need to tweak a bit to have the PDF look as expected as Chrome's print preview tends to change with every new release of Chrome (See [#50](https://github.com/gnab/remark/issues/50) for some details).
+Converting to PDF is primarily supported via Chrome's Print to PDF feature. Note that the styling is not exact; See [#50](https://github.com/gnab/remark/issues/50#issuecomment-223887379) for some recommended CSS to add to your styles.
 
 Alternatively, you can use [DeckTape](https://github.com/astefanutti/decktape), a PDF exporter for HTML presentation frameworks that provides support for remark.
 
