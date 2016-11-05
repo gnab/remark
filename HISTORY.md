@@ -1,3 +1,7 @@
+### 0.14.1
+* #365: Fix casing issue with reference links ([tbfe-de](https://github.com/tbfe-de))
+* #357: Fix variables inheritance ([tbfe-de](https://github.com/tbfe-de))
+
 ### 0.14
 * #205: Jump to specific slide by pressing <number> + Return.
 * #277: Load source from URL asynchronously.
