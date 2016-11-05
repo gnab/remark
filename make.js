@@ -113,7 +113,7 @@ target.deploy = function () {
 
   git('add package.json');
   git('add -f out');
-  git('checkout head');
+  git('checkout HEAD');
   git('commit -m "Deploy version ' + version + '."');
   git('tag -a v' + version + ' -m "Version ' + version + '."');
   git('checkout ' + currentBranch);
