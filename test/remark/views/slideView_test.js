@@ -96,6 +96,19 @@ describe('SlideView', function () {
       classes.should.containEql('middle');
       classes.should.containEql('center');
     });
+    
+    it('should set remark-slide-incremental class for incremental slides', function () {
+      var slide = new Slide(2, {
+            source: '',
+            properties: {'continued': 'true'}
+          });
+
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+      var classes = utils.getClasses(slideView.element)
+
+      classes.should.containEql('remark-slide-incremental');
+    });
   });
 
   describe('empty paragraph removal', function () {

@@ -67,8 +67,7 @@ SlideView.prototype.configureElements = function () {
   self.scalingElement = document.createElement('div');
   self.scalingElement.className = 'remark-slide-scaler';
 
-  self.element = document.createElement('div');
-  self.element.className = 'remark-slide';
+  self.element = createSlideElement(self.slide);
 
   self.contentElement = createContentElement(self.events, self.slideshow, self.slide);
   self.notesElement = createNotesElement(self.slideshow, self.slide.notes);
@@ -134,6 +133,17 @@ SlideView.prototype.scaleBackgroundImage = function (dimensions) {
     image.src = match[2];
   }
 };
+
+function createSlideElement(slide) {
+  var element = document.createElement('div');
+  element.className = 'remark-slide';
+  
+  if (slide.properties.continued === 'true') {
+    utils.addClass(element, 'remark-slide-incremental');
+  }
+  
+  return element;
+}
 
 function createContentElement (events, slideshow, slide) {
   var element = document.createElement('div');
