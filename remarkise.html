@@ -65,10 +65,6 @@
         font-style:        italic;
       }
 
-      div#front-page p span.smaller {
-        font-size:         smaller;
-      }
-
       div#front-page input#url {
         min-width:         30em;
         max-width:         80%;
@@ -229,22 +225,22 @@
                   MESSAGE.html('Error!');
                 } else {
                   MESSAGE.html('Error! (probably a violation of the ' +
-                    '<a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">same-origin policy</a>) <br><br> ' +
-                    '<span class="smaller">What you can do: <br> ' +
-                    '&#8227; If you own <a href="' + getOrigin(url) + '"><code>' + getOrigin(url) + '</code></a>, try ' +
-                    '<a href="https://stackoverflow.com/search?q=enable+CORS+on+server">enabling CORS</a> on that domain. <br> ' +
-                    '&#8227; If you can, bring your presentation over here, to <a href="' + window.location.origin + '"><code>' +
-                    window.location.origin + '</code></a>.');
+                    '<a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">same-origin policy</a>)');
                 }
                 reset();
               }
 
             },
             success: function(data) {
-              if (!window.location.search || !window.location.search.match(/\?url=.+/)) {
-                history.pushState({}, null, window.location.href + '?' + $.param({url: url}));
+              if (window.location.origin.toLowerCase() !== getOrigin(url).toLowerCase()) {
+                MESSAGE.html('Error! (probably a violation of the ' +
+                  '<a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">same-origin policy</a>)');
+              } else {
+                if (!window.location.search || !window.location.search.match(/\?url=.+/)) {
+                  history.pushState({}, null, window.location.href + '?' + $.param({url: url}));
+                }
+                createPresentationFromText(data);
               }
-              createPresentationFromText(data);
             }
           });
 
