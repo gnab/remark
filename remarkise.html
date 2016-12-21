@@ -128,7 +128,7 @@
 
       $(document).ready(function() {
 
-        const FIXES = [
+        var FIXES = [
           {
             message: "Oops, error! But wait&nbsp;&mdash;&nbsp;I'm fetching the &ldquo;raw&rdquo; GitHub version instead&hellip;",
             patterns: [
@@ -144,7 +144,7 @@
           }
         ];
 
-        const CSS = /<style[^>]*>[^<]*<\/style>/ig,
+        var CSS = /<style[^>]*>[^<]*<\/style>/ig,
               HEAD = $('head'),
               FRONT_PAGE = $('div#front-page'),
               MESSAGE = $('div#front-page p#message'),
