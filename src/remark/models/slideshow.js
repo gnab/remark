@@ -205,8 +205,16 @@ function createSlides (slideshowSource, options) {
       byName[slide.properties.name] = slideViewModel;
     }
 
+    var slideClasses = (slide.properties['class'] || '').split(/,| /)
+      , excludedClasses = options.excludedClasses || []
+      , slideIsIncluded = slideClasses.filter(function (c) {
+          return excludedClasses.indexOf(c) !== -1;
+        }).length === 0;
+
     if (slide.properties.layout !== 'true') {
-      slides.push(slideViewModel);
+      if (slideIsIncluded) {
+        slides.push(slideViewModel);
+      }
       if (slide.properties.name) {
         slides.byName[slide.properties.name] = slideViewModel;
       }
