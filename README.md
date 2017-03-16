@@ -67,7 +67,7 @@ class: center, middle
 # Introduction
 
     </textarea>
-    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
     </script>
     <script>
       var slideshow = remark.create();
