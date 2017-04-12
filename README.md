@@ -109,6 +109,7 @@ Other interesting stuff:
 - [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
 - [Remark Boilerplate](https://github.com/brenopolanski/remark-boilerplate)
 - [Repositorium](https://github.com/pille1842/repositorium)
+- [Backslide](https://github.com/sinedied/backslide) - CLI for automating creation, export and PDF conversion of Remark presentations
 
 ### Printing
 
