@@ -66,6 +66,12 @@ describe('Controller', function () {
       events.emit.should.be.calledWithExactly('gotoNextSlide');
     });
 
+    it('should navigate to previous slide when pressing shift+space', function () {
+      events.emit('keydown', {keyCode: 32, shiftKey: true});
+
+      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+    });
+
     it('should navigate to next slide when pressing page down', function () {
       events.emit('keydown', {keyCode: 34});
 
