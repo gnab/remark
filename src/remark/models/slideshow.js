@@ -47,9 +47,15 @@ function Slideshow (events, dom, options, callback) {
   self.getSlideNumberFormat = getOrDefault('slideNumberFormat', '%current% / %total%');
   self.getCloneTarget = getOrDefault('cloneTarget', '_blank');
 
-  events.on('toggleBlackout', function () {
+  events.on('toggleBlackout', function (opts) {
+    if (opts && opts.propagate === false) return;
+
     if (self.clone && !self.clone.closed) {
       self.clone.postMessage('toggleBlackout', '*');
+    }
+
+    if (window.opener) {
+      window.opener.postMessage('toggleBlackout', '*');
     }
   });
 
@@ -80,7 +86,7 @@ function Slideshow (events, dom, options, callback) {
 
     events.emit('slidesChanged');
   }
-  
+
   function loadFromUrl (url, callback) {
     var xhr = new dom.XMLHttpRequest();
     xhr.open('GET', options.sourceUrl, true);

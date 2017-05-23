@@ -12,7 +12,7 @@ function addMessageEventListeners (events) {
       events.emit('gotoSlide', parseInt(cap[1], 10), true);
     }
     else if (message.data === 'toggleBlackout') {
-      events.emit('toggleBlackout');
+      events.emit('toggleBlackout', {propagate: false});
     }
   }
 }
