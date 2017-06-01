@@ -12,6 +12,8 @@ module.exports = SlideshowView;
 function SlideshowView (events, dom, containerElement, slideshow) {
   var self = this;
 
+  var lastHiddenSlideIndex;
+
   self.events = events;
   self.dom = dom;
   self.slideshow = slideshow;
@@ -38,10 +40,32 @@ function SlideshowView (events, dom, containerElement, slideshow) {
     self.elementArea.getElementsByClassName('remark-fading').forEach(function (slide) {
       utils.removeClass(slide, 'remark-fading');
     });
+
+    // Remove classes used for forward and back transitions
+    self.elementArea.querySelectorAll('.remark-slides-area > div').forEach(function(slide) {
+      utils.removeClass(slide, 'remark-navigating-forwards');
+      utils.removeClass(slide, 'remark-navigating-backwards');
+    });
+
+
+    // Set last hidden slide index to help determine which way the user is browsing
+    lastHiddenSlideIndex = slideIndex;
+
     self.hideSlide(slideIndex);
   });
 
   events.on('showSlide', function (slideIndex) {
+    if(typeof lastHiddenSlideIndex !== 'undefined') {
+      if (slideIndex > lastHiddenSlideIndex) {
+        utils.addClass(self.elementArea.children[slideIndex], 'remark-navigating-forwards');
+        utils.addClass(self.elementArea.children[lastHiddenSlideIndex], 'remark-navigating-forwards');
+      }
+      else {
+        utils.addClass(self.elementArea.children[slideIndex], 'remark-navigating-backwards');
+        utils.addClass(self.elementArea.children[lastHiddenSlideIndex], 'remark-navigating-backwards');
+      }
+    }
+
     self.showSlide(slideIndex);
   });
 

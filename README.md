@@ -34,6 +34,7 @@ See any of the boilerplate-*.html files, or just copy the boilerplate HTML below
   <head>
     <title>Title</title>
     <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.min.css">
     <style>
       @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
       @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
@@ -45,6 +46,41 @@ See any of the boilerplate-*.html files, or just copy the boilerplate HTML below
         font-weight: normal;
       }
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      
+      /*
+       * Transitions between slides by using Animate.css
+       * Find interesting transition animations here!
+       * https://daneden.github.io/animate.css/
+       */  
+       
+       /* Browsing forwards transition */
+    
+       /* Browse to slide */
+       .remark-visible.remark-browsing-backwards {
+           animation: slideInDown 0.5s forwards;
+       }
+       /* Browse from slide */
+         .remark-fading.remark-browsing-backwards {
+           animation: slideOutDown 0.5s forwards;
+         }
+    
+       /* Browsing backwards transition */
+    
+       /* Browse to slide */ 
+         .remark-visible.remark-browsing-forwards {
+           animation: slideInUp 0.5s forwards;
+         }
+    
+       /* Browse from slide */ 
+       .remark-fading.remark-browsing-forwards {
+           animation: slideOutUp 0.5s forwards;
+       }
+       
+       /* disable transitions in presenter mode */
+       .remark-presenter-mode * {
+         animation: none !important;
+       }
+       
     </style>
   </head>
   <body>
@@ -146,6 +182,7 @@ Alternatively, you can use [DeckTape](https://github.com/astefanutti/decktape), 
 - [mathiasbynens](https://github.com/mathiasbynens)
 - [aminb](https://github.com/aminb)
 - [sol](https://github.com/sol)
+- [presidenten](https://github.com/presidenten)
 
 ### License
 
