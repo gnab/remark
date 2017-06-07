@@ -253,7 +253,8 @@ function highlightCodeBlocks (content, slideshow) {
     }
 
     if (highlightSpans) {
-      highlightBlockSpans(block);
+      // highlightSpans is either true or a RegExp
+      highlightBlockSpans(block, highlightSpans);
     }
 
     utils.addClass(block, 'remark-code');
@@ -296,8 +297,23 @@ function highlightBlockLines (block, lines) {
   });
 }
 
-function highlightBlockSpans (block) {
-  var pattern = /([^`])`([^`]+?)`/g ;
+/**
+ * @param highlightSpans `true` or a RegExp
+ */
+function highlightBlockSpans (block, highlightSpans) {
+  var pattern;
+  if (highlightSpans === true) {
+    pattern = /([^`])`([^`]+?)`/g;
+  } else if (highlightSpans instanceof RegExp) {
+    if (! highlightSpans.global) {
+      throw new Error('The regular expression in `highlightSpans` must have flag /g');
+    }
+    // Use [^] instead of dot (.) so that even newlines match
+    // We prefix the escape group, so users can provide nicer regular expressions
+    pattern = new RegExp('([^])' + highlightSpans.slice(1, -1), highlightSpans.flags);
+  } else {
+    throw new Error('Illegal value for `highlightSpans`');
+  }
 
   block.childNodes.forEach(function (element) {
     element.innerHTML = element.innerHTML.replace(pattern,

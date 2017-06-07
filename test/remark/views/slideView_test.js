@@ -201,6 +201,28 @@ describe('SlideView', function () {
       lines[0].innerHTML.should.equal('a `f` b');
     });
 
+    it('should allow custom delimiters', function () {
+      slideshow.getHighlightSpans = function () { return /«([^»]+?)»/g; };
+
+      var slide = new Slide(1, { content: ['```\na «f» b\n```'] });
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      var lines = slideView.element.getElementsByClassName('remark-code-line');
+      lines[0].innerHTML.should.equal('a <span class="remark-code-span-highlighted">f</span> b');
+    });
+
+    it('should allow escaping opening custom delimiter', function () {
+      slideshow.getHighlightSpans = function () { return /«([^»]+?)»/g; };
+
+      var slide = new Slide(1, { content: ['```\na \\«f» b\n```'] });
+      slideshow.slides.push(slide);
+      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
+
+      var lines = slideView.element.getElementsByClassName('remark-code-line');
+      lines[0].innerHTML.should.equal('a «f» b');
+    });
+
     it('should be possible to disable', function () {
       slideshow.getHighlightSpans = function () { return false; };
 
