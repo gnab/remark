@@ -310,7 +310,8 @@ function highlightBlockSpans (block, highlightSpans) {
     }
     // Use [^] instead of dot (.) so that even newlines match
     // We prefix the escape group, so users can provide nicer regular expressions
-    pattern = new RegExp('([^])' + highlightSpans.slice(1, -1), highlightSpans.flags);
+    var flags = highlightSpans.flags || 'g'; // ES6 feature; use if it’s available
+    pattern = new RegExp('([^])' + highlightSpans.source, flags);
   } else {
     throw new Error('Illegal value for `highlightSpans`');
   }
