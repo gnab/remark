@@ -110,6 +110,7 @@ Other interesting stuff:
 - [Remark Boilerplate](https://github.com/brenopolanski/remark-boilerplate)
 - [Repositorium](https://github.com/pille1842/repositorium)
 - [Backslide](https://github.com/sinedied/backslide) - CLI for automating creation, export and PDF conversion of Remark presentations
+- [Remarker](https://github.com/kt3k/remarker) - CLI for serving and building Remark slideshow from markdown file
 
 ### Printing
 
