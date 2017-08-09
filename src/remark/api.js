@@ -63,7 +63,7 @@ function applyDefaults (dom, options) {
   if (!options.hasOwnProperty('source')) {
     sourceElement = dom.getElementById('source');
     if (sourceElement) {
-      options.source = unescape(sourceElement.innerHTML);
+      options.source = sourceElement.innerHTML;
       sourceElement.style.display = 'none';
     }
   }
@@ -73,16 +73,4 @@ function applyDefaults (dom, options) {
   }
 
   return options;
-}
-
-function unescape (source) {
-  source = source.replace(/&[l|g]t;/g,
-    function (match) {
-      return match === '&lt;' ? '<' : '>';
-    });
-
-  source = source.replace(/&amp;/g, '&');
-  source = source.replace(/&quot;/g, '"');
-
-  return source;
 }
