@@ -14,7 +14,7 @@ var CODE = 1,
     NOTES_SEPARATOR = 12;
 
 var regexByName = {
-    CODE: /(?:^|\n)( {4}[^\n]+\n*)+/,
+    CODE: /(?:^|\n\n)( {4}[^\n]+\n*)+/,
     INLINE_CODE: /`([^`]+?)`/,
     CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
     FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\4 *(?:\n+|$)/,

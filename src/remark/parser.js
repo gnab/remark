@@ -103,8 +103,13 @@ Parser.prototype.parse = function (src, macros) {
         slides.push(stack[0]);
         stack = [createSlide()];
         // Tag the new slide as a continued slide if the separator
-        // used was -- instead of --- (2 vs. 3 dashes).
-        stack[0].properties.continued = (token.text === '--').toString();
+        // used was -- instead of --- (2 vs. 3 dashes). Also insert a
+        // new line for the syntactically correct concatenation of
+        // the new slide to the previous slide.
+        if (token.text === '--') {
+          stack[0].properties.continued = 'true';
+          appendTo(stack[0], "\n");
+        }
         break;
       case 'notes_separator':
         // Notes separator (???), so create empty content list on slide
