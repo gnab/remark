@@ -39,6 +39,24 @@ describe('Lexer', function () {
       ]);
     });
 
+    it('should recognize inline code using single backticks', function () {
+      lexer.lex('`code`').should.eql([
+        {type: 'text', text: '`code`'}
+      ]);
+    });
+
+    it('should recognize inline code using multiple backticks', function () {
+      lexer.lex('``code``').should.eql([
+        {type: 'text', text: '``code``'}
+      ]);
+    });
+
+    it('should recognize inline code containing escaped backticks', function () {
+      lexer.lex('`` `code` ``').should.eql([
+        {type: 'text', text: '`` `code` ``'}
+      ]);
+    });
+
     it('should recognize fences', function () {
       lexer.lex('```\ncode```').should.eql([
         {type: 'fences', text: '```\ncode```'}
