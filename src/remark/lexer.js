@@ -10,8 +10,9 @@ var CODE = 1,
     MACRO = 8,
     MACRO_ARGS = 9,
     MACRO_OBJ = 10,
-    SEPARATOR = 11,
-    NOTES_SEPARATOR = 12;
+    SLIDE_SEPARATOR = 11,
+    FRAGMENT_SEPARATOR = 12,
+    NOTES_SEPARATOR = 13;
 
 var regexByName = {
     CODE: /(?:^|\n\n)( {4}[^\n]+\n*)+/,
@@ -20,11 +21,12 @@ var regexByName = {
     FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\4 *(?:\n+|$)/,
     DEF: /(?:^|\n) *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
     MACRO: /!\[:([^\] ]+)([^\]]*)\](?:\(([^\)]*)\))?/,
-    SEPARATOR: /(?:^|\n)(---?)(?:\n|$)/,
+    SLIDE_SEPARATOR: /(?:^|\n)(---)(?:\n|$)/,
+    FRAGMENT_SEPARATOR: /(?:^|\n)(--)(?![^\n])/,
     NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
   };
 
-var block = replace(/CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO|SEPARATOR|NOTES_SEPARATOR/, regexByName),
+var block = replace(/CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO|SLIDE_SEPARATOR|FRAGMENT_SEPARATOR|NOTES_SEPARATOR/, regexByName),
     inline = replace(/CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO/, regexByName);
 
 function Lexer () { }
@@ -90,10 +92,10 @@ function lex (src, regex, tokens) {
         obj: cap[MACRO_OBJ]
       });
     }
-    else if (cap[SEPARATOR]) {
+    else if (cap[SLIDE_SEPARATOR] || cap[FRAGMENT_SEPARATOR]) {
       tokens.push({
         type: 'separator',
-        text: cap[SEPARATOR]
+        text: cap[SLIDE_SEPARATOR] || cap[FRAGMENT_SEPARATOR]
       });
     }
     else if (cap[NOTES_SEPARATOR]) {
