@@ -1,7 +1,8 @@
 module.exports = Keyboard;
 
-function Keyboard(events) {
+function Keyboard(events, options) {
   this._events = events;
+  this._options = options;
   
   this.activate();
 }
@@ -62,57 +63,78 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
     }
   });
 
-  events.on('keypress', function (event) {
-    if (event.metaKey || event.ctrlKey) {
-      // Bail out if meta or ctrl key was pressed
-      return;
-    }
-    
-    var key = String.fromCharCode(event.which).toLowerCase();
+  if (self._options.simple) {
+    // Simple mode, nothing except next/previous slide handlers
+    events.on('keypress', function (event) {
+      if (event.metaKey || event.ctrlKey) {
+        // Bail out if meta or ctrl key was pressed
+        return;
+      }
 
-    switch (key) {
-      case 'j':
-        events.emit('gotoNextSlide');
-        break;
-      case 'k':
-        events.emit('gotoPreviousSlide');
-        break;
-      case 'b':
-        events.emit('toggleBlackout');
-        break;
-      case 'm':
-        events.emit('toggleMirrored');
-        break;
-      case 'c':
-        events.emit('createClone');
-        break;
-      case 'p':
-        events.emit('togglePresenterMode');
-        break;
-      case 'f':
-        events.emit('toggleFullscreen');
-        break;
-      case 't':
-        events.emit('resetTimer');
-        break;
-      case '1': 
-      case '2': 
-      case '3': 
-      case '4': 
-      case '5':
-      case '6': 
-      case '7': 
-      case '8': 
-      case '9': 
-      case '0':
-        self._gotoSlideNumber += key;
-        break;
-      case 'h':
-      case '?':
-        events.emit('toggleHelp');
-        break;
-    }
-  });
+      var key = String.fromCharCode(event.which).toLowerCase();
+      switch (key) {
+        case 'j':
+          events.emit('gotoNextSlide');
+          break;
+        case 'k':
+          events.emit('gotoPreviousSlide');
+          break;
+      }
+    });
+  }
+  else {
+    events.on('keypress', function (event) {
+      if (event.metaKey || event.ctrlKey) {
+        // Bail out if meta or ctrl key was pressed
+        return;
+      }
+
+      var key = String.fromCharCode(event.which).toLowerCase();
+
+      switch (key) {
+        case 'j':
+          events.emit('gotoNextSlide');
+          break;
+        case 'k':
+          events.emit('gotoPreviousSlide');
+          break;
+        case 'b':
+          events.emit('toggleBlackout');
+          break;
+        case 'm':
+          events.emit('toggleMirrored');
+          break;
+        case 'c':
+          events.emit('createClone');
+          break;
+        case 'p':
+          events.emit('togglePresenterMode');
+          break;
+        case 'f':
+          events.emit('toggleFullscreen');
+          break;
+        case 't':
+          events.emit('resetTimer');
+          break;
+        case '1': 
+        case '2': 
+        case '3': 
+        case '4': 
+        case '5':
+        case '6': 
+        case '7': 
+        case '8': 
+        case '9': 
+        case '0':
+          self._gotoSlideNumber += key;
+          break;
+        case 'h':
+        case '?':
+          events.emit('toggleHelp');
+          break;
+      }
+    });
+  }
 };
 
 Keyboard.prototype.removeKeyboardEventListeners = function () {
