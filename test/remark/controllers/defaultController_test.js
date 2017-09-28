@@ -54,6 +54,12 @@ describe('Controller', function () {
       events.emit.should.be.calledWithExactly('gotoPreviousSlide');
     });
 
+    it('should not navigate to previous slide when pressing alt + arrow left', function () {
+      events.emit('keydown', {keyCode: 37, altKey: true});
+
+      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
+    });
+
     it('should navigate to previous slide when pressing arrow up', function () {
       events.emit('keydown', {keyCode: 38});
 
@@ -82,6 +88,12 @@ describe('Controller', function () {
       events.emit('keydown', {keyCode: 39});
 
       events.emit.should.be.calledWithExactly('gotoNextSlide');
+    });
+
+    it('should not navigate to next slide when pressing alt + arrow right', function () {
+      events.emit('keydown', {keyCode: 39, altKey: true});
+
+      events.emit.should.not.be.calledWithExactly('gotoNextSlide');
     });
 
     it('should navigate to next slide when pressing arrow down', function () {
