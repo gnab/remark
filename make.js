@@ -208,7 +208,7 @@ function git (cmd) {
 }
 
 function run (command, loud) {
-  var result = exec(pwd() + '/node_modules/.bin/' + command, {silent: !loud, fatal: false});
+  var result = exec('"' + pwd() + '/node_modules/.bin/' + '"' + command, {silent: !loud, fatal: false});
 
   if (result.code !== 0) {
     if (!options || options.silent) {
