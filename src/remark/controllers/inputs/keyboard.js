@@ -21,8 +21,8 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
   var events = this._events;
   
   events.on('keydown', function (event) {
-    if (event.metaKey || event.ctrlKey) {
-      // Bail out if meta or ctrl key was pressed
+    if (event.metaKey || event.ctrlKey || event.altKey) {
+      // Bail out if alt, meta or ctrl key was pressed
       return;
     }
 
