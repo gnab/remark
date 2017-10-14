@@ -13,7 +13,7 @@ var Keyboard = require('./inputs/keyboard')
 function Controller (events, dom, slideshowView, options) {
   options = options || {};
 
-  var keyboard = new Keyboard(events);
+  var keyboard = new Keyboard(events, options);
 
   message.register(events);
   location.register(events, dom, slideshowView);
