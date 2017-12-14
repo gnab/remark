@@ -35,7 +35,7 @@ function Parser () { }
  *    ...
  *  ]
  */
-Parser.prototype.parse = function (src, macros) {
+Parser.prototype.parse = function (src, macros, options) {
   var self = this,
       lexer = new Lexer(),
       tokens = lexer.lex(cleanInput(src)),
@@ -46,6 +46,7 @@ Parser.prototype.parse = function (src, macros) {
       stack = [createSlide()];
 
   macros = macros || {};
+  options = options || {};
 
   tokens.forEach(function (token) {
     switch (token.type) {
