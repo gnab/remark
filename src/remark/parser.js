@@ -99,6 +99,14 @@ Parser.prototype.parse = function (src, macros, options) {
         stack.pop();
         break;
       case 'separator':
+        // Just continue on the same slide if incremental slides are disabled
+        if (token.text === '--' && options.disableIncrementalSlides === true) {
+          // If it happens that there was a note section right before, just get
+          // rid of it
+          if (stack[0].notes !== undefined)
+            delete(stack[0].notes);
+          break;
+        }
         // Slide separator (--- or --), so add current slide to list of
         // slides and re-initialize stack with new, blank slide.
         slides.push(stack[0]);
