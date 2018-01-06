@@ -8,6 +8,7 @@ function Navigation (events) {
 
   self.getCurrentSlideIndex = getCurrentSlideIndex;
   self.gotoSlide = gotoSlide;
+  self.gotoSlideNumber = gotoSlideNumber;
   self.gotoPreviousSlide = gotoPreviousSlide;
   self.gotoNextSlide = gotoNextSlide;
   self.gotoFirstSlide = gotoFirstSlide;
@@ -16,6 +17,7 @@ function Navigation (events) {
   self.resume = resume;
 
   events.on('gotoSlide', gotoSlide);
+  events.on('gotoSlideNumber', gotoSlideNumber);
   events.on('gotoPreviousSlide', gotoPreviousSlide);
   events.on('gotoNextSlide', gotoNextSlide);
   events.on('gotoFirstSlide', gotoFirstSlide);
@@ -101,6 +103,13 @@ function Navigation (events) {
     var slideIndex = getSlideIndex(slideNoOrName);
 
     gotoSlideByIndex(slideIndex, noMessage);
+  }
+
+  function gotoSlideNumber (slideNumber, noMessage) {
+    var slides = self.getSlidesByNumber(parseInt(slideNumber, 10));
+    if (slides && slides.length) {
+      gotoSlideByIndex(slides[0].getSlideIndex(), noMessage);
+    }
   }
 
   function gotoPreviousSlide() {

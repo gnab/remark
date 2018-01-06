@@ -23,19 +23,19 @@ describe('SlideView', function () {
 
   describe('background', function () {
     it('should be set from background-image slide property', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
             source: '',
             properties: {'background-image': 'url(image.jpg)'}
           });
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-      
+
       slideView.contentElement.style.backgroundImage.should.match(/^url\((['|"]?).*image\.jpg\1\)$/);
     });
 
     it('should be set by background-image slide property', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
             source: '',
             properties: {'background-color': 'red'}
           });
@@ -47,33 +47,33 @@ describe('SlideView', function () {
     });
 
     it('should be set from background-size slide property', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
             source: '',
             properties: {'background-size': 'cover'}
           });
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-      
+
       slideView.contentElement.style.backgroundSize.should.match(/^cover$/);
     });
 
     it('should be set from background-position slide property', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
             source: '',
             properties: {'background-position': '2% 98%'}
           });
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-      
+
       slideView.contentElement.style.backgroundPosition.should.match(/^2% 98%$/);
     });
   });
 
   describe('classes', function () {
     it('should contain "content" class by default', function () {
-      var slide = new Slide(1, {source: ''});
+      var slide = new Slide(1, 1, {source: ''});
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
@@ -83,7 +83,7 @@ describe('SlideView', function () {
     });
 
     it('should contain additional classes from slide properties', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
             source: '',
             properties: {'class': 'middle, center'}
           });
@@ -96,9 +96,9 @@ describe('SlideView', function () {
       classes.should.containEql('middle');
       classes.should.containEql('center');
     });
-    
+
     it('should set remark-slide-incremental class for incremental slides', function () {
-      var slide = new Slide(2, {
+      var slide = new Slide(2, 2, {
             source: '',
             properties: {'continued': 'true'}
           });
@@ -113,7 +113,7 @@ describe('SlideView', function () {
 
   describe('empty paragraph removal', function () {
     it('should have empty paragraphs removed', function () {
-      var slide = new Slide(1, {source: '&lt;p&gt; &lt;/p&gt;'})
+      var slide = new Slide(1, 1, {source: '&lt;p&gt; &lt;/p&gt;'})
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
@@ -124,7 +124,7 @@ describe('SlideView', function () {
 
   describe('show slide', function () {
     it('should set the slide visible', function () {
-      var slide = new Slide(1, {source: ''});
+      var slide = new Slide(1, 1, {source: ''});
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
@@ -136,7 +136,7 @@ describe('SlideView', function () {
     });
 
     it('should remove any fading element', function () {
-      var slide = new Slide(1, {source: ''});
+      var slide = new Slide(1, 1, {source: ''});
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
@@ -152,7 +152,7 @@ describe('SlideView', function () {
 
   describe('hide slide', function () {
     it('should mark the slide as fading', function () {
-      var slide = new Slide(1, {source: ''});
+      var slide = new Slide(1, 1, {source: ''});
 
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
@@ -168,7 +168,7 @@ describe('SlideView', function () {
 
   describe('code line highlighting', function () {
     it('should add class to prefixed lines', function () {
-      var slide = new Slide(1, { content: ['```\nline 1\n* line 2\nline 3\n```'] })
+      var slide = new Slide(1, 1, { content: ['```\nline 1\n* line 2\nline 3\n```'] })
         , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         ;
 
@@ -181,7 +181,7 @@ describe('SlideView', function () {
     it('should be possible to disable', function () {
       slideshow.getHighlightLines = function () { return false; };
 
-      var slide = new Slide(1, { content: ['```\n* line\n```'] })
+      var slide = new Slide(1, 1, { content: ['```\n* line\n```'] })
         , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         ;
 
@@ -193,7 +193,7 @@ describe('SlideView', function () {
 
   describe('code block span highlighting', function () {
     it('should allow escaping first backtick', function () {
-      var slide = new Slide(1, { content: ['```\na \\`f` b\n```'] });
+      var slide = new Slide(1, 1, { content: ['```\na \\`f` b\n```'] });
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
@@ -204,7 +204,7 @@ describe('SlideView', function () {
     it('should allow custom delimiters', function () {
       slideshow.getHighlightSpans = function () { return /«([^»]+?)»/g; };
 
-      var slide = new Slide(1, { content: ['```\na «f» b\n```'] });
+      var slide = new Slide(1, 1, { content: ['```\na «f» b\n```'] });
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
@@ -215,7 +215,7 @@ describe('SlideView', function () {
     it('should allow escaping opening custom delimiter', function () {
       slideshow.getHighlightSpans = function () { return /«([^»]+?)»/g; };
 
-      var slide = new Slide(1, { content: ['```\na \\«f» b\n```'] });
+      var slide = new Slide(1, 1, { content: ['```\na \\«f» b\n```'] });
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
@@ -226,7 +226,7 @@ describe('SlideView', function () {
     it('should be possible to disable', function () {
       slideshow.getHighlightSpans = function () { return false; };
 
-      var slide = new Slide(1, { content: ['```\na `f` b\n```'] });
+      var slide = new Slide(1, 1, { content: ['```\na `f` b\n```'] });
       slideshow.slides.push(slide);
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 

@@ -113,13 +113,13 @@ describe('Controller', function () {
 
       events.emit.should.be.calledWithExactly('gotoLastSlide');
     });
-    
+
     it('should navigate to slide N when pressing N followed by return', function () {
       events.emit('keypress', {which: 49}); // 1
       events.emit('keypress', {which: 50}); // 2
       events.emit('keydown', {keyCode: 13}); // return
-      
-      events.emit.should.be.calledWithExactly('gotoSlide', '12');
+
+      events.emit.should.be.calledWithExactly('gotoSlideNumber', '12');
     });
 
     beforeEach(function () {

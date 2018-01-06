@@ -22,34 +22,11 @@ describe('Slide number', function () {
     slideNumber.element.innerHTML.should.equal('2 / 3');
   });
 
-  it('should not count slide marked not to be counted', function () {
-    var slide = createSlide(1)
-      , slideshow = {
-          getSlideNumberFormat: function () {
-            return '%current% / %total%';
-          }
-        , getSlides: function () { return [
-            createSlide(0, false),
-            slide
-          ];
-        }
-      };
-
-    slideNumber = new SlideNumber(slide, slideshow);
-
-    slideNumber.element.innerHTML.should.equal('1 / 1');
-  });
-
-  function createSlide (index, count) {
-    var slide = {
+  function createSlide (index) {
+    return {
       getSlideIndex: function () { return index; },
+      getSlideNumber: function () { return index + 1; },
       properties: {}
     }
-
-    if (count === false) {
-      slide.properties.count = 'false';
-    }
-
-    return slide;
   }
 });

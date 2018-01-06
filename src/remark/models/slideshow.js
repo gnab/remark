@@ -28,6 +28,7 @@ function Slideshow (events, dom, options, callback) {
   self.getSlides = getSlides;
   self.getSlideCount = getSlideCount;
   self.getSlideByName = getSlideByName;
+  self.getSlidesByNumber = getSlidesByNumber;
 
   self.togglePresenterMode = togglePresenterMode;
   self.toggleHelp = toggleHelp;
@@ -130,6 +131,10 @@ function Slideshow (events, dom, options, callback) {
     return slides.byName[name];
   }
 
+  function getSlidesByNumber (number) {
+    return slides.byNumber[number];
+  }
+
   function togglePresenterMode () {
     events.emit('togglePresenterMode');
   }
@@ -178,7 +183,9 @@ function createSlides (slideshowSource, options) {
     ;
 
   slides.byName = {};
+  slides.byNumber = {};
 
+  var slideNumber = 0;
   parsedSlides.forEach(function (slide, i) {
     var template, slideViewModel;
 
@@ -201,30 +208,35 @@ function createSlides (slideshowSource, options) {
       slide.properties.count = 'false';
     }
 
-    slideViewModel = new Slide(slides.length, slide, template);
-
-    if (slide.properties.layout === 'true') {
-      layoutSlide = slideViewModel;
-    }
-
-    if (slide.properties.name) {
-      byName[slide.properties.name] = slideViewModel;
-    }
-
     var slideClasses = (slide.properties['class'] || '').split(/,| /)
       , excludedClasses = options.excludedClasses || []
       , slideIsIncluded = slideClasses.filter(function (c) {
           return excludedClasses.indexOf(c) !== -1;
         }).length === 0;
 
-    if (slide.properties.layout !== 'true') {
+    if (slideIsIncluded && slide.properties.layout !== 'true' && slide.properties.count !== 'false') {
+      slideNumber++;
+      slides.byNumber[slideNumber] = [];
+    }
+
+    slideViewModel = new Slide(slides.length, slideNumber, slide, template);
+
+    if (slide.properties.name) {
+      byName[slide.properties.name] = slideViewModel;
+    }
+
+    if (slide.properties.layout === 'true') {
+      layoutSlide = slideViewModel;
+    } else {
       if (slideIsIncluded) {
         slides.push(slideViewModel);
+        slides.byNumber[slideNumber].push(slideViewModel);
       }
       if (slide.properties.name) {
         slides.byName[slide.properties.name] = slideViewModel;
       }
     }
+
   });
 
   return slides;
