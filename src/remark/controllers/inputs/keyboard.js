@@ -69,39 +69,32 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
     }
 
     var key = String.fromCharCode(event.which).toLowerCase();
+    var tryToPreventDefault = true;
 
     switch (key) {
       case 'j':
         events.emit('gotoNextSlide');
-        event.preventDefault();
         break;
       case 'k':
         events.emit('gotoPreviousSlide');
-        event.preventDefault();
         break;
       case 'b':
         events.emit('toggleBlackout');
-        event.preventDefault();
         break;
       case 'm':
         events.emit('toggleMirrored');
-        event.preventDefault();
         break;
       case 'c':
         events.emit('createClone');
-        event.preventDefault();
         break;
       case 'p':
         events.emit('togglePresenterMode');
-        event.preventDefault();
         break;
       case 'f':
         events.emit('toggleFullscreen');
-        event.preventDefault();
         break;
       case 't':
         events.emit('resetTimer');
-        event.preventDefault();
         break;
       case '1':
       case '2':
@@ -114,14 +107,18 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
       case '9':
       case '0':
         self._gotoSlideNumber += key;
-        event.preventDefault();
         break;
       case 'h':
       case '?':
         events.emit('toggleHelp');
-        event.preventDefault();
         break;
+      default:
+        tryToPreventDefault = false;
     }
+
+    if (tryToPreventDefault && event && event.preventDefault)
+      event.preventDefault();
+
   });
 };
 
