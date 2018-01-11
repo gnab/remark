@@ -22,6 +22,14 @@ describe('Parser', function () {
     it('should ignore slide separator inside content class', function () {
       parser.parse('1\n---\n2\n.class[\n---\n]\n---\n3').length.should.equal(3);
     });
+
+    it('should split slides correctly when more than one backtick is used for inline code', function(){
+      parser.parse('1\n---\nTest inline ``code``\n---\n3 More `code`').length.should.equal(3);
+    });
+
+    it('should split slides correctly when more than one backtick is used for inline code followed by code block', function(){
+      parser.parse('1\n---\nTest inline ``code``\n---\n```\ncode\n```').length.should.equal(3);
+    });
   });
 
   describe('mapping source to corresponding slides', function () {

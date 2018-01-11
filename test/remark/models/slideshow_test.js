@@ -21,7 +21,7 @@ describe('Slideshow', function () {
           this.responseText = responseText;
           this.onload();
         };
-      } 
+      }
     }
     slideshow = new Slideshow(events, dom);
   });
@@ -32,18 +32,27 @@ describe('Slideshow', function () {
       slideshow.getSlides().length.should.equal(2);
     });
 
+    it('should create slide numbers', function () {
+      slideshow.loadFromString('a\n---\nb\n---\nc');
+      slideshow.getSlides().length.should.equal(3);
+      slideshow.getSlides().forEach(function(slide, index) {
+        slide.getSlideNumber().should.equal(index + 1);
+      })
+    });
+
     it('should replace slides', function () {
       slideshow.loadFromString('a\n---\nb\n---\nc');
       slideshow.getSlides().length.should.equal(3);
     });
 
-    it('should mark continued slide as non-markable', function () {
+    it('should mark continued slide as non-markable and not count them', function () {
       slideshow = new Slideshow(events, null, {countIncrementalSlides: false});
       slideshow.loadFromString('a\n--\nb');
       slideshow.getSlides()[1].properties.count.should.equal('false');
+      slideshow.getSlides()[1].getSlideNumber().should.equal(1);
     });
   });
-  
+
   describe('loading from url', function () {
     it('should download source with \\n line separators from url', function () {
       var xhr = slideshow.loadFromUrl('url');
@@ -53,7 +62,7 @@ describe('Slideshow', function () {
       slides[0].content.should.eql(['a']);
       slides[1].content.should.eql(['b']);
     });
-    
+
     it('should download source with \\r\\n line separators from url', function () {
       var xhr = slideshow.loadFromUrl('url');
       xhr.success('a\r\n---\r\nb');
@@ -70,6 +79,30 @@ describe('Slideshow', function () {
 
       slideshow.getSlides()[1].properties.should.have.property('continued', 'true');
     });
+
+    it('should normally be counted', function () {
+      slideshow.loadFromString('a\n--\nb');
+      slideshow.getSlides().forEach(function(slide, index) {
+        slide.getSlideNumber().should.equal(index + 1);
+      })
+    });
+
+    it('should not be counted if this is requested', function () {
+      slideshow = new Slideshow(events, null, {countIncrementalSlides: false});
+      slideshow.loadFromString('a\n--\nb');
+      slideshow.getSlides().forEach(function(slide) {
+        slide.getSlideNumber().should.equal(1);
+      })
+    });
+  });
+
+  describe('non-countable slides', function() {
+    it('should not be counted', function() {
+      slideshow.loadFromString('a\n---\ncount: false\n\nb');
+      slideshow.getSlides().forEach(function(slide, index) {
+        slide.getSlideNumber().should.equal(1);
+      })
+    });
   });
 
   describe('name mapping', function () {
@@ -77,6 +110,25 @@ describe('Slideshow', function () {
       slideshow.loadFromString('name: a\n---\nno name\n---\nname: b');
       slideshow.getSlideByName('a').should.exist;
       slideshow.getSlideByName('b').should.exist;
+    });
+  });
+
+  describe('number mapping', function() {
+    it('should be populated', function() {
+      slideshow.loadFromString('a\n---\nb');
+      slideshow.getSlidesByNumber(1).should.exist;
+      slideshow.getSlidesByNumber(2).should.exist;
+    });
+
+    it('should contain all slides with the same number in one entry', function() {
+      slideshow.loadFromString('a\n---\ncount: false\n\nb\n---\nc');
+      slideshow.getSlidesByNumber(1).should.exist;
+      slideshow.getSlidesByNumber(1).length.should.equal(2);
+      slideshow.getSlidesByNumber(1)[0].getSlideNumber().should.equal(1);
+      slideshow.getSlidesByNumber(1)[0].getSlideIndex().should.equal(0);
+      slideshow.getSlidesByNumber(1)[1].getSlideNumber().should.equal(1);
+      slideshow.getSlidesByNumber(1)[1].getSlideIndex().should.equal(1);
+      slideshow.getSlidesByNumber(2).should.exist;
     });
   });
 
@@ -106,6 +158,14 @@ describe('Slideshow', function () {
     it('should be omitted from list of slides', function () {
       slideshow.loadFromString('name: a\nlayout: true\n---\nname: b');
       slideshow.getSlides().length.should.equal(1);
+    });
+
+    it('should not be counted', function () {
+      slideshow.loadFromString('name: a\nlayout: true\n---\nname: b\n---\nc');
+      slideshow.getSlides().length.should.equal(2);
+      slideshow.getSlides().forEach(function(slide, index) {
+        slide.getSlideNumber().should.equal(index + 1);
+      })
     });
   });
 

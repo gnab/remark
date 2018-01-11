@@ -2,13 +2,13 @@ module.exports = Keyboard;
 
 function Keyboard(events) {
   this._events = events;
-  
+
   this.activate();
 }
 
 Keyboard.prototype.activate = function () {
   this._gotoSlideNumber = '';
-  
+
   this.addKeyboardEventListeners();
 };
 
@@ -19,10 +19,10 @@ Keyboard.prototype.deactivate = function () {
 Keyboard.prototype.addKeyboardEventListeners = function () {
   var self = this;
   var events = this._events;
-  
+
   events.on('keydown', function (event) {
-    if (event.metaKey || event.ctrlKey) {
-      // Bail out if meta or ctrl key was pressed
+    if (event.metaKey || event.ctrlKey || event.altKey) {
+      // Bail out if alt, meta or ctrl key was pressed
       return;
     }
 
@@ -55,7 +55,7 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
         break;
       case 13: // Return
         if (self._gotoSlideNumber) {
-          events.emit('gotoSlide', self._gotoSlideNumber);
+          events.emit('gotoSlideNumber', self._gotoSlideNumber);
           self._gotoSlideNumber = '';
         }
         break;
@@ -67,8 +67,9 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
       // Bail out if meta or ctrl key was pressed
       return;
     }
-    
+
     var key = String.fromCharCode(event.which).toLowerCase();
+    var tryToPreventDefault = true;
 
     switch (key) {
       case 'j':
@@ -95,15 +96,15 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
       case 't':
         events.emit('resetTimer');
         break;
-      case '1': 
-      case '2': 
-      case '3': 
-      case '4': 
+      case '1':
+      case '2':
+      case '3':
+      case '4':
       case '5':
-      case '6': 
-      case '7': 
-      case '8': 
-      case '9': 
+      case '6':
+      case '7':
+      case '8':
+      case '9':
       case '0':
         self._gotoSlideNumber += key;
         break;
@@ -111,13 +112,19 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
       case '?':
         events.emit('toggleHelp');
         break;
+      default:
+        tryToPreventDefault = false;
     }
+
+    if (tryToPreventDefault && event && event.preventDefault)
+      event.preventDefault();
+
   });
 };
 
 Keyboard.prototype.removeKeyboardEventListeners = function () {
   var events = this._events;
-  
+
   events.removeAllListeners("keydown");
   events.removeAllListeners("keypress");
 };

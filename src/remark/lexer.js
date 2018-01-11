@@ -32,7 +32,7 @@ var block = replace(/CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO|SLIDE_SEPARATOR|F
 function Lexer () { }
 
 Lexer.prototype.lex = function (src) {
-  var tokens = lex(src, block),
+  var tokens = lex(src.replace('\r', ''), block),
       i;
 
   for (i = tokens.length - 2; i >= 0; i--) {
