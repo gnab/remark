@@ -55,7 +55,7 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
         break;
       case 13: // Return
         if (self._gotoSlideNumber) {
-          events.emit('gotoSlide', self._gotoSlideNumber);
+          events.emit('gotoSlideNumber', self._gotoSlideNumber);
           self._gotoSlideNumber = '';
         }
         break;

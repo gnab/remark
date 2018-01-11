@@ -28,13 +28,5 @@ function formatSlideNumber (slide, slideshow) {
 }
 
 function getSlideNo (slide, slideshow) {
-  var slides = slideshow.getSlides(), i, slideNo = 0;
-
-  for (i = 0; i <= slide.getSlideIndex() && i < slides.length; ++i) {
-    if (slides[i].properties.count !== 'false') {
-      slideNo += 1;
-    }
-  }
-
-  return Math.max(1, slideNo);
+  return slide.getSlideNumber();
 }

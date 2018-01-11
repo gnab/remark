@@ -2,7 +2,7 @@ var converter = require('../converter');
 
 module.exports = Slide;
 
-function Slide (slideIndex, slide, template) {
+function Slide (slideIndex, slideNumber, slide, template) {
   var self = this;
 
   self.properties = slide.properties || {};
@@ -11,6 +11,7 @@ function Slide (slideIndex, slide, template) {
   self.notes = slide.notes || '';
 
   self.getSlideIndex = function () { return slideIndex; };
+  self.getSlideNumber = function () { return slideNumber; };
 
   if (template) {
     inherit(self, template);

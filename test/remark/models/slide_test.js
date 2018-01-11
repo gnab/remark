@@ -3,7 +3,7 @@ var Slide = require('../../../src/remark/models/slide');
 describe('Slide', function () {
   describe('properties', function () {
     it('should be extracted', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
             content: [''],
             properties: {a: 'b', c: 'd'}
           });
@@ -15,12 +15,12 @@ describe('Slide', function () {
 
   describe('inheritance', function () {
     it('should inherit properties, content and notes', function () {
-      var template = new Slide(1, {
+      var template = new Slide(1, 1, {
             content: ['Some content.'],
             properties: {prop1: 'val1'},
             notes: 'template notes'
           })
-        , slide = new Slide(2, {
+        , slide = new Slide(2, 2, {
             content: ['More content.'],
             properties: {prop2: 'val2'},
             notes: 'slide notes'
@@ -33,31 +33,31 @@ describe('Slide', function () {
     });
 
     it('should not inherit name property', function () {
-      var template = new Slide(1, {
+      var template = new Slide(1, 1, {
             content: ['Some content.'],
             properties: {name: 'name'}
           })
-        , slide = new Slide(1, {content: ['More content.']}, template);
+        , slide = new Slide(1, 1, {content: ['More content.']}, template);
 
       slide.properties.should.not.have.property('name');
     });
 
     it('should not inherit layout property', function () {
-      var template = new Slide(1, {
+      var template = new Slide(1, 1, {
             content: ['Some content.'],
             properties: {layout: true}
           })
-        , slide = new Slide(1, {content: ['More content.']}, template);
+        , slide = new Slide(1, 1, {content: ['More content.']}, template);
 
       slide.properties.should.not.have.property('layout');
     });
 
     it('should aggregate class property value', function () {
-      var template = new Slide(1, {
+      var template = new Slide(1, 1, {
             content: ['Some content.'],
             properties: {'class': 'a'}
           })
-        , slide = new Slide(1, {
+        , slide = new Slide(1, 1, {
             content: ['More content.'],
             properties: {'class': 'b'}
           }, template);
@@ -66,11 +66,11 @@ describe('Slide', function () {
     });
 
     it('should not expand regular properties when inheriting template', function () {
-      var template = new Slide(1, {
+      var template = new Slide(1, 1, {
             content: ['{{name}}'],
             properties: {name: 'a'}
           })
-        , slide = new Slide(1, {
+        , slide = new Slide(1, 1, {
             content: [''],
             properites: {name: 'b'}
           }, template);
@@ -81,7 +81,7 @@ describe('Slide', function () {
 
   describe('variables', function () {
     it('should be expanded to matching properties', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
         content: ['prop1 = {{ prop1 }}'],
         properties: {prop1: 'val1'}
       });
@@ -92,7 +92,7 @@ describe('Slide', function () {
     });
 
     it('should ignore escaped variables', function () {
-      var slide = new Slide(1, {
+      var slide = new Slide(1, 1, {
         content: ['prop1 = \\{{ prop1 }}'],
         properties: {prop1: 'val1'}
       });
@@ -103,7 +103,7 @@ describe('Slide', function () {
     });
 
     it('should ignore undefined variables', function () {
-      var slide = new Slide(1, {content: ['prop1 = {{ prop1 }}']});
+      var slide = new Slide(1, 1, {content: ['prop1 = {{ prop1 }}']});
 
       slide.expandVariables();
 
