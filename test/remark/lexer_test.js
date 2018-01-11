@@ -16,14 +16,27 @@ describe('Lexer', function () {
     });
 
     it('should recognize normal separator', function () {
+      lexer.lex('\n---').should.eql([
+        {type: 'separator', text: '---'}
+      ]);
+    });
+
+    it('should not preserve trailing line breaks of normal separators', function () {
       lexer.lex('\n---\n').should.eql([
         {type: 'separator', text: '---'}
       ]);
     });
 
-    it('should recognize continued separators', function () {
+    it('should recognize continued separator', function () {
+      lexer.lex('\n--').should.eql([
+        {type: 'separator', text: '--'},
+      ]);
+    });
+
+    it('should preserve trailing line breaks of continued separators', function () {
       lexer.lex('\n--\n').should.eql([
-        {type: 'separator', text: '--'}
+        {type: 'separator', text: '--'},
+        {type: 'text', text: '\n'}
       ]);
     });
 

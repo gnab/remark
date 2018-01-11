@@ -69,14 +69,14 @@ describe('Parser', function () {
 
   describe('parsing code', function () {
     it('should include code', function () {
-      var slides = parser.parse('1\n    code\n2\n---\n3\n    code\n4');
+      var slides = parser.parse('1\n\n    code\n2\n---\n3\n\n    code\n4');
 
-      slides[0].content.should.eql(['1\n    code\n2']);
-      slides[1].content.should.eql(['3\n    code\n4']);
+      slides[0].content.should.eql(['1\n\n    code\n2']);
+      slides[1].content.should.eql(['3\n\n    code\n4']);
     });
 
     it('should ignore content class inside code', function () {
-      parser.parse('some code\n    .class[x]')[0].content.should.eql(['some code\n    .class[x]']);
+      parser.parse('some code\n\n    .class[x]')[0].content.should.eql(['some code\n\n    .class[x]']);
     });
   });
 
