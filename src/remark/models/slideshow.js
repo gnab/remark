@@ -171,7 +171,7 @@ function Slideshow (events, dom, options, callback) {
 
 function createSlides (slideshowSource, options) {
   var parser = new Parser()
-   ,  parsedSlides = parser.parse(slideshowSource, macros)
+   ,  parsedSlides = parser.parse(slideshowSource, macros, options)
     , slides = []
     , byName = {}
     , layoutSlide
