@@ -1,7 +1,6 @@
-var Api = require('./remark/api')
-  , polyfills = require('./polyfills')
-  , styler = require('./remark/components/styler/styler')
-  ;
+import Api from './remark/Api';
+import polyfills from './polyfills';
+import Styler from './remark/components/Styler/Styler';
 
 // Expose API as `remark`
 window.remark = new Api();
@@ -10,4 +9,4 @@ window.remark = new Api();
 polyfills.apply();
 
 // Apply embedded styles to document
-styler.styleDocument();
+Styler.styleDocument();

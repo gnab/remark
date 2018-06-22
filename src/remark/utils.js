@@ -16,8 +16,7 @@ exports.toggleClass = function (element, className) {
 
   if (index !== -1) {
     classes.splice(index, 1);
-  }
-  else {
+  } else {
     classes.push(className);
   }
 
