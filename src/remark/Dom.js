@@ -1,6 +1,6 @@
 export default class Dom {
-  constructor() {
-    this.XMLHttpRequest = XMLHttpRequest;
+  static XMLHttpRequest() {
+    return XMLHttpRequest;
   }
 
   static getHTMLElement() {
@@ -27,4 +27,3 @@ export default class Dom {
     }
   }
 }
-

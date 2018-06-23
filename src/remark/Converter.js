@@ -51,8 +51,11 @@ export default class Converter {
   }
 
   convertMarkdown(content, links, inline) {
+    links = links || {};
+    inline = inline || false;
+
     let element = document.createElement('div');
-    element.innerHTML = this.getMarkdownHtml(element, content, links || {}, inline);
+    element.innerHTML = this.getMarkdownHtml(element, content, links, inline);
     element.innerHTML = element.innerHTML.replace(/<p>\s*<\/p>/g, '');
     return element.innerHTML.replace(/\n\r?$/, '');
   }

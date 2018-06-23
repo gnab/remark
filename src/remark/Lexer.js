@@ -113,7 +113,7 @@ export default class Lexer {
               classes: cap[CONTENT].substring(1).split('.'),
               block: text.indexOf('\n') !== -1
             });
-            tokenize(text, INLINE, tokens);
+            Lexer.tokenize(text, INLINE, tokens);
             tokens.push({
               type: 'content_end',
               block: text.indexOf('\n') !== -1

@@ -3,7 +3,7 @@ import Timer from '../components/Timer/Timer';
 import NotesView from './NotesView';
 import Scaler from '../Scaler';
 import resources from '../resources';
-import utils from '../utils';
+import { addClass, removeClass, toggleClass, hasClass, getPrefixedProperty } from '../utils';
 import Printing from '../components/Printing/Printing';
 
 export default class SlideShowView {
@@ -14,7 +14,7 @@ export default class SlideShowView {
     this.scaler = new Scaler(events, slideShow);
     this.printing = new Printing();
     this.slideViews = [];
-    this.timer = new Timer(events, self.timerElement);
+    this.time = null;
 
     // Bind functions
     this.configureContainerElement = this.configureContainerElement.bind(this);
@@ -27,6 +27,7 @@ export default class SlideShowView {
     this.updateDimensions = this.updateDimensions.bind(this);
     this.registerEvents = this.registerEvents.bind(this);
     this.isEmbedded = this.isEmbedded.bind(this);
+    this.handleFullScreen = this.handleFullScreen.bind(this);
 
     // Configure elements
     this.configureContainerElement(containerElement);
@@ -37,7 +38,7 @@ export default class SlideShowView {
     this.updateSlideViews();
     this.registerEvents();
 
-    SlideShowView.handleFullScreen(this);
+    this.handleFullScreen(this);
   }
 
   registerEvents() {
@@ -49,8 +50,8 @@ export default class SlideShowView {
       // To make sure that there is only one element fading at a time,
       // remove the fading class from all slides before hiding
       // the new slide.
-      this.elementArea.getElementsByClassName('remark-fading').forEach(function (slide) {
-        utils.removeClass(slide, 'remark-fading');
+      this.elementArea.getElementsByClassName('remark-fading').forEach((slide) => {
+        removeClass(slide, 'remark-fading');
       });
       this.hideSlide(slideIndex);
     });
@@ -60,19 +61,19 @@ export default class SlideShowView {
     });
 
     this.events.on('forcePresenterMode', () => {
-      if (!utils.hasClass(self.containerElement, 'remark-presenter-mode')) {
-        utils.toggleClass(self.containerElement, 'remark-presenter-mode');
-        self.scaleElements();
+      if (!hasClass(this.containerElement, 'remark-presenter-mode')) {
+        toggleClass(this.containerElement, 'remark-presenter-mode');
+        this.scaleElements();
         this.printing.setPageOrientation('landscape');
       }
     });
 
     this.events.on('togglePresenterMode', () => {
-      utils.toggleClass(self.containerElement, 'remark-presenter-mode');
-      self.scaleElements();
-      this.events.emit('toggledPresenter', self.slideShow.getCurrentSlideIndex() + 1);
+      toggleClass(this.containerElement, 'remark-presenter-mode');
+      this.scaleElements();
+      this.events.emit('toggledPresenter', this.slideShow.getCurrentSlideIndex() + 1);
 
-      if (utils.hasClass(self.containerElement, 'remark-presenter-mode')) {
+      if (hasClass(this.containerElement, 'remark-presenter-mode')) {
         this.printing.setPageOrientation('portrait');
       }
       else {
@@ -81,38 +82,38 @@ export default class SlideShowView {
     });
 
     this.events.on('toggleHelp', () => {
-      utils.toggleClass(this.containerElement, 'remark-help-mode');
+      toggleClass(this.containerElement, 'remark-help-mode');
     });
 
     this.events.on('toggleBlackout', () => {
-      utils.toggleClass(this.containerElement, 'remark-blackout-mode');
+      toggleClass(this.containerElement, 'remark-blackout-mode');
     });
 
     this.events.on('toggleMirrored', () => {
-      utils.toggleClass(this.containerElement, 'remark-mirrored-mode');
+      toggleClass(this.containerElement, 'remark-mirrored-mode');
     });
 
     this.events.on('hideOverlay', () => {
-      utils.removeClass(this.containerElement, 'remark-blackout-mode');
-      utils.removeClass(this.containerElement, 'remark-help-mode');
+      removeClass(this.containerElement, 'remark-blackout-mode');
+      removeClass(this.containerElement, 'remark-help-mode');
     });
 
     this.events.on('pause', () => {
-      utils.toggleClass(this.containerElement, 'remark-pause-mode');
+      toggleClass(this.containerElement, 'remark-pause-mode');
     });
 
     this.events.on('resume', () => {
-      utils.toggleClass(this.containerElement, 'remark-pause-mode');
+      toggleClass(this.containerElement, 'remark-pause-mode');
     });
   }
 
   configureContainerElement(element) {
     this.containerElement = element;
 
-    utils.addClass(element, 'remark-container');
+    addClass(element, 'remark-container');
 
     if (element === this.dom.getBodyElement()) {
-      utils.addClass(this.dom.getHTMLElement(), 'remark-container');
+      addClass(this.dom.getHTMLElement(), 'remark-container');
 
       SlideShowView.forwardEvents(this.events, window, [
         'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel',
@@ -136,11 +137,10 @@ export default class SlideShowView {
     // rather than controller as knowledge of
     // container width is needed to determine
     // whether to move backwards or forwards
-    this.events.on('tap', function (endX) {
+    this.events.on('tap', (endX) => {
       if (endX < this.containerElement.clientWidth / 2) {
         this.slideShow.gotoPreviousSlide();
-      }
-      else {
+      } else {
         this.slideShow.gotoNextSlide();
       }
     });
@@ -166,14 +166,14 @@ export default class SlideShowView {
     this.previewArea = this.containerElement.getElementsByClassName('remark-preview-area')[0];
     this.notesArea = this.containerElement.getElementsByClassName('remark-notes-area')[0];
 
-    this.notesView = new NotesView (this.events, this.notesArea, function () {
-      return this.slideViews;
-    });
+    this.notesView = new NotesView(this.events, this.notesArea, () => (this.slideViews));
 
     this.backdropElement = this.containerElement.getElementsByClassName('remark-backdrop')[0];
     this.helpElement = this.containerElement.getElementsByClassName('remark-help')[0];
 
     this.timerElement = this.notesArea.getElementsByClassName('remark-toolbar-timer')[0];
+    this.timer = new Timer(this.events, this.timerElement);
+
     this.pauseElement = this.containerElement.getElementsByClassName('remark-pause')[0];
 
     this.events.on('propertiesChanged', (changes) => {
@@ -189,7 +189,7 @@ export default class SlideShowView {
     this.printing.on('print', (e) => {
       let slideHeight = (e.isPortrait) ? e.pageHeight * 0.4 : e.pageHeight;
 
-      this.slideViews.forEach(function (slideView) {
+      this.slideViews.forEach((slideView) => {
         slideView.scale({
           clientWidth: e.pageWidth,
           clientHeight: slideHeight
@@ -204,15 +204,15 @@ export default class SlideShowView {
   }
 
   updateSlideViews() {
-    this.slideViews.forEach(function (slideView) {
+    this.slideViews.forEach((slideView) => {
       this.elementArea.removeChild(slideView.containerElement);
     });
 
-    this.slideViews = this.slideShow.getSlides().map(function (slide) {
-      return new SlideView(this.events, this.slideShow, this.scaler, slide);
-    });
+    this.slideViews = this.slideShow.getSlides().map((slide) => (
+      new SlideView(this.events, this.slideShow, this.scaler, slide)
+    ));
 
-    this.slideViews.forEach(function (slideView) {
+    this.slideViews.forEach((slideView) => {
       this.elementArea.appendChild(slideView.containerElement);
     });
 
@@ -224,10 +224,10 @@ export default class SlideShowView {
   }
 
   scaleSlideBackgroundImages(dimensions) {
-    this.slideViews.forEach(function (slideView) {
+    this.slideViews.forEach((slideView) => {
       slideView.scaleBackgroundImage(dimensions);
     });
-  };
+  }
 
   showSlide(slideIndex) {
     this.events.emit("beforeShowSlide", slideIndex);
@@ -256,27 +256,27 @@ export default class SlideShowView {
     return this.containerElement !== this.dom.getBodyElement();
   }
 
-  static handleFullScreen(self) {
-    const requestFullScreen = utils.getPrefixedProperty(self.containerElement, 'requestFullScreen');
-    const cancelFullScreen = utils.getPrefixedProperty(document, 'cancelFullScreen');
+  handleFullScreen() {
+    const requestFullScreen = getPrefixedProperty(this.containerElement, 'requestFullScreen');
+    const cancelFullScreen = getPrefixedProperty(document, 'cancelFullScreen');
 
-    self.events.on('toggleFullScreen', function () {
-      let fullScreenElement = utils.getPrefixedProperty(document, 'fullScreenElement')
-        || utils.getPrefixedProperty(document, 'fullScreenElement');
+    this.events.on('toggleFullScreen', () => {
+      let fullScreenElement = getPrefixedProperty(document, 'fullScreenElement') ||
+        getPrefixedProperty(document, 'fullScreenElement');
 
       if (!fullScreenElement && requestFullScreen) {
-        requestFullScreen.call(self.containerElement, Element.ALLOW_KEYBOARD_INPUT);
+        requestFullScreen.call(this.containerElement, Element.ALLOW_KEYBOARD_INPUT);
       } else if (cancelFullScreen) {
         cancelFullScreen.call(document);
       }
 
-      self.scaleElements();
+      this.scaleElements();
     });
   }
 
   static forwardEvents(target, source, events) {
-    events.forEach(function (eventName) {
-      source.addEventListener(eventName, function () {
+    events.forEach((eventName) => {
+      source.addEventListener(eventName, function () { // Don't use arrow functions
         let args = Array.prototype.slice.call(arguments);
         target.emit.apply(target, [eventName].concat(args));
       });

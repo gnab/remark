@@ -21,7 +21,7 @@ export default class DefaultController {
     this.location.activate();
     this.message.activate();
     this.mouse.activate();
-    this.touch.register(events, options);
+    this.touch.activate();
 
     this.addApiEventListeners(events);
   }
@@ -33,7 +33,7 @@ export default class DefaultController {
       this.touch.deactivate();
     });
 
-    events.on('resume',  (event) => {
+    events.on('resume', (event) => {
       this.keyboard.activate();
       this.mouse.activate();
       this.touch.activate();

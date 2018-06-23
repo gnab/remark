@@ -1,4 +1,4 @@
-import utils from '../../utils.js';
+import { hasClass } from '../../utils';
 
 export default class Location {
   constructor(events, dom, slideShowView) {
@@ -26,7 +26,7 @@ export default class Location {
     };
 
     const updateHash = (slideNoOrName) => {
-      if (utils.hasClass(this.slideShowView.containerElement, 'remark-presenter-mode')) {
+      if (hasClass(this.slideShowView.containerElement, 'remark-presenter-mode')) {
         this.dom.setLocationHash('#p' + slideNoOrName);
       } else{
         this.dom.setLocationHash('#' + slideNoOrName);

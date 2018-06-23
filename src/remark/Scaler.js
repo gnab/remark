@@ -6,12 +6,13 @@ export default class Scaler {
   constructor(events, slideShow) {
     this.events = events;
     this.slideShow = slideShow;
-    this.ratio = getRatio(slideShow);
-    this.dimensions = getDimensions(this.ratio);
 
     this.getRatio = this.getRatio.bind(this);
     this.getDimensions = this.getDimensions.bind(this);
     this.scaleToFit = this.scaleToFit.bind(this);
+
+    this.ratio = this.getRatio(slideShow);
+    this.dimensions = this.getDimensions(this.ratio);
 
     this.events.on('propertiesChanged', (changes) => {
       if (changes.hasOwnProperty('ratio')) {

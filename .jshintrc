@@ -3,7 +3,7 @@
   "undef": true,
   "laxcomma": true,
   "browser": true,
-
+  "esnext": true,
   "predef": [
     "require",
     "module",

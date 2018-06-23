@@ -9,7 +9,7 @@ export default class NotesView {
 
     this.configureElements();
 
-    events.on('showSlide', (slideIndex) => {
+    this.events.on('showSlide', (slideIndex) => {
       this.showSlide(slideIndex);
     });
   }

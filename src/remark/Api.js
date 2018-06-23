@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'events';
 import highlighter from './highlighter';
 import Converter from './Converter';
 import resources from './resources';
@@ -11,21 +11,22 @@ import macros from './macros';
 
 export default class Api {
   constructor(dom) {
-    this.dom = dom || new Dom();
+    this.dom = dom || Dom;
     this.highlighter = highlighter;
     this.macros = macros;
     this.version = resources.version;
     this.converter = new Converter();
 
+    this.convert = this.convert.bind(this);
     this.create = this.create.bind(this);
   }
 
-  static convert(markdown) {
-    let parser = new Parser();
+  convert(markdown) {
+    let parser = Parser;
     let content = parser.parse(markdown || '', macros)[0].content;
     
     return this.converter.convertMarkdown(content, {}, true);
-  };
+  }
 
   static applyDefaults(dom, options) {
     options = options || {};
@@ -61,11 +62,11 @@ export default class Api {
 
     return new SlideShow(events, this.dom, options, (slideShow) => {
       let slideShowView = new SlideShowView(events, this.dom, options.container, slideShow);
-      options.controller || new DefaultController(events, this.dom, slideShowView, options.navigation);
+      let controller = options.controller || new DefaultController(events, this.dom, slideShowView, options.navigation);
 
       if (typeof callback === 'function') {
         callback(slideShow);
       }
     });
-  };
+  }
 }

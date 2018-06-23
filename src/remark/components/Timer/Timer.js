@@ -7,7 +7,7 @@ export default class Timer {
     this.pauseStart = null;
     this.pauseLength = 0;
 
-    element.innerHTML = '0:00:00';
+    this.element.innerHTML = '0:00:00';
 
     setInterval(() => {
       this.updateTimer();

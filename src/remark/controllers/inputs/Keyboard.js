@@ -34,9 +34,9 @@ export default class Keyboard {
           this.events.emit('gotoPreviousSlide');
           break;
         case 32: // Space
-          if(event.shiftKey){ // Shift+Space
+          if (event.shiftKey) { // Shift+Space
             this.events.emit('gotoPreviousSlide');
-          }else{
+          } else {
             this.events.emit('gotoNextSlide');
           }
           break;
@@ -55,15 +55,15 @@ export default class Keyboard {
           this.events.emit('hideOverlay');
           break;
         case 13: // Return
-          if (self.gotoSlideNumber) {
-            this.events.emit('gotoSlideNumber', self.gotoSlideNumber);
-            self.gotoSlideNumber = '';
+          if (this.gotoSlideNumber) {
+            this.events.emit('gotoSlideNumber', this.gotoSlideNumber);
+            this.gotoSlideNumber = '';
           }
           break;
       }
     });
 
-    this.events.on('keypress', function (event) {
+    this.events.on('keypress', (event) => {
       if (event.metaKey || event.ctrlKey) {
         // Bail out if meta or ctrl key was pressed
         return;
@@ -107,7 +107,7 @@ export default class Keyboard {
         case '8':
         case '9':
         case '0':
-          self.gotoSlideNumber += key;
+          this.gotoSlideNumber += key;
           break;
         case 'h':
         case '?':
@@ -117,9 +117,9 @@ export default class Keyboard {
           tryToPreventDefault = false;
       }
 
-      if (tryToPreventDefault && event && event.preventDefault)
+      if (tryToPreventDefault && event && event.preventDefault) {
         event.preventDefault();
-
+      }
     });
   }
 

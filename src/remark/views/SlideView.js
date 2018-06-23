@@ -1,6 +1,6 @@
 import SlideNumber from '../components/SlideNumber/SlideNumber';
-import converter from '../converter';
-import utils from '../utils';
+import Converter from '../Converter';
+import { addClass, removeClass } from '../utils';
 import CodeBlockHighlighter from "./CodeBlockHighlighter";
 
 export default class SlideView {
@@ -9,8 +9,9 @@ export default class SlideView {
     this.slideShow = slideShow;
     this.scaler = scaler;
     this.slide = slide;
-    this.codeBlockHighlighter = new CodeBlockHighlighter(slideShow);
 
+    this.converter = new Converter();
+    this.codeBlockHighlighter = new CodeBlockHighlighter(slideShow);
     this.slideNumber = new SlideNumber(slide, slideShow);
     this.progressBar = new SlideNumber(slide, slideShow);
 
@@ -47,29 +48,29 @@ export default class SlideView {
   }
 
   show() {
-    utils.addClass(this.containerElement, 'remark-visible');
-    utils.removeClass(this.containerElement, 'remark-fading');
-  };
+    addClass(this.containerElement, 'remark-visible');
+    removeClass(this.containerElement, 'remark-fading');
+  }
 
   hide() {
-    utils.removeClass(this.containerElement, 'remark-visible');
+    removeClass(this.containerElement, 'remark-visible');
 
     // Don't just disappear the slide. Mark it as fading, which
     // keeps it on the screen, but at a reduced z-index.
     // Then set a timer to remove the fading state in 1s.
-    utils.addClass(this.containerElement, 'remark-fading');
+    addClass(this.containerElement, 'remark-fading');
 
     setTimeout(() => {
-      utils.removeClass(this.containerElement, 'remark-fading');
+      removeClass(this.containerElement, 'remark-fading');
     }, 1000);
-  };
+  }
 
   createSlideElement() {
     let element = document.createElement('div');
     element.className = 'remark-slide';
 
     if (this.slide.properties.continued === 'true') {
-      utils.addClass(element, 'remark-slide-incremental');
+      addClass(element, 'remark-slide-incremental');
     }
 
     return element;
@@ -79,11 +80,11 @@ export default class SlideView {
     element.className = '';
 
     const  setClassFromProperties = (element, properties) => {
-      utils.addClass(element, 'remark-slide-content');
+      addClass(element, 'remark-slide-content');
 
       (properties['class'] || '').split(/[, ]/)
-        .filter(function (s) { return s !== ''; })
-        .forEach(function (c) { utils.addClass(element, c); });
+        .filter((s) => (s !== ''))
+        .forEach((c) => { addClass(element, c); });
     };
 
     setClassFromProperties(element, properties);
@@ -92,7 +93,7 @@ export default class SlideView {
       let highlightStyle = properties['highlight-style'] || slideShow.getOptions().highlightStyle;
 
       if (highlightStyle) {
-        utils.addClass(element, 'hljs-' + highlightStyle);
+        addClass(element, 'hljs-' + highlightStyle);
       }
     };
 
@@ -122,7 +123,7 @@ export default class SlideView {
     }
 
     this.styleContentElement(element, this.slide.properties);
-    element.innerHTML = converter.convertMarkdown(this.slide.content, this.slideShow.getLinks());
+    element.innerHTML = this.converter.convertMarkdown(this.slide.content, this.slideShow.getLinks());
     this.codeBlockHighlighter.highlightCodeBlocks(element, this.slideShow);
 
     return element;
@@ -131,7 +132,7 @@ export default class SlideView {
   createNotesElement(notes) {
     let element = document.createElement('div');
     element.className = 'remark-slide-notes';
-    element.innerHTML = converter.convertMarkdown(notes, this.slideShow.getLinks());
+    element.innerHTML = this.converter.convertMarkdown(notes, this.slideShow.getLinks());
 
     this.codeBlockHighlighter.highlightCodeBlocks(element, this.slideShow);
 
@@ -150,19 +151,19 @@ export default class SlideView {
     this.contentElement = this.createContentElement(this.events, this.slideShow, this.slide);
     this.notesElement = this.createNotesElement(this.slideShow, this.slide.notes);
 
-    if (this.slideShow.options.slideNumber === true) {
+    //if (this.slideShow.options.slideNumber === true) {
       this.contentElement.appendChild(this.slideNumber.element);
-    }
+    //}
 
-    if (this.slideShow.options.progress === true) {
+    /*if (this.slideShow.options.progress === true) {
       this.contentElement.appendChild(this.progressBar.element);
-    }
+    }*/
 
     this.element.appendChild(this.contentElement);
     this.scalingElement.appendChild(this.element);
     this.containerElement.appendChild(this.scalingElement);
     this.containerElement.appendChild(this.notesElement);
-  };
+  }
 
   scaleBackgroundImage(dimensions) {
     let styles = window.getComputedStyle(this.contentElement);
@@ -182,8 +183,8 @@ export default class SlideView {
       let image = new Image();
 
       image.onload = () => {
-        if (!this.originalBackgroundSize
-            && (image.width > dimensions.width || image.height > dimensions.height)
+        if (!this.originalBackgroundSize &&
+            (image.width > dimensions.width || image.height > dimensions.height)
         ) {
           // Background image is larger than slide
           // No custom background size has been set
@@ -198,8 +199,7 @@ export default class SlideView {
             scale = dimensions.height / image.height;
           }
 
-          this.contentElement.style.backgroundSize = image.width * scale + 'px '
-            + image.height * scale + 'px';
+          this.contentElement.style.backgroundSize = image.width * scale + 'px '+ image.height * scale + 'px';
           this.contentElement.style.backgroundPosition = '50% ' +
             ((dimensions.height - (image.height * scale)) / 2) + 'px';
         } else if (this.backgroundSizeSet) { // Revert to previous background size setting
@@ -211,5 +211,5 @@ export default class SlideView {
 
       image.src = match[2];
     }
-  };
+  }
 }

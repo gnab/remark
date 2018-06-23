@@ -1,19 +1,18 @@
-var sinon = require('sinon')
-  , EventEmitter = require('events').EventEmitter
-  , TestDom = require('../../test_dom')
-  , Controller = require('../../../src/remark/controllers/defaultController')
-  ;
+import sinon from 'sinon';
+import EventEmitter from 'events';
+import TestDom from '../../TestDom';
+import Controller from '../../../src/remark/controllers/DefaultController';
 
-describe('Controller', function () {
-  describe('initial navigation', function () {
-    it('should naviate to first slide when slideshow is embedded ', function () {
+describe('Controller', () => {
+  describe('initial navigation', () => {
+    it('should naviate to first slide when slideshow is embedded ', () => {
       createController({embedded: true});
 
       events.emit.should.be.calledWithExactly('gotoSlide', 1);
     });
 
-    it('should naviate by hash when slideshow is not embedded', function () {
-      dom.getLocationHash = function () { return '#2'; };
+    it('should naviate by hash when slideshow is not embedded', () => {
+      dom.getLocationHash = () => { return '#2'; };
 
       createController({embedded: false});
 
@@ -21,100 +20,100 @@ describe('Controller', function () {
     });
   });
 
-  describe('hash change', function () {
-    it('should not navigate by hash when slideshow is embedded', function () {
+  describe('hash change', () => {
+    it('should not navigate by hash when slideshow is embedded', () => {
       createController({embedded: true});
 
-      dom.getLocationHash = function () { return '#3'; };
+      dom.getLocationHash = () => { return '#3'; };
       events.emit('hashchange');
 
       events.emit.should.be.neverCalledWith('gotoSlide', '3');
     });
 
-    it('should navigate by hash when slideshow is not embedded', function () {
+    it('should navigate by hash when slideshow is not embedded', () => {
       createController({embedded: false});
 
-      dom.getLocationHash = function () { return '#3'; };
+      dom.getLocationHash = () => { return '#3'; };
       events.emit('hashchange');
 
       events.emit.should.be.calledWithExactly('gotoSlide', '3');
     });
   });
 
-  describe('keyboard navigation', function () {
-    it('should navigate to previous slide when pressing page up', function () {
+  describe('keyboard navigation', () => {
+    it('should navigate to previous slide when pressing page up', () => {
       events.emit('keydown', {keyCode: 33});
 
       events.emit.should.be.calledWithExactly('gotoPreviousSlide');
     });
 
-    it('should navigate to previous slide when pressing arrow left', function () {
+    it('should navigate to previous slide when pressing arrow left', () => {
       events.emit('keydown', {keyCode: 37});
 
       events.emit.should.be.calledWithExactly('gotoPreviousSlide');
     });
 
-    it('should not navigate to previous slide when pressing alt + arrow left', function () {
+    it('should not navigate to previous slide when pressing alt + arrow left', () => {
       events.emit('keydown', {keyCode: 37, altKey: true});
 
       events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
     });
 
-    it('should navigate to previous slide when pressing arrow up', function () {
+    it('should navigate to previous slide when pressing arrow up', () => {
       events.emit('keydown', {keyCode: 38});
 
       events.emit.should.be.calledWithExactly('gotoPreviousSlide');
     });
 
-    it('should navigate to next slide when pressing space', function () {
+    it('should navigate to next slide when pressing space', () => {
       events.emit('keydown', {keyCode: 32});
 
       events.emit.should.be.calledWithExactly('gotoNextSlide');
     });
 
-    it('should navigate to previous slide when pressing shift+space', function () {
+    it('should navigate to previous slide when pressing shift+space', () => {
       events.emit('keydown', {keyCode: 32, shiftKey: true});
 
       events.emit.should.be.calledWithExactly('gotoPreviousSlide');
     });
 
-    it('should navigate to next slide when pressing page down', function () {
+    it('should navigate to next slide when pressing page down', () => {
       events.emit('keydown', {keyCode: 34});
 
       events.emit.should.be.calledWithExactly('gotoNextSlide');
     });
 
-    it('should navigate to next slide when pressing arrow right', function () {
+    it('should navigate to next slide when pressing arrow right', () => {
       events.emit('keydown', {keyCode: 39});
 
       events.emit.should.be.calledWithExactly('gotoNextSlide');
     });
 
-    it('should not navigate to next slide when pressing alt + arrow right', function () {
+    it('should not navigate to next slide when pressing alt + arrow right', () => {
       events.emit('keydown', {keyCode: 39, altKey: true});
 
       events.emit.should.not.be.calledWithExactly('gotoNextSlide');
     });
 
-    it('should navigate to next slide when pressing arrow down', function () {
+    it('should navigate to next slide when pressing arrow down', () => {
       events.emit('keydown', {keyCode: 39});
 
       events.emit.should.be.calledWithExactly('gotoNextSlide');
     });
 
-    it('should navigate to first slide when pressing home', function () {
+    it('should navigate to first slide when pressing home', () => {
       events.emit('keydown', {keyCode: 36});
 
       events.emit.should.be.calledWithExactly('gotoFirstSlide');
     });
 
-    it('should navigate to last slide when pressing end', function () {
+    it('should navigate to last slide when pressing end', () => {
       events.emit('keydown', {keyCode: 35});
 
       events.emit.should.be.calledWithExactly('gotoLastSlide');
     });
 
-    it('should navigate to slide N when pressing N followed by return', function () {
+    it('should navigate to slide N when pressing N followed by return', () => {
       events.emit('keypress', {which: 49}); // 1
       events.emit('keypress', {which: 50}); // 2
       events.emit('keydown', {keyCode: 13}); // return
@@ -122,60 +121,59 @@ describe('Controller', function () {
       events.emit.should.be.calledWithExactly('gotoSlideNumber', '12');
     });
 
-    beforeEach(function () {
+    beforeEach(() => {
       createController();
     });
   });
 
-  describe('commands', function () {
-    it('should toggle blackout mode when pressing "b"', function () {
+  describe('commands', () => {
+    it('should toggle blackout mode when pressing "b"', () => {
       events.emit('keypress', {which: 98});
       events.emit.should.be.calledWithExactly('toggleBlackout');
     });
 
-    it('should toggle mirrored mode when pressing "m"', function () {
+    it('should toggle mirrored mode when pressing "m"', () => {
       events.emit('keypress', {which: 109});
       events.emit.should.be.calledWithExactly('toggleMirrored');
     });
 
-    beforeEach(function () {
+    beforeEach(() => {
       createController();
     });
   });
 
-  describe('custom controller', function () {
-    it('should do nothing when pressing page up', function () {
+  describe('custom controller', () => {
+    it('should do nothing when pressing page up', () => {
       events.emit('keydown', {keyCode: 33});
 
       events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
     });
 
-    beforeEach(function () {
-      controller = function() {};
+    beforeEach(() => {
+      controller = () => {};
     });
   });
 
-  var events
-    , dom
-    , controller
-    ;
+  let events;
+  let dom;
+  let controller;
 
-  function createController (options) {
+  function createController(options) {
     options = options || {embedded: false};
 
     controller = new Controller(events, dom, {
-      isEmbedded: function () { return options.embedded; }
+      isEmbedded: () => { return options.embedded; }
     });
   }
 
-  beforeEach(function () {
+  beforeEach(() => {
     events = new EventEmitter();
     sinon.spy(events, 'emit');
 
     dom = new TestDom();
   });
 
-  afterEach(function () {
+  afterEach(() => {
     events.emit.restore();
   });
 });

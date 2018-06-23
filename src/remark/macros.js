@@ -1,5 +1,5 @@
-var macros = module.exports = {};
+let macros = module.exports = {};
 
-macros.hello = function () {
+macros.hello = () => {
   return 'hello!';
 };

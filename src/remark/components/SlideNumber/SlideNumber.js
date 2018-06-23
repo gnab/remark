@@ -17,7 +17,7 @@ export default class SlideNumber {
     let total = (slides[slides.length - 1]).getSlideNumber();
 
     if (typeof format === 'function') {
-      return format.call(slideshow, current, total);
+      return format.call(this.slideShow, current, total);
     }
 
     return format

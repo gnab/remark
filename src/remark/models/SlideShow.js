@@ -1,7 +1,7 @@
 import Navigation from './slideshow/Navigation';
 import Events from './slideshow/Events';
 import Slide from './Slide';
-import Parser from '../parser';
+import Parser from '../Parser';
 import macros from '../macros';
 
 class SlideShow {
@@ -12,6 +12,7 @@ class SlideShow {
     this.slides = [];
     this.links = {};
     this.slides.byName = {};
+    this.slides.byNumber = {};
 
     this.init = this.init.bind(this);
     this.setOptions = this.setOptions.bind(this);
@@ -42,11 +43,13 @@ class SlideShow {
   }
 
   init(callback) {
-    this.events.on('toggleBlackout', function (opts) {
-      if (opts && opts.propagate === false) return;
+    this.events.on('toggleBlackout', (opts) => {
+      if (opts && opts.propagate === false) {
+        return;
+      }
 
-      if (self.clone && !self.clone.closed) {
-        self.clone.postMessage('toggleBlackout', '*');
+      if (this.clone && !this.clone.closed) {
+        this.clone.postMessage('toggleBlackout', '*');
       }
 
       if (window.opener) {
@@ -55,12 +58,12 @@ class SlideShow {
     });
 
     if (this.options.sourceUrl !== null) {
-      this.loadFromUrl(options.sourceUrl, callback);
+      this.loadFromUrl(this.options.sourceUrl, callback);
     } else {
-      this.loadFromString(options.source);
+      this.loadFromString(this.options.source);
 
       if (typeof callback === 'function') {
-        callback(self);
+        callback(this);
       }
     }
   }
@@ -81,8 +84,10 @@ class SlideShow {
     };
 
     this.options = {
+      // jshint ignore:start
       ...defaults,
       ...options
+      // jshint ignore:end
     };
   }
 
@@ -96,22 +101,22 @@ class SlideShow {
   }
 
   createSlides(slideShowSource) {
-    const parser = new Parser();
+    const parser = Parser;
     const parsedSlides = parser.parse(slideShowSource, macros, this.options);
     let slides = [];
     let byName = {};
     let layoutSlide;
 
-    this.slides.byName = {};
-    this.slides.byNumber = {};
+    slides.byName = {};
+    slides.byNumber = {};
 
     let slideNumber = 0;
     
-    parsedSlides.slides.forEach(function (slide, i) {
+    parsedSlides.forEach((slide, i) => {
       let template;
 
       if (slide.properties.continued === 'true' && i > 0) {
-        template = slides[this.slides.length - 1];
+        template = slides[slides.length - 1];
       } else if (byName[slide.properties.template]) {
         template = byName[slide.properties.template];
       } else if (slide.properties.layout === 'false') {
@@ -134,10 +139,10 @@ class SlideShow {
 
       if (slideIsIncluded && slide.properties.layout !== 'true' && slide.properties.count !== 'false') {
         slideNumber++;
-        this.slides.byNumber[slideNumber] = [];
+        slides.byNumber[slideNumber] = [];
       }
 
-      let slideViewModel = new Slide(this.slides.length, slideNumber, slide, template);
+      let slideViewModel = new Slide(slides.length, slideNumber, slide, template);
 
       if (slide.properties.name) {
         byName[slide.properties.name] = slideViewModel;
@@ -147,15 +152,14 @@ class SlideShow {
         layoutSlide = slideViewModel;
       } else {
         if (slideIsIncluded) {
-          this.slides.push(slideViewModel);
-          this.slides.byNumber[slideNumber].push(slideViewModel);
+          slides.push(slideViewModel);
+          slides.byNumber[slideNumber].push(slideViewModel);
         }
 
         if (slide.properties.name) {
-          this.slides.byName[slide.properties.name] = slideViewModel;
+          slides.byName[slide.properties.name] = slideViewModel;
         }
       }
-
     });
 
     return slides;
@@ -170,10 +174,10 @@ class SlideShow {
     });
 
     this.links = {};
-    this.slides.forEach(function (slide) {
+    this.slides.forEach((slide) => {
       for (let id in slide.links) {
         if (slide.links.hasOwnProperty(id)) {
-          links[id] = slide.links[id];
+          this.links[id] = slide.links[id];
         }
       }
     });
@@ -187,11 +191,11 @@ class SlideShow {
     xhr.onload = () => {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
-          options.source = xhr.responseText.replace(/\r\n/g, '\n');
-          this.loadFromString(options.source);
+          this.options.source = xhr.responseText.replace(/\r\n/g, '\n');
+          this.loadFromString(this.options.source);
 
           if (typeof callback === 'function') {
-            callback(self);
+            callback(this);
           }
         } else {
           throw Error(xhr.statusText);
@@ -214,9 +218,7 @@ class SlideShow {
   }
 
   getSlides() {
-    return this.slides.map((slide) => {
-      return slide;
-    });
+    return this.slides.map((slide) => (slide));
   }
 
   getSlideCount() {
@@ -260,4 +262,4 @@ class SlideShow {
   }
 }
 
-export default Events(Navigation(SlideShow));
+export default Navigation(Events(SlideShow));

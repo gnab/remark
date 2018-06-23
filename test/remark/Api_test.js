@@ -1,14 +1,13 @@
-var Api = require('../../src/remark/api')
-  , TestDom = require('../test_dom')
-  , highlighter = require('../../src/remark/highlighter')
-  , Slideshow = require('../../src/remark/models/slideshow')
-  ;
+import Api from '../../src/remark/Api';
+import Slideshow from '../../src/remark/models/SlideShow';
+import TestDom from '../TestDom';
+let highlighter = require('../../src/remark/highlighter');
 
 describe('API', function () {
-  var api,
-      dom;
+  let api;
+  let dom;
 
-  beforeEach(function () {
+  beforeEach(() => {
     dom = new TestDom();
     api = new Api(dom);
   });
@@ -26,19 +25,19 @@ describe('API', function () {
   });
 
   it('should allow creating slideshow with source directly', function () {
-    var slides = api.create({ source: '1\n---\n2' }).getSlides();
+    let slides = api.create({ source: '1\n---\n2' }).getSlides();
     slides.length.should.eql(2);
     slides[0].content.should.eql([ '1' ]);
     slides[1].content.should.eql([ '2' ]);
   });
 
   it('should allow creating slideshow from source textarea', function () {
-    var source = document.createElement('textarea');
+    let source = document.createElement('textarea');
     source.id = 'source';
     source.textContent = '3\n---\n4';
     dom.getElementById = function () { return source; };
 
-    var slides = api.create().getSlides();
+    let slides = api.create().getSlides();
     slides.length.should.eql(2);
     slides[0].content.should.eql(['3']);
     slides[1].content.should.eql(['4']);

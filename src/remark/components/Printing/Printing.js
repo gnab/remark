@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'events';
 import Styler from '../Styler/Styler';
 
 const LANDSCAPE = 'landscape';
@@ -32,7 +32,7 @@ export default class Printing extends EventEmitter {
         pageWidth: this.pageWidth
       });
     }
-  };
+  }
 
   setPageOrientation(orientation) {
     if (orientation === PORTRAIT) {
@@ -49,5 +49,5 @@ export default class Printing extends EventEmitter {
     this.orientation = orientation;
 
     Styler.setPageSize(this.pageWidth + 'px ' + this.pageHeight + 'px');
-  };
+  }
 }

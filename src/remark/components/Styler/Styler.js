@@ -9,7 +9,7 @@ export default class Styler {
         return document.styleSheets[i];
       }
     }
-  };
+  }
 
   // Applies bundled styles to document
   static styleDocument() {
@@ -46,7 +46,7 @@ export default class Styler {
         return stylesheet.cssRules[i];
       }
     }
-  };
+  }
 
   static setPageSize(size) {
     let pageRule = Styler.getPageRule(Styler.getRemarkStylesheet());

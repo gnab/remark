@@ -1,7 +1,6 @@
 export default (superClass) => class extends superClass {
-  constructor(events) {
-    super();
-    this.events = events;
+  constructor(events, dom, options, callback) {
+    super(events, dom, options, callback);
     this.currentSlideIndex = -1;
     this.started = null;
 
@@ -20,6 +19,15 @@ export default (superClass) => class extends superClass {
     this.getSlideIndex = this.getSlideIndex.bind(this);
 
     this.registerEvents();
+
+    this.navigationReady = true;
+    this.init(callback);
+  }
+
+  init(callback) {
+    if (this.navigationReady) {
+      super.init(callback);
+    }
   }
 
   registerEvents() {
@@ -158,4 +166,4 @@ export default (superClass) => class extends superClass {
 
     return 0;
   }
-}
+};

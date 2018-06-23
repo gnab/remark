@@ -32,12 +32,6 @@ import Lexer from './Lexer';
  *  ]
  */
 export default class Parser {
-  constructor() {
-    this.lexer = new Lexer();
-
-    this.parse = this.parse.bind(this);
-  }
-
   static appendTo(element, content) {
     let target = element.content;
 
@@ -120,11 +114,11 @@ export default class Parser {
     return source.replace(trimWhitespacePattern, '');
   }
 
-  parse(src, macros, options) {
+  static parse(src, macros, options) {
     macros = macros || {};
     options = options || {};
 
-    let tokens = this.lexer.lex(Parser.cleanInput(src));
+    let tokens = Lexer.lex(Parser.cleanInput(src));
     let slides = [];
 
     // The last item on the stack contains the current slide or
@@ -164,7 +158,7 @@ export default class Parser {
           let value = macro.apply(token.obj, token.args);
 
           if (typeof value === 'string') {
-            value = this.parse(value, macros);
+            value = Parser.parse(value, macros);
             Parser.appendTo(stack[stack.length - 1], value[0].content[0]);
           } else {
             let append = value === undefined ? '' : value.toString();
@@ -222,13 +216,13 @@ export default class Parser {
     // Push current slide to list of slides.
     slides.push(stack[0]);
 
-    slides.forEach(function (slide) {
+    slides.forEach((slide) => {
       slide.content[0] = Parser.extractProperties(slide.content[0] || '', slide.properties);
     });
 
     return slides.filter((slide) => {
       let exclude = (slide.properties.exclude || '').toLowerCase();
-      return !(exclude === 'true');
+      return (exclude === 'true') === false;
     });
   }
-};
+}

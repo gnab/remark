@@ -1,9 +1,8 @@
 import EventEmitter from 'events';
 
 export default (superClass) => class extends superClass {
-  constructor(events) {
-    super();
-    this.events = events;
+  constructor(events, dom, options, callback) {
+    super(events, dom, options, callback);
     this.on = this.on.bind(this);
 
     this.externalEvents = new EventEmitter();
@@ -25,10 +24,19 @@ export default (superClass) => class extends superClass {
         this.externalEvents.emit(eventName, slide);
       });
     });
+
+    this.eventsReady = true;
+    this.init(callback);
+  }
+
+  init(callback) {
+    if (this.eventsReady) {
+      super.init(callback);
+    }
   }
 
   on() {
     this.externalEvents.on.apply(this.externalEvents, arguments);
-    return this.slideShow; // Todo not sure if this or this.slideShow
-  };
+    return this;
+  }
 };

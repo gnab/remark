@@ -36,9 +36,7 @@ export default class Slide {
     let ignoredProperties = ['name', 'layout', 'count'];
 
     for (let property in template.properties) {
-      if (!template.properties.hasOwnProperty(property)
-          || ignoredProperties.indexOf(property) !== -1
-      ) {
+      if (!template.properties.hasOwnProperty(property) || ignoredProperties.indexOf(property) !== -1) {
         continue;
       }
 

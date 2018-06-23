@@ -1,5 +1,5 @@
 import highlighter from "../highlighter";
-import utils from "../utils";
+import { addClass } from "../utils";
 
 export default class CodeBlockHighlighter {
   constructor(slideShow) {
@@ -18,11 +18,11 @@ export default class CodeBlockHighlighter {
 
     codeBlocks.forEach((block) => {
       if (block.hasOwnProperty('className') && block.className === '') {
-        block.className = options.highlightLanguage();
+        block.className = options.highlightLanguage;
       }
 
       if (block.parentElement.tagName !== 'PRE') {
-        utils.addClass(block, 'remark-inline-code');
+        addClass(block, 'remark-inline-code');
 
         if (highlightInline) {
           highlighter.engine.highlightBlock(block, '');
@@ -50,7 +50,7 @@ export default class CodeBlockHighlighter {
         CodeBlockHighlighter.highlightBlockSpans(block, highlightSpans);
       }
 
-      utils.addClass(block, 'remark-code');
+      addClass(block, 'remark-code');
     });
   }
 
@@ -86,7 +86,7 @@ export default class CodeBlockHighlighter {
 
   static highlightBlockLines (block, lines) {
     lines.forEach((i) => {
-      utils.addClass(block.childNodes[i], 'remark-code-line-highlighted');
+      addClass(block.childNodes[i], 'remark-code-line-highlighted');
     });
   }
 
@@ -107,7 +107,7 @@ export default class CodeBlockHighlighter {
       throw new Error('Illegal value for `highlightSpans`');
     }
 
-    block.childNodes.forEach(function (element) {
+    block.childNodes.forEach((element) => {
       element.innerHTML = element.innerHTML.replace(pattern,
         (m,e,c) => {
           if (e === '\\') {
