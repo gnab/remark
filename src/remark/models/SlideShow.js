@@ -2,7 +2,6 @@ import Navigation from './slideshow/Navigation';
 import Events from './slideshow/Events';
 import Slide from './Slide';
 import Parser from '../Parser';
-import macros from '../macros';
 
 class SlideShow {
   constructor(events, dom, options, callback) {
@@ -80,7 +79,8 @@ class SlideShow {
       slideNumberFormat: '%current% / %total%',
       cloneTarget: '_blank',
       excludedClasses: [],
-      countIncrementalSlides: true
+      countIncrementalSlides: true,
+      macros: {}
     };
 
     this.options = {
@@ -102,7 +102,7 @@ class SlideShow {
 
   createSlides(slideShowSource) {
     const parser = Parser;
-    const parsedSlides = parser.parse(slideShowSource, macros, this.options);
+    const parsedSlides = parser.parse(slideShowSource, this.options);
     let slides = [];
     let byName = {};
     let layoutSlide;

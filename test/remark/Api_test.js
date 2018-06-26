@@ -1,7 +1,6 @@
 import Api from '../../src/remark/Api';
 import Slideshow from '../../src/remark/models/SlideShow';
 import TestDom from '../TestDom';
-let highlighter = require('../../src/remark/highlighter');
 
 describe('API', function () {
   let api;
@@ -14,10 +13,6 @@ describe('API', function () {
 
   it('should be exposed', function () {
     window.should.have.property('remark');
-  });
-
-  it('should expose highlighter', function () {
-    api.highlighter.should.equal(highlighter);
   });
 
   it('should allow creating slideshow', function () {

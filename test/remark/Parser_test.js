@@ -103,29 +103,33 @@ describe('Parser', () => {
 
   describe('parsing macros', () => {
     it('should expand macro', () => {
-      let macros = {
-        sum: function() {
-          let result = 0;
-          for (let i = 0; i < arguments.length; ++i) {
-            result += parseInt(arguments[i], 10);
+      let options = {
+        macros: {
+          sum: function () {
+            let result = 0;
+            for (let i = 0; i < arguments.length; ++i) {
+              result += parseInt(arguments[i], 10);
+            }
+            return result;
           }
-          return result;
         }
       };
-      parser.parse('a ![:sum 1, 2, 3] b', macros)[0].content
+      parser.parse('a ![:sum 1, 2, 3] b', options)[0].content
         .should.eql(['a 6 b']);
     });
 
     it('should expand macro recursively', () => {
-      let macros = {
-        upper: function() {
-          return this.toUpperCase();
-        },
-        addUpper: function() {
-          return "![:upper](word)";
+      let options = {
+        macros: {
+          upper: function() {
+            return this.toUpperCase();
+          },
+          addUpper: function() {
+            return "![:upper](word)";
+          }
         }
       };
-      parser.parse('Uppercase => ![:addUpper](word)', macros)[0].content
+      parser.parse('Uppercase => ![:addUpper](word)', options)[0].content
         .should.eql(['Uppercase => WORD']);
     });
   });

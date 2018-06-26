@@ -3,5 +3,6 @@
 module.exports = {
   version: "%VERSION%",
   documentStyles: %DOCUMENT_STYLES%,
+  hljsStyles: %HIGHLIGHTJS_STYLES%,
   containerLayout: %CONTAINER_LAYOUT%
 };

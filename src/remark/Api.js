@@ -1,5 +1,4 @@
 import EventEmitter from 'events';
-import highlighter from './highlighter';
 import Converter from './Converter';
 import resources from './resources';
 import Parser from './Parser';
@@ -7,23 +6,21 @@ import SlideShow from './models/SlideShow';
 import SlideShowView from './views/SlideShowView';
 import DefaultController from './controllers/DefaultController';
 import Dom from './Dom';
-import macros from './macros';
 
 export default class Api {
   constructor(dom) {
     this.dom = dom || Dom;
-    this.highlighter = highlighter;
-    this.macros = macros;
     this.version = resources.version;
     this.converter = new Converter();
+    this.controller = null;
 
     this.convert = this.convert.bind(this);
     this.create = this.create.bind(this);
   }
 
-  convert(markdown) {
+  convert(markdown, options) {
     let parser = Parser;
-    let content = parser.parse(markdown || '', macros)[0].content;
+    let content = parser.parse(markdown || '', options || {})[0].content;
     
     return this.converter.convertMarkdown(content, {}, true);
   }
@@ -62,7 +59,12 @@ export default class Api {
 
     return new SlideShow(events, this.dom, options, (slideShow) => {
       let slideShowView = new SlideShowView(events, this.dom, options.container, slideShow);
-      let controller = options.controller || new DefaultController(events, this.dom, slideShowView, options.navigation);
+      this.controller = options.controller || new DefaultController(
+        events,
+        this.dom,
+        slideShowView,
+        options.navigation
+      );
 
       if (typeof callback === 'function') {
         callback(slideShow);

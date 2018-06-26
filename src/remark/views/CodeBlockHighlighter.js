@@ -1,4 +1,4 @@
-import highlighter from "../highlighter";
+import hljs from 'highlight.js';
 import { addClass } from "../utils";
 
 export default class CodeBlockHighlighter {
@@ -25,7 +25,7 @@ export default class CodeBlockHighlighter {
         addClass(block, 'remark-inline-code');
 
         if (highlightInline) {
-          highlighter.engine.highlightBlock(block, '');
+          hljs.highlightBlock(block, '');
         }
 
         return;
@@ -36,7 +36,7 @@ export default class CodeBlockHighlighter {
       }
 
       if (block.className !== '') {
-        highlighter.engine.highlightBlock(block, '  ');
+        hljs.highlightBlock(block, '  ');
       }
 
       CodeBlockHighlighter.wrapLines(block);
@@ -84,13 +84,13 @@ export default class CodeBlockHighlighter {
     block.innerHTML = lines.join('');
   }
 
-  static highlightBlockLines (block, lines) {
+  static highlightBlockLines(block, lines) {
     lines.forEach((i) => {
       addClass(block.childNodes[i], 'remark-code-line-highlighted');
     });
   }
 
-  static highlightBlockSpans (block, highlightSpans) {
+  static highlightBlockSpans(block, highlightSpans) {
     let pattern;
 
     if (highlightSpans === true) {
@@ -108,13 +108,10 @@ export default class CodeBlockHighlighter {
     }
 
     block.childNodes.forEach((element) => {
-      element.innerHTML = element.innerHTML.replace(pattern,
-        (m,e,c) => {
-          if (e === '\\') {
-            return m.substr(1);
-          }
-
-          return e + '<span class="remark-code-span-highlighted">' + c + '</span>';
+      element.innerHTML = element.innerHTML.replace(
+        pattern,
+        (m, e, c) => {
+          return (e === '\\') ? m.substr(1) : e + '<span class="remark-code-span-highlighted">' + c + '</span>';
         });
     });
   }

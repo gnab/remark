@@ -13,31 +13,6 @@ target.all = () => {
   target.boilerplate();
 };
 
-target.highlighter = () => {
-  let config = packageJson.config;
-
-  if (config && config.highlighter === false) {
-    console.log('Bundling empty highlighter skeleton...');
-
-    let skeleton = "module.exports = {styles:[],engine:{highlightBlock:function(){}}};";
-    skeleton.to('src/remark/highlighter.js');
-    return;
-  }
-
-  console.log('Bundling highlighter...');
-
-  rm('-rf', 'vendor/highlight.js');
-  mkdir('-p', 'vendor');
-  pushd('vendor');
-  exec('git clone https://github.com/isagalaev/highlight.js.git');
-  pushd('highlight.js');
-  exec('git checkout tags/9.6.0');
-  popd();
-  popd();
-
-  bundleHighlighter('src/remark/highlighter.js');
-};
-
 target.test = () => {
   target['lint']();
   target['bundle']();
@@ -61,7 +36,7 @@ target.bundle = () => {
   run('browserify ' + components() + ' ./src/remark.js -t [ babelify --presets [ "@babel/preset-env" ] ]').stdout.to('./out/remark.js');
 };
 
-function components () {
+function components() {
   let componentsPath = './src/remark/components';
 
   return ls(componentsPath)
@@ -132,30 +107,11 @@ function bundleResources (target) {
   let resources = {
     VERSION: version,
     DOCUMENT_STYLES: JSON.stringify(less('src/remark.less')),
+    HIGHLIGHTJS_STYLES: JSON.stringify(ls('node_modules/highlight.js/styles/*.css').reduce(mapStyle, {})),
     CONTAINER_LAYOUT: JSON.stringify(cat('src/remark.html'))
   };
 
   cat('src/templates/resources.js.template')
-    .replace(/%(\w+)%/g, (match, key) => (resources[key]))
-    .to(target);
-}
-
-function bundleHighlighter (target) {
-  let highlightJs = 'vendor/highlight.js/src/';
-  let resources = {
-    HIGHLIGHTER_STYLES: JSON.stringify(ls(highlightJs + 'styles/*.css').reduce(mapStyle, {})),
-    HIGHLIGHTER_ENGINE: cat(highlightJs + 'highlight.js'),
-    HIGHLIGHTER_LANGUAGES: Array.prototype.sort.call(
-      ls(highlightJs + 'languages/*.js'),
-      (a, b) => (a.indexOf('cpp.js') !== -1 ? -1 : 0) // Other languages depend on cpp, so put it first
-    )
-    .map((file) => {
-      let language = path.basename(file, path.extname(file));
-      return '{name:"' + language + '",create:' + cat(file) + '}';
-    }).join(',')
-  };
-
-  cat('src/templates/highlighter.js.template')
     .replace(/%(\w+)%/g, (match, key) => (resources[key]))
     .to(target);
 }
@@ -197,7 +153,6 @@ function run(command, loud) {
   let result;
   let binPath = pwd() + '/node_modules/.bin/';
   command = binPath + command;
-  console.log(command);
 
   try {
     result = exec(command, {silent: !loud, fatal: false});

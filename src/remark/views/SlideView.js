@@ -13,7 +13,7 @@ export default class SlideView {
     this.converter = new Converter();
     this.codeBlockHighlighter = new CodeBlockHighlighter(slideShow);
     this.slideNumber = new SlideNumber(slide, slideShow);
-    this.progressBar = new SlideNumber(slide, slideShow);
+    this.progressBar = new SlideNumber(slide, slideShow); //TODO
 
     this.updateDimensions = this.updateDimensions.bind(this);
     this.scale = this.scale.bind(this);
@@ -151,11 +151,11 @@ export default class SlideView {
     this.contentElement = this.createContentElement(this.events, this.slideShow, this.slide);
     this.notesElement = this.createNotesElement(this.slideShow, this.slide.notes);
 
-    //if (this.slideShow.options.slideNumber === true) {
+    //TODO if (this.slideShow.options.slideNumber === true) {
       this.contentElement.appendChild(this.slideNumber.element);
     //}
 
-    /*if (this.slideShow.options.progress === true) {
+    /* TODO if (this.slideShow.options.progress === true) {
       this.contentElement.appendChild(this.progressBar.element);
     }*/
 

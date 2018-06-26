@@ -1,5 +1,4 @@
 import resources from '../../resources';
-import highlighter from '../../highlighter';
 
 export default class Styler {
   // Locates the embedded remark stylesheet
@@ -29,9 +28,9 @@ export default class Styler {
     styleElement.innerHTML = resources.documentStyles;
 
     // Append highlighting styles
-    for (let style in highlighter.styles) {
-      if (highlighter.styles.hasOwnProperty(style)) {
-        styleElement.innerHTML = styleElement.innerHTML + highlighter.styles[style];
+    for (let style in resources.hljsStyles) {
+      if (resources.hljsStyles.hasOwnProperty(style)) {
+        styleElement.innerHTML += resources.hljsStyles[style];
       }
     }
 
@@ -46,10 +45,15 @@ export default class Styler {
         return stylesheet.cssRules[i];
       }
     }
+
+    return null;
   }
 
   static setPageSize(size) {
     let pageRule = Styler.getPageRule(Styler.getRemarkStylesheet());
-    pageRule.style.size = size;
+
+    if (pageRule !== null) {
+      pageRule.style.size = size;
+    }
   }
 }

@@ -114,10 +114,10 @@ export default class Parser {
     return source.replace(trimWhitespacePattern, '');
   }
 
-  static parse(src, macros, options) {
-    macros = macros || {};
+  static parse(src, options) {
     options = options || {};
 
+    let macros = options.macros || {};
     let tokens = Lexer.lex(Parser.cleanInput(src));
     let slides = [];
 
@@ -158,7 +158,7 @@ export default class Parser {
           let value = macro.apply(token.obj, token.args);
 
           if (typeof value === 'string') {
-            value = Parser.parse(value, macros);
+            value = Parser.parse(value, options);
             Parser.appendTo(stack[stack.length - 1], value[0].content[0]);
           } else {
             let append = value === undefined ? '' : value.toString();
