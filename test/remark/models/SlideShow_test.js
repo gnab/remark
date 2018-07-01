@@ -9,17 +9,16 @@ describe('SlideShow', () => {
 
   beforeEach(() => {
     events = new EventEmitter();
-    dom = {
-      XMLHttpRequest: function() {
-        this.open = () => {};
-        this.send = () => {};
-        this.success = function(responseText) {
-          this.readyState = 4;
-          this.status = 200;
-          this.responseText = responseText;
-          this.onload();
-        };
-      }
+    dom = {};
+    dom.constructor.XMLHttpRequest = function() {
+      this.open = () => {};
+      this.send = () => {};
+      this.success = function(responseText) {
+        this.readyState = 4;
+        this.status = 200;
+        this.responseText = responseText;
+        this.onload();
+      };
     };
     slideShow = new SlideShow(events, dom);
   });

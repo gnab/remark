@@ -90,13 +90,13 @@ describe('SlideShowView', () => {
     let body;
 
     beforeEach(() => {
-      body = dom.getBodyElement();
+      body = dom.constructor.getBodyElement();
       containerElement = body;
       view = new SlideShowView(events, dom, containerElement, model);
     });
 
     it('should style HTML element', () => {
-      dom.getHTMLElement().className.should.containEql('remark-container');
+      dom.constructor.getHTMLElement().className.should.containEql('remark-container');
     });
 
     it('should not position element', () => {

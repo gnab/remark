@@ -21,15 +21,15 @@ export default class Location {
 
   addLocationEventListeners () {
     const navigateByHash = () => {
-      let slideNoOrName = (this.dom.getLocationHash() || '').substr(1);
+      let slideNoOrName = (this.dom.constructor.getLocationHash() || '').substr(1);
       this.events.emit('gotoSlide', slideNoOrName);
     };
 
     const updateHash = (slideNoOrName) => {
       if (hasClass(this.slideShowView.containerElement, 'remark-presenter-mode')) {
-        this.dom.setLocationHash('#p' + slideNoOrName);
+        this.dom.constructor.setLocationHash('#p' + slideNoOrName);
       } else{
-        this.dom.setLocationHash('#' + slideNoOrName);
+        this.dom.constructor.setLocationHash('#' + slideNoOrName);
       }
     };
 

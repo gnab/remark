@@ -4,10 +4,16 @@ const getClasses = (element) => {
     .filter((s) => (s !== ''));
 };
 
+const hasClass = (element, className) => {
+  return getClasses(element).indexOf(className) !== -1;
+};
+
 const addClass = (element, className) => {
-  element.className = getClasses(element)
-    .concat([className])
-    .join(' ');
+  if (!hasClass(element, className)) {
+    element.className = getClasses(element)
+      .concat([className])
+      .join(' ');
+  }
 };
 
 const removeClass = (element, className) => {
@@ -27,10 +33,6 @@ const toggleClass = (element, className) => {
   }
 
   element.className = classes.join(' ');
-};
-
-const hasClass = (element, className) => {
-  return getClasses(element).indexOf(className) !== -1;
 };
 
 const getPrefixedProperty = (element, propertyName) => {

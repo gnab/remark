@@ -20,38 +20,42 @@ class FakeXMLHttpRequest {
   }
 }
 
+let html;
+let body;
+let httpRequest = new FakeXMLHttpRequest();
+
 export default class TestDom {
   constructor() {
-    this.html = document.createElement('html');
-    this.body = document.createElement('body');
-    this.httpRequest = new FakeXMLHttpRequest();
-
-    this.XMLHttpRequest = this.XMLHttpRequest.bind(this);
-    this.getHTMLElement = this.getHTMLElement.bind(this);
-    this.getBodyElement = this.getBodyElement.bind(this);
+    html = document.createElement('html');
+    body = document.createElement('body');
+    httpRequest = new FakeXMLHttpRequest();
   }
 
-  XMLHttpRequest() {
-    return this.httpRequest;
+  static XMLHttpRequest() {
+    return httpRequest;
   }
 
-  getHTMLElement() {
-    return this.html;
+  static getHTMLElement() {
+    return html;
   }
 
-  getBodyElement() {
-    return this.body;
+  static getBodyElement() {
+    return body;
   }
 
-  getElementById() {
+  static getElementById() {
 
   }
 
-  getLocationHash() {
+  static getLocationHash() {
 
   }
 
-  setLocationHash(hash) {
+  static setLocationHash(hash) {
+
+  }
+
+  addIntervalEvent() {
 
   }
 }

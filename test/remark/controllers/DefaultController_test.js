@@ -12,7 +12,7 @@ describe('Controller', () => {
     });
 
     it('should naviate by hash when slideshow is not embedded', () => {
-      dom.getLocationHash = () => { return '#2'; };
+      dom.constructor.getLocationHash = () => { return '#2'; };
 
       createController({embedded: false});
 
@@ -24,7 +24,7 @@ describe('Controller', () => {
     it('should not navigate by hash when slideshow is embedded', () => {
       createController({embedded: true});
 
-      dom.getLocationHash = () => { return '#3'; };
+      dom.constructor.getLocationHash = () => { return '#3'; };
       events.emit('hashchange');
 
       events.emit.should.be.neverCalledWith('gotoSlide', '3');
@@ -33,7 +33,7 @@ describe('Controller', () => {
     it('should navigate by hash when slideshow is not embedded', () => {
       createController({embedded: false});
 
-      dom.getLocationHash = () => { return '#3'; };
+      dom.constructor.getLocationHash = () => { return '#3'; };
       events.emit('hashchange');
 
       events.emit.should.be.calledWithExactly('gotoSlide', '3');

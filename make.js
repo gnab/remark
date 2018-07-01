@@ -106,7 +106,7 @@ let ignoredStyles = ['brown_paper', 'school_book', 'pojoaque']
 function bundleResources (target) {
   let resources = {
     VERSION: version,
-    DOCUMENT_STYLES: JSON.stringify(less('src/remark.less')),
+    DOCUMENT_STYLES: JSON.stringify(sass('./src/remark.scss')),
     HIGHLIGHTJS_STYLES: JSON.stringify(ls('node_modules/highlight.js/styles/*.css').reduce(mapStyle, {})),
     CONTAINER_LAYOUT: JSON.stringify(cat('src/remark.html'))
   };
@@ -143,6 +143,10 @@ function mapStyle(map, file) {
 
 function less(file) {
   return run('lessc -x -s ' + file).stdout.replace(/\n/g, '');
+}
+
+function sass(file) {
+  return run('node-sass ' + file).stdout.replace(/\n/g, '');
 }
 
 function git(cmd) {

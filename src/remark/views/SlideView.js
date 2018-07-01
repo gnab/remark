@@ -13,7 +13,6 @@ export default class SlideView {
     this.converter = new Converter();
     this.codeBlockHighlighter = new CodeBlockHighlighter(slideShow);
     this.slideNumber = new SlideNumber(slide, slideShow);
-    this.progressBar = new SlideNumber(slide, slideShow); //TODO
 
     this.updateDimensions = this.updateDimensions.bind(this);
     this.scale = this.scale.bind(this);
@@ -25,6 +24,8 @@ export default class SlideView {
     this.createNotesElement = this.createNotesElement.bind(this);
     this.configureElements = this.configureElements.bind(this);
     this.scaleBackgroundImage = this.scaleBackgroundImage.bind(this);
+    this.prev = this.prev.bind(this);
+    this.next = this.next.bind(this);
 
     this.configureElements();
     this.updateDimensions();
@@ -49,20 +50,12 @@ export default class SlideView {
 
   show() {
     addClass(this.containerElement, 'remark-visible');
-    removeClass(this.containerElement, 'remark-fading');
+    removeClass(this.containerElement, 'remark-prev');
+    removeClass(this.containerElement, 'remark-next');
   }
 
   hide() {
     removeClass(this.containerElement, 'remark-visible');
-
-    // Don't just disappear the slide. Mark it as fading, which
-    // keeps it on the screen, but at a reduced z-index.
-    // Then set a timer to remove the fading state in 1s.
-    addClass(this.containerElement, 'remark-fading');
-
-    setTimeout(() => {
-      removeClass(this.containerElement, 'remark-fading');
-    }, 1000);
   }
 
   createSlideElement() {
@@ -151,13 +144,24 @@ export default class SlideView {
     this.contentElement = this.createContentElement(this.events, this.slideShow, this.slide);
     this.notesElement = this.createNotesElement(this.slideShow, this.slide.notes);
 
-    //TODO if (this.slideShow.options.slideNumber === true) {
-      this.contentElement.appendChild(this.slideNumber.element);
-    //}
 
-    /* TODO if (this.slideShow.options.progress === true) {
-      this.contentElement.appendChild(this.progressBar.element);
-    }*/
+    let currentSlideNumber = this.slide.getSlideIndex();
+    let slides = this.slideShow.getSlides();
+    let nextSlideIncrement = currentSlideNumber+1 < slides.length ?
+      slides[currentSlideNumber+1].properties.continued === 'true' : false;
+
+    if (this.slide.properties.continued === 'true') {
+      let classToAdd = nextSlideIncrement ? 'remark-slide-increment' : 'remark-slide-end-increment';
+      addClass(this.containerElement, classToAdd);
+    } else if (nextSlideIncrement) {
+      addClass(this.containerElement, 'remark-slide-start-increment');
+    }
+
+    let options = this.slideShow.getOptions();
+
+    if (options.slideNumber) {
+      this.contentElement.appendChild(this.slideNumber.element);
+    }
 
     this.element.appendChild(this.contentElement);
     this.scalingElement.appendChild(this.element);
@@ -211,5 +215,25 @@ export default class SlideView {
 
       image.src = match[2];
     }
+  }
+
+  static setPrevNextClasses(element, next) {
+    let names = ['prev', 'next'];
+
+    if (next) {
+      names = names.reverse();
+    }
+
+    addClass(element, 'remark-' + names[0]);
+    removeClass(element, 'remark-visible');
+    removeClass(element, 'remark-' + names[1]);
+  }
+
+  prev() {
+    this.constructor.setPrevNextClasses(this.containerElement, false);
+  }
+
+  next() {
+    this.constructor.setPrevNextClasses(this.containerElement, true);
   }
 }

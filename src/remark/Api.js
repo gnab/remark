@@ -9,7 +9,7 @@ import Dom from './Dom';
 
 export default class Api {
   constructor(dom) {
-    this.dom = dom || Dom;
+    this.dom = dom || new Dom();
     this.version = resources.version;
     this.converter = new Converter();
     this.controller = null;
@@ -35,7 +35,7 @@ export default class Api {
     };
 
     if (!options.hasOwnProperty('source')) {
-      let sourceElement = dom.getElementById('source');
+      let sourceElement = dom.constructor.getElementById('source');
 
       if (sourceElement) {
         options.source = unescape(sourceElement.innerHTML);
@@ -44,7 +44,7 @@ export default class Api {
     }
 
     if (!(options.container instanceof window.HTMLElement)) {
-      options.container = dom.getBodyElement();
+      options.container = dom.constructor.getBodyElement();
     }
 
     return options;

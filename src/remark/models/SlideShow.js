@@ -80,7 +80,11 @@ class SlideShow {
       cloneTarget: '_blank',
       excludedClasses: [],
       countIncrementalSlides: true,
-      macros: {}
+      macros: {},
+      transition: false,
+      slideNumber: false,
+      progressBar: false,
+      controls: false
     };
 
     this.options = {
@@ -186,7 +190,7 @@ class SlideShow {
   }
 
   loadFromUrl(url, callback) {
-    let xhr = new this.dom.XMLHttpRequest();
+    let xhr = new this.dom.constructor.XMLHttpRequest();
     xhr.open('GET', this.options.sourceUrl, true);
     xhr.onload = () => {
       if (xhr.readyState === 4) {

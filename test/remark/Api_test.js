@@ -30,7 +30,7 @@ describe('API', function () {
     let source = document.createElement('textarea');
     source.id = 'source';
     source.textContent = '3\n---\n4';
-    dom.getElementById = function () { return source; };
+    dom.constructor.getElementById = function () { return source; };
 
     let slides = api.create().getSlides();
     slides.length.should.eql(2);

@@ -5,6 +5,8 @@ import Scaler from '../Scaler';
 import resources from '../resources';
 import { addClass, removeClass, toggleClass, hasClass, getPrefixedProperty } from '../utils';
 import Printing from '../components/Printing/Printing';
+import ProgressBar from "../components/ProgressBar/ProgressBar";
+import Controls from "../components/Controls/Controls";
 
 export default class SlideShowView {
   constructor(events, dom, containerElement, slideShow) {
@@ -18,6 +20,7 @@ export default class SlideShowView {
 
     // Bind functions
     this.configureContainerElement = this.configureContainerElement.bind(this);
+    this.setTransition = this.setTransition.bind(this);
     this.configureChildElements = this.configureChildElements.bind(this);
     this.scaleElements = this.scaleElements.bind(this);
     this.updateSlideViews = this.updateSlideViews.bind(this);
@@ -28,6 +31,9 @@ export default class SlideShowView {
     this.registerEvents = this.registerEvents.bind(this);
     this.isEmbedded = this.isEmbedded.bind(this);
     this.handleFullScreen = this.handleFullScreen.bind(this);
+
+    this.progressBar = new ProgressBar(this.slideShow);
+    this.controls = new Controls(this.slideShow, this.events);
 
     // Configure elements
     this.configureContainerElement(containerElement);
@@ -47,12 +53,6 @@ export default class SlideShowView {
     });
 
     this.events.on('hideSlide', (slideIndex) => {
-      // To make sure that there is only one element fading at a time,
-      // remove the fading class from all slides before hiding
-      // the new slide.
-      this.elementArea.getElementsByClassName('remark-fading').forEach((slide) => {
-        removeClass(slide, 'remark-fading');
-      });
       this.hideSlide(slideIndex);
     });
 
@@ -112,8 +112,8 @@ export default class SlideShowView {
 
     addClass(element, 'remark-container');
 
-    if (element === this.dom.getBodyElement()) {
-      addClass(this.dom.getHTMLElement(), 'remark-container');
+    if (element === this.dom.constructor.getBodyElement()) {
+      addClass(this.dom.constructor.getHTMLElement(), 'remark-container');
 
       SlideShowView.forwardEvents(this.events, window, [
         'hashchange', 'resize', 'keydown', 'keypress', 'mousewheel',
@@ -131,6 +131,21 @@ export default class SlideShowView {
         'keydown', 'keypress', 'mousewheel',
         'touchstart', 'touchmove', 'touchend'
       ]);
+
+      let currentDimension = element.offsetWidth + '|' + element.offsetHeight;
+
+      this.dom.addIntervalEvent(
+        'resizeContainerElement',
+        10,
+        () => {
+          let dimension = element.offsetWidth + '|' + element.offsetHeight;
+
+          if (dimension !== currentDimension) {
+            this.events.emit('resize');
+            currentDimension = dimension;
+          }
+        }
+      );
     }
 
     // Tap event is handled in slideShow view
@@ -157,6 +172,14 @@ export default class SlideShowView {
 
     this.scaler.scaleToFit(this.helpElement, this.containerElement);
     this.scaler.scaleToFit(this.pauseElement, this.containerElement);
+  }
+
+  setTransition() {
+    let options = this.slideShow.getOptions();
+
+    if (options.transition) {
+      this.elementArea.setAttribute('data-remark-transition', options.transition);
+    }
   }
 
   configureChildElements() {
@@ -201,6 +224,18 @@ export default class SlideShowView {
         }
       });
     });
+
+    let options = this.slideShow.getOptions();
+
+    if (options.progressBar) {
+      this.elementArea.appendChild(this.progressBar.element);
+    }
+
+    if (options.controls) {
+      this.elementArea.appendChild(this.controls.element);
+    }
+
+    this.setTransition();
   }
 
   updateSlideViews() {
@@ -221,6 +256,8 @@ export default class SlideShowView {
     if (this.slideShow.getCurrentSlideIndex() > -1) {
       this.showSlide(this.slideShow.getCurrentSlideIndex());
     }
+
+    this.setTransition();
   }
 
   scaleSlideBackgroundImages(dimensions) {
@@ -236,6 +273,14 @@ export default class SlideShowView {
     let nextSlideView = this.slideViews[slideIndex + 1];
     this.previewArea.innerHTML = (nextSlideView) ? nextSlideView.containerElement.outerHTML : '';
     this.events.emit("afterShowSlide", slideIndex);
+
+    for (let currentSlideIndex = 0; currentSlideIndex < this.slideViews.length; currentSlideIndex++) {
+      if (currentSlideIndex < slideIndex) {
+        this.slideViews[currentSlideIndex].prev();
+      } else if (currentSlideIndex > slideIndex) {
+        this.slideViews[currentSlideIndex].next();
+      }
+    }
   }
 
   hideSlide(slideIndex) {
@@ -253,7 +298,7 @@ export default class SlideShowView {
   }
 
   isEmbedded() {
-    return this.containerElement !== this.dom.getBodyElement();
+    return this.containerElement !== this.dom.constructor.getBodyElement();
   }
 
   handleFullScreen() {

@@ -1,4 +1,11 @@
 export default class Dom {
+  constructor() {
+    this.intervalEvents = {};
+
+    this.addIntervalEvent = this.addIntervalEvent.bind(this);
+    this.removeIntervalEvent = this.removeIntervalEvent.bind(this);
+  }
+
   static XMLHttpRequest() {
     return XMLHttpRequest;
   }
@@ -24,6 +31,17 @@ export default class Dom {
       window.history.replaceState(undefined, undefined, hash);
     } else {
       window.location.hash = hash;
+    }
+  }
+
+  addIntervalEvent(eventName, interval, callback) {
+    this.removeIntervalEvent(eventName);
+    this.intervalEvents[eventName] = setInterval(callback, interval);
+  }
+
+  removeIntervalEvent(eventName) {
+    if (this.intervalEvents.hasOwnProperty(eventName)) {
+      window.clearInterval(this.intervalEvents[eventName]);
     }
   }
 }

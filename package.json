@@ -26,7 +26,8 @@
     "should": "^8.1.1",
     "should-sinon": "^0.0.3",
     "sinon": "^1.17.2",
-    "uglify-js": "^2.6.1"
+    "uglify-js": "^3.4.2",
+    "node-sass": "^4.9.0"
   },
   "scripts": {
     "test": "node make test"
