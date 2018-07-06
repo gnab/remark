@@ -3,7 +3,7 @@ import Dom from "../../Dom";
 
 
 export default class Controls {
-  constructor(slideShow, events, tutorial, layout, backArrowStyle) {
+  constructor(slideShow, events, layout, backArrowStyle, tutorial) {
     this.slideShow = slideShow;
     this.events = events;
 
@@ -11,10 +11,13 @@ export default class Controls {
       className: 'remark-controls'
     });
 
+    this.element.setAttribute('data-remark-controls-layout', layout);
+    this.element.setAttribute('data-remark-controls-back-arrows', backArrowStyle);
+
     this.createControlButton = this.createControlButton.bind(this);
 
     this.prevButton = this.createControlButton(false);
-    this.nextButton = this.createControlButton(true);
+    this.nextButton = this.createControlButton(true, tutorial);
 
     this.element.appendChild(this.prevButton);
     this.element.appendChild(this.nextButton);
@@ -32,12 +35,18 @@ export default class Controls {
     });
   }
 
-  createControlButton(next) {
-    return Dom.createElement({
-      className: 'remark-controls__button remark-controls__button--' + (next ? 'next' : 'prev'),
-      onclick: () => {
-        this.events.emit(next ? 'gotoNextSlide' : 'gotoPreviousSlide');
-      }
+  createControlButton(next, tutorial) {
+    let classPrefix = 'remark-controls__button--';
+    let className = (classPrefix + (next ? 'next' : 'prev')) + ((tutorial) ? ' ' + classPrefix + 'highlight' : '');
+
+    let button = Dom.createElement({
+      className: 'remark-controls__button ' + className,
     });
+
+    button.onclick = () => {
+      this.events.emit(next ? 'gotoNextSlide' : 'gotoPreviousSlide');
+    };
+
+    return button;
   }
 }

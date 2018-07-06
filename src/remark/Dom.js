@@ -35,10 +35,8 @@ export default class Dom {
     };
     properties = properties || {};
     properties = {
-      // jshint ignore:start
       ...defaults,
       ...properties
-      // jshint ignore:end
     };
 
     let element = document.createElement(properties.elementType);

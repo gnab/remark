@@ -1,6 +1,6 @@
 import SlideNumber from '../components/SlideNumber/SlideNumber';
 import Converter from '../Converter';
-import {addClass, hasClass, removeClass} from '../utils';
+import {addClass, removeClass} from '../utils';
 import CodeBlockHighlighter from "./CodeBlockHighlighter";
 import Dom from "../Dom";
 

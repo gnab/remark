@@ -1,20 +1,43 @@
-import resources from '../../resources';
 import Dom from "../../Dom";
 
 export default class Styler {
-  // Locates the embedded remark stylesheet
-  static getRemarkStylesheet() {
+  static PREFIX = 'remark-';
+  static PRINTER = 'printer';
+
+  static getRemarkStylesheets() {
+    let styles = {};
+    let prefixRegEx = new RegExp('^' + Styler.PREFIX);
+
     for (let i = 0; i < document.styleSheets.length; ++i) {
-      if (document.styleSheets[i].title === 'remark') {
-        return document.styleSheets[i];
+      let title = document.styleSheets[i].title;
+
+      if (title.test(prefixRegEx) === true) {
+        styles[title] = document.styleSheets[i];
       }
     }
+
+    return styles;
   }
 
-  // Applies bundled styles to document
-  static styleDocument() {
+  static styleExists(name) {
+    return Styler.getRemarkStylesheets().hasOwnProperty(Styler.PREFIX + name);
+  }
+
+  static isValidUrl(string) {
+    try {
+      new URL(string);
+    } catch (exception) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static addStyle(name, style) {
+    let fullName = Styler.PREFIX + name;
+
     // Bail out if document has already been styled
-    if (Styler.getRemarkStylesheet()) {
+    if (Styler.styleExists(name)) {
       return;
     }
 
@@ -22,19 +45,20 @@ export default class Styler {
     let styleElement = Dom.createElement({
       elementType: 'style',
       type: 'text/css',
-      title: 'remark', // Set title in order to enable lookup
-      innerHTML: resources.documentStyles // Set document styles
+      title: fullName, // Set title in order to enable lookup
+      ...(Styler.isValidUrl(style) ? {src: style} : {innerHTML: style}) // Set document styles
     });
-
-    // Append highlighting styles
-    for (let style in resources.hljsStyles) {
-      if (resources.hljsStyles.hasOwnProperty(style)) {
-        styleElement.innerHTML += resources.hljsStyles[style];
-      }
-    }
 
     // Put element first to prevent overriding user styles
     headElement.insertBefore(styleElement, headElement.firstChild);
+  }
+
+  static cleanup() {
+    let styleSheets = Styler.getRemarkStylesheets();
+
+    styleSheets.forEach((style) => {
+      style.remove();
+    });
   }
 
   // Locates the CSS @page rule
@@ -49,10 +73,19 @@ export default class Styler {
   }
 
   static setPageSize(size) {
-    let pageRule = Styler.getPageRule(Styler.getRemarkStylesheet());
+    if (Styler.styleExists(Styler.PRINTER) === false) {
+      Styler.addStyle(Styler.PRINTER, '@page {size: landscape;}');
+    }
 
-    if (pageRule !== null) {
-      pageRule.style.size = size;
+    let styleSheets = Styler.getRemarkStylesheets();
+    let fullName = Styler.PREFIX + Styler.PRINTER;
+
+    if (styleSheets.hasOwnProperty(fullName)) {
+      let pageRule = Styler.getPageRule(styleSheets[fullName]);
+
+      if (pageRule !== null) {
+        pageRule.style.size = size;
+      }
     }
   }
 }

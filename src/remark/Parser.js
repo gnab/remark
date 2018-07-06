@@ -116,6 +116,10 @@ export default class Parser {
 
   static parse(src, options) {
     options = options || {};
+    options = {
+      disableIncrementalSlides: false,
+      ...options
+    };
 
     let macros = options.macros || {};
     let tokens = Lexer.lex(Parser.cleanInput(src));

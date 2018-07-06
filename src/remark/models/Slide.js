@@ -3,7 +3,7 @@ export default class Slide {
     this.slideIndex = slideIndex;
     this.slideNumber = slideNumber;
     this.properties = slide.properties || {};
-    this.links = slide.links || {};
+    //this.links = slide.links || {};
     this.content = slide.content || [];
     this.notes = slide.notes || '';
 

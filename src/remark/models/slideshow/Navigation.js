@@ -46,7 +46,8 @@ export default (superClass) => class extends superClass {
 
     this.events.on('createClone', () => {
       if (!this.clone || this.clone.closed) {
-        this.clone = window.open(location.href, this.getOptions().cloneTarget, 'location=no');
+        let options = super.getOptions();
+        this.clone = window.open(location.href, options.cloneTarget, 'location=no');
       } else {
         this.clone.focus();
       }

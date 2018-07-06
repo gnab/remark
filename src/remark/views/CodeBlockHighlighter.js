@@ -100,7 +100,7 @@ export default class CodeBlockHighlighter {
         throw new Error('The regular expression in `highlightSpans` must have flag /g');
       }
       // Use [^] instead of dot (.) so that even newlines match
-      // We prefix the escape group, so users can provide nicer regular expressions
+      // We PREFIX the escape group, so users can provide nicer regular expressions
       let flags = highlightSpans.flags || 'g'; // ES6 feature; use if it’s available
       pattern = new RegExp('([^])' + highlightSpans.source, flags);
     } else {

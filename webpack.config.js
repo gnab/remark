@@ -14,23 +14,20 @@ module.exports = {
   },
   module: {
     rules: [
-      /*{
-        test: /.js/,
+      {
+        loader: 'eslint-loader',
         enforce: 'pre',
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: `jshint-loader`
-          }
-        ]
-      },*/
+        test: /\.js$/,
+        exclude: /node_modules/
+      },
       {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
+            presets: ['@babel/preset-env'],
+            plugins: ['@babel/plugin-proposal-class-properties']
           }
         }
       },
@@ -45,7 +42,6 @@ module.exports = {
       {
         test: /\.css/,
         use: [
-          'import-glob-loader',
           'style-loader', // creates style nodes from JS strings
           'css-loader', // translates CSS into CommonJS
         ]

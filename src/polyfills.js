@@ -3,15 +3,13 @@ exports.apply = function () {
 };
 
 function forEach (list, f) {
-  var i;
-
-  for (i = 0; i < list.length; ++i) {
+  for (let i = 0; i < list.length; ++i) {
     f(list[i], i);
   }
 }
 
 function extend (object) {
-  var prototype = object && object.prototype;
+  let prototype = object && object.prototype;
 
   if (!prototype) {
     return;
@@ -22,7 +20,7 @@ function extend (object) {
   };
 
   prototype.filter = prototype.filter || function (f) {
-    var result = [];
+    let result = [];
 
     this.forEach(function (element) {
       if (f(element, result.length)) {
@@ -34,7 +32,7 @@ function extend (object) {
   };
 
   prototype.map = prototype.map || function (f) {
-    var result = [];
+    let result = [];
 
     this.forEach(function (element) {
       result.push(f(element, result.length));

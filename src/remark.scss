@@ -1,5 +1,3 @@
-@import "~highlight.js/styles/default.css";
-
 /*************/
 /* Container */
 /*************/
@@ -497,6 +495,12 @@ body:fullscreen{
   /*************/
   /* Controls */
   /*************/
+  @keyframes bounce-right {
+    0%, 10%, 25%, 40%, 50% {transform: translateX(0) rotate(180deg);}
+    20% {transform: translateX(10px) rotate(180deg);}
+    30% {transform: translateX(-5px) rotate(180deg);}
+  }
+
   $controlArrowSize: 3.6em;
   $controlArrowSpacing: 1.4em;
   $controlArrowLength: 2.6em;
@@ -504,6 +508,7 @@ body:fullscreen{
   $controlsArrowAngle: 45deg;
   $controlsArrowAngleHover: 40deg;
   $controlsArrowAngleActive: 36deg;
+  $spacing: 8px;
 
   @mixin controlsArrowTransform( $angle ) {
     &:before {
@@ -525,6 +530,48 @@ body:fullscreen{
     color: #000;
     font-size: 10px;
 
+
+    &[data-remark-controls-back-arrows="faded"] {
+      .remark-controls__button--prev {
+        opacity: 0.3;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    &[data-remark-controls-back-arrows="hidden"] {
+      .remark-controls__button--prev {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    &[data-remark-controls-layout="edges"] {
+      height: 100%;
+      width: 100%;
+      left: auto;
+      right: auto;
+      top: auto;
+      bottom: auto;
+
+      .remark-controls__button {
+        position: absolute;
+        top: 50%;
+        margin-top: -$controlArrowSize/2;
+        z-index: 2;
+
+        &--prev {
+          left: $spacing;
+        }
+
+        &--next {
+          right: $spacing;
+        }
+      }
+    }
+
     &__button {
       &:before,
       &:after {
@@ -542,23 +589,25 @@ body:fullscreen{
         will-change: transform;
       }
 
+      cursor: pointer;
       display: inline-block;
       position: relative;
       width: $controlArrowSize;
       height: $controlArrowSize;
 
-      @include controlsArrowTransform( $controlsArrowAngle );
+      @include controlsArrowTransform($controlsArrowAngle);
 
       &:hover {
-        @include controlsArrowTransform( $controlsArrowAngleHover );
+        @include controlsArrowTransform($controlsArrowAngleHover);
       }
 
       &:active {
-        @include controlsArrowTransform( $controlsArrowAngleActive );
+        @include controlsArrowTransform($controlsArrowAngleActive);
       }
 
       &--disabled {
-        display: none;
+        opacity: 0;
+        visibility: hidden;
       }
 
       &--next {
@@ -634,8 +683,19 @@ body:fullscreen{
 }
 
 @page {
-  size: landscape;
   margin: 0;
+}
+
+.remark-slides-area[data-remark-transition-speed="fast"] {
+  .remark-slide-container {
+    transition-duration: 400ms;
+  }
+}
+
+.remark-slides-area[data-remark-transition-speed="slow"] {
+  .remark-slide-container {
+    transition-duration: 1200ms;
+  }
 }
 
 /*********************************************

@@ -15,7 +15,6 @@ export default class SlideShowView {
     this.scaler = new Scaler(events, slideShow);
     this.printing = new Printing();
     this.slideViews = [];
-    this.time = null;
 
     // Bind functions
     this.configureContainerElement = this.configureContainerElement.bind(this);
@@ -32,7 +31,14 @@ export default class SlideShowView {
     this.handleFullScreen = this.handleFullScreen.bind(this);
 
     this.progressBar = new ProgressBar(this.slideShow);
-    this.controls = new Controls(this.slideShow, this.events);
+    let options = this.slideShow.getOptions();
+    this.controls = new Controls(
+      this.slideShow,
+      this.events,
+      options.controlsLayout,
+      options.controlsBackArrows,
+      options.controlsTutorial
+    );
 
     // Configure elements
     this.configureContainerElement(containerElement);
@@ -178,6 +184,10 @@ export default class SlideShowView {
 
     if (options.transition) {
       this.slidesArea.setAttribute('data-remark-transition', options.transition);
+    }
+
+    if (options.transitionSpeed) {
+      this.slidesArea.setAttribute('data-remark-transition-speed', options.transitionSpeed);
     }
   }
 

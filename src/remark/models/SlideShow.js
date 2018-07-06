@@ -12,6 +12,7 @@ class SlideShow {
     this.links = {};
     this.slides.byName = {};
     this.slides.byNumber = {};
+    this.clone = null;
 
     this.init = this.init.bind(this);
     this.setOptions = this.setOptions.bind(this);
@@ -82,16 +83,18 @@ class SlideShow {
       countIncrementalSlides: true,
       macros: {},
       transition: false,
+      transitionSpeed: false,
       slideNumber: false,
       progressBar: false,
-      controls: false
+      controls: false,
+      controlsTutorial: false,
+      controlsLayout: 'bottom-right',
+      controlsBackArrows: 'faded'
     };
 
     this.options = {
-      // jshint ignore:start
       ...defaults,
       ...options
-      // jshint ignore:end
     };
   }
 

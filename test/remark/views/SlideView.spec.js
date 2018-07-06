@@ -14,7 +14,7 @@ describe('SlideView', () => {
         highlightLanguage: '',
         slideNumberFormat: '%current% / %total%',
         highlightInlineCode: false
-      }
+      };
     },
     getLinks: () => ({}),
     getSlides: function () {

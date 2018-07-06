@@ -8,7 +8,7 @@ describe('SlideNumber', () => {
       getSlideIndex: () => (index),
       getSlideNumber: () => (index + 1),
       properties: {}
-    }
+    };
   };
 
   it('should display according to format', () => {

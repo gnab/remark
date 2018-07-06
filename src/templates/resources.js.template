@@ -1,7 +1,0 @@
-/* Automatically generated */
-
-module.exports = {
-  version: "%VERSION%",
-  documentStyles: %DOCUMENT_STYLES%,
-  hljsStyles: %HIGHLIGHTJS_STYLES%
-};

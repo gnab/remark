@@ -92,7 +92,7 @@ export default class Keyboard {
           this.events.emit('togglePresenterMode');
           break;
         case 'f':
-          this.events.emit('toggleFullscreen');
+          this.events.emit('toggleFullScreen');
           break;
         case 't':
           this.events.emit('resetTimer');

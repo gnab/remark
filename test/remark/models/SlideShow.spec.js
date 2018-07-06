@@ -36,7 +36,7 @@ describe('SlideShow', () => {
       slideShow.getSlides().length.should.equal(3);
       slideShow.getSlides().forEach((slide, index) => {
         slide.getSlideNumber().should.equal(index + 1);
-      })
+      });
     });
 
     it('should replace slides', () => {
@@ -83,7 +83,7 @@ describe('SlideShow', () => {
       slideShow.loadFromString('a\n--\nb');
       slideShow.getSlides().forEach((slide, index) => {
         slide.getSlideNumber().should.equal(index + 1);
-      })
+      });
     });
 
     it('should not be counted if this is requested', () => {
@@ -91,7 +91,7 @@ describe('SlideShow', () => {
       slideShow.loadFromString('a\n--\nb');
       slideShow.getSlides().forEach((slide) => {
         slide.getSlideNumber().should.equal(1);
-      })
+      });
     });
   });
 
@@ -100,7 +100,7 @@ describe('SlideShow', () => {
       slideShow.loadFromString('a\n---\ncount: false\n\nb');
       slideShow.getSlides().forEach((slide) => {
         slide.getSlideNumber().should.equal(1);
-      })
+      });
     });
   });
 
@@ -164,7 +164,7 @@ describe('SlideShow', () => {
       slideShow.getSlides().length.should.equal(2);
       slideShow.getSlides().forEach((slide, index) => {
         slide.getSlideNumber().should.equal(index + 1);
-      })
+      });
     });
   });
 

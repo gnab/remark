@@ -1,20 +1,20 @@
 import EventEmitter from 'events';
 import Converter from './Converter';
-//import resources from './resources';
 import Parser from './Parser';
 import SlideShow from './models/SlideShow';
 import SlideShowView from './views/SlideShowView';
 import DefaultController from './controllers/DefaultController';
 import Dom from './Dom';
+import Styler from "./components/Styler/Styler";
 
 export default class Api {
   constructor() {
-    //this.version = resources.version;
     this.converter = new Converter();
     this.controller = null;
 
     this.convert = this.convert.bind(this);
     this.create = this.create.bind(this);
+    this.destroy = this.destroy.bind(this);
   }
 
   convert(markdown, options) {
@@ -53,6 +53,12 @@ export default class Api {
   create(options, callback) {
     options = this.constructor.applyDefaults(options);
 
+    if (options.hasOwnProperty('styles')) {
+      options.styles.forEach((style, key) => {
+        Styler.addStyle(key, style);
+      });
+    }
+
     let events = new EventEmitter();
     events.setMaxListeners(0);
 
@@ -68,5 +74,10 @@ export default class Api {
         callback(slideShow);
       }
     });
+  }
+
+  destroy() {
+    this.controller = null;
+    Styler.cleanup();
   }
 }
