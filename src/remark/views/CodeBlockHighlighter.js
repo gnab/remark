@@ -73,7 +73,7 @@ export default class CodeBlockHighlighter {
 
   static wrapLines(block) {
     let lines = block.innerHTML.split(/\r?\n/).map((line) => {
-      return '<div class="remark-code-line">' + line + '</div>';
+      return '<div class="remark-code__line">' + line + '</div>';
     });
 
     // Remove empty last line (due to last \n)
@@ -86,7 +86,7 @@ export default class CodeBlockHighlighter {
 
   static highlightBlockLines(block, lines) {
     lines.forEach((i) => {
-      addClass(block.childNodes[i], 'remark-code-line-highlighted');
+      addClass(block.childNodes[i], 'remark-code__line--highlighted');
     });
   }
 
@@ -111,7 +111,7 @@ export default class CodeBlockHighlighter {
       element.innerHTML = element.innerHTML.replace(
         pattern,
         (m, e, c) => {
-          return (e === '\\') ? m.substr(1) : e + '<span class="remark-code-span-highlighted">' + c + '</span>';
+          return (e === '\\') ? m.substr(1) : e + '<span class="remark-code__span--highlighted">' + c + '</span>';
         });
     });
   }

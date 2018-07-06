@@ -1,4 +1,4 @@
-import SlideNumber from 'components/SlideNumber';
+import SlideNumber from '../../../src/remark/components/SlideNumber/SlideNumber';
 
 describe('SlideNumber', () => {
   let slideNumber;

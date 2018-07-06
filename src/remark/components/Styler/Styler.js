@@ -1,4 +1,5 @@
 import resources from '../../resources';
+import Dom from "../../Dom";
 
 export default class Styler {
   // Locates the embedded remark stylesheet
@@ -18,14 +19,12 @@ export default class Styler {
     }
 
     let headElement = document.getElementsByTagName('head')[0];
-    let styleElement = document.createElement('style');
-    styleElement.type = 'text/css';
-
-    // Set title in order to enable lookup
-    styleElement.title = 'remark';
-
-    // Set document styles
-    styleElement.innerHTML = resources.documentStyles;
+    let styleElement = Dom.createElement({
+      elementType: 'style',
+      type: 'text/css',
+      title: 'remark', // Set title in order to enable lookup
+      innerHTML: resources.documentStyles // Set document styles
+    });
 
     // Append highlighting styles
     for (let style in resources.hljsStyles) {

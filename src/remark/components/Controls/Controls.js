@@ -1,4 +1,5 @@
 import {addClass, removeClass} from "../../utils";
+import Dom from "../../Dom";
 
 
 export default class Controls {
@@ -6,8 +7,9 @@ export default class Controls {
     this.slideShow = slideShow;
     this.events = events;
 
-    this.element = document.createElement('div');
-    this.element.className = 'remark-controls';
+    this.element = Dom.createElement({
+      className: 'remark-controls'
+    });
 
     this.createControlButton = this.createControlButton.bind(this);
 
@@ -18,7 +20,7 @@ export default class Controls {
     this.element.appendChild(this.nextButton);
 
     this.slideShow.events.on('afterShowSlide', (slideIndex) => {
-      let disabledClass = 'remark-controls-button--disabled';
+      let disabledClass = 'remark-controls__button--disabled';
       removeClass(this.prevButton, disabledClass);
       removeClass(this.nextButton, disabledClass);
 
@@ -31,13 +33,11 @@ export default class Controls {
   }
 
   createControlButton(next) {
-    let button = document.createElement('div');
-    button.className = 'remark-controls-button remark-controls-button--' + (next ? 'next' : 'prev');
-
-    button.onclick = () => {
-      this.events.emit(next ? 'gotoNextSlide' : 'gotoPreviousSlide');
-    };
-
-    return button;
+    return Dom.createElement({
+      className: 'remark-controls__button remark-controls__button--' + (next ? 'next' : 'prev'),
+      onclick: () => {
+        this.events.emit(next ? 'gotoNextSlide' : 'gotoPreviousSlide');
+      }
+    });
   }
 }

@@ -83,7 +83,7 @@ describe('SlideView', () => {
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
       let classes = getClasses(slideView.contentElement);
 
-      classes.should.containEql('remark-slide-content');
+      classes.should.containEql('remark-slide__content');
     });
 
     it('should contain additional classes from slide properties', () => {
@@ -96,7 +96,7 @@ describe('SlideView', () => {
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
       let classes = getClasses(slideView.contentElement);
 
-      classes.should.containEql('remark-slide-content');
+      classes.should.containEql('remark-slide__content');
       classes.should.containEql('middle');
       classes.should.containEql('center');
     });
@@ -111,7 +111,7 @@ describe('SlideView', () => {
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
       let classes = getClasses(slideView.element);
 
-      classes.should.containEql('remark-slide-incremental');
+      classes.should.containEql('remark-slide-container--incremental');
     });
   });
 
@@ -135,8 +135,7 @@ describe('SlideView', () => {
       slideView.show();
 
       let classes = getClasses(slideView.containerElement);
-      classes.should.containEql('remark-visible');
-      classes.should.not.containEql('remark-fading');
+      classes.should.containEql('remark-slide-container--visible');
     });
 
     it('should remove any fading element', () => {
@@ -144,13 +143,11 @@ describe('SlideView', () => {
 
       slideShow.slides.push(slide);
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
-
-      addClass(slideView.containerElement, 'remark-fading');
+      
       slideView.show();
 
       let classes = getClasses(slideView.containerElement);
-      classes.should.containEql('remark-visible');
-      classes.should.not.containEql('remark-fading');
+      classes.should.containEql('remark-slide-container--visible');
     });
   });
 
@@ -161,12 +158,11 @@ describe('SlideView', () => {
       slideShow.slides.push(slide);
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
 
-      addClass(slideView.containerElement, 'remark-visible');
+      addClass(slideView.containerElement, 'remark-slide-container--visible');
       slideView.hide();
 
       let classes = getClasses(slideView.containerElement);
-      classes.should.not.containEql('remark-visible');
-      classes.should.containEql('remark-fading');
+      classes.should.not.containEql('remark-slide-container--visible');
     });
   });
 
@@ -174,7 +170,7 @@ describe('SlideView', () => {
     it('should add class to prefixed lines', () => {
       let slide = new Slide(1, 1, { content: ['```\nline 1\n* line 2\nline 3\n```'] });
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
-      let lines = slideView.element.getElementsByClassName('remark-code-line-highlighted');
+      let lines = slideView.element.getElementsByClassName('remark-code__line--highlighted');
 
       lines.length.should.equal(1);
       lines[0].innerHTML.should.equal('  line 2');
@@ -186,7 +182,7 @@ describe('SlideView', () => {
 
       let slide = new Slide(1, 1, { content: ['```\n* line\n```'] });
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
-      let lines = slideView.element.getElementsByClassName('remark-code-line');
+      let lines = slideView.element.getElementsByClassName('remark-code__line');
 
       lines[0].innerHTML.should.equal('* line');
     });
@@ -198,7 +194,7 @@ describe('SlideView', () => {
       slideShow.slides.push(slide);
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
 
-      let lines = slideView.element.getElementsByClassName('remark-code-line');
+      let lines = slideView.element.getElementsByClassName('remark-code__line');
       lines[0].innerHTML.should.equal('a `f` b');
     });
 
@@ -210,8 +206,8 @@ describe('SlideView', () => {
       slideShow.slides.push(slide);
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
 
-      let lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a <span class="remark-code-span-highlighted">f</span> b');
+      let lines = slideView.element.getElementsByClassName('remark-code__line');
+      lines[0].innerHTML.should.equal('a <span class="remark-code__span--highlighted">f</span> b');
     });
 
     it('should allow escaping opening custom delimiter', () => {
@@ -222,7 +218,7 @@ describe('SlideView', () => {
       slideShow.slides.push(slide);
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
 
-      let lines = slideView.element.getElementsByClassName('remark-code-line');
+      let lines = slideView.element.getElementsByClassName('remark-code__line');
       lines[0].innerHTML.should.equal('a «f» b');
     });
 
@@ -234,7 +230,7 @@ describe('SlideView', () => {
       slideShow.slides.push(slide);
       let slideView = new SlideView(new EventEmitter(), slideShow, scaler, slide);
 
-      let lines = slideView.element.getElementsByClassName('remark-code-line');
+      let lines = slideView.element.getElementsByClassName('remark-code__line');
       lines[0].innerHTML.should.equal('a `f` b');
     });
   });

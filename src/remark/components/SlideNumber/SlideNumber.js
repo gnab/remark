@@ -1,3 +1,5 @@
+import Dom from "../../Dom";
+
 export default class SlideNumber {
   constructor(slide, slideShow) {
     this.slide = slide;
@@ -5,9 +7,10 @@ export default class SlideNumber {
 
     this.formatSlideNumber = this.formatSlideNumber.bind(this);
 
-    this.element = document.createElement('div');
-    this.element.className = 'remark-slide-number';
-    this.element.innerHTML = this.formatSlideNumber();
+    this.element = Dom.createElement({
+      className: 'remark-slide-number',
+      innerHTML: this.formatSlideNumber()
+    });
   }
 
   formatSlideNumber() {

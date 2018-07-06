@@ -1,26 +1,25 @@
 import EventEmitter from 'events';
-import TestDom from '../../TestDom';
 import SlideShowView from '../../../src/remark/views/SlideShowView';
 import SlideShow from '../../../src/remark/models/SlideShow';
-import { hasClass, addClass } from '../../../src/remark/utils';
+import {hasClass, addClass} from '../../../src/remark/utils';
+import Dom from '../../../src/remark/Dom';
+import sinon from 'sinon';
 
 describe('SlideShowView', () => {
   let events;
-  let dom;
   let model;
   let containerElement;
   let view;
 
   beforeEach(() => {
     events = new EventEmitter();
-    dom = new TestDom();
-    model = new SlideShow(events, dom);
+    model = new SlideShow(events);
     containerElement = document.createElement('div');
   });
 
   describe('container element configuration', () => {
     beforeEach(() => {
-      view = new SlideShowView(events, dom, containerElement, model);
+      view = new SlideShowView(events, containerElement, model);
     });
 
     it('should style element', () => {
@@ -88,15 +87,25 @@ describe('SlideShowView', () => {
 
   describe('document.body container element configuration', () => {
     let body;
+    let html = document.createElement('html');
+    let getBodyElement = sinon.stub(Dom, 'getBodyElement');
+    getBodyElement.callsFake(() => {
+      return body;
+    });
+
+    let getHTMLElement = sinon.stub(Dom, 'getHTMLElement');
+    getHTMLElement.callsFake(() => {
+      return html;
+    });
 
     beforeEach(() => {
-      body = dom.constructor.getBodyElement();
+      body = document.createElement('body');
       containerElement = body;
-      view = new SlideShowView(events, dom, containerElement, model);
+      view = new SlideShowView(events, containerElement, model);
     });
 
     it('should style HTML element', () => {
-      dom.constructor.getHTMLElement().className.should.containEql('remark-container');
+      html.className.should.containEql('remark-container');
     });
 
     it('should not position element', () => {
@@ -172,17 +181,16 @@ describe('SlideShowView', () => {
 
   describe('ratio calculation', () => {
     it('should calculate element size for 4:3', () => {
-      model = new SlideShow(events, dom, {ratio: '4:3'});
-      view = new SlideShowView(events, dom, containerElement, model);
+      model = new SlideShow(events, {ratio: '4:3'});
+      view = new SlideShowView(events, containerElement, model);
 
       view.slideViews[0].scalingElement.style.width.should.equal('908px');
       view.slideViews[0].scalingElement.style.height.should.equal('681px');
     });
 
     it('should calculate element size for 16:9', () => {
-      model = new SlideShow(events, dom, {ratio: '16:9'});
-
-      view = new SlideShowView(events, dom, containerElement, model);
+      model = new SlideShow(events, {ratio: '16:9'});
+      view = new SlideShowView(events, containerElement, model);
 
       view.slideViews[0].scalingElement.style.width.should.equal('1210px');
       view.slideViews[0].scalingElement.style.height.should.equal('681px');
@@ -191,7 +199,7 @@ describe('SlideShowView', () => {
 
   describe('model synchronization', () => {
     beforeEach(() => {
-      view = new SlideShowView(events, dom, containerElement, model);
+      view = new SlideShowView(events, containerElement, model);
     });
 
     it('should create initial slide views', () => {
@@ -207,35 +215,34 @@ describe('SlideShowView', () => {
 
   describe('modes', () => {
     beforeEach(() => {
-      view = new SlideShowView(events, dom, containerElement, model);
+      view = new SlideShowView(events, containerElement, model);
     });
 
     it('should toggle blackout on event', () => {
       events.emit('toggleBlackout');
 
-      hasClass(containerElement, 'remark-blackout-mode').should.equal(true);
+      hasClass(containerElement, 'remark-container--blackout-mode').should.equal(true);
     });
 
     it('should leave blackout mode on event', () => {
-      addClass(containerElement, 'remark-blackout-mode');
+      addClass(containerElement, 'remark-container--blackout-mode');
       events.emit('hideOverlay');
 
-      hasClass(containerElement, 'remark-blackout-mode').should.equal(false);
+      hasClass(containerElement, 'remark-container--blackout-mode').should.equal(false);
     });
 
     it('should toggle mirrored on event', () => {
       events.emit('toggleMirrored');
 
-      hasClass(containerElement, 'remark-mirrored-mode').should.equal(true);
+      hasClass(containerElement, 'remark-container--mirrored-mode').should.equal(true);
     });
 
     it('should leave toggle mirrored on event', () => {
-      addClass(containerElement, 'remark-mirrored-mode');
+      addClass(containerElement, 'remark-container--mirrored-mode');
       events.emit('toggleMirrored');
 
-      hasClass(containerElement, 'remark-mirrored-mode').should.equal(false);
+      hasClass(containerElement, 'remark-container--mirrored-mode').should.equal(false);
     });
-
   });
 
   function triggerEvent(element, eventName) {

@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import Converter from './Converter';
-import resources from './resources';
+//import resources from './resources';
 import Parser from './Parser';
 import SlideShow from './models/SlideShow';
 import SlideShowView from './views/SlideShowView';
@@ -8,9 +8,8 @@ import DefaultController from './controllers/DefaultController';
 import Dom from './Dom';
 
 export default class Api {
-  constructor(dom) {
-    this.dom = dom || new Dom();
-    this.version = resources.version;
+  constructor() {
+    //this.version = resources.version;
     this.converter = new Converter();
     this.controller = null;
 
@@ -25,7 +24,7 @@ export default class Api {
     return this.converter.convertMarkdown(content, {}, true);
   }
 
-  static applyDefaults(dom, options) {
+  static applyDefaults(options) {
     options = options || {};
     
     const unescape = (source) => {
@@ -35,7 +34,7 @@ export default class Api {
     };
 
     if (!options.hasOwnProperty('source')) {
-      let sourceElement = dom.constructor.getElementById('source');
+      let sourceElement = Dom.getElementById('source');
 
       if (sourceElement) {
         options.source = unescape(sourceElement.innerHTML);
@@ -44,7 +43,7 @@ export default class Api {
     }
 
     if (!(options.container instanceof window.HTMLElement)) {
-      options.container = dom.constructor.getBodyElement();
+      options.container = Dom.getBodyElement();
     }
 
     return options;
@@ -52,16 +51,15 @@ export default class Api {
 
   // Creates slide show initialized from options
   create(options, callback) {
-    options = Api.applyDefaults(this.dom, options);
+    options = this.constructor.applyDefaults(options);
 
     let events = new EventEmitter();
     events.setMaxListeners(0);
 
-    return new SlideShow(events, this.dom, options, (slideShow) => {
-      let slideShowView = new SlideShowView(events, this.dom, options.container, slideShow);
+    return new SlideShow(events, options, (slideShow) => {
+      let slideShowView = new SlideShowView(events, options.container, slideShow);
       this.controller = options.controller || new DefaultController(
         events,
-        this.dom,
         slideShowView,
         options.navigation
       );

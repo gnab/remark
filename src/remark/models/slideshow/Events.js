@@ -1,8 +1,8 @@
 import EventEmitter from 'events';
 
 export default (superClass) => class extends superClass {
-  constructor(events, dom, options, callback) {
-    super(events, dom, options, callback);
+  constructor(events, options, callback) {
+    super(events, options, callback);
     this.on = this.on.bind(this);
 
     this.externalEvents = new EventEmitter();

@@ -1,11 +1,6 @@
+let intervalEvents = {};
+
 export default class Dom {
-  constructor() {
-    this.intervalEvents = {};
-
-    this.addIntervalEvent = this.addIntervalEvent.bind(this);
-    this.removeIntervalEvent = this.removeIntervalEvent.bind(this);
-  }
-
   static XMLHttpRequest() {
     return XMLHttpRequest;
   }
@@ -34,14 +29,43 @@ export default class Dom {
     }
   }
 
-  addIntervalEvent(eventName, interval, callback) {
-    this.removeIntervalEvent(eventName);
-    this.intervalEvents[eventName] = setInterval(callback, interval);
+  static createElement(properties, childs) {
+    const defaults = {
+      elementType: 'div'
+    };
+    properties = properties || {};
+    properties = {
+      // jshint ignore:start
+      ...defaults,
+      ...properties
+      // jshint ignore:end
+    };
+
+    let element = document.createElement(properties.elementType);
+
+    for (let property in properties) {
+      if (property !== 'elementType' && properties.hasOwnProperty(property)) {
+        element[property] = properties[property];
+      }
+    }
+
+    if (childs) {
+      childs.forEach((child) => {
+        element.appendChild(child);
+      });
+    }
+
+    return element;
   }
 
-  removeIntervalEvent(eventName) {
-    if (this.intervalEvents.hasOwnProperty(eventName)) {
-      window.clearInterval(this.intervalEvents[eventName]);
+  static addIntervalEvent(eventName, interval, callback) {
+    Dom.removeIntervalEvent(eventName);
+    intervalEvents[eventName] = setInterval(callback, interval);
+  }
+
+  static removeIntervalEvent(eventName) {
+    if (intervalEvents.hasOwnProperty(eventName)) {
+      window.clearInterval(intervalEvents[eventName]);
     }
   }
 }

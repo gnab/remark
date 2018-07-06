@@ -2,11 +2,11 @@ import Navigation from './slideshow/Navigation';
 import Events from './slideshow/Events';
 import Slide from './Slide';
 import Parser from '../Parser';
+import Dom from "../Dom";
 
 class SlideShow {
-  constructor(events, dom, options, callback) {
+  constructor(events, options, callback) {
     this.events = events;
-    this.dom = dom;
     this.options = options || {};
     this.slides = [];
     this.links = {};
@@ -105,8 +105,7 @@ class SlideShow {
   }
 
   createSlides(slideShowSource) {
-    const parser = Parser;
-    const parsedSlides = parser.parse(slideShowSource, this.options);
+    const parsedSlides = Parser.parse(slideShowSource, this.options);
     let slides = [];
     let byName = {};
     let layoutSlide;
@@ -190,7 +189,7 @@ class SlideShow {
   }
 
   loadFromUrl(url, callback) {
-    let xhr = new this.dom.constructor.XMLHttpRequest();
+    let xhr = new Dom.XMLHttpRequest();
     xhr.open('GET', this.options.sourceUrl, true);
     xhr.onload = () => {
       if (xhr.readyState === 4) {

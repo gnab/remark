@@ -13,16 +13,16 @@ const FRAGMENT_SEPARATOR = 12;
 const NOTES_SEPARATOR = 13;
 
 const REGEX_BY_NAME = {
-    CODE: /(?:^|\n\n)( {4}[^\n]+\n*)+/,
-    INLINE_CODE: /`([^`].*?)`/,
-    CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
-    FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\4 *(?:\n+|$)/,
-    DEF: /(?:^|\n) *\[([^\]]+)]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
-    MACRO: /!\[:([^\] ]+)([^\]]*)](?:\(([^)]*)\))?/,
-    SLIDE_SEPARATOR: /(?:^|\n)(---)(?:\n|$)/,
-    FRAGMENT_SEPARATOR: /(?:^|\n)(--)(?![^\n])/,
-    NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
-  };
+  CODE: /(?:^|\n\n)( {4}[^\n]+\n*)+/,
+  INLINE_CODE: /`([^`].*?)`/,
+  CONTENT: /(?:\\)?((?:\.[a-zA-Z_\-][a-zA-Z\-_0-9]*)+)\[/,
+  FENCES: /(?:^|\n) *(`{3,}|~{3,}) *(?:\S+)? *\n(?:[\s\S]+?)\s*\4 *(?:\n+|$)/,
+  DEF: /(?:^|\n) *\[([^\]]+)]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
+  MACRO: /!\[:([^\] ]+)([^\]]*)](?:\(([^)]*)\))?/,
+  SLIDE_SEPARATOR: /(?:^|\n)(---)(?:\n|$)/,
+  FRAGMENT_SEPARATOR: /(?:^|\n)(--)(?![^\n])/,
+  NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
+};
 
 const replace = (regex, replacements) => {
   return new RegExp(regex.source.replace(/\w{2,}/g, (key) => (replacements[key].source)));

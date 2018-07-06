@@ -7,13 +7,13 @@ import Mouse from './inputs/Mouse';
 import Touch from './inputs/Touch';
 
 export default class DefaultController {
-  constructor(events, dom, slideShowView, options) {
+  constructor(events, slideShowView, options) {
     options = options || {};
 
     this.addApiEventListeners = this.addApiEventListeners.bind(this);
 
     this.keyboard = new Keyboard(events);
-    this.location = new Location(events, dom, slideShowView);
+    this.location = new Location(events, slideShowView);
     this.message = new Message(events);
     this.mouse = new Mouse(events, options);
     this.touch = new Touch(events, options);

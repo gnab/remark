@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import Timer from 'components/Timer';
+import Timer from '../../../src/remark/components/Timer/Timer';
 
 describe('Timer', () => {
   let events;

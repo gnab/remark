@@ -1,7 +1,8 @@
 import SlideNumber from '../components/SlideNumber/SlideNumber';
 import Converter from '../Converter';
-import { addClass, removeClass } from '../utils';
+import {addClass, hasClass, removeClass} from '../utils';
 import CodeBlockHighlighter from "./CodeBlockHighlighter";
+import Dom from "../Dom";
 
 export default class SlideView {
   constructor(events, slideShow, scaler, slide) {
@@ -49,21 +50,24 @@ export default class SlideView {
   }
 
   show() {
-    addClass(this.containerElement, 'remark-visible');
-    removeClass(this.containerElement, 'remark-prev');
-    removeClass(this.containerElement, 'remark-next');
+    addClass(this.containerElement, 'remark-slide-container--visible');
+
+    // We need a delay to prevent the transition from execution.
+    setTimeout(() => {
+      removeClass(this.containerElement, 'remark-slide-container--prev');
+      removeClass(this.containerElement, 'remark-slide-container--next');
+    }, 10);
   }
 
   hide() {
-    removeClass(this.containerElement, 'remark-visible');
+    removeClass(this.containerElement, 'remark-slide-container--visible');
   }
 
   createSlideElement() {
-    let element = document.createElement('div');
-    element.className = 'remark-slide';
+    let element = Dom.createElement({className: 'remark-slide'});
 
     if (this.slide.properties.continued === 'true') {
-      addClass(element, 'remark-slide-incremental');
+      addClass(element, 'remark-slide-container--incremental');
     }
 
     return element;
@@ -72,8 +76,8 @@ export default class SlideView {
   styleContentElement(element, properties) {
     element.className = '';
 
-    const  setClassFromProperties = (element, properties) => {
-      addClass(element, 'remark-slide-content');
+    const setClassFromProperties = (element, properties) => {
+      addClass(element, 'remark-slide__content');
 
       (properties['class'] || '').split(/[, ]/)
         .filter((s) => (s !== ''))
@@ -109,23 +113,22 @@ export default class SlideView {
   }
 
   createContentElement() {
-    let element = document.createElement('div');
-
-    if (this.slide.properties.name) {
-      element.id = 'slide-' + this.slide.properties.name;
-    }
+    let element = Dom.createElement({
+      id: this.slide.properties.name ? 'slide-' + this.slide.properties.name : null,
+      innerHTML: this.converter.convertMarkdown(this.slide.content, this.slideShow.getLinks())
+    });
 
     this.styleContentElement(element, this.slide.properties);
-    element.innerHTML = this.converter.convertMarkdown(this.slide.content, this.slideShow.getLinks());
     this.codeBlockHighlighter.highlightCodeBlocks(element, this.slideShow);
 
     return element;
   }
 
   createNotesElement(notes) {
-    let element = document.createElement('div');
-    element.className = 'remark-slide-notes';
-    element.innerHTML = this.converter.convertMarkdown(notes, this.slideShow.getLinks());
+    let element = Dom.createElement({
+      className: 'remark-slide-notes',
+      innerHTML: this.converter.convertMarkdown(notes, this.slideShow.getLinks())
+    });
 
     this.codeBlockHighlighter.highlightCodeBlocks(element, this.slideShow);
 
@@ -133,29 +136,7 @@ export default class SlideView {
   }
 
   configureElements() {
-    this.containerElement = document.createElement('div');
-    this.containerElement.className = 'remark-slide-container';
-
-    this.scalingElement = document.createElement('div');
-    this.scalingElement.className = 'remark-slide-scaler';
-
-    this.element = this.createSlideElement();
-
     this.contentElement = this.createContentElement(this.events, this.slideShow, this.slide);
-    this.notesElement = this.createNotesElement(this.slideShow, this.slide.notes);
-
-
-    let currentSlideNumber = this.slide.getSlideIndex();
-    let slides = this.slideShow.getSlides();
-    let nextSlideIncrement = currentSlideNumber+1 < slides.length ?
-      slides[currentSlideNumber+1].properties.continued === 'true' : false;
-
-    if (this.slide.properties.continued === 'true') {
-      let classToAdd = nextSlideIncrement ? 'remark-slide-increment' : 'remark-slide-end-increment';
-      addClass(this.containerElement, classToAdd);
-    } else if (nextSlideIncrement) {
-      addClass(this.containerElement, 'remark-slide-start-increment');
-    }
 
     let options = this.slideShow.getOptions();
 
@@ -163,10 +144,31 @@ export default class SlideView {
       this.contentElement.appendChild(this.slideNumber.element);
     }
 
+    this.element = this.createSlideElement();
     this.element.appendChild(this.contentElement);
-    this.scalingElement.appendChild(this.element);
-    this.containerElement.appendChild(this.scalingElement);
-    this.containerElement.appendChild(this.notesElement);
+
+    this.scalingElement = Dom.createElement(
+      {className: 'remark-slide-scaler'},
+      [this.element]
+    );
+    this.notesElement = this.createNotesElement(this.slide.notes);
+
+    this.containerElement = Dom.createElement(
+      {className: 'remark-slide-container'},
+      [this.scalingElement, this.notesElement]
+    );
+
+    let currentSlideNumber = this.slide.getSlideIndex();
+    let slides = this.slideShow.getSlides();
+    let nextSlideIncrement = currentSlideNumber+1 < slides.length ?
+      slides[currentSlideNumber+1].properties.continued === 'true' : false;
+
+    if (this.slide.properties.continued === 'true') {
+      let classToAdd = nextSlideIncrement ? 'remark-slide-container--increment' : 'remark-slide-container--end-increment';
+      addClass(this.containerElement, classToAdd);
+    } else if (nextSlideIncrement) {
+      addClass(this.containerElement, 'remark-slide-container--start-increment');
+    }
   }
 
   scaleBackgroundImage(dimensions) {
@@ -224,9 +226,9 @@ export default class SlideView {
       names = names.reverse();
     }
 
-    addClass(element, 'remark-' + names[0]);
-    removeClass(element, 'remark-visible');
-    removeClass(element, 'remark-' + names[1]);
+    removeClass(element, 'remark-slide-container--visible');
+    addClass(element, 'remark-slide-container--' + names[0]);
+    removeClass(element, 'remark-slide-container--' + names[1]);
   }
 
   prev() {

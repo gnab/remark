@@ -1,16 +1,19 @@
 import EventEmitter from 'events';
 import SlideShow from '../../../src/remark/models/SlideShow';
+import Dom from '../../../src/remark/Dom';
+import sinon from 'sinon';
 //import Slide from '../../../src/remark/models/Slide';
 
 describe('SlideShow', () => {
   let events;
   let slideShow;
-  let dom;
+  let XMLHttpRequest = sinon.stub(Dom, 'XMLHttpRequest');
 
   beforeEach(() => {
     events = new EventEmitter();
-    dom = {};
-    dom.constructor.XMLHttpRequest = function() {
+    slideShow = new SlideShow(events);
+
+    XMLHttpRequest.callsFake(function() {
       this.open = () => {};
       this.send = () => {};
       this.success = function(responseText) {
@@ -19,8 +22,7 @@ describe('SlideShow', () => {
         this.responseText = responseText;
         this.onload();
       };
-    };
-    slideShow = new SlideShow(events, dom);
+    });
   });
 
   describe('loading from source', () => {
@@ -43,7 +45,7 @@ describe('SlideShow', () => {
     });
 
     it('should mark continued slide as non-markable and not count them', () => {
-      slideShow = new SlideShow(events, null, {countIncrementalSlides: false});
+      slideShow = new SlideShow(events, {countIncrementalSlides: false});
       slideShow.loadFromString('a\n--\nb');
       slideShow.getSlides()[1].properties.count.should.equal('false');
       slideShow.getSlides()[1].getSlideNumber().should.equal(1);
@@ -85,7 +87,7 @@ describe('SlideShow', () => {
     });
 
     it('should not be counted if this is requested', () => {
-      slideShow = new SlideShow(events, null, {countIncrementalSlides: false});
+      slideShow = new SlideShow(events, {countIncrementalSlides: false});
       slideShow.loadFromString('a\n--\nb');
       slideShow.getSlides().forEach((slide) => {
         slide.getSlideNumber().should.equal(1);

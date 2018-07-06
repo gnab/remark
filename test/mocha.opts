@@ -1,6 +1,6 @@
+--require './test/remark/bootstrap'
 --require should
 --require sinon
---require ./test/environment
---require ./src/remark/utils
+--require should-sinon
 --reporter dot
 --ui bdd

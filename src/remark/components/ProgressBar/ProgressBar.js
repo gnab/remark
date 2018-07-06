@@ -1,11 +1,11 @@
+import Dom from "../../Dom";
+
 export default class ProgressBar {
   constructor(slideShow) {
     this.slideShow = slideShow;
 
-    this.element = document.createElement('div');
-    this.element.className = 'remark-progress-bar-container';
-    this.progressElement = document.createElement('div');
-    this.progressElement.className = 'remark-progress-bar';
+    this.element = Dom.createElement({className: 'remark-progress-bar'});
+    this.progressElement = Dom.createElement({className: 'remark-progress-bar__bar'});
     this.element.appendChild(this.progressElement);
 
     this.updateProgressBar = this.updateProgressBar.bind(this);

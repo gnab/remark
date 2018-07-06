@@ -3,7 +3,8 @@
   "version": "0.14.1",
   "dependencies": {
     "highlight.js": "^9.12.0",
-    "marked": "0.3.9"
+    "marked": "0.3.9",
+    "uninstall": "0.0.0"
   },
   "repository": {
     "type": "git",
@@ -13,23 +14,26 @@
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.51",
-    "babelify": "^9.0.0",
-    "browserify": "^16.2.1",
-    "grunt": "^0.4.5",
-    "grunt-contrib-connect": "^0.11.2",
-    "grunt-contrib-watch": "~0.5.3",
+    "ajv": "^6.5.2",
+    "babel-loader": "^8.0.0-beta.4",
+    "css-loader": "^0.28.11",
+    "jsdom": "^11.11.0",
     "jshint": "^2.9.1 ",
-    "less": "^2.5.3",
-    "mocha": "^2.3.4",
-    "mocha-phantomjs": "^4.0.2",
-    "shelljs": "^0.7.0",
+    "jshint-loader": "^0.8.4",
+    "mocha": "^5.2.0",
+    "mocha-webpack": "^2.0.0-beta.0",
+    "node-sass": "^4.9.0",
+    "sass-loader": "^7.0.3",
     "should": "^8.1.1",
     "should-sinon": "^0.0.3",
-    "sinon": "^1.17.2",
-    "uglify-js": "^3.4.2",
-    "node-sass": "^4.9.0"
+    "sinon": "^6.1.0",
+    "style-loader": "^0.21.0",
+    "webpack": "^4.15.0",
+    "webpack-cli": "^3.0.8"
   },
   "scripts": {
-    "test": "node make test"
+    "build": "webpack",
+    "watch": "webpack -w",
+    "test": "mocha-webpack --webpack-config webpack.config.test.js --opts test/mocha.opts \"test/**/*.spec.js\" || true"
   }
 }

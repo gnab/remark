@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import EventEmitter from 'events';
-import TestDom from '../../TestDom';
 import Controller from '../../../src/remark/controllers/DefaultController';
+import Dom from "../../../src/remark/Dom";
 
 describe('Controller', () => {
   describe('initial navigation', () => {
@@ -12,8 +12,7 @@ describe('Controller', () => {
     });
 
     it('should naviate by hash when slideshow is not embedded', () => {
-      dom.constructor.getLocationHash = () => { return '#2'; };
-
+      getLocationHash.returns('#2');
       createController({embedded: false});
 
       events.emit.should.be.calledWithExactly('gotoSlide', '2');
@@ -22,20 +21,18 @@ describe('Controller', () => {
 
   describe('hash change', () => {
     it('should not navigate by hash when slideshow is embedded', () => {
+      getLocationHash.returns('#3');
       createController({embedded: true});
 
-      dom.constructor.getLocationHash = () => { return '#3'; };
       events.emit('hashchange');
-
       events.emit.should.be.neverCalledWith('gotoSlide', '3');
     });
 
     it('should navigate by hash when slideshow is not embedded', () => {
+      getLocationHash.returns('#3');
       createController({embedded: false});
 
-      dom.constructor.getLocationHash = () => { return '#3'; };
       events.emit('hashchange');
-
       events.emit.should.be.calledWithExactly('gotoSlide', '3');
     });
   });
@@ -155,13 +152,13 @@ describe('Controller', () => {
   });
 
   let events;
-  let dom;
   let controller;
+  let getLocationHash = sinon.stub(Dom, 'getLocationHash');
 
   function createController(options) {
     options = options || {embedded: false};
 
-    controller = new Controller(events, dom, {
+    controller = new Controller(events, {
       isEmbedded: () => { return options.embedded; }
     });
   }
@@ -169,8 +166,6 @@ describe('Controller', () => {
   beforeEach(() => {
     events = new EventEmitter();
     sinon.spy(events, 'emit');
-
-    dom = new TestDom();
   });
 
   afterEach(() => {

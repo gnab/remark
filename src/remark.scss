@@ -1,28 +1,17 @@
+@import "~highlight.js/styles/default.css";
+
 /*************/
 /* Container */
 /*************/
 
 html {
-  font-size: 20px;
+  //font-size: 20px;
 }
 
 html.remark-container, body.remark-container {
   height: 100%;
   width: 100%;
   -webkit-print-color-adjust: exact;
-}
-
-.remark-container {
-  background: #d7d8d2;
-  margin: 0;
-  overflow: hidden;
-}
-.remark-container:focus {
-  outline: 1px solid;
-}
-.remark-container:-webkit-full-screen {
-  width: 100%;
-  height: 100%;
 }
 
 body:-webkit-full-screen {
@@ -37,225 +26,304 @@ body:fullscreen{
   background: #000000;
 }
 
-/**********/
-/* Slides */
-/**********/
+.remark {
+  &-container {
+    background: #d7d8d2;
+    margin: 0;
+    overflow: hidden;
 
-.remark-slides-area {
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-.remark-slide-container {
-  opacity: 0;
-  display: block;
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  page-break-after: always;
-}
-.remark-slide-scaler {
-  background-color: transparent;
-  overflow: auto;
-  position: absolute;
-  -webkit-transform-origin: top left;
-  -moz-transform-origin: top left;
-  transform-origin: top left;
-  -moz-box-shadow: 0 0 30px #888;
-  -webkit-box-shadow: 0 0 30px #888;
-  box-shadow: 0 0 30px #888;
-}
-.remark-slide {
-  height: 100%;
-  width: 100%;
-  display: table;
-  table-layout: fixed;
-  position: relative;
+    &:focus {
+      outline: 1px solid;
+    }
 
-  > .left {
-    text-align: left;
-  }
+    &:-webkit-full-screen {
+      width: 100%;
+      height: 100%;
+    }
 
-  > .center {
-    text-align: center;
-  }
+    &--help-mode {
+      .remark-help {
+        display: block;
+      }
+      .remark-backdrop {
+        display: block;
+        opacity: 0.95;
+      }
+    }
 
-  > .right {
-    text-align: right;
-  }
+    &--presenter-mode {
+      .remark-slides-area {
+        top: 2%;
+        left: 2%;
+        height: 47.25%;
+        width: 48%;
+      }
 
-  > .top {
-    vertical-align: top;
-  }
+      .remark-preview-area {
+        display: block;
+      }
 
-  > .middle {
-    vertical-align: middle;
-  }
+      .remark-notes-area {
+        display: block;
+      }
+    }
 
-  > .bottom {
-    vertical-align: bottom;
-  }
-}
+    &--presenter-mode &--pause-mode {
+      .remark-pause {
+        display: block;
+      }
+      .remark-backdrop {
+        display: block;
+        opacity: 0.5;
+      }
+    }
 
-.remark-slide-content {
-  background-color: #fff;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: table-cell;
-  padding: 1em 4em 1em 4em;
+    /************/
+    /* Blackout */
+    /************/
+    &--blackout-mode:not(&--presenter-mode) {
+      .remark-backdrop {
+        display: block;
+        opacity: 0.99;
+      }
+    }
 
-  .left {
-    display: block;
-    text-align: left;
-  }
-
-  .center {
-    display: block;
-    text-align: center;
-  }
-
-  .right {
-    display: block;
-    text-align: right;
-  }
-}
-
-.remark-slide-number {
-  bottom: 12px;
-  opacity: 0.5;
-  position: absolute;
-  right: 20px;
-}
-
-.remark-slide-notes {
-  border-top: 3px solid black;
-  position: absolute;
-  display: none;
-}
-
-.remark-code {
-  font-size: smaller;
-}
-.remark-code-line {
-  min-height: 1em;
-}
-.remark-code-line-highlighted {
-  background-color: rgba(255, 255, 0, 0.5);
-}
-.remark-code-span-highlighted {
-  background-color: rgba(255, 255, 0, 0.5);
-  padding: 1px 2px 2px 2px;
-}
-
-.remark-visible {
-  opacity: 1;
-  z-index: 2;
-}
-/*.remark-fading {
-  display: block;
-  z-index: 1;
-  .remark-slide-scaler {
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-  }
-}*/
-
-/************/
-/* Backdrop */
-/************/
-
-.remark-backdrop {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: none;
-  background: #000;
-  z-index: 2;
-}
-
-/*****************/
-/* Pause overlay */
-/*****************/
-
-.remark-pause {
-  bottom: 0;
-  top: 0;
-  right: 0;
-  left: 0;
-  display: none;
-  position: absolute;
-  z-index: 1000;
-
-  .remark-pause-lozenge {
-    margin-top: 30%;
-    text-align: center;
-
-    span {
-      color: white;
-      background: black;
-      border: 2px solid black;
-      border-radius: 20px;
-      padding: 20px 30px;
-      font-family: Helvetica, arial, freesans, clean, sans-serif;
-      font-size: 42pt;
-      font-weight: bold;
+    /************/
+    /* Mirrored */
+    /************/
+    &--mirrored-mode:not(&--presenter-mode) {
+      .remark-slides-area {
+        -webkit-transform: scaleX(-1);
+        -moz-transform: scaleX(-1);
+        -ms-transform: scaleX(-1);
+        -o-transform: scaleX(-1);
+      }
     }
   }
-}
 
-.remark-container.remark-presenter-mode.remark-pause-mode {
-  .remark-pause {
-    display: block;
+  /**********/
+  /* Slides */
+  /**********/
+
+  &-slides-area {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    perspective: 600px;
+    perspective-origin: 50% 40%;
   }
-  .remark-backdrop {
+
+  &-slide-container {
+    opacity: 0;
     display: block;
-    opacity: 0.5;
-  }
-}
-
-/********/
-/* Help */
-/********/
-
-.remark-help {
-  bottom: 0;
-  top: 0;
-  right: 0;
-  left: 0;
-  display: none;
-  position: absolute;
-  z-index: 1000;
-  -webkit-transform-origin: top left;
-  -moz-transform-origin: top left;
-  transform-origin: top left;
-
-  .remark-help-content {
-    color: white;
-    font-family: Helvetica, arial, freesans, clean, sans-serif;
-    font-size: 12pt;
     position: absolute;
-    top: 5%;
-    bottom: 10%;
-    height: 10%;
-    left: 5%;
-    width: 90%;
+    height: 100%;
+    width: 100%;
+    page-break-after: always;
+    transition: transform-origin 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
+      transform 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
+      visibility 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
+      opacity 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
 
-    h1 {
+    &--visible {
+      opacity: 1;
+      z-index: 2;
+    }
+
+    // Disable transitions for incremented slides.
+    &--prev.remark-slide-container--start-increment,
+    &--next.remark-slide-container--end-increment,
+    &--increment {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+
+  &-slide-scaler {
+    background-color: transparent;
+    overflow: auto;
+    position: absolute;
+    -webkit-transform-origin: top left;
+    -moz-transform-origin: top left;
+    transform-origin: top left;
+    -moz-box-shadow: 0 0 30px #888;
+    -webkit-box-shadow: 0 0 30px #888;
+    box-shadow: 0 0 30px #888;
+  }
+
+  &-slide {
+    height: 100%;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    position: relative;
+
+    > .left {
+      text-align: left;
+    }
+
+    > .center {
+      text-align: center;
+    }
+
+    > .right {
+      text-align: right;
+    }
+
+    > .top {
+      vertical-align: top;
+    }
+
+    > .middle {
+      vertical-align: middle;
+    }
+
+    > .bottom {
+      vertical-align: bottom;
+    }
+
+    &__content {
+      background: #fff center no-repeat;
+      display: table-cell;
+      padding: 1em 4em 1em 4em;
+
+      .left {
+        display: block;
+        text-align: left;
+      }
+
+      .center {
+        display: block;
+        text-align: center;
+      }
+
+      .right {
+        display: block;
+        text-align: right;
+      }
+    }
+  }
+
+  &-slide-number {
+    bottom: 12px;
+    opacity: 0.5;
+    position: absolute;
+    right: 20px;
+  }
+
+  &-slide-notes {
+    border-top: 3px solid black;
+    position: absolute;
+    display: none;
+  }
+
+  &-code {
+    font-size: smaller;
+
+    &__line {
+      min-height: 1em;
+
+      &--highlighted {
+        background-color: rgba(255, 255, 0, 0.5);
+      }
+    }
+
+    &__span {
+      &--highlighted {
+        background-color: rgba(255, 255, 0, 0.5);
+        padding: 1px 2px 2px 2px;
+      }
+    }
+  }
+
+  /************/
+  /* Backdrop */
+  /************/
+
+  &-backdrop {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: none;
+    background: #000;
+    z-index: 2;
+  }
+
+  /*****************/
+  /* Pause overlay */
+  /*****************/
+
+  &-pause {
+    bottom: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+
+    &__text {
+      margin-top: 30%;
+      text-align: center;
+
+      span {
+        color: white;
+        background: black;
+        border: 2px solid black;
+        border-radius: 20px;
+        padding: 20px 30px;
+        font-family: Helvetica, arial, freesans, clean, sans-serif;
+        font-size: 42pt;
+        font-weight: bold;
+      }
+    }
+  }
+
+  /********/
+  /* Help */
+  /********/
+
+  &-help {
+    bottom: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    -webkit-transform-origin: top left;
+    -moz-transform-origin: top left;
+    transform-origin: top left;
+
+    &__content {
+      color: white;
+      font-family: Helvetica, arial, freesans, clean, sans-serif;
+      font-size: 12pt;
+      position: absolute;
+      top: 5%;
+      bottom: 10%;
+      height: 10%;
+      left: 5%;
+      width: 90%;
+    }
+
+    &__head {
       font-size: 36px;
     }
 
-    td {
+    &__cell {
       color: white;
       font-size: 12pt;
       padding: 10px;
+
+      &:first-child {
+        padding-left: 0;
+      }
     }
-    td:first-child {
-      padding-left: 0;
-    }
-    .key {
+
+    &__key {
       background: white;
       color: black;
       min-width: 1em;
@@ -265,358 +333,314 @@ body:fullscreen{
       border-radius: 4px;
       font-size: 14px;
     }
-  }
 
-  .dismiss {
-    top: 85%;
-  }
-}
-
-.remark-container.remark-help-mode {
-  .remark-help {
-    display: block;
-  }
-  .remark-backdrop {
-    display: block;
-    opacity: 0.95;
-  }
-}
-
-/******************/
-/* Presenter mode */
-/******************/
-
-.remark-preview-area {
-  bottom: 2%;
-  left: 2%;
-  display: none;
-  opacity: 0.5;
-  position: absolute;
-  height: 47.25%;
-  width: 48%;
-
-  .remark-slide-container {
-    opacity: 1;
-  }
-}
-
-.remark-notes-area {
-  background: #fff;
-  bottom: 0;
-  color: black;
-  display: none;
-  left: 52%;
-  overflow: hidden;
-  position: absolute;
-  right: 0;
-  top: 0;
-
-  .remark-top-area {
-    height: 50px;
-    left: 20px;
-    position: absolute;
-    right: 10px;
-    top: 10px;
-  }
-
-  .remark-bottom-area {
-    position: absolute;
-    top: 75px;
-    bottom: 10px;
-    left: 20px;
-    right: 10px;
-
-    .remark-toggle {
-      display: block;
-      text-decoration: none;
-      font-family: Helvetica,arial,freesans,clean,sans-serif;
-      height: 21px;
-      font-size: 0.75em;
-      text-transform: uppercase;
-      color: #ccc;
-    }
-
-    .remark-notes-current-area {
-      height: 70%;
-      position: relative;
-
-      .remark-notes {
-        clear:both;
-        border-top: 1px solid #f5f5f5;
-        position: absolute;
-        top: 22px;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        overflow-y: auto;
-        margin-bottom: 20px;
-        padding-top: 10px;
-      }
-    }
-
-    .remark-notes-preview-area {
-      height: 30%;
-      position: relative;
-
-      .remark-notes-preview {
-        border-top: 1px solid #f5f5f5;
-        position: absolute;
-        top: 22px;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        overflow-y: auto;
-      }
-    }
-
-    .remark-notes > *:first-child,
-    .remark-notes-preview > *:first-child {
-      margin-top: 5px;
-    }
-    .remark-notes > *:last-child,
-    .remark-notes-preview > *:last-child {
-      margin-bottom: 0;
-    }
-  }
-}
-
-.remark-toolbar {
-  color: #979892;
-  vertical-align: middle;
-
-  .remark-toolbar-link {
-    border: 2px solid #d7d8d2;
-    color: #979892;
-    display: inline-block;
-    padding: 2px 2px;
-    text-decoration: none;
-    text-align: center;
-    min-width: 20px;
-
-    &:hover {
-      border-color: #979892;
-      color: #676862;
+    &__dismiss {
+      top: 85%;
     }
   }
 
-  .remark-toolbar-timer {
-    border: 2px solid black;
-    border-radius: 10px;
-    background: black;
-    color: white;
-    display: inline-block;
-    float: right;
-    padding: 5px 10px;
-    font-family: sans-serif;
-    font-weight: bold;
-    font-size: 175%;
-    text-decoration: none;
-    text-align: center;
-  }
-}
+  /******************/
+  /* Presenter mode */
+  /******************/
 
-.remark-container.remark-presenter-mode {
-  .remark-slides-area {
-    top: 2%;
+  &-preview-area {
+    bottom: 2%;
     left: 2%;
+    display: none;
+    opacity: 0.5;
+    position: absolute;
     height: 47.25%;
     width: 48%;
-  }
-  .remark-preview-area {
-    display: block;
-  }
-  .remark-notes-area {
-    display: block;
-  }
-}
 
-/************/
-/* Blackout */
-/************/
-
-.remark-container.remark-blackout-mode:not(.remark-presenter-mode) {
-  .remark-backdrop {
-    display: block;
-    opacity: 0.99;
-  }
-}
-
-/************/
-/* Mirrored */
-/************/
-
-.remark-container.remark-mirrored-mode:not(.remark-presenter-mode) {
-  .remark-slides-area {
-    -webkit-transform: scaleX(-1);
-    -moz-transform: scaleX(-1);
-    -ms-transform: scaleX(-1);
-    -o-transform: scaleX(-1);
-  }
-}
-
-/************/
-/* Printing */
-/************/
-
-@media print {
-  .remark-container {
-    overflow: visible;
-    background-color: #fff;
-  }
-  .remark-container.remark-presenter-mode {
-    .remark-slides-area {
-      top: 0;
-      left: 0;
-      height: 100%;
-      /*
-        NOTE: 100% doesn't match @page size width or height
-              681px matching @page size/width does, however
-      */
-      width: 681px;
-    }
-    .remark-preview-area,
-    .remark-notes-area {
-      display: none;
-    }
-    .remark-slide-notes {
-      display: block;
-      margin-left: 30px;
-      width: 621px;
+    .remark-slide-container {
+      opacity: 1;
     }
   }
-  .remark-slide-container {
-    position: relative;
-    opacity: 1;
-  }
-  .remark-slide-scaler {
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
-    -webkit-transform-origin: initial;
-    box-shadow: none;
-  }
-}
 
-@page {
-  margin: 0;
-}
+  &-notes-area {
+    background: #fff;
+    bottom: 0;
+    color: black;
+    display: none;
+    left: 52%;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 0;
 
-.remark-progress-bar-container {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  z-index: 10;
-
-  .remark-progress-bar {
-    height: 4px;
-    background-color: #888888;
-    width: 0;
-    transition: width 800ms cubic-bezier(0.260, 0.860, 0.440, 0.985);
-    display: block;
-  }
-}
-
-$controlArrowSize: 3.6em;
-$controlArrowSpacing: 1.4em;
-$controlArrowLength: 2.6em;
-$controlArrowThickness: 0.5em;
-$controlsArrowAngle: 45deg;
-$controlsArrowAngleHover: 40deg;
-$controlsArrowAngleActive: 36deg;
-
-@mixin controlsArrowTransform( $angle ) {
-  &:before {
-    transform: translateX(($controlArrowSize - $controlArrowLength)/2) translateY(($controlArrowSize - $controlArrowThickness)/2) rotate( $angle );
-  }
-
-  &:after {
-    transform: translateX(($controlArrowSize - $controlArrowLength)/2) translateY(($controlArrowSize - $controlArrowThickness)/2) rotate( -$angle );
-  }
-}
-
-.remark-controls {
-  position: absolute;
-  top: auto;
-  bottom: 12px;
-  right: 12px;
-  left: auto;
-  z-index: 10;
-  color: #000;
-  font-size: 10px;
-
-  .remark-controls-button {
-    &:before,
-    &:after {
-      content: '';
+    &__top {
+      height: 50px;
+      left: 20px;
       position: absolute;
-      top: 0;
-      left: 0;
-      width: $controlArrowLength;
-      height: $controlArrowThickness;
-      border-radius: $controlArrowThickness/2;
-      background-color: currentColor;
-
-      transition: all 0.15s ease, background-color 0.8s ease;
-      transform-origin: floor(($controlArrowThickness/2)*10)/10 50%;
-      will-change: transform;
+      right: 10px;
+      top: 10px;
     }
 
-    display: inline-block;
-    position: relative;
-    width: $controlArrowSize;
-    height: $controlArrowSize;
+    &__bottom {
+      position: absolute;
+      top: 75px;
+      bottom: 10px;
+      left: 20px;
+      right: 10px;
 
-    @include controlsArrowTransform( $controlsArrowAngle );
+      .remark-notes {
+        & > *:first-child {
+          margin-top: 5px;
+        }
 
-    &:hover {
-      @include controlsArrowTransform( $controlsArrowAngleHover );
+        & > *:last-child {
+          margin-bottom: 0;
+        }
+
+        &__head {
+          display: block;
+          text-decoration: none;
+          font-family: Helvetica,arial,freesans,clean,sans-serif;
+          height: 21px;
+          font-size: 0.75em;
+          text-transform: uppercase;
+          color: #ccc;
+        }
+
+        &__content {
+          border-top: 1px solid #f5f5f5;
+          position: absolute;
+          top: 22px;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          overflow-y: auto;
+
+
+        }
+
+        &--current {
+          height: 70%;
+          position: relative;
+
+          .remark-notes__content {
+            clear:both;
+            margin-bottom: 20px;
+            padding-top: 10px;
+          }
+        }
+
+        &--preview {
+          height: 30%;
+          position: relative;
+
+          & > *:first-child {
+            margin-top: 5px;
+          }
+
+          & > *:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+
+  &-toolbar {
+    color: #979892;
+    vertical-align: middle;
+
+    &__link {
+      border: 2px solid #d7d8d2;
+      color: #979892;
+      display: inline-block;
+      padding: 2px 2px;
+      text-decoration: none;
+      text-align: center;
+      min-width: 20px;
+
+      &:hover {
+        border-color: #979892;
+        color: #676862;
+      }
     }
 
-    &:active {
-      @include controlsArrowTransform( $controlsArrowAngleActive );
+    &__timer {
+      border: 2px solid black;
+      border-radius: 10px;
+      background: black;
+      color: white;
+      display: inline-block;
+      float: right;
+      padding: 5px 10px;
+      font-family: sans-serif;
+      font-weight: bold;
+      font-size: 175%;
+      text-decoration: none;
+      text-align: center;
+    }
+  }
+
+  /****************/
+  /* Progress bar */
+  /****************/
+  &-progress-bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    z-index: 10;
+
+    &__bar {
+      height: 4px;
+      background-color: #888888;
+      width: 0;
+      transition: width 800ms cubic-bezier(0.260, 0.860, 0.440, 0.985);
+      display: block;
+    }
+  }
+
+  /*************/
+  /* Controls */
+  /*************/
+  $controlArrowSize: 3.6em;
+  $controlArrowSpacing: 1.4em;
+  $controlArrowLength: 2.6em;
+  $controlArrowThickness: 0.5em;
+  $controlsArrowAngle: 45deg;
+  $controlsArrowAngleHover: 40deg;
+  $controlsArrowAngleActive: 36deg;
+
+  @mixin controlsArrowTransform( $angle ) {
+    &:before {
+      transform: translateX(($controlArrowSize - $controlArrowLength)/2) translateY(($controlArrowSize - $controlArrowThickness)/2) rotate( $angle );
     }
 
-    &.remark-controls-button--prev {
+    &:after {
+      transform: translateX(($controlArrowSize - $controlArrowLength)/2) translateY(($controlArrowSize - $controlArrowThickness)/2) rotate( -$angle );
     }
+  }
 
-    &--disabled {
-      display: none;
-    }
+  &-controls {
+    position: absolute;
+    top: auto;
+    bottom: 12px;
+    right: 12px;
+    left: auto;
+    z-index: 10;
+    color: #000;
+    font-size: 10px;
 
-    &.remark-controls-button--next {
-      transform: rotate(180deg);
+    &__button {
+      &:before,
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: $controlArrowLength;
+        height: $controlArrowThickness;
+        border-radius: $controlArrowThickness/2;
+        background-color: currentColor;
 
-      &.highlight {
+        transition: all 0.15s ease, background-color 0.8s ease;
+        transform-origin: floor(($controlArrowThickness/2)*10)/10 50%;
+        will-change: transform;
+      }
+
+      display: inline-block;
+      position: relative;
+      width: $controlArrowSize;
+      height: $controlArrowSize;
+
+      @include controlsArrowTransform( $controlsArrowAngle );
+
+      &:hover {
+        @include controlsArrowTransform( $controlsArrowAngleHover );
+      }
+
+      &:active {
+        @include controlsArrowTransform( $controlsArrowAngleActive );
+      }
+
+      &--disabled {
+        display: none;
+      }
+
+      &--next {
+        transform: rotate(180deg);
+      }
+
+      &--highlight {
         animation: bounce-right 2s 50 both ease-out;
       }
     }
   }
-}
 
-.remark-slides-area {
-  perspective: 600px;
-  perspective-origin: 50% 40%;
+  /************/
+  /* Printing */
+  /************/
 
-  .remark-slide-container {
-    transition:
-      transform-origin 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
-      transform 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
-      visibility 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
-      opacity 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
+  @media print {
+    &-container {
+      overflow: visible;
+      background-color: #fff;
 
-    // Disable transitions for incremented slides.
-    &.remark-prev.remark-slide-start-increment,
-    &.remark-next.remark-slide-end-increment,
-    &.remark-slide-increment {
-      transition: none !important;
+      &--presenter-mode {
+        .remark-slides-area {
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 100%;
+        }
+
+        .remark-slide-scaler {
+          display: block;
+          height: 50% !important;
+          position: initial;
+        }
+
+        .remark-preview-area,
+        .remark-notes-area {
+          display: none;
+        }
+
+        .remark-slide-notes {
+          display: block;
+          padding: 0 30px;
+          width: 100%;
+          height: 50%;
+        }
+      }
+    }
+
+    &-slide-container {
+      position: relative;
+      opacity: 1;
       transform: none !important;
     }
+
+    &-slide-scaler {
+      -moz-box-shadow: none;
+      -webkit-box-shadow: none;
+      -webkit-transform-origin: initial;
+      box-shadow: none;
+      transform: none !important;
+      width: 100% !important;
+      height: 100% !important;
+      left: auto !important;
+      top: auto !important;
+    }
+
+    &-progress-bar,
+    &-controls {
+      display: none;
+    }
   }
+}
+
+@page {
+  size: landscape;
+  margin: 0;
 }
 
 /*********************************************
  * Mixins for readability of transitions
  *********************************************/
-
 @mixin transition-global($style) {
   .remark-slides-area[data-remark-transition="#{$style}"] {
     .remark-slide-container {
@@ -627,25 +651,27 @@ $controlsArrowAngleActive: 36deg;
 
 @mixin transition-prev($style) {
   .remark-slides-area[data-remark-transition="#{$style}"] {
-    .remark-slide-container.remark-prev {
-      @content;
+    .remark-slide-container {
+      &--prev {
+        @content;
+      }
     }
   }
 }
 
 @mixin transition-next($style) {
   .remark-slides-area[data-remark-transition="#{$style}"] {
-    .remark-slide-container.remark-next {
-      @content;
+    .remark-slide-container {
+      &--next {
+        @content;
+      }
     }
   }
 }
 
 /*********************************************
  * SLIDE TRANSITION
- * Aliased 'linear' for backwards compatibility
  *********************************************/
-
 @include transition-prev(slide) {
   transform: translate(-150%, 0);
 }
@@ -657,7 +683,6 @@ $controlsArrowAngleActive: 36deg;
 /*********************************************
  * CONVEX TRANSITION
  *********************************************/
-
 @include transition-prev(convex) {
   transform-style: preserve-3d;
   transform: translate3d(-100%, 0, 0) rotateY(-90deg) translate3d(-100%, 0, 0);
@@ -671,7 +696,6 @@ $controlsArrowAngleActive: 36deg;
 /*********************************************
  * CONCAVE TRANSITION
  *********************************************/
-
 @include transition-prev(concave) {
   transform: translate3d(-100%, 0, 0) rotateY(90deg) translate3d(-100%, 0, 0);
 }
@@ -683,7 +707,6 @@ $controlsArrowAngleActive: 36deg;
 /*********************************************
  * ZOOM TRANSITION
  *********************************************/
-
 @include transition-global(zoom) {
   transition-timing-function: ease;
 }
@@ -701,11 +724,10 @@ $controlsArrowAngleActive: 36deg;
 /*********************************************
  * FADE TRANSITION
  *********************************************/
-
 @include transition-global(fade) {
   transition: opacity 1.5s;
 
-  &.remark-visible {
+  &.remark-slide-container--visible {
     transform: none;
     transition: opacity 1.5s;
     transition-delay: 0s;

@@ -1,9 +1,9 @@
 import { hasClass } from '../../utils';
+import Dom from "../../Dom";
 
 export default class Location {
-  constructor(events, dom, slideShowView) {
+  constructor(events, slideShowView) {
     this.events = events;
-    this.dom = dom;
     this.slideShowView = slideShowView;
 
     this.activate = this.activate.bind(this);
@@ -21,15 +21,15 @@ export default class Location {
 
   addLocationEventListeners () {
     const navigateByHash = () => {
-      let slideNoOrName = (this.dom.constructor.getLocationHash() || '').substr(1);
+      let slideNoOrName = (Dom.getLocationHash() || '').substr(1);
       this.events.emit('gotoSlide', slideNoOrName);
     };
 
     const updateHash = (slideNoOrName) => {
       if (hasClass(this.slideShowView.containerElement, 'remark-presenter-mode')) {
-        this.dom.constructor.setLocationHash('#p' + slideNoOrName);
+        Dom.setLocationHash('#p' + slideNoOrName);
       } else{
-        this.dom.constructor.setLocationHash('#' + slideNoOrName);
+        Dom.setLocationHash('#' + slideNoOrName);
       }
     };
 
