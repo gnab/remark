@@ -17,10 +17,10 @@ export default class Message {
 
   addMessageEventListeners() {
     this.events.on('message', (message) => {
-      let cap = /^gotoSlide:(\d+)$/.exec(message.data);
+      let cap = /^goToSlide:(\d+)$/.exec(message.data);
 
       if (cap !== null) {
-        this.events.emit('gotoSlide', parseInt(cap[1], 10), true);
+        this.events.emit('goToSlide', parseInt(cap[1], 10), true);
       } else if (message.data === 'toggleBlackout') {
         this.events.emit('toggleBlackout', {propagate: false});
       }

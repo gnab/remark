@@ -1,59 +1,63 @@
 import Dom from "../Dom";
+import i18next from 'i18next';
 
 export default class HelpView {
   constructor(events) {
     this.events = events;
     this.keyMaps = [
       {
-        description: 'Go to previous slide',
+        description: 'goToPreviousSlide',
         keys: ['<b>&uarr;</b>', '<b>&larr;</b>', 'Pg Up', 'k']
       },
       {
-        description: 'Go to next slide',
+        description: 'goToNextSlide',
         keys: ['<b>&darr;</b>', '<b>&rarr;</b>', 'Pg Dn', 'Space', 'j']
       },
       {
-        description: 'Go to first slide',
+        description: 'goToFirstSlide',
         keys: ['Home']
       },
       {
-        description: 'Go to last slide',
+        description: 'goToLastSlide',
         keys: ['End']
       },
       {
-        description: 'Go to specific slide',
-        keys: ['Number + <b>Return</b>']
+        description: 'goToSpecificSlide.description',
+        keys: [
+          i18next.t('helpView.keyMaps.goToSpecificSlide.number')
+          + ' + <b>' + i18next.t('helpView.keyMaps.goToSpecificSlide.enter') + '</b>'
+        ]
       },
       {
-        description: 'Toggle blackout',
+        description: 'toggleBlackout',
         keys: ['b']
       },
       {
-        description: 'Toggle mirrored',
+        description: 'toggleMirrored',
         keys: ['m']
       },
       {
-        description: 'Toggle full screen',
+        description: 'toggleFullScreen',
         keys: ['f']
       },
       {
-        description: 'Toggle presenter mode',
+        description: 'togglePresenterMode',
         keys: ['p']
       },
       {
-        description: 'Restart the presentation timer',
+        description: 'restartPresentationTimer',
         keys: ['t']
       },
       {
-        description: 'Clone slide show',
+        description: 'cloneSlideShow',
         keys: ['c']
       },
       {
-        description: 'Toggle this help',
+        description: 'toggleHelp',
         keys: ['h', '?']
       },
       {
-        description: 'Back to slide show',
+        description: 'backToSlideShow',
         keys: ['Esc']
       }
     ];
@@ -82,7 +86,7 @@ export default class HelpView {
       let descriptionCell = Dom.createElement({
         elementType: 'td',
         className: 'remark-help__cell',
-        innerHTML: keyMap.description
+        innerHTML: i18next.t('helpView.keyMaps.' + keyMap.description)
       });
 
       return Dom.createElement(
@@ -99,8 +103,20 @@ export default class HelpView {
 
   configureElement() {
     let content = Dom.createElement(
-      {elementType: 'h1', className: 'remark-help__content'},
-      [Dom.createElement({className: 'remark-help__head'}), this.createKeyTable()]
+      {elementType: 'div', className: 'remark-help__content'},
+      [
+        Dom.createElement({
+          elementType: 'h1',
+          className: 'remark-help__head',
+          innerHTML: i18next.t('helpView.head')
+        }),
+        Dom.createElement({
+          elementType: 'p',
+          className: 'remark-help__subHead',
+          innerHTML: i18next.t('helpView.subHead')
+        }),
+        this.createKeyTable()
+      ]
     );
 
     this.element = Dom.createElement({className: 'remark-help'}, [content]);

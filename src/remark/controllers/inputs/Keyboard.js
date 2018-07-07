@@ -1,7 +1,7 @@
 export default class Keyboard {
   constructor(events) {
     this.events = events;
-    this.gotoSlideNumber = '';
+    this.goToSlideNumber = '';
     
     this.activate = this.activate.bind(this);
     this.deactivate = this.deactivate.bind(this);
@@ -12,7 +12,7 @@ export default class Keyboard {
   }
 
   activate() {
-    this.gotoSlideNumber = '';
+    this.goToSlideNumber = '';
     this.addKeyboardEventListeners();
   }
 
@@ -31,33 +31,33 @@ export default class Keyboard {
         case 33: // Page up
         case 37: // Left
         case 38: // Up
-          this.events.emit('gotoPreviousSlide');
+          this.events.emit('goToPreviousSlide');
           break;
         case 32: // Space
           if (event.shiftKey) { // Shift+Space
-            this.events.emit('gotoPreviousSlide');
+            this.events.emit('goToPreviousSlide');
           } else {
-            this.events.emit('gotoNextSlide');
+            this.events.emit('goToNextSlide');
           }
           break;
         case 34: // Page down
         case 39: // Right
         case 40: // Down
-          this.events.emit('gotoNextSlide');
+          this.events.emit('goToNextSlide');
           break;
         case 36: // Home
-          this.events.emit('gotoFirstSlide');
+          this.events.emit('goToFirstSlide');
           break;
         case 35: // End
-          this.events.emit('gotoLastSlide');
+          this.events.emit('goToLastSlide');
           break;
         case 27: // Escape
           this.events.emit('hideOverlay');
           break;
         case 13: // Return
-          if (this.gotoSlideNumber) {
-            this.events.emit('gotoSlideNumber', this.gotoSlideNumber);
-            this.gotoSlideNumber = '';
+          if (this.goToSlideNumber) {
+            this.events.emit('goToSlideNumber', this.goToSlideNumber);
+            this.goToSlideNumber = '';
           }
           break;
       }
@@ -74,10 +74,10 @@ export default class Keyboard {
 
       switch (key) {
         case 'j':
-          this.events.emit('gotoNextSlide');
+          this.events.emit('goToNextSlide');
           break;
         case 'k':
-          this.events.emit('gotoPreviousSlide');
+          this.events.emit('goToPreviousSlide');
           break;
         case 'b':
           this.events.emit('toggleBlackout');
@@ -107,7 +107,7 @@ export default class Keyboard {
         case '8':
         case '9':
         case '0':
-          this.gotoSlideNumber += key;
+          this.goToSlideNumber += key;
           break;
         case 'h':
         case '?':

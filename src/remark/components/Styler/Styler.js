@@ -6,13 +6,19 @@ export default class Styler {
 
   static getRemarkStylesheets() {
     let styles = {};
-    let prefixRegEx = new RegExp('^' + Styler.PREFIX);
+    let prefixRegEx = new RegExp('^' + Styler.PREFIX + '.*');
 
     for (let i = 0; i < document.styleSheets.length; ++i) {
-      let title = document.styleSheets[i].title;
+      let style = document.styleSheets[i];
+      let title = style.ownerNode.getAttribute('component') + '';
 
-      if (title.test(prefixRegEx) === true) {
-        styles[title] = document.styleSheets[i];
+
+      if (prefixRegEx.test(title) === true) {
+        if (styles.hasOwnProperty(title) === false) {
+          styles[title] = [];
+        }
+
+        styles[title].push(document.styleSheets[i]);
       }
     }
 
@@ -44,10 +50,16 @@ export default class Styler {
     let headElement = document.getElementsByTagName('head')[0];
     let styleElement = Dom.createElement({
       elementType: 'style',
-      type: 'text/css',
-      title: fullName, // Set title in order to enable lookup
-      ...(Styler.isValidUrl(style) ? {src: style} : {innerHTML: style}) // Set document styles
+      type: 'text/css'
     });
+
+    styleElement.setAttribute('component', fullName);
+
+    if (Styler.isValidUrl(style) === true) {
+      styleElement.setAttribute('src', style);
+    } else {
+      styleElement.innerHTML = style;
+    }
 
     // Put element first to prevent overriding user styles
     headElement.insertBefore(styleElement, headElement.firstChild);
@@ -56,9 +68,13 @@ export default class Styler {
   static cleanup() {
     let styleSheets = Styler.getRemarkStylesheets();
 
-    styleSheets.forEach((style) => {
-      style.remove();
-    });
+    for (let style in styleSheets) {
+      if (styleSheets.hasOwnProperty(style)) {
+        styleSheets[style].forEach((styleSheet) => {
+          styleSheet.ownerNode.remove();
+        });
+      }
+    }
   }
 
   // Locates the CSS @page rule
@@ -81,7 +97,7 @@ export default class Styler {
     let fullName = Styler.PREFIX + Styler.PRINTER;
 
     if (styleSheets.hasOwnProperty(fullName)) {
-      let pageRule = Styler.getPageRule(styleSheets[fullName]);
+      let pageRule = Styler.getPageRule(styleSheets[fullName][0]);
 
       if (pageRule !== null) {
         pageRule.style.size = size;

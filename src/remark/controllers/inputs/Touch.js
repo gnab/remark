@@ -36,9 +36,9 @@ export default class Touch {
 
     const handleSwipe = () => {
       if (startX > endX) {
-        this.events.emit('gotoNextSlide');
+        this.events.emit('goToNextSlide');
       } else {
-        this.events.emit('gotoPreviousSlide');
+        this.events.emit('goToPreviousSlide');
       }
     };
 

@@ -159,9 +159,9 @@ export default class SlideShowView {
     // whether to move backwards or forwards
     this.events.on('tap', (endX) => {
       if (endX < this.containerElement.clientWidth / 2) {
-        this.slideShow.gotoPreviousSlide();
+        this.slideShow.goToPreviousSlide();
       } else {
-        this.slideShow.gotoNextSlide();
+        this.slideShow.goToNextSlide();
       }
     });
   }

@@ -3,22 +3,6 @@
   <head>
     <title>My Awesome Presentation</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <style type="text/css">
-      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
-
-      body {
-        font-family: 'Droid Serif';
-      }
-      h1, h2, h3 {
-        font-family: 'Yanone Kaffeesatz';
-        font-weight: normal;
-      }
-      .remark-code, .remark-inline-code {
-        font-family: 'Ubuntu Mono';
-      }
-    </style>
   </head>
   <body>
     <textarea id="source">
@@ -57,6 +41,23 @@ $variable = 'test';
     <script src="dist/remark.js" type="text/javascript">
     </script>
     <script type="text/javascript">
+      var style = `
+        @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+        @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+        @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+        body {
+          font-family: 'Droid Serif';
+        }
+        h1, h2, h3 {
+          font-family: 'Yanone Kaffeesatz';
+          font-weight: normal;
+        }
+        .remark-code, .remark-inline-code {
+          font-family: 'Ubuntu Mono';
+        }
+      `;
+
       remark.create({
         slideNumber: true,
         controls: true,
@@ -64,7 +65,11 @@ $variable = 'test';
         progressBar: true,
         transition: 'concave',
         transitionSpeed: 'slow',
-        highlightStyle: 'zenburn'
+        highlightStyle: 'zenburn',
+        styles: {
+          defaultStyle: style,
+          w3: 'https://www.w3schools.com/w3css/4/w3.css'
+        }
       });
     </script>
   </body>

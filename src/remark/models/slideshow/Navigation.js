@@ -8,14 +8,14 @@ export default (superClass) => class extends superClass {
     this.pause = this.pause.bind(this);
     this.resume = this.resume.bind(this);
     this.getCurrentSlideIndex = this.getCurrentSlideIndex.bind(this);
-    this.gotoSlideByIndex = this.gotoSlideByIndex.bind(this);
-    this.gotoSlide = this.gotoSlide.bind(this);
+    this.goToSlideByIndex = this.goToSlideByIndex.bind(this);
+    this.goToSlide = this.goToSlide.bind(this);
 
-    this.gotoSlideNumber = this.gotoSlideNumber.bind(this);
-    this.gotoPreviousSlide = this.gotoPreviousSlide.bind(this);
-    this.gotoNextSlide = this.gotoNextSlide.bind(this);
-    this.gotoFirstSlide = this.gotoFirstSlide.bind(this);
-    this.gotoLastSlide = this.gotoLastSlide.bind(this);
+    this.goToSlideNumber = this.goToSlideNumber.bind(this);
+    this.goToPreviousSlide = this.goToPreviousSlide.bind(this);
+    this.goToNextSlide = this.goToNextSlide.bind(this);
+    this.goToFirstSlide = this.goToFirstSlide.bind(this);
+    this.goToLastSlide = this.goToLastSlide.bind(this);
     this.getSlideIndex = this.getSlideIndex.bind(this);
 
     this.registerEvents();
@@ -31,12 +31,12 @@ export default (superClass) => class extends superClass {
   }
 
   registerEvents() {
-    this.events.on('gotoSlide', this.gotoSlide);
-    this.events.on('gotoSlideNumber', this.gotoSlideNumber);
-    this.events.on('gotoPreviousSlide', this.gotoPreviousSlide);
-    this.events.on('gotoNextSlide', this.gotoNextSlide);
-    this.events.on('gotoFirstSlide', this.gotoFirstSlide);
-    this.events.on('gotoLastSlide', this.gotoLastSlide);
+    this.events.on('goToSlide', this.goToSlide);
+    this.events.on('goToSlideNumber', this.goToSlideNumber);
+    this.events.on('goToPreviousSlide', this.goToPreviousSlide);
+    this.events.on('goToNextSlide', this.goToNextSlide);
+    this.events.on('goToFirstSlide', this.goToFirstSlide);
+    this.events.on('goToLastSlide', this.goToLastSlide);
 
     this.events.on('slidesChanged', () => {
       if (this.currentSlideIndex > this.getSlideCount()) {
@@ -70,7 +70,7 @@ export default (superClass) => class extends superClass {
     return this.currentSlideIndex;
   }
 
-  gotoSlideByIndex(slideIndex, noMessage) {
+  goToSlideByIndex(slideIndex, noMessage) {
     let alreadyOnSlide = slideIndex === this.currentSlideIndex;
     let slideOutOfRange = slideIndex < 0 || slideIndex > this.getSlideCount() - 1;
 
@@ -105,42 +105,42 @@ export default (superClass) => class extends superClass {
 
     if (!noMessage) {
       if (this.clone && !this.clone.closed) {
-        this.clone.postMessage('gotoSlide:' + (this.currentSlideIndex + 1), '*');
+        this.clone.postMessage('goToSlide:' + (this.currentSlideIndex + 1), '*');
       }
 
       if (window.opener) {
-        window.opener.postMessage('gotoSlide:' + (this.currentSlideIndex + 1), '*');
+        window.opener.postMessage('goToSlide:' + (this.currentSlideIndex + 1), '*');
       }
     }
   }
 
-  gotoSlide(slideNoOrName, noMessage) {
+  goToSlide(slideNoOrName, noMessage) {
     let slideIndex = this.getSlideIndex(slideNoOrName);
-    this.gotoSlideByIndex(slideIndex, noMessage);
+    this.goToSlideByIndex(slideIndex, noMessage);
   }
 
-  gotoSlideNumber(slideNumber, noMessage) {
+  goToSlideNumber(slideNumber, noMessage) {
     let slides = this.getSlidesByNumber(parseInt(slideNumber, 10));
 
     if (slides && slides.length) {
-      this.gotoSlideByIndex(slides[0].getSlideIndex(), noMessage);
+      this.goToSlideByIndex(slides[0].getSlideIndex(), noMessage);
     }
   }
 
-  gotoPreviousSlide() {
-    this.gotoSlideByIndex(this.currentSlideIndex - 1);
+  goToPreviousSlide() {
+    this.goToSlideByIndex(this.currentSlideIndex - 1);
   }
 
-  gotoNextSlide() {
-    this.gotoSlideByIndex(this.currentSlideIndex + 1);
+  goToNextSlide() {
+    this.goToSlideByIndex(this.currentSlideIndex + 1);
   }
 
-  gotoFirstSlide() {
-    this.gotoSlideByIndex(0);
+  goToFirstSlide() {
+    this.goToSlideByIndex(0);
   }
 
-  gotoLastSlide() {
-    this.gotoSlideByIndex(this.getSlideCount() - 1);
+  goToLastSlide() {
+    this.goToSlideByIndex(this.getSlideCount() - 1);
   }
 
   getSlideIndex(slideNoOrName) {

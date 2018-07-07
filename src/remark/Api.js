@@ -6,13 +6,17 @@ import SlideShowView from './views/SlideShowView';
 import DefaultController from './controllers/DefaultController';
 import Dom from './Dom';
 import Styler from "./components/Styler/Styler";
+import i18next from 'i18next';
 
 export default class Api {
   constructor() {
     this.converter = new Converter();
     this.controller = null;
+    this.originalContent = null;
+    this.container = null;
 
     this.convert = this.convert.bind(this);
+    this.applyDefaults = this.applyDefaults.bind(this);
     this.create = this.create.bind(this);
     this.destroy = this.destroy.bind(this);
   }
@@ -24,7 +28,7 @@ export default class Api {
     return this.converter.convertMarkdown(content, {}, true);
   }
 
-  static applyDefaults(options) {
+  applyDefaults(options) {
     options = options || {};
     
     const unescape = (source) => {
@@ -32,6 +36,13 @@ export default class Api {
         .replace(/&amp;/g, '&')
         .replace(/&quot;/g, '"');
     };
+
+    if (!(options.container instanceof window.HTMLElement)) {
+      options.container = Dom.getBodyElement();
+    }
+
+    this.container = options.container;
+    this.originalContent = this.container.innerHTML;
 
     if (!options.hasOwnProperty('source')) {
       let sourceElement = Dom.getElementById('source');
@@ -42,21 +53,61 @@ export default class Api {
       }
     }
 
-    if (!(options.container instanceof window.HTMLElement)) {
-      options.container = Dom.getBodyElement();
-    }
-
     return options;
   }
 
   // Creates slide show initialized from options
   create(options, callback) {
-    options = this.constructor.applyDefaults(options);
+    let translations = options.translations || {};
+
+    i18next.init({
+      lng: 'en',
+      getAsync: false,
+      resources: {
+        en: {
+          translation: {
+            notesView: {
+              slides: {
+                notesForCurrent: 'Notes for current slide',
+                notesForNext: 'Notes for next slide'
+              }
+            },
+            helpView: {
+              head: 'Help',
+              subHead: 'Keyboard shortcuts',
+              keyMaps: {
+                goToPreviousSlide: 'Go to previous slide',
+                goToNextSlide: 'Go to next slide',
+                goToFirstSlide: 'Go to first slide',
+                goToLastSlide: 'Go to last slide',
+                goToSpecificSlide: {
+                  description: 'Go to specific slide',
+                  number: 'Number',
+                  enter: 'Return'
+                },
+                toggleBlackout: 'Toggle blackout',
+                toggleMirrored: 'Toggle mirrored',
+                toggleFullScreen: 'Toggle full screen',
+                togglePresenterMode: 'Toggle presenter mode',
+                restartPresentationTimer: 'Restart the presentation timer',
+                cloneSlideShow: 'Clone slide show',
+                toggleHelp: 'Toggle this help',
+                backToSlideShow: 'Back to slide show'
+              }
+            }
+          }
+        },
+        ...translations
+      }
+    });
+    options = this.applyDefaults(options);
 
     if (options.hasOwnProperty('styles')) {
-      options.styles.forEach((style, key) => {
-        Styler.addStyle(key, style);
-      });
+      for (let style in options.styles) {
+        if (options.styles.hasOwnProperty(style)) {
+          Styler.addStyle(style, options.styles[style]);
+        }
+      }
     }
 
     let events = new EventEmitter();
@@ -78,6 +129,7 @@ export default class Api {
 
   destroy() {
     this.controller = null;
+    this.container.innerHTML = this.originalContent;
     Styler.cleanup();
   }
 }

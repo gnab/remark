@@ -21,7 +21,7 @@ export default class Mouse {
     if (this.options.click) {
       this.events.on('click', (event) => {
         if (event.target.nodeName !== 'A' && event.button === 0) {
-          this.events.emit('gotoNextSlide');
+          this.events.emit('goToNextSlide');
         }
       });
 
@@ -32,16 +32,16 @@ export default class Mouse {
         }
 
         event.preventDefault();
-        this.events.emit('gotoPreviousSlide');
+        this.events.emit('goToPreviousSlide');
       });
     }
 
     if (this.options.scroll !== false) {
       let scrollHandler = (event) => {
         if (event.wheelDeltaY > 0 || event.detail < 0) {
-          this.events.emit('gotoPreviousSlide');
+          this.events.emit('goToPreviousSlide');
         } else if (event.wheelDeltaY < 0 || event.detail > 0) {
-          this.events.emit('gotoNextSlide');
+          this.events.emit('goToNextSlide');
         }
       };
 

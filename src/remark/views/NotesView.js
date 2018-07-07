@@ -1,6 +1,7 @@
 import Timer from "../components/Timer/Timer";
 import {addClass} from "../utils";
 import Dom from "../Dom";
+import i18next from 'i18next';
 
 export default class NotesView {
   constructor(events, slideViewsAccessor) {
@@ -70,7 +71,7 @@ export default class NotesView {
 
     let head = Dom.createElement({
       className: 'remark-notes__head',
-      innerHTML: preview ? 'Notes for next slide' : 'Notes for current slide'
+      //innerHTML: preview ? i18next.t('notesView.slides.notesForNext') : i18next.t('notesView.slides.notesForCurrent')
     });
 
     let content = Dom.createElement({className: 'remark-notes__content'});

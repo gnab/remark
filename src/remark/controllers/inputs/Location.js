@@ -22,11 +22,11 @@ export default class Location {
   addLocationEventListeners () {
     const navigateByHash = () => {
       let slideNoOrName = (Dom.getLocationHash() || '').substr(1);
-      this.events.emit('gotoSlide', slideNoOrName);
+      this.events.emit('goToSlide', slideNoOrName);
     };
 
     const updateHash = (slideNoOrName) => {
-      if (hasClass(this.slideShowView.containerElement, 'remark-presenter-mode')) {
+      if (hasClass(this.slideShowView.containerElement, 'remark-container--presenter-mode')) {
         Dom.setLocationHash('#p' + slideNoOrName);
       } else{
         Dom.setLocationHash('#' + slideNoOrName);
@@ -36,7 +36,7 @@ export default class Location {
     // If slide show is embedded into custom DOM element, we don't
     // hook up to location hash changes, so just go to first slide.
     if (this.slideShowView.isEmbedded()) {
-      this.events.emit('gotoSlide', 1);
+      this.events.emit('goToSlide', 1);
     } else {
       // When slide show is not embedded into custom DOM element, but
       // rather hosted directly inside document.body, we hook up to

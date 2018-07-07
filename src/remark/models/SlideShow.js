@@ -256,7 +256,7 @@ class SlideShow {
   }
 
   toggleFullScreen() {
-    this.events.emit('toggleFullscreen');
+    this.events.emit('toggleFullScreen');
   }
 
   createClone() {

@@ -44,7 +44,7 @@ export default class Controls {
     });
 
     button.onclick = () => {
-      this.events.emit(next ? 'gotoNextSlide' : 'gotoPreviousSlide');
+      this.events.emit(next ? 'goToNextSlide' : 'goToPreviousSlide');
     };
 
     return button;

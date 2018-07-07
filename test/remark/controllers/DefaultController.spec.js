@@ -8,14 +8,14 @@ describe('Controller', () => {
     it('should naviate to first slide when slideshow is embedded ', () => {
       createController({embedded: true});
 
-      events.emit.should.be.calledWithExactly('gotoSlide', 1);
+      events.emit.should.be.calledWithExactly('goToSlide', 1);
     });
 
     it('should naviate by hash when slideshow is not embedded', () => {
       getLocationHash.returns('#2');
       createController({embedded: false});
 
-      events.emit.should.be.calledWithExactly('gotoSlide', '2');
+      events.emit.should.be.calledWithExactly('goToSlide', '2');
     });
   });
 
@@ -25,7 +25,7 @@ describe('Controller', () => {
       createController({embedded: true});
 
       events.emit('hashchange');
-      events.emit.should.be.neverCalledWith('gotoSlide', '3');
+      events.emit.should.be.neverCalledWith('goToSlide', '3');
     });
 
     it('should navigate by hash when slideshow is not embedded', () => {
@@ -33,7 +33,7 @@ describe('Controller', () => {
       createController({embedded: false});
 
       events.emit('hashchange');
-      events.emit.should.be.calledWithExactly('gotoSlide', '3');
+      events.emit.should.be.calledWithExactly('goToSlide', '3');
     });
   });
 
@@ -41,73 +41,73 @@ describe('Controller', () => {
     it('should navigate to previous slide when pressing page up', () => {
       events.emit('keydown', {keyCode: 33});
 
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+      events.emit.should.be.calledWithExactly('goToPreviousSlide');
     });
 
     it('should navigate to previous slide when pressing arrow left', () => {
       events.emit('keydown', {keyCode: 37});
 
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+      events.emit.should.be.calledWithExactly('goToPreviousSlide');
     });
 
     it('should not navigate to previous slide when pressing alt + arrow left', () => {
       events.emit('keydown', {keyCode: 37, altKey: true});
 
-      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
+      events.emit.should.not.be.calledWithExactly('goToPreviousSlide');
     });
 
     it('should navigate to previous slide when pressing arrow up', () => {
       events.emit('keydown', {keyCode: 38});
 
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+      events.emit.should.be.calledWithExactly('goToPreviousSlide');
     });
 
     it('should navigate to next slide when pressing space', () => {
       events.emit('keydown', {keyCode: 32});
 
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
+      events.emit.should.be.calledWithExactly('goToNextSlide');
     });
 
     it('should navigate to previous slide when pressing shift+space', () => {
       events.emit('keydown', {keyCode: 32, shiftKey: true});
 
-      events.emit.should.be.calledWithExactly('gotoPreviousSlide');
+      events.emit.should.be.calledWithExactly('goToPreviousSlide');
     });
 
     it('should navigate to next slide when pressing page down', () => {
       events.emit('keydown', {keyCode: 34});
 
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
+      events.emit.should.be.calledWithExactly('goToNextSlide');
     });
 
     it('should navigate to next slide when pressing arrow right', () => {
       events.emit('keydown', {keyCode: 39});
 
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
+      events.emit.should.be.calledWithExactly('goToNextSlide');
     });
 
     it('should not navigate to next slide when pressing alt + arrow right', () => {
       events.emit('keydown', {keyCode: 39, altKey: true});
 
-      events.emit.should.not.be.calledWithExactly('gotoNextSlide');
+      events.emit.should.not.be.calledWithExactly('goToNextSlide');
     });
 
     it('should navigate to next slide when pressing arrow down', () => {
       events.emit('keydown', {keyCode: 39});
 
-      events.emit.should.be.calledWithExactly('gotoNextSlide');
+      events.emit.should.be.calledWithExactly('goToNextSlide');
     });
 
     it('should navigate to first slide when pressing home', () => {
       events.emit('keydown', {keyCode: 36});
 
-      events.emit.should.be.calledWithExactly('gotoFirstSlide');
+      events.emit.should.be.calledWithExactly('goToFirstSlide');
     });
 
     it('should navigate to last slide when pressing end', () => {
       events.emit('keydown', {keyCode: 35});
 
-      events.emit.should.be.calledWithExactly('gotoLastSlide');
+      events.emit.should.be.calledWithExactly('goToLastSlide');
     });
 
     it('should navigate to slide N when pressing N followed by return', () => {
@@ -115,7 +115,7 @@ describe('Controller', () => {
       events.emit('keypress', {which: 50}); // 2
       events.emit('keydown', {keyCode: 13}); // return
 
-      events.emit.should.be.calledWithExactly('gotoSlideNumber', '12');
+      events.emit.should.be.calledWithExactly('goToSlideNumber', '12');
     });
 
     beforeEach(() => {
@@ -143,7 +143,7 @@ describe('Controller', () => {
     it('should do nothing when pressing page up', () => {
       events.emit('keydown', {keyCode: 33});
 
-      events.emit.should.not.be.calledWithExactly('gotoPreviousSlide');
+      events.emit.should.not.be.calledWithExactly('goToPreviousSlide');
     });
 
     beforeEach(() => {
