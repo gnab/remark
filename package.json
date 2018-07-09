@@ -35,7 +35,8 @@
     "webpack-cli": "^3.0.8"
   },
   "scripts": {
-    "build": "webpack",
+    "build": "NODE_ENV='production' webpack -p",
+    "build-dev": "webpack",
     "watch": "webpack -w",
     "test": "mocha-webpack --webpack-config webpack.config.test.js --opts test/mocha.opts \"test/**/*.spec.js\" || true"
   }

@@ -13,7 +13,9 @@ export default class SlideView {
 
     this.converter = new Converter();
     this.codeBlockHighlighter = new CodeBlockHighlighter(slideShow);
-    this.slideNumber = new SlideNumber(slide, slideShow);
+
+    let options = this.slideShow.getOptions();
+    this.slideNumber = options.slideNumber && options.folio ? new SlideNumber(slideShow, slide.getSlideNumber()) : null;
 
     this.updateDimensions = this.updateDimensions.bind(this);
     this.scale = this.scale.bind(this);
@@ -140,7 +142,7 @@ export default class SlideView {
 
     let options = this.slideShow.getOptions();
 
-    if (options.slideNumber) {
+    if (this.slideNumber !== null) {
       this.contentElement.appendChild(this.slideNumber.element);
     }
 

@@ -26,7 +26,7 @@ body:fullscreen{
 
 .remark {
   &-container {
-    background: #d7d8d2;
+    background: #fff;
     margin: 0;
     overflow: hidden;
 
@@ -97,6 +97,20 @@ body:fullscreen{
         -o-transform: scaleX(-1);
       }
     }
+
+    &--folio {
+      background: #d7d8d2;
+
+      .remark-slide-scaler {
+        -moz-box-shadow: 0 0 30px #888;
+        -webkit-box-shadow: 0 0 30px #888;
+        box-shadow: 0 0 30px #888;
+      }
+
+      .remark-slide__content {
+        background-color: #fff;
+      }
+    }
   }
 
   /**********/
@@ -144,9 +158,6 @@ body:fullscreen{
     -webkit-transform-origin: top left;
     -moz-transform-origin: top left;
     transform-origin: top left;
-    -moz-box-shadow: 0 0 30px #888;
-    -webkit-box-shadow: 0 0 30px #888;
-    box-shadow: 0 0 30px #888;
   }
 
   &-slide {
@@ -181,7 +192,7 @@ body:fullscreen{
     }
 
     &__content {
-      background: #fff center no-repeat;
+      background: transparent center no-repeat;;
       display: table-cell;
       padding: 1em 4em 1em 4em;
 
@@ -520,8 +531,8 @@ body:fullscreen{
   &-controls {
     position: absolute;
     top: auto;
-    bottom: 12px;
-    right: 12px;
+    bottom: 20px;
+    right: 20px;
     left: auto;
     z-index: 10;
     color: #000;

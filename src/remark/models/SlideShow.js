@@ -89,7 +89,8 @@ class SlideShow {
       controls: false,
       controlsTutorial: false,
       controlsLayout: 'bottom-right',
-      controlsBackArrows: 'faded'
+      controlsBackArrows: 'faded',
+      folio: false
     };
 
     this.options = {

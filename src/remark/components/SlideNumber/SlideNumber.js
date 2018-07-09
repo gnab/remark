@@ -1,22 +1,28 @@
 import Dom from "../../Dom";
 
 export default class SlideNumber {
-  constructor(slide, slideShow) {
-    this.slide = slide;
+  constructor(slideShow, slideNumber, refresh) {
     this.slideShow = slideShow;
+    this.refresh = refresh || false;
 
     this.formatSlideNumber = this.formatSlideNumber.bind(this);
 
     this.element = Dom.createElement({
       className: 'remark-slide-number',
-      innerHTML: this.formatSlideNumber()
+      innerHTML: this.formatSlideNumber(slideNumber)
     });
+
+    if (this.refresh) {
+      this.slideShow.events.on('afterShowSlide', (slideIndex) => {
+        this.element.innerHTML = this.formatSlideNumber(slideIndex);
+      });
+    }
   }
 
-  formatSlideNumber() {
+  formatSlideNumber(slideIndex) {
     let format = this.slideShow.getOptions().slideNumberFormat;
     let slides = this.slideShow.getSlides();
-    let current = this.slide.getSlideNumber();
+    let current = slideIndex + 1;
     let total = (slides[slides.length - 1]).getSlideNumber();
 
     if (typeof format === 'function') {

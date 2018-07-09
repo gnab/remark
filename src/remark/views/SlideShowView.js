@@ -7,6 +7,7 @@ import ProgressBar from "../components/ProgressBar/ProgressBar";
 import Controls from "../components/Controls/Controls";
 import HelpView from "./HelpView";
 import Dom from "../Dom";
+import SlideNumber from "../components/SlideNumber/SlideNumber";
 
 export default class SlideShowView {
   constructor(events, containerElement, slideShow) {
@@ -30,15 +31,17 @@ export default class SlideShowView {
     this.isEmbedded = this.isEmbedded.bind(this);
     this.handleFullScreen = this.handleFullScreen.bind(this);
 
-    this.progressBar = new ProgressBar(this.slideShow);
     let options = this.slideShow.getOptions();
-    this.controls = new Controls(
-      this.slideShow,
-      this.events,
-      options.controlsLayout,
-      options.controlsBackArrows,
-      options.controlsTutorial
-    );
+
+    this.progressBar = options.progressBar ? new ProgressBar(this.slideShow) : null;
+    this.controls = options.controls ? new Controls(
+        this.slideShow,
+        this.events,
+        options.controlsLayout,
+        options.controlsBackArrows,
+        options.controlsTutorial
+      ) : null;
+    this.slideNumber = options.slideNumber && !options.folio ? new SlideNumber(this.slideShow, 1, true) : null;
 
     // Configure elements
     this.configureContainerElement(containerElement);
@@ -116,6 +119,12 @@ export default class SlideShowView {
     this.containerElement = element;
 
     addClass(element, 'remark-container');
+
+    let options = this.slideShow.getOptions();
+
+    if (options.folio) {
+      addClass(element, 'remark-container--folio');
+    }
 
     if (element === Dom.getBodyElement()) {
       addClass(Dom.getHTMLElement(), 'remark-container');
@@ -256,14 +265,16 @@ export default class SlideShowView {
       });
     });
 
-    let options = this.slideShow.getOptions();
-
-    if (options.progressBar) {
+    if (this.progressBar !== null) {
       this.slidesArea.appendChild(this.progressBar.element);
     }
 
-    if (options.controls) {
+    if (this.controls !== null) {
       this.slidesArea.appendChild(this.controls.element);
+    }
+
+    if (this.slideNumber !== null) {
+      this.slidesArea.appendChild(this.slideNumber.element);
     }
 
     this.setTransition();

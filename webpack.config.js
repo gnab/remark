@@ -1,15 +1,15 @@
 let debug = process.env.NODE_ENV !== 'production';
 const path = require('path');
-const webpack = require('webpack');
 
 module.exports = {
-  //context: path.join(__dirname, '/src'),
   devtool: debug ? 'inline-source-map' : '',
   mode: debug ? 'development' : 'production',
-  entry: __dirname + '/src/remark.js',
+  entry: {
+    remark: __dirname + '/src/remark.js'
+  },
   watch: false,
   output: {
-    filename: 'remark.js',
+    filename: debug ? 'remark.js' : 'remark.min.js',
     path: path.resolve(__dirname, 'dist')
   },
   module: {
