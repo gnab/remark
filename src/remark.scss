@@ -1,3 +1,16 @@
+$backgroundColor: #fff;
+$folioBackgroundColor: #d7d8d2;
+$progressBarColor: #888888;
+$controlsArrowColor: #000;
+$controlArrowSize: 3.6em;
+$controlArrowSpacing: 1.4em;
+$controlArrowLength: 2.6em;
+$controlArrowThickness: 0.5em;
+$controlsArrowAngle: 45deg;
+$controlsArrowAngleHover: 40deg;
+$controlsArrowAngleActive: 36deg;
+$spacing: 8px;
+
 /*************/
 /* Container */
 /*************/
@@ -12,21 +25,19 @@ html.remark-container, body.remark-container {
   -webkit-print-color-adjust: exact;
 }
 
-body:-webkit-full-screen {
-  background: #000000;
+body.remark-container--folio:-webkit-full-screen {
+  background: #000;
 }
-
-body:-moz-full-screen {
-  background: #000000;
+body.remark-container--folio:-moz-full-screen {
+  background: #000;
 }
-
-body:fullscreen{
-  background: #000000;
+body.remark-container--folio:fullscreen {
+  background: #000;
 }
 
 .remark {
   &-container {
-    background: #fff;
+    background: $backgroundColor;
     margin: 0;
     overflow: hidden;
 
@@ -64,6 +75,12 @@ body:fullscreen{
       .remark-notes-area {
         display: block;
       }
+
+      .remark-slides-area > .remark-slide-number,
+      .remark-progress-bar,
+      .remark-controls {
+        display: none;
+      }
     }
 
     &--presenter-mode &--pause-mode {
@@ -98,8 +115,9 @@ body:fullscreen{
       }
     }
 
+    &--presenter-mode,
     &--folio {
-      background: #d7d8d2;
+      background: $folioBackgroundColor;
 
       .remark-slide-scaler {
         -moz-box-shadow: 0 0 30px #888;
@@ -109,6 +127,11 @@ body:fullscreen{
 
       .remark-slide__content {
         background-color: #fff;
+      }
+
+      .remark-slide-number {
+        bottom: 12px;
+        right: 20px;
       }
     }
   }
@@ -214,10 +237,11 @@ body:fullscreen{
   }
 
   &-slide-number {
-    bottom: 12px;
+    bottom: 8px;
     opacity: 0.5;
     position: absolute;
-    right: 20px;
+    right: 8px;
+    font-size: 10px;
   }
 
   &-slide-notes {
@@ -459,6 +483,7 @@ body:fullscreen{
       text-decoration: none;
       text-align: center;
       min-width: 20px;
+      margin-right: 2px;
 
       &:hover {
         border-color: #979892;
@@ -493,7 +518,7 @@ body:fullscreen{
 
     &__bar {
       height: 4px;
-      background-color: #888888;
+      background-color: $progressBarColor;
       width: 0;
       transition: width 800ms cubic-bezier(0.260, 0.860, 0.440, 0.985);
       display: block;
@@ -509,15 +534,6 @@ body:fullscreen{
     30% {transform: translateX(-5px) rotate(180deg);}
   }
 
-  $controlArrowSize: 3.6em;
-  $controlArrowSpacing: 1.4em;
-  $controlArrowLength: 2.6em;
-  $controlArrowThickness: 0.5em;
-  $controlsArrowAngle: 45deg;
-  $controlsArrowAngleHover: 40deg;
-  $controlsArrowAngleActive: 36deg;
-  $spacing: 8px;
-
   @mixin controlsArrowTransform( $angle ) {
     &:before {
       transform: translateX(($controlArrowSize - $controlArrowLength)/2) translateY(($controlArrowSize - $controlArrowThickness)/2) rotate( $angle );
@@ -531,11 +547,11 @@ body:fullscreen{
   &-controls {
     position: absolute;
     top: auto;
-    bottom: 20px;
-    right: 20px;
+    bottom: 22px;
+    right: 12px;
     left: auto;
     z-index: 10;
-    color: #000;
+    color: $controlsArrowColor;
     font-size: 10px;
 
 

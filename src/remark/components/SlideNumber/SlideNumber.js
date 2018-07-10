@@ -14,7 +14,7 @@ export default class SlideNumber {
 
     if (this.refresh) {
       this.slideShow.events.on('afterShowSlide', (slideIndex) => {
-        this.element.innerHTML = this.formatSlideNumber(slideIndex);
+        this.element.innerHTML = this.formatSlideNumber(slideIndex + 1);
       });
     }
   }
@@ -22,7 +22,7 @@ export default class SlideNumber {
   formatSlideNumber(slideIndex) {
     let format = this.slideShow.getOptions().slideNumberFormat;
     let slides = this.slideShow.getSlides();
-    let current = slideIndex + 1;
+    let current = slideIndex;
     let total = (slides[slides.length - 1]).getSlideNumber();
 
     if (typeof format === 'function') {

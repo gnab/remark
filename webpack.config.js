@@ -9,8 +9,9 @@ module.exports = {
   },
   watch: false,
   output: {
-    filename: debug ? 'remark.js' : 'remark.min.js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'build'),
+    publicPath: '/assets',
+    filename: debug ? 'remark.js' : 'remark.min.js'
   },
   module: {
     rules: [
@@ -57,5 +58,10 @@ module.exports = {
   },
   optimization: {
     minimize: !debug
+  },
+  devServer: {
+    contentBase: 'build/',
+    watchContentBase: true,
+    open: true
   }
 };

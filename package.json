@@ -32,12 +32,13 @@
     "sinon": "^6.1.0",
     "style-loader": "^0.21.0",
     "webpack": "^4.15.0",
-    "webpack-cli": "^3.0.8"
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4"
   },
   "scripts": {
     "build": "NODE_ENV='production' webpack -p",
-    "build-dev": "webpack",
-    "watch": "webpack -w",
+    "build:dev": "webpack --mode development",
+    "start:dev": "webpack-dev-server",
     "test": "mocha-webpack --webpack-config webpack.config.test.js --opts test/mocha.opts \"test/**/*.spec.js\" || true"
   }
 }
