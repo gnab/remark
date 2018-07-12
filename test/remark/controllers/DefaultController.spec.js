@@ -1,9 +1,9 @@
 import sinon from 'sinon';
 import EventEmitter from 'events';
-import Controller from '../../../src/remark/controllers/DefaultController';
+import DefaultController from '../../../src/remark/controllers/DefaultController';
 import Dom from "../../../src/remark/Dom";
 
-describe('Controller', () => {
+describe('DefaultController', () => {
   describe('initial navigation', () => {
     it('should naviate to first slide when slideshow is embedded ', () => {
       createController({embedded: true});
@@ -157,10 +157,15 @@ describe('Controller', () => {
 
   function createController(options) {
     options = options || {embedded: false};
+    options = {
+      ...options,
+      navigation: {},
+      allowControl: true
+    };
 
-    controller = new Controller(events, {
+    controller = new DefaultController(events, {
       isEmbedded: () => { return options.embedded; }
-    });
+    }, options);
   }
 
   beforeEach(() => {

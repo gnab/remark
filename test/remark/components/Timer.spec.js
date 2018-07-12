@@ -34,7 +34,7 @@ describe('Timer', () => {
       timer.pauseStart = new Date() - (3600000 + 23 * 60000 + 45 * 1000);
       timer.updateTimer();
       // Timer output should match forced time
-      timer.element.innerHTML.should.equal('1:11:11');
+      timer.element.innerHTML.should.equal('1:11:11 | Paused');
     });
 
     it('should compensate for paused time', () => {
@@ -55,7 +55,7 @@ describe('Timer', () => {
       timer.pauseStart = new Date() - (3600000 + 23 * 60000 + 45 * 1000);
       timer.updateTimer();
       // Timer output should match forced time
-      timer.element.innerHTML.should.equal('1:06:05');
+      timer.element.innerHTML.should.equal('1:06:05 | Paused');
     });
 
   });
@@ -83,7 +83,7 @@ describe('Timer', () => {
     it('should track pause start end time', () => {
       timer.startTime = new Date() - (2*3600000 + 34 * 60000 + 56 * 1000);
 
-      events.emit('pause');
+      events.emit('togglePause');
       timer.pauseStart.should.not.equal(null);
       timer.pauseLength.should.equal(0);
     });
@@ -93,7 +93,7 @@ describe('Timer', () => {
       timer.pauseStart = new Date() - (12 * 1000);
       timer.pauseLength = 100000;
 
-      events.emit('resume');
+      events.emit('togglePause');
       // BDD seems to make this really easy test impossible...
       //timer.pauseStart.should.equal(null);
       // Microsecond accuracy is a possible problem here, so

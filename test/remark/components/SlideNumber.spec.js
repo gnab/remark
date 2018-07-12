@@ -28,7 +28,7 @@ describe('SlideNumber', () => {
       }
     };
 
-    slideNumber = new SlideNumber(slide, slideShow);
+    slideNumber = new SlideNumber(slideShow, 2);
 
     slideNumber.element.innerHTML.should.equal('2 / 3');
   });
