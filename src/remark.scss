@@ -22,6 +22,7 @@ html {
 html.remark-container, body.remark-container {
   height: 100%;
   width: 100%;
+  width: 100%;
   -webkit-print-color-adjust: exact;
 }
 
@@ -83,7 +84,7 @@ body.remark-container--folio:fullscreen {
       }
     }
 
-    &--presenter-mode &--pause-mode {
+    &--pause-mode:not(&--presenter-mode ) {
       .remark-pause {
         display: block;
       }
@@ -298,7 +299,8 @@ body.remark-container--folio:fullscreen {
     z-index: 1000;
 
     &__text {
-      margin-top: 30%;
+      top: 40%;
+      position: relative;
       text-align: center;
 
       span {

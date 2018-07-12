@@ -4,9 +4,13 @@ export default (superClass) => class extends superClass {
     this.currentSlideIndex = -1;
     this.started = null;
 
+    this.state = {
+      currentSlideIndex: this.currentSlideIndex,
+      ...this.state
+    };
+
     this.registerEvents = this.registerEvents.bind(this);
     this.pause = this.pause.bind(this);
-    this.resume = this.resume.bind(this);
     this.getCurrentSlideIndex = this.getCurrentSlideIndex.bind(this);
     this.goToSlideByIndex = this.goToSlideByIndex.bind(this);
     this.goToSlide = this.goToSlide.bind(this);
@@ -58,12 +62,16 @@ export default (superClass) => class extends superClass {
     });
   }
 
-  pause() {
-    this.events.emit('pause');
+  setState(state) {
+    super.setState(state);
+
+    if (state.hasOwnProperty('currentSlideIndex')) {
+      this.goToSlideByIndex(state.currentSlideIndex);
+    }
   }
 
-  resume() {
-    this.events.emit('resume');
+  pause() {
+    this.events.emit('togglePause');
   }
 
   getCurrentSlideIndex () {
@@ -101,6 +109,9 @@ export default (superClass) => class extends superClass {
 
     this.events.emit('showSlide', slideIndex);
     this.currentSlideIndex = slideIndex;
+    this.updateState({
+      currentSlideIndex: this.currentSlideIndex
+    });
     this.events.emit('slideChanged', slideIndex + 1);
 
     if (!noMessage) {

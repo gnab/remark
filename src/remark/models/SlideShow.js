@@ -7,7 +7,31 @@ import Dom from "../Dom";
 class SlideShow {
   constructor(events, options, callback) {
     this.events = events;
+
+    /*const overwrite = (method, newMethod) => {
+      let originalMethod = method;
+
+      return function () {
+        let currentArguments = arguments.length > 0 ? Array.from(arguments) : [];
+        currentArguments.unshift(originalMethod.bind(this));
+        return newMethod.apply(this, currentArguments);
+      };
+    };
+
+    this.events.emit = overwrite(
+      this.events.emit,
+      function (original, name, callback) {
+        console.log(name);
+        original(name, callback);
+      }
+    );*/
+
     this.options = options || {};
+    this.state = {
+      blackout: false,
+      mirrored: false,
+      pause: false
+    };
     this.slides = [];
     this.links = {};
     this.slides.byName = {};
@@ -15,6 +39,9 @@ class SlideShow {
     this.clone = null;
 
     this.init = this.init.bind(this);
+    this.updateState = this.updateState.bind(this);
+    this.getState = this.getState.bind(this);
+    this.setState = this.setState.bind(this);
     this.setOptions = this.setOptions.bind(this);
     this.getOptions = this.getOptions.bind(this);
     this.updateOptions = this.updateOptions.bind(this);
@@ -68,6 +95,28 @@ class SlideShow {
     }
   }
 
+  updateState(state) {
+    this.state = {
+      ...this.state,
+      ...state
+    };
+    this.events.emit('stateUpdated', this);
+  }
+
+  getState() {
+    return this.state;
+  }
+
+  setState(state) {
+    let modes = ['mirrored', 'blackout', 'pause'];
+
+    modes.forEach((mode) => {
+      if (state.hasOwnProperty(mode)) {
+        this.events.emit('toggle' + mode.charAt(0).toUpperCase() + mode.slice(1), state[mode]);
+      }
+    });
+  }
+
   setOptions(options) {
     const defaults = {
       sourceUrl: null,
@@ -90,7 +139,9 @@ class SlideShow {
       controlsTutorial: false,
       controlsLayout: 'bottom-right',
       controlsBackArrows: 'faded',
-      folio: false
+      folio: false,
+      allowControl: true,
+      navigation: {}
     };
 
     this.options = {

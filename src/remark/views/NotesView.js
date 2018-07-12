@@ -71,7 +71,7 @@ export default class NotesView {
 
     let head = Dom.createElement({
       className: 'remark-notes__head',
-      //innerHTML: preview ? i18next.t('notesView.slides.notesForNext') : i18next.t('notesView.slides.notesForCurrent')
+      innerHTML: preview ? i18next.t('notesView.slides.notesForNext') : i18next.t('notesView.slides.notesForCurrent')
     });
 
     let content = Dom.createElement({className: 'remark-notes__content'});

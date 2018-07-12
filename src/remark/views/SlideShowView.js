@@ -34,7 +34,7 @@ export default class SlideShowView {
     let options = this.slideShow.getOptions();
 
     this.progressBar = options.progressBar ? new ProgressBar(this.slideShow) : null;
-    this.controls = options.controls ? new Controls(
+    this.controls = options.controls && options.allowControl ? new Controls(
         this.slideShow,
         this.events,
         options.controlsLayout,
@@ -92,26 +92,40 @@ export default class SlideShowView {
       toggleClass(this.containerElement, 'remark-container--help-mode');
     });
 
-    this.events.on('toggleBlackout', () => {
-      toggleClass(this.containerElement, 'remark-container--blackout-mode');
+    const changeMode = (mode, newState) => {
+      let stateClass = 'remark-container--' + mode + '-mode';
+
+      if (typeof newState === "undefined") {
+        newState = !hasClass(this.containerElement, stateClass);
+      }
+
+      if (newState === true) {
+        addClass(this.containerElement, stateClass);
+      } else if (newState === false) {
+        removeClass(this.containerElement, stateClass);
+      }
+
+      let updateState = {};
+      updateState[mode] = newState;
+      this.slideShow.updateState(updateState);
+    };
+
+    this.events.on('toggleBlackout', (newState) => {
+      changeMode('blackout', newState);
     });
 
-    this.events.on('toggleMirrored', () => {
-      toggleClass(this.containerElement, 'remark-container--mirrored-mode');
+    this.events.on('toggleMirrored', (newState) => {
+      changeMode('mirrored', newState);
     });
 
 
     this.events.on('hideOverlay', () => {
-      removeClass(this.containerElement, 'remark-container--blackout-mode');
+      changeMode('blackout', false);
       removeClass(this.containerElement, 'remark-container--help-mode');
     });
 
-    this.events.on('pause', () => {
-      toggleClass(this.containerElement, 'remark-container--pause-mode');
-    });
-
-    this.events.on('resume', () => {
-      toggleClass(this.containerElement, 'remark-container--pause-mode');
+    this.events.on('togglePause', (newState) => {
+      changeMode('pause', newState);
     });
   }
 
@@ -185,7 +199,6 @@ export default class SlideShowView {
     }
 
     this.scaler.scaleToFit(this.helpElement, this.containerElement);
-    this.scaler.scaleToFit(this.pauseElement, this.containerElement);
   }
 
   setTransition() {

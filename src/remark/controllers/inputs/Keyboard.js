@@ -5,6 +5,7 @@ export default class Keyboard {
     
     this.activate = this.activate.bind(this);
     this.deactivate = this.deactivate.bind(this);
+    this.registerKeyPressEvents = this.registerKeyPressEvents.bind(this);
     this.addKeyboardEventListeners = this.addKeyboardEventListeners.bind(this);
     this.removeKeyboardEventListeners = this.removeKeyboardEventListeners.bind(this);
 
@@ -20,7 +21,24 @@ export default class Keyboard {
     this.removeKeyboardEventListeners();
   }
 
+  registerKeyPressEvents(callback) {
+    this.events.on('keypress', (event) => {
+      if (event.metaKey || event.ctrlKey) {
+        // Bail out if meta or ctrl key was pressed
+        return;
+      }
+
+      let key = String.fromCharCode(event.which).toLowerCase();
+      let tryToPreventDefault = callback(key);
+
+      if (tryToPreventDefault && event && event.preventDefault) {
+        event.preventDefault();
+      }
+    });
+  }
+
   addKeyboardEventListeners() {
+    this.events.removeAllListeners('keydown');
     this.events.on('keydown', (event) => {
       if (event.metaKey || event.ctrlKey || event.altKey) {
         // Bail out if alt, meta or ctrl key was pressed
@@ -63,15 +81,8 @@ export default class Keyboard {
       }
     });
 
-    this.events.on('keypress', (event) => {
-      if (event.metaKey || event.ctrlKey) {
-        // Bail out if meta or ctrl key was pressed
-        return;
-      }
-
-      let key = String.fromCharCode(event.which).toLowerCase();
-      let tryToPreventDefault = true;
-
+    this.events.removeAllListeners('keypress');
+    this.registerKeyPressEvents((key) => {
       switch (key) {
         case 'j':
           this.events.emit('goToNextSlide');
@@ -97,6 +108,9 @@ export default class Keyboard {
         case 't':
           this.events.emit('resetTimer');
           break;
+        case 'i':
+          this.events.emit('togglePause');
+          break;
         case '1':
         case '2':
         case '3':
@@ -114,17 +128,27 @@ export default class Keyboard {
           this.events.emit('toggleHelp');
           break;
         default:
-          tryToPreventDefault = false;
+          return false;
       }
 
-      if (tryToPreventDefault && event && event.preventDefault) {
-        event.preventDefault();
-      }
+      return true;
     });
   }
 
   removeKeyboardEventListeners() {
-    this.events.removeAllListeners("keydown");
-    this.events.removeAllListeners("keypress");
+    this.events.removeAllListeners('keydown');
+    this.events.removeAllListeners('keypress');
+
+    this.registerKeyPressEvents((key) => {
+      switch (key) {
+        case 'i':
+          this.events.emit('togglePause');
+          break;
+        default:
+          return false;
+      }
+
+      return true;
+    });
   }
 }

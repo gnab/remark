@@ -18,7 +18,7 @@ export default class Mouse {
   }
 
   addMouseEventListeners() {
-    if (this.options.click) {
+    if (this.options.click !== false) {
       this.events.on('click', (event) => {
         if (event.target.nodeName !== 'A' && event.button === 0) {
           this.events.emit('goToNextSlide');

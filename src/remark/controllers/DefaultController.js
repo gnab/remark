@@ -8,35 +8,39 @@ import Touch from './inputs/Touch';
 
 export default class DefaultController {
   constructor(events, slideShowView, options) {
-    options = options || {};
-
     this.addApiEventListeners = this.addApiEventListeners.bind(this);
 
-    this.keyboard = new Keyboard(events);
+    this.pauseActive = false;
     this.location = new Location(events, slideShowView);
     this.message = new Message(events);
-    this.mouse = new Mouse(events, options);
-    this.touch = new Touch(events, options);
 
     this.location.activate();
     this.message.activate();
-    this.mouse.activate();
-    this.touch.activate();
 
-    this.addApiEventListeners(events);
+    if (options.allowControl) {
+      this.keyboard = new Keyboard(events);
+      this.mouse = new Mouse(events, options.navigation);
+      this.touch = new Touch(events, options.navigation);
+
+      this.mouse.activate();
+      this.touch.activate();
+      this.addApiEventListeners(events);
+    }
   }
 
   addApiEventListeners(events) {
-    events.on('pause', (event) => {
-      this.keyboard.deactivate();
-      this.mouse.deactivate();
-      this.touch.deactivate();
-    });
+    events.on('togglePause', (event) => {
+      if (this.pauseActive === false) {
+        this.keyboard.deactivate();
+        this.mouse.deactivate();
+        this.touch.deactivate();
+      } else {
+        this.keyboard.activate();
+        this.mouse.activate();
+        this.touch.activate();
+      }
 
-    events.on('resume', (event) => {
-      this.keyboard.activate();
-      this.mouse.activate();
-      this.touch.activate();
+      this.pauseActive = !this.pauseActive;
     });
   }
 }

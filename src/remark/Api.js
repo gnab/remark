@@ -66,6 +66,9 @@ export default class Api {
       resources: {
         en: {
           translation: {
+            timer: {
+              paused: 'Paused'
+            },
             notesView: {
               slides: {
                 notesForCurrent: 'Notes for current slide',
@@ -118,7 +121,7 @@ export default class Api {
       this.controller = options.controller || new DefaultController(
         events,
         slideShowView,
-        options.navigation
+        slideShow.getOptions()
       );
 
       if (typeof callback === 'function') {
