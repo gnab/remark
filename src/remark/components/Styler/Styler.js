@@ -89,19 +89,15 @@ export default class Styler {
   }
 
   static setPageSize(size) {
-    if (Styler.styleExists(Styler.PRINTER) === false) {
-      Styler.addStyle(Styler.PRINTER, '@page {size: landscape;}');
-    }
-
     let styleSheets = Styler.getRemarkStylesheets();
     let fullName = Styler.PREFIX + Styler.PRINTER;
 
     if (styleSheets.hasOwnProperty(fullName)) {
-      let pageRule = Styler.getPageRule(styleSheets[fullName][0]);
-
-      if (pageRule !== null) {
-        pageRule.style.size = size;
-      }
+      styleSheets[fullName].forEach((styleSheet) => {
+        styleSheet.ownerNode.remove();
+      });
     }
+
+    Styler.addStyle(Styler.PRINTER, '@media print{ @page {size: ' + size + ';} }');
   }
 }

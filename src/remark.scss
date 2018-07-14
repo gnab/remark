@@ -667,6 +667,9 @@ body.remark-container--folio:fullscreen {
           display: block;
           height: 50% !important;
           position: initial;
+          -webkit-box-shadow: none;
+          -moz-box-shadow: none;
+          box-shadow: none;
         }
 
         .remark-preview-area,
@@ -679,6 +682,7 @@ body.remark-container--folio:fullscreen {
           padding: 0 30px;
           width: 100%;
           height: 50%;
+          top: auto !important;
         }
       }
     }
