@@ -19,7 +19,8 @@ export default class DefaultController {
 
     if (options.allowControl) {
       this.keyboard = new Keyboard(events);
-      this.mouse = new Mouse(events, options.navigation);
+      let extraOptions = (options.controls === true) ? {click: !options.controls} : {};
+      this.mouse = new Mouse(events, {...options.navigation, ...extraOptions});
       this.touch = new Touch(events, options.navigation);
 
       this.mouse.activate();

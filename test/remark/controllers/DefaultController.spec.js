@@ -5,7 +5,7 @@ import Dom from "../../../src/remark/Dom";
 
 describe('DefaultController', () => {
   describe('initial navigation', () => {
-    it('should naviate to first slide when slideshow is embedded ', () => {
+    it('should navigate to first slide when slideshow is embedded ', () => {
       createController({embedded: true});
 
       events.emit.should.be.calledWithExactly('goToSlide', 1);

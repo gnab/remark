@@ -13,7 +13,8 @@ describe('SlideView', () => {
         highlightSpans: true,
         highlightLanguage: '',
         slideNumberFormat: '%current% / %total%',
-        highlightInlineCode: false
+        highlightInlineCode: false,
+        folio: true
       };
     },
     getLinks: () => ({}),
