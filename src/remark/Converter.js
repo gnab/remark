@@ -1,20 +1,14 @@
 import marked from 'marked';
 
 export default class Converter {
-  constructor() {
+  constructor(options) {
     this.marked = marked;
     this.marked.setOptions({
       gfm: true,
-      tables: true,
-      breaks: false,
-
-      // Without this set to true, converting something like
-      // <p>*</p><p>*</p> will become <p><em></p><p></em></p>
-      pedantic: true,
-
-      sanitize: false,
+      sanitize: true,
       smartLists: true,
-      langPrefix: ''
+      langPrefix: '',
+      ...options
     });
 
     this.getMarkdownHtml = this.getMarkdownHtml.bind(this);

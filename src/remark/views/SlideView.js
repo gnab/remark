@@ -11,10 +11,9 @@ export default class SlideView {
     this.scaler = scaler;
     this.slide = slide;
 
-    this.converter = new Converter();
-    this.codeBlockHighlighter = new CodeBlockHighlighter(slideShow);
-
     let options = this.slideShow.getOptions();
+    this.converter = new Converter(options.marked);
+    this.codeBlockHighlighter = new CodeBlockHighlighter(slideShow);
     this.slideNumber = options.slideNumber && options.folio ? new SlideNumber(slideShow, slide.getSlideNumber()) : null;
 
     this.updateDimensions = this.updateDimensions.bind(this);

@@ -123,7 +123,8 @@ class SlideShow {
       folio: false,
       allowControl: true,
       navigation: {},
-      translations: {}
+      translations: {},
+      marked: {}
     };
 
     this.options = {
