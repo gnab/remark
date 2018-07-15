@@ -25,6 +25,7 @@ export default class SlideView {
     this.styleContentElement = this.styleContentElement.bind(this);
     this.createContentElement = this.createContentElement.bind(this);
     this.createNotesElement = this.createNotesElement.bind(this);
+    this.createContainerElement = this.createContainerElement.bind(this);
     this.configureElements = this.configureElements.bind(this);
     this.scaleBackgroundImage = this.scaleBackgroundImage.bind(this);
     this.prev = this.prev.bind(this);
@@ -74,7 +75,26 @@ export default class SlideView {
 
     return element;
   }
-  
+
+  static setBackgroundFromProperties(element, properties) {
+    let backgroundProperties = [
+      'background',
+      'background-image',
+      'background-color',
+      'background-size',
+      'background-position'
+    ];
+
+    for (let i = 0; i < backgroundProperties.length; i++) {
+      let property = backgroundProperties[i];
+
+      if (properties[property]) {
+        let elementProperty = property.replace(/([^-]+)-(.)(.*)/, (full, a, b, c) => (a + b.toUpperCase() + c));
+        element.style[elementProperty] = properties[property];
+      }
+    }
+  }
+
   styleContentElement(element, properties) {
     element.className = '';
 
@@ -83,35 +103,27 @@ export default class SlideView {
 
       (properties['class'] || '').split(/[, ]/)
         .filter((s) => (s !== ''))
-        .forEach((c) => { addClass(element, c); });
+        .forEach((c) => {
+          addClass(element, c);
+        });
     };
 
     setClassFromProperties(element, properties);
+    let options = this.slideShow.getOptions();
 
-    const setHighlightStyleFromProperties = (element, properties, slideShow) => {
-      let highlightStyle = properties['highlight-style'] || slideShow.getOptions().highlightStyle;
+    const setHighlightStyleFromProperties = (element, properties) => {
+      let highlightStyle = properties['highlight-style'] || options.highlightStyle;
 
       if (highlightStyle) {
         addClass(element, 'hljs-' + highlightStyle);
       }
     };
 
-    setHighlightStyleFromProperties(element, properties, this.slideShow);
+    setHighlightStyleFromProperties(element, properties);
 
-    const setBackgroundFromProperties = (element, properties) => {
-      let backgroundProperties = ['background-image', 'background-color', 'background-size', 'background-position'];
-
-      for (let i = 0; i < backgroundProperties.length; i++) {
-        let property = backgroundProperties[i];
-
-        if (properties[property]) {
-          let elementProperty = property.replace(/([^-]+)-(.)(.*)/, (full, a, b, c) => (a + b.toUpperCase() + c));
-          element.style[elementProperty] = properties[property];
-        }
-      }
-    };
-
-    setBackgroundFromProperties(element, properties);
+    if (options.folio === true) {
+      this.constructor.setBackgroundFromProperties(element, properties);
+    }
   }
 
   createContentElement() {
@@ -137,10 +149,21 @@ export default class SlideView {
     return element;
   }
 
+  createContainerElement(scalingElement, notesElement) {
+    let element = Dom.createElement(
+      {className: 'remark-slide-container'},
+      [scalingElement, notesElement]
+    );
+
+    if (this.slideShow.getOptions().folio === false) {
+      this.constructor.setBackgroundFromProperties(element, this.slide.properties);
+    }
+
+    return element;
+  }
+
   configureElements() {
     this.contentElement = this.createContentElement(this.events, this.slideShow, this.slide);
-
-    let options = this.slideShow.getOptions();
 
     if (this.slideNumber !== null) {
       this.contentElement.appendChild(this.slideNumber.element);
@@ -154,11 +177,7 @@ export default class SlideView {
       [this.element]
     );
     this.notesElement = this.createNotesElement(this.slide.notes);
-
-    this.containerElement = Dom.createElement(
-      {className: 'remark-slide-container'},
-      [this.scalingElement, this.notesElement]
-    );
+    this.containerElement = this.createContainerElement(this.scalingElement, this.notesElement);
 
     let currentSlideNumber = this.slide.getSlideIndex();
     let slides = this.slideShow.getSlides();

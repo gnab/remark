@@ -119,7 +119,10 @@ body.remark-container--folio:fullscreen {
     &--presenter-mode,
     &--folio {
       background: $folioBackgroundColor;
+    }
 
+    &--presenter-mode.remark-container--folio,
+    &--folio {
       .remark-slide-scaler {
         -moz-box-shadow: 0 0 30px #888;
         -webkit-box-shadow: 0 0 30px #888;
@@ -133,6 +136,15 @@ body.remark-container--folio:fullscreen {
       .remark-slide-number {
         bottom: 12px;
         right: 20px;
+      }
+    }
+
+    &--presenter-mode:not(.remark-container--folio) {
+      .remark-slide-container {
+        -moz-box-shadow: 0 0 30px #888;
+        -webkit-box-shadow: 0 0 30px #888;
+        box-shadow: 0 0 30px #888;
+        background-color: #fff;
       }
     }
   }

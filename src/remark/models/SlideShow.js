@@ -7,25 +7,6 @@ import Dom from "../Dom";
 class SlideShow {
   constructor(events, options, callback) {
     this.events = events;
-
-    /*const overwrite = (method, newMethod) => {
-      let originalMethod = method;
-
-      return function () {
-        let currentArguments = arguments.length > 0 ? Array.from(arguments) : [];
-        currentArguments.unshift(originalMethod.bind(this));
-        return newMethod.apply(this, currentArguments);
-      };
-    };
-
-    this.events.emit = overwrite(
-      this.events.emit,
-      function (original, name, callback) {
-        console.log(name);
-        original(name, callback);
-      }
-    );*/
-
     this.options = options || {};
     this.state = {
       blackout: false,
@@ -141,7 +122,8 @@ class SlideShow {
       controlsBackArrows: 'faded',
       folio: false,
       allowControl: true,
-      navigation: {}
+      navigation: {},
+      translations: {}
     };
 
     this.options = {
