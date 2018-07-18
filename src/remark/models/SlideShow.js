@@ -121,6 +121,7 @@ class SlideShow {
       controlsLayout: 'bottom-right',
       controlsBackArrows: 'faded',
       folio: false,
+      center: false,
       allowControl: true,
       navigation: {},
       translations: {},
