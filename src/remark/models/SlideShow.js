@@ -138,7 +138,10 @@ class SlideShow {
   }
 
   updateOptions(options) {
-    this.setOptions(options);
+    this.setOptions({
+      ...this.options,
+      ...options
+    });
     this.events.emit('slidesChanged');
   }
 

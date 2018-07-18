@@ -12,6 +12,7 @@ import SlideNumber from "../components/SlideNumber/SlideNumber";
 export default class SlideShowView {
   constructor(events, containerElement, slideShow) {
     this.events = events;
+    this.containerElement = containerElement;
     this.slideShow = slideShow;
     this.scaler = new Scaler(events, slideShow);
     this.printing = new Printing();
@@ -22,7 +23,9 @@ export default class SlideShowView {
     this.setTransition = this.setTransition.bind(this);
     this.configureChildElements = this.configureChildElements.bind(this);
     this.scaleElements = this.scaleElements.bind(this);
+    this.setupComponents = this.setupComponents.bind(this);
     this.updateSlideViews = this.updateSlideViews.bind(this);
+    this.updateConfiguration = this.updateConfiguration.bind(this);
     this.scaleSlideBackgroundImages = this.scaleSlideBackgroundImages.bind(this);
     this.showSlide = this.showSlide.bind(this);
     this.hideSlide = this.hideSlide.bind(this);
@@ -31,33 +34,19 @@ export default class SlideShowView {
     this.isEmbedded = this.isEmbedded.bind(this);
     this.handleFullScreen = this.handleFullScreen.bind(this);
 
-    let options = this.slideShow.getOptions();
-
-    this.progressBar = options.progressBar ? new ProgressBar(this.slideShow) : null;
-    this.controls = options.controls && options.allowControl ? new Controls(
-        this.slideShow,
-        this.events,
-        options.controlsLayout,
-        options.controlsBackArrows,
-        options.controlsTutorial
-      ) : null;
-    this.slideNumber = options.slideNumber && !options.folio ? new SlideNumber(this.slideShow, 1, true) : null;
-
     // Configure elements
-    this.configureContainerElement(containerElement);
+    this.configureContainerElement();
     this.configureChildElements();
 
-    this.updateDimensions();
     this.scaleElements();
-    this.updateSlideViews();
+    this.updateConfiguration();
     this.registerEvents();
-
-    this.handleFullScreen(this);
+    this.handleFullScreen();
   }
 
   registerEvents() {
     this.events.on('slidesChanged', () => {
-      this.updateSlideViews();
+      this.updateConfiguration();
     });
 
     this.events.on('hideSlide', (slideIndex) => {
@@ -129,18 +118,10 @@ export default class SlideShowView {
     });
   }
 
-  configureContainerElement(element) {
-    this.containerElement = element;
+  configureContainerElement() {
+    addClass(this.containerElement, 'remark-container');
 
-    addClass(element, 'remark-container');
-
-    let options = this.slideShow.getOptions();
-
-    if (options.folio) {
-      addClass(element, 'remark-container--folio');
-    }
-
-    if (element === Dom.getBodyElement()) {
+    if (this.containerElement === Dom.getBodyElement()) {
       addClass(Dom.getHTMLElement(), 'remark-container');
 
       SlideShowView.forwardEvents(this.events, window, [
@@ -151,22 +132,22 @@ export default class SlideShowView {
         'touchstart', 'touchmove', 'touchend', 'click', 'contextmenu'
       ]);
     } else {
-      element.style.position = 'absolute';
-      element.tabIndex = -1;
+      this.containerElement.style.position = 'absolute';
+      this.containerElement.tabIndex = -1;
 
       SlideShowView.forwardEvents(this.events, window, ['resize']);
-      SlideShowView.forwardEvents(this.events, element, [
+      SlideShowView.forwardEvents(this.events, this.containerElement, [
         'keydown', 'keypress', 'mousewheel',
         'touchstart', 'touchmove', 'touchend'
       ]);
 
-      let currentDimension = element.offsetWidth + '|' + element.offsetHeight;
+      let currentDimension = this.containerElement.offsetWidth + '|' + this.containerElement.offsetHeight;
 
       Dom.addIntervalEvent(
         'resizeContainerElement',
         10,
         () => {
-          let dimension = element.offsetWidth + '|' + element.offsetHeight;
+          let dimension = this.containerElement.offsetWidth + '|' + this.containerElement.offsetHeight;
 
           if (dimension !== currentDimension) {
             this.events.emit('resize');
@@ -277,20 +258,39 @@ export default class SlideShowView {
         }
       });
     });
+  }
 
-    if (this.progressBar !== null) {
+  setupComponents() {
+    let options = this.slideShow.getOptions();
+
+    ['progressBar', 'controls', 'slideNumber'].forEach((element) => {
+      if (this.hasOwnProperty(element) && this[element] !== null) {
+        this.slidesArea.removeChild(this[element].element);
+      }
+
+      this[element] = null;
+    });
+
+    if (options.progressBar) {
+      this.progressBar = new ProgressBar(this.slideShow);
       this.slidesArea.appendChild(this.progressBar.element);
     }
 
-    if (this.controls !== null) {
+    if (options.controls && options.allowControl) {
+      this.controls = new Controls(
+        this.slideShow,
+        this.events,
+        options.controlsLayout,
+        options.controlsBackArrows,
+        options.controlsTutorial
+      );
       this.slidesArea.appendChild(this.controls.element);
     }
 
-    if (this.slideNumber !== null) {
+    if (options.slideNumber && !options.folio) {
+      this.slideNumber = new SlideNumber(this.slideShow, 1, true);
       this.slidesArea.appendChild(this.slideNumber.element);
     }
-
-    this.setTransition();
   }
 
   updateSlideViews() {
@@ -306,12 +306,23 @@ export default class SlideShowView {
       this.slidesArea.appendChild(slideView.containerElement);
     });
 
-    this.updateDimensions();
-
     if (this.slideShow.getCurrentSlideIndex() > -1) {
       this.showSlide(this.slideShow.getCurrentSlideIndex());
     }
+  }
 
+  updateConfiguration() {
+    let options = this.slideShow.getOptions();
+
+    if (options.folio) {
+      addClass(this.containerElement, 'remark-container--folio');
+    } else {
+      removeClass(this.containerElement, 'remark-container--folio');
+    }
+
+    this.updateSlideViews();
+    this.setupComponents();
+    this.updateDimensions();
     this.setTransition();
   }
 
