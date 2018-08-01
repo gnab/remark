@@ -162,7 +162,7 @@ export default class SlideView {
   }
 
   configureElements() {
-    let slideClasses = (this.slide.properties.class || '').split(/,| /);
+    let slideClasses = (this.slide.properties.class || '').split(/[, ]/);
 
     if (this.slideShow.getOptions().center === true) {
       const addClassProperty = (className) => {
@@ -173,15 +173,6 @@ export default class SlideView {
 
       addClassProperty('center');
       addClassProperty('middle');
-    } else {
-      const removeClassProperty = (className) => {
-        if (slideClasses.includes(className)) {
-          slideClasses.splice(slideClasses.indexOf(className), 1);
-        }
-      };
-
-      removeClassProperty('center');
-      removeClassProperty('middle');
     }
 
     this.slide.properties.class = slideClasses.join(',');

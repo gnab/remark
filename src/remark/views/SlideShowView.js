@@ -276,7 +276,7 @@ export default class SlideShowView {
       this.slidesArea.appendChild(this.progressBar.element);
     }
 
-    if (options.controls && options.allowControl) {
+    if (options.controls && options.allowControl && this.slideShow.getSlides().length > 1) {
       this.controls = new Controls(
         this.slideShow,
         this.events,

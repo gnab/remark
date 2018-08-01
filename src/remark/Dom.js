@@ -29,7 +29,7 @@ export default class Dom {
     }
   }
 
-  static createElement(properties, childs) {
+  static createElement(properties, children) {
     const defaults = {
       elementType: 'div'
     };
@@ -47,8 +47,8 @@ export default class Dom {
       }
     }
 
-    if (childs) {
-      childs.forEach((child) => {
+    if (children) {
+      children.forEach((child) => {
         element.appendChild(child);
       });
     }
