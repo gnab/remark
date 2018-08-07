@@ -250,7 +250,6 @@ export default class Parser {
     slides.push(stack[0]);
 
     slides.forEach((slide) => {
-      console.log(slide.properties.columns);
       slide.content[0] = Parser.extractProperties(slide.content[0] || '', slide.properties);
     });
 
