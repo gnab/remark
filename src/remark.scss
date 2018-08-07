@@ -121,6 +121,13 @@ body.remark-container--folio:fullscreen {
       background: $folioBackgroundColor;
     }
 
+    &--center {
+      .remark-slide__content {
+        text-align: center;
+        vertical-align: middle;
+      }
+    }
+
     &--presenter-mode.remark-container--folio,
     &--folio {
       .remark-slide-scaler {
@@ -245,6 +252,25 @@ body.remark-container--folio:fullscreen {
       .right {
         display: block;
         text-align: right;
+      }
+
+      @for $i from 1 to 10 {
+        &.remark-slide__columns-#{$i} {
+          /*.remark-slide__column {
+            width: (100% / $i);
+          }*/
+
+          display: grid;
+          grid-template-columns: repeat($i, 1fr);
+          grid-column-gap: 1em;
+          align-items: end;
+          height: 100%;
+        }
+      }
+
+      .remark-slide__column {
+        //display: inline-block;
+        align-self: stretch;
       }
     }
   }

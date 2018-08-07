@@ -10,7 +10,8 @@ const MACRO_ARGS = 9;
 const MACRO_OBJ = 10;
 const SLIDE_SEPARATOR = 11;
 const FRAGMENT_SEPARATOR = 12;
-const NOTES_SEPARATOR = 13;
+const COLUMN_SEPARATOR = 13;
+const NOTES_SEPARATOR = 14;
 
 const REGEX_BY_NAME = {
   CODE: /(?:^|\n\n)( {4}[^\n]+\n*)+/,
@@ -21,6 +22,7 @@ const REGEX_BY_NAME = {
   MACRO: /!\[:([^\] ]+)([^\]]*)](?:\(([^)]*)\))?/,
   SLIDE_SEPARATOR: /(?:^|\n)(---)(?:\n|$)/,
   FRAGMENT_SEPARATOR: /(?:^|\n)(--)(?![^\n])/,
+  COLUMN_SEPARATOR: /(?:^|\n)(\|\|)(?![^\n])/,
   NOTES_SEPARATOR: /(?:^|\n)(\?{3})(?:\n|$)/
 };
 
@@ -29,7 +31,7 @@ const replace = (regex, replacements) => {
 };
 
 const BLOCK = replace(
-  /CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO|SLIDE_SEPARATOR|FRAGMENT_SEPARATOR|NOTES_SEPARATOR/,
+  /CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO|SLIDE_SEPARATOR|FRAGMENT_SEPARATOR|COLUMN_SEPARATOR|NOTES_SEPARATOR/,
   REGEX_BY_NAME
 );
 const INLINE = replace(/CODE|INLINE_CODE|CONTENT|FENCES|DEF|MACRO/, REGEX_BY_NAME);
@@ -95,6 +97,11 @@ export default class Lexer {
         tokens.push({
           type: 'separator',
           text: cap[SLIDE_SEPARATOR] || cap[FRAGMENT_SEPARATOR]
+        });
+      } else if (cap[COLUMN_SEPARATOR]) {
+        tokens.push({
+          type: 'column_separator',
+          text: cap[COLUMN_SEPARATOR]
         });
       } else if (cap[NOTES_SEPARATOR]) {
         tokens.push({

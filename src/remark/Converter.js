@@ -16,22 +16,20 @@ export default class Converter {
   }
 
   getMarkdownHtml(element, content, links, insideContentClass) {
-    let markdown = '';
+    let html = '';
 
     for (let i = 0; i < content.length; ++i) {
       if (typeof content[i] === 'string') {
-        markdown += content[i];
+        let tokens = this.marked.Lexer.lex(content[i].replace(/^\s+/, ''));
+        tokens.links = links;
+        html += this.marked.Parser.parse(tokens);
       } else {
         let tag = content[i].block ? 'div' : 'span';
-        markdown += '<' + tag + ' class="' + content[i].class + '">';
-        markdown += this.getMarkdownHtml(element, content[i].content, links, !content[i].block);
-        markdown += '</' + tag + '>';
+        html += '<' + tag + ' class="' + content[i].class + '">';
+        html += this.getMarkdownHtml(element, content[i].content, links, !content[i].block);
+        html += '</' + tag + '>';
       }
     }
-
-    let tokens = this.marked.Lexer.lex(markdown.replace(/^\s+/, ''));
-    tokens.links = links;
-    let html = this.marked.Parser.parse(tokens);
 
     if (insideContentClass) {
       element.innerHTML = html;

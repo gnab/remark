@@ -114,6 +114,15 @@ export default class Parser {
     return source.replace(trimWhitespacePattern, '');
   }
 
+  static reduceStack(stack) {
+    while (stack.length >= 2) {
+      Parser.appendTo(stack[stack.length - 2], stack[stack.length - 1]);
+      stack.pop();
+    }
+
+    return stack;
+  }
+
   static parse(src, options) {
     options = options || {};
     options = {
@@ -182,11 +191,11 @@ export default class Parser {
         case 'content_end':
           // Exiting content class, so remove entry from stack and
           // append to previous item (outer content class or slide).
-          Parser.appendTo(stack[stack.length - 2], stack[stack.length - 1]);
-          stack.pop();
-
+          stack = Parser.reduceStack(stack);
           break;
         case 'separator':
+          stack = Parser.reduceStack(stack);
+
           // Just continue on the same slide if incremental slides are disabled
           if (token.text === '--' && options.disableIncrementalSlides === true) {
             // If it happens that there was a note section right before, just get
@@ -208,6 +217,26 @@ export default class Parser {
           stack[0].properties.continued = (token.text === '--').toString();
 
           break;
+        case 'column_separator':
+          if (stack.length === 1) {
+            let currentContent = stack[0].content;
+            stack[0].content = [];
+
+            stack.push({
+              class: 'remark-slide__column',
+              block: true,
+              content: currentContent
+            });
+          }
+
+          stack[0].properties.columns = (stack[0].properties.columns || 1) + 1;
+          stack = Parser.reduceStack(stack);
+          stack.push(Parser.createContentClass({
+            classes: ['remark-slide__column'],
+            block: true
+          }));
+
+          break;
         case 'notes_separator':
           // Notes separator (???), so create empty content list on slide
           // in which all remaining slide content will be put.
@@ -221,6 +250,7 @@ export default class Parser {
     slides.push(stack[0]);
 
     slides.forEach((slide) => {
+      console.log(slide.properties.columns);
       slide.content[0] = Parser.extractProperties(slide.content[0] || '', slide.properties);
     });
 

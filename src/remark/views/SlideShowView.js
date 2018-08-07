@@ -320,6 +320,12 @@ export default class SlideShowView {
       removeClass(this.containerElement, 'remark-container--folio');
     }
 
+    if (options.center === true) {
+      addClass(this.containerElement, 'remark-container--center');
+    } else {
+      removeClass(this.containerElement, 'remark-container--center');
+    }
+
     this.updateSlideViews();
     this.setupComponents();
     this.updateDimensions();

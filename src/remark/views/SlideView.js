@@ -75,21 +75,66 @@ export default class SlideView {
     return element;
   }
 
-  static setBackgroundFromProperties(element, properties) {
-    let backgroundProperties = [
+  static setStyleFromProperties(element, properties) {
+    let styleProperties = [
+      //Spacing
+      'margin',
+      'margin-top',
+      'margin-right',
+      'margin-bottom',
+      'margin-left',
+      'padding',
+      'padding-top',
+      'padding-right',
+      'padding-bottom',
+      'padding-left',
+      //Background
       'background',
-      'background-image',
       'background-color',
+      'background-image',
+      'background-repeat',
+      'background-attachment',
+      'background-position',
+      'background-clip',
+      'background-origin',
       'background-size',
-      'background-position'
+      //Text
+      'color',
+      'font',
+      'font-style',
+      'font-variant',
+      'font-weight',
+      'font-size',
+      'line-height',
+      'font-family',
+      'font-size-adjust',
+      'font-stretch',
+      'text-align',
+      'text-align-last',
+      'text-decoration',
+      'text-emphasis',
+      'text-emphasis-position',
+      'text-emphasis-style',
+      'text-emphasis-color',
+      'text-indent',
+      'text-justify',
+      'text-outline',
+      'text-overflow',
+      'text-overflow-ellipsis',
+      'text-overflow-mode',
+      'text-size-adjust',
+      'text-transform',
+      'text-wrap',
+      'text-shadow',
+      'vertical-align',
+      'writing-mode',
     ];
 
-    for (let i = 0; i < backgroundProperties.length; i++) {
-      let property = backgroundProperties[i];
+    for (let i = 0; i < styleProperties.length; i++) {
+      let property = styleProperties[i];
 
       if (properties[property]) {
-        let elementProperty = property.replace(/([^-]+)-(.)(.*)/, (full, a, b, c) => (a + b.toUpperCase() + c));
-        element.style[elementProperty] = properties[property];
+        element.style[property] = properties[property];
       }
     }
   }
@@ -99,6 +144,10 @@ export default class SlideView {
 
     const setClassFromProperties = (element, properties) => {
       addClass(element, 'remark-slide__content');
+
+      if (properties.hasOwnProperty('columns')) {
+        addClass(element, 'remark-slide__columns-' + properties.columns);
+      }
 
       (properties['class'] || '').split(/[, ]/)
         .filter((s) => (s !== ''))
@@ -121,7 +170,7 @@ export default class SlideView {
     setHighlightStyleFromProperties(element, properties);
 
     if (options.folio === true) {
-      this.constructor.setBackgroundFromProperties(element, properties);
+      this.constructor.setStyleFromProperties(element, properties);
     }
   }
 
@@ -155,28 +204,13 @@ export default class SlideView {
     );
 
     if (this.slideShow.getOptions().folio === false) {
-      this.constructor.setBackgroundFromProperties(element, this.slide.properties);
+      this.constructor.setStyleFromProperties(element, this.slide.properties);
     }
 
     return element;
   }
 
   configureElements() {
-    let slideClasses = (this.slide.properties.class || '').split(/[, ]/);
-
-    if (this.slideShow.getOptions().center === true) {
-      const addClassProperty = (className) => {
-        if (!slideClasses.includes(className)) {
-          slideClasses.push(className);
-        }
-      };
-
-      addClassProperty('center');
-      addClassProperty('middle');
-    }
-
-    this.slide.properties.class = slideClasses.join(',');
-
     this.contentElement = this.createContentElement(this.events, this.slideShow, this.slide);
 
     if (this.slideNumber !== null) {
