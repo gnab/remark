@@ -2,7 +2,10 @@
   "name": "remark",
   "version": "0.14.1",
   "dependencies": {
-    "marked": "0.3.9"
+    "highlight.js": "^9.12.0",
+    "i18next": "^11.3.5",
+    "marked": "^0.4.0",
+    "uninstall": "0.0.0"
   },
   "repository": {
     "type": "git",
@@ -10,21 +13,32 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "browserify": "^13.0.0",
-    "grunt": "^0.4.5",
-    "grunt-contrib-connect": "^0.11.2",
-    "grunt-contrib-watch": "~0.5.3",
-    "jshint": "^2.9.1 ",
-    "less": "^2.5.3",
-    "mocha": "^2.3.4",
-    "mocha-phantomjs": "^4.0.2",
-    "shelljs": "^0.7.0",
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.52",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "ajv": "^6.5.2",
+    "babel-eslint": "^8.2.5",
+    "babel-loader": "^8.0.0-beta.4",
+    "css-loader": "^0.28.11",
+    "eslint": "^5.0.1",
+    "eslint-loader": "^2.0.0",
+    "jsdom": "^11.11.0",
+    "mocha": "^5.2.0",
+    "mocha-webpack": "^2.0.0-beta.0",
+    "node-sass": "^4.9.1",
+    "sass-loader": "^7.0.3",
     "should": "^8.1.1",
-    "sinon": "^1.17.2",
     "should-sinon": "^0.0.3",
-    "uglify-js": "^2.6.1"
+    "sinon": "^6.1.0",
+    "style-loader": "^0.21.0",
+    "webpack": "^4.15.0",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4"
   },
   "scripts": {
-    "test": "node make test"
+    "build": "NODE_ENV='production' webpack -p",
+    "build:dev": "webpack --mode development",
+    "start:dev": "webpack-dev-server",
+    "test": "mocha-webpack --webpack-config webpack.config.test.js --opts test/mocha.opts \"test/**/*.spec.js\" || true"
   }
 }

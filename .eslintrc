@@ -1,0 +1,6 @@
+{
+  "parser": "babel-eslint",
+  "rules": {
+    "semi": 2
+  }
+}

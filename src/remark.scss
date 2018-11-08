@@ -1,0 +1,870 @@
+$backgroundColor: #fff;
+$folioBackgroundColor: #d7d8d2;
+$progressBarColor: #888888;
+$controlsArrowColor: #000;
+$controlArrowSize: 3.6em;
+$controlArrowSpacing: 1.4em;
+$controlArrowLength: 2.6em;
+$controlArrowThickness: 0.5em;
+$controlsArrowAngle: 45deg;
+$controlsArrowAngleHover: 40deg;
+$controlsArrowAngleActive: 36deg;
+$spacing: 8px;
+
+/*************/
+/* Container */
+/*************/
+
+html {
+  //font-size: 20px;
+}
+
+html.remark-container, body.remark-container {
+  height: 100%;
+  width: 100%;
+  -webkit-print-color-adjust: exact;
+}
+
+body.remark-container--folio:-webkit-full-screen {
+  background: #000;
+}
+body.remark-container--folio:-moz-full-screen {
+  background: #000;
+}
+body.remark-container--folio:fullscreen {
+  background: #000;
+}
+
+.remark {
+  &-container {
+    background: $backgroundColor;
+    margin: 0;
+    overflow: hidden;
+
+    &:focus {
+      outline: 1px solid;
+    }
+
+    &:-webkit-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+
+    &--help-mode {
+      .remark-help {
+        display: block;
+      }
+      .remark-backdrop {
+        display: block;
+        opacity: 0.95;
+      }
+    }
+
+    &--presenter-mode {
+      .remark-slides-area {
+        top: 2%;
+        left: 2%;
+        height: 47.25%;
+        width: 48%;
+      }
+
+      .remark-preview-area {
+        display: block;
+      }
+
+      .remark-notes-area {
+        display: block;
+      }
+
+      .remark-slides-area > .remark-slide-number,
+      .remark-progress-bar,
+      .remark-controls {
+        display: none;
+      }
+    }
+
+    &--pause-mode:not(&--presenter-mode ) {
+      .remark-pause {
+        display: block;
+      }
+      .remark-backdrop {
+        display: block;
+        opacity: 0.5;
+      }
+    }
+
+    /************/
+    /* Blackout */
+    /************/
+    &--blackout-mode:not(&--presenter-mode) {
+      .remark-backdrop {
+        display: block;
+        opacity: 0.99;
+      }
+    }
+
+    /************/
+    /* Mirrored */
+    /************/
+    &--mirrored-mode:not(&--presenter-mode) {
+      .remark-slides-area {
+        -webkit-transform: scaleX(-1);
+        -moz-transform: scaleX(-1);
+        -ms-transform: scaleX(-1);
+        -o-transform: scaleX(-1);
+      }
+    }
+
+    &--presenter-mode,
+    &--folio {
+      background: $folioBackgroundColor;
+    }
+
+    &--center {
+      .remark-slide__content {
+        text-align: center;
+        vertical-align: middle;
+      }
+    }
+
+    &--presenter-mode.remark-container--folio,
+    &--folio {
+      .remark-slide-scaler {
+        -moz-box-shadow: 0 0 30px #888;
+        -webkit-box-shadow: 0 0 30px #888;
+        box-shadow: 0 0 30px #888;
+      }
+
+      .remark-slide__content {
+        background-color: #fff;
+      }
+
+      .remark-slide-number {
+        bottom: 12px;
+        right: 20px;
+      }
+    }
+
+    &--presenter-mode:not(.remark-container--folio) {
+      .remark-slide-container {
+        -moz-box-shadow: 0 0 30px #888;
+        -webkit-box-shadow: 0 0 30px #888;
+        box-shadow: 0 0 30px #888;
+        background-color: #fff;
+      }
+    }
+  }
+
+  /**********/
+  /* Slides */
+  /**********/
+
+  &-slides-area {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    perspective: 600px;
+    perspective-origin: 50% 40%;
+  }
+
+  &-slide-container {
+    opacity: 0;
+    display: block;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    page-break-after: always;
+    transition: transform-origin 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
+      transform 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
+      visibility 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985),
+      opacity 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
+
+    &--visible {
+      opacity: 1;
+      z-index: 2;
+    }
+
+    // Disable transitions for incremented slides.
+    &--prev.remark-slide-container--start-increment,
+    &--next.remark-slide-container--end-increment,
+    &--increment {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+
+  &-slide-scaler {
+    background-color: transparent;
+    overflow: auto;
+    position: absolute;
+    -webkit-transform-origin: top left;
+    -moz-transform-origin: top left;
+    transform-origin: top left;
+  }
+
+  &-slide {
+    height: 100%;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    position: relative;
+
+    > .left {
+      text-align: left;
+    }
+
+    > .center {
+      text-align: center;
+    }
+
+    > .right {
+      text-align: right;
+    }
+
+    > .top {
+      vertical-align: top;
+    }
+
+    > .middle {
+      vertical-align: middle;
+    }
+
+    > .bottom {
+      vertical-align: bottom;
+    }
+
+    &__content {
+      background: transparent center no-repeat;;
+      display: table-cell;
+      padding: 1em 4em 1em 4em;
+
+      .left {
+        display: block;
+        text-align: left;
+      }
+
+      .center {
+        display: block;
+        text-align: center;
+      }
+
+      .right {
+        display: block;
+        text-align: right;
+      }
+
+      @for $i from 1 to 10 {
+        &.remark-slide__columns-#{$i} {
+          /*.remark-slide__column {
+            width: (100% / $i);
+          }*/
+
+          display: grid;
+          grid-template-columns: repeat($i, 1fr);
+          grid-column-gap: 1em;
+          align-items: end;
+          height: 100%;
+        }
+      }
+
+      .remark-slide__column {
+        //display: inline-block;
+        align-self: stretch;
+      }
+    }
+  }
+
+  &-slide-number {
+    bottom: 8px;
+    opacity: 0.5;
+    position: absolute;
+    right: 8px;
+    font-size: 10px;
+  }
+
+  &-slide-notes {
+    border-top: 3px solid black;
+    position: absolute;
+    display: none;
+  }
+
+  &-code {
+    font-size: smaller;
+
+    &__line {
+      min-height: 1em;
+
+      &--highlighted {
+        background-color: rgba(255, 255, 0, 0.5);
+      }
+    }
+
+    &__span {
+      &--highlighted {
+        background-color: rgba(255, 255, 0, 0.5);
+        padding: 1px 2px 2px 2px;
+      }
+    }
+  }
+
+  /************/
+  /* Backdrop */
+  /************/
+
+  &-backdrop {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: none;
+    background: #000;
+    z-index: 2;
+  }
+
+  /*****************/
+  /* Pause overlay */
+  /*****************/
+
+  &-pause {
+    bottom: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+
+    &__text {
+      top: 40%;
+      position: relative;
+      text-align: center;
+
+      span {
+        color: white;
+        background: black;
+        border: 2px solid black;
+        border-radius: 20px;
+        padding: 20px 30px;
+        font-family: Helvetica, arial, freesans, clean, sans-serif;
+        font-size: 42pt;
+        font-weight: bold;
+      }
+    }
+  }
+
+  /********/
+  /* Help */
+  /********/
+
+  &-help {
+    bottom: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    -webkit-transform-origin: top left;
+    -moz-transform-origin: top left;
+    transform-origin: top left;
+
+    &__content {
+      color: white;
+      font-family: Helvetica, arial, freesans, clean, sans-serif;
+      font-size: 12pt;
+      position: absolute;
+      top: 5%;
+      bottom: 10%;
+      height: 10%;
+      left: 5%;
+      width: 90%;
+    }
+
+    &__head {
+      font-size: 36px;
+    }
+
+    &__cell {
+      color: white;
+      font-size: 12pt;
+      padding: 10px;
+
+      &:first-child {
+        padding-left: 0;
+      }
+    }
+
+    &__key {
+      background: white;
+      color: black;
+      min-width: 1em;
+      display: inline-block;
+      padding: 3px 6px;
+      text-align: center;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-right: 6px;
+    }
+  }
+
+  /******************/
+  /* Presenter mode */
+  /******************/
+
+  &-preview-area {
+    bottom: 2%;
+    left: 2%;
+    display: none;
+    opacity: 0.5;
+    position: absolute;
+    height: 47.25%;
+    width: 48%;
+
+    .remark-slide-container {
+      opacity: 1;
+    }
+  }
+
+  &-notes-area {
+    background: #fff;
+    bottom: 0;
+    color: black;
+    display: none;
+    left: 52%;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    &__top {
+      height: 50px;
+      left: 20px;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+    }
+
+    &__bottom {
+      position: absolute;
+      top: 75px;
+      bottom: 10px;
+      left: 20px;
+      right: 10px;
+
+      .remark-notes {
+        & > *:first-child {
+          margin-top: 5px;
+        }
+
+        & > *:last-child {
+          margin-bottom: 0;
+        }
+
+        &__head {
+          display: block;
+          text-decoration: none;
+          font-family: Helvetica,arial,freesans,clean,sans-serif;
+          height: 21px;
+          font-size: 0.75em;
+          text-transform: uppercase;
+          color: #ccc;
+        }
+
+        &__content {
+          border-top: 1px solid #f5f5f5;
+          position: absolute;
+          top: 22px;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          overflow-y: auto;
+
+
+        }
+
+        &--current {
+          height: 70%;
+          position: relative;
+
+          .remark-notes__content {
+            clear:both;
+            margin-bottom: 20px;
+            padding-top: 10px;
+          }
+        }
+
+        &--preview {
+          height: 30%;
+          position: relative;
+
+          & > *:first-child {
+            margin-top: 5px;
+          }
+
+          & > *:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+
+  &-toolbar {
+    color: #979892;
+    vertical-align: middle;
+
+    &__link {
+      border: 2px solid #d7d8d2;
+      color: #979892;
+      display: inline-block;
+      padding: 2px 2px;
+      text-decoration: none;
+      text-align: center;
+      min-width: 20px;
+      margin-right: 2px;
+
+      &:hover {
+        border-color: #979892;
+        color: #676862;
+      }
+    }
+
+    &__timer {
+      border: 2px solid black;
+      border-radius: 10px;
+      background: black;
+      color: white;
+      display: inline-block;
+      float: right;
+      padding: 5px 10px;
+      font-family: sans-serif;
+      font-weight: bold;
+      font-size: 175%;
+      text-decoration: none;
+      text-align: center;
+    }
+  }
+
+  /****************/
+  /* Progress bar */
+  /****************/
+  &-progress-bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    z-index: 10;
+
+    &__bar {
+      height: 4px;
+      background-color: $progressBarColor;
+      width: 0;
+      transition: width 800ms cubic-bezier(0.260, 0.860, 0.440, 0.985);
+      display: block;
+    }
+  }
+
+  /*************/
+  /* Controls */
+  /*************/
+  @keyframes bounce-right {
+    0%, 10%, 25%, 40%, 50% {transform: translateX(0) rotate(180deg);}
+    20% {transform: translateX(10px) rotate(180deg);}
+    30% {transform: translateX(-5px) rotate(180deg);}
+  }
+
+  @mixin controlsArrowTransform( $angle ) {
+    &:before {
+      transform: translateX(($controlArrowSize - $controlArrowLength)/2) translateY(($controlArrowSize - $controlArrowThickness)/2) rotate( $angle );
+    }
+
+    &:after {
+      transform: translateX(($controlArrowSize - $controlArrowLength)/2) translateY(($controlArrowSize - $controlArrowThickness)/2) rotate( -$angle );
+    }
+  }
+
+  &-controls {
+    position: absolute;
+    top: auto;
+    bottom: 22px;
+    right: 12px;
+    left: auto;
+    z-index: 10;
+    color: $controlsArrowColor;
+    font-size: 10px;
+
+
+    &[data-remark-controls-back-arrows="faded"] {
+      .remark-controls__button--prev {
+        opacity: 0.3;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    &[data-remark-controls-back-arrows="hidden"] {
+      .remark-controls__button--prev {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    &[data-remark-controls-layout="edges"] {
+      height: 100%;
+      width: 100%;
+      left: auto;
+      right: auto;
+      top: auto;
+      bottom: auto;
+
+      .remark-controls__button {
+        position: absolute;
+        top: 50%;
+        margin-top: -$controlArrowSize/2;
+        z-index: 2;
+
+        &--prev {
+          left: $spacing;
+        }
+
+        &--next {
+          right: $spacing;
+        }
+      }
+    }
+
+    &__button {
+      &:before,
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: $controlArrowLength;
+        height: $controlArrowThickness;
+        border-radius: $controlArrowThickness/2;
+        background-color: currentColor;
+
+        transition: all 0.15s ease, background-color 0.8s ease;
+        transform-origin: floor(($controlArrowThickness/2)*10)/10 50%;
+        will-change: transform;
+      }
+
+      cursor: pointer;
+      display: inline-block;
+      position: relative;
+      width: $controlArrowSize;
+      height: $controlArrowSize;
+
+      @include controlsArrowTransform($controlsArrowAngle);
+
+      &:hover {
+        @include controlsArrowTransform($controlsArrowAngleHover);
+      }
+
+      &:active {
+        @include controlsArrowTransform($controlsArrowAngleActive);
+      }
+
+      &--disabled {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      &--next {
+        transform: rotate(180deg);
+      }
+
+      &--highlight {
+        animation: bounce-right 2s 50 both ease-out;
+      }
+    }
+  }
+
+  /************/
+  /* Printing */
+  /************/
+
+  @media print {
+    &-container {
+      overflow: visible;
+      background-color: #fff;
+
+      &--presenter-mode {
+        .remark-slides-area {
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 100%;
+        }
+
+        .remark-slide-scaler {
+          display: block;
+          height: 50% !important;
+          position: initial;
+          -webkit-box-shadow: none;
+          -moz-box-shadow: none;
+          box-shadow: none;
+        }
+
+        .remark-preview-area,
+        .remark-notes-area {
+          display: none;
+        }
+
+        .remark-slide-notes {
+          display: block;
+          padding: 0 30px;
+          width: 100%;
+          height: 50%;
+          top: auto !important;
+        }
+      }
+    }
+
+    &-slide-container {
+      position: relative;
+      opacity: 1;
+      transform: none !important;
+    }
+
+    &-slide-scaler {
+      -moz-box-shadow: none;
+      -webkit-box-shadow: none;
+      -webkit-transform-origin: initial;
+      box-shadow: none;
+      transform: none !important;
+      width: 100% !important;
+      height: 100% !important;
+      left: auto !important;
+      top: auto !important;
+    }
+
+    &-progress-bar,
+    &-controls {
+      display: none;
+    }
+  }
+}
+
+@page {
+  margin: 0;
+}
+
+.remark-slides-area[data-remark-transition-speed="fast"] {
+  .remark-slide-container {
+    transition-duration: 400ms;
+  }
+}
+
+.remark-slides-area[data-remark-transition-speed="slow"] {
+  .remark-slide-container {
+    transition-duration: 1200ms;
+  }
+}
+
+/*********************************************
+ * Mixins for readability of transitions
+ *********************************************/
+@mixin transition-global($style) {
+  .remark-slides-area[data-remark-transition="#{$style}"] {
+    .remark-slide-container {
+      @content;
+    }
+  }
+}
+
+@mixin transition-prev($style) {
+  .remark-slides-area[data-remark-transition="#{$style}"] {
+    .remark-slide-container {
+      &--prev {
+        @content;
+      }
+    }
+  }
+}
+
+@mixin transition-next($style) {
+  .remark-slides-area[data-remark-transition="#{$style}"] {
+    .remark-slide-container {
+      &--next {
+        @content;
+      }
+    }
+  }
+}
+
+/*********************************************
+ * SLIDE TRANSITION
+ *********************************************/
+@include transition-prev(slide) {
+  transform: translate(-150%, 0);
+}
+
+@include transition-next(slide) {
+  transform: translate(150%, 0);
+}
+
+/*********************************************
+ * CONVEX TRANSITION
+ *********************************************/
+@include transition-prev(convex) {
+  transform-style: preserve-3d;
+  transform: translate3d(-100%, 0, 0) rotateY(-90deg) translate3d(-100%, 0, 0);
+}
+
+@include transition-next(convex) {
+  transform-style: preserve-3d;
+  transform: translate3d(100%, 0, 0) rotateY(90deg) translate3d(100%, 0, 0);
+}
+
+/*********************************************
+ * CONCAVE TRANSITION
+ *********************************************/
+@include transition-prev(concave) {
+  transform: translate3d(-100%, 0, 0) rotateY(90deg) translate3d(-100%, 0, 0);
+}
+
+@include transition-next(concave) {
+  transform: translate3d(100%, 0, 0) rotateY(-90deg) translate3d(100%, 0, 0);
+}
+
+/*********************************************
+ * ZOOM TRANSITION
+ *********************************************/
+@include transition-global(zoom) {
+  transition-timing-function: ease;
+}
+
+@include transition-prev(zoom) {
+  visibility: hidden;
+  transform: scale(16);
+}
+
+@include transition-next(zoom) {
+  visibility: hidden;
+  transform: scale(0.2);
+}
+
+/*********************************************
+ * FADE TRANSITION
+ *********************************************/
+@include transition-global(fade) {
+  transition: opacity 1.5s;
+
+  &.remark-slide-container--visible {
+    transform: none;
+    transition: opacity 1.5s;
+    transition-delay: 0s;
+  }
+}
+
+/*********************************************
+ * NO TRANSITION
+ *********************************************/
+@include transition-global(none) {
+  transform: none;
+  transition: none;
+}

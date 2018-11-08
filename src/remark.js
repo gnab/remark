@@ -1,13 +1,10 @@
-var Api = require('./remark/api')
-  , polyfills = require('./polyfills')
-  , styler = require('./remark/components/styler/styler')
-  ;
-
-// Expose API as `remark`
-window.remark = new Api();
+import Api from './remark/Api';
+import polyfills from './polyfills';
+import './remark.scss';
+import './hljs.scss';
 
 // Apply polyfills as needed
 polyfills.apply();
 
-// Apply embedded styles to document
-styler.styleDocument();
+// Expose API as `remark`
+window.remark = new Api();

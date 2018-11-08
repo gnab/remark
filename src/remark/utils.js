@@ -1,43 +1,46 @@
-exports.addClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .concat([className])
+const getClasses = (element) => {
+  return element.className
+    .split(' ')
+    .filter((s) => (s !== ''));
+};
+
+const hasClass = (element, className) => {
+  return getClasses(element).indexOf(className) !== -1;
+};
+
+const addClass = (element, className) => {
+  if (!hasClass(element, className)) {
+    element.className = getClasses(element)
+      .concat([className])
+      .join(' ');
+  }
+};
+
+const removeClass = (element, className) => {
+  element.className = getClasses(element)
+    .filter((currentClassName) => (currentClassName !== className))
     .join(' ');
 };
 
-exports.removeClass = function (element, className) {
-  element.className = exports.getClasses(element)
-    .filter(function (klass) { return klass !== className; })
-    .join(' ');
-};
-
-exports.toggleClass = function (element, className) {
-  var classes = exports.getClasses(element),
-      index = classes.indexOf(className);
+const toggleClass = (element, className) => {
+  let classes = getClasses(element);
+  let index = classes.indexOf(className);
 
   if (index !== -1) {
     classes.splice(index, 1);
-  }
-  else {
+  } else {
     classes.push(className);
   }
 
   element.className = classes.join(' ');
 };
 
-exports.getClasses = function (element) {
-  return element.className
-    .split(' ')
-    .filter(function (s) { return s !== ''; });
+const getPrefixedProperty = (element, propertyName) => {
+  let capitalizedPropertyName = propertyName[0].toUpperCase() + propertyName.slice(1);
+
+  return element[propertyName] ||
+    element['moz' + capitalizedPropertyName] ||
+    element['webkit' + capitalizedPropertyName];
 };
 
-exports.hasClass = function (element, className) {
-  return exports.getClasses(element).indexOf(className) !== -1;
-};
-
-exports.getPrefixedProperty = function (element, propertyName) {
-  var capitalizedPropertName = propertyName[0].toUpperCase() +
-    propertyName.slice(1);
-
-  return element[propertyName] || element['moz' + capitalizedPropertName] ||
-    element['webkit' + capitalizedPropertName];
-};
+export {getClasses, addClass, removeClass, toggleClass, hasClass, getPrefixedProperty};
