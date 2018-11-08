@@ -246,6 +246,10 @@ export default class Parser {
       }
     });
 
+    if (stack.length > 1) {
+      stack = Parser.reduceStack(stack);
+    }
+
     // Push current slide to list of slides.
     slides.push(stack[0]);
 

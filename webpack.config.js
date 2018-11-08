@@ -1,4 +1,5 @@
 let debug = process.env.NODE_ENV !== 'production';
+debug = true;
 const path = require('path');
 
 module.exports = {
