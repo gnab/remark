@@ -111,6 +111,7 @@ Other interesting stuff:
 - [Repositorium](https://github.com/pille1842/repositorium)
 - [Backslide](https://github.com/sinedied/backslide) - CLI for automating creation, export and PDF conversion of Remark presentations
 - [Remarker](https://github.com/kt3k/remarker) - CLI for serving and building Remark slideshow from markdown file
+- [Cicero](https://github.com/bast/cicero) - Serves presentation slides written in markdown using remark or reveal.js, directly from GitHub or GitLab
 
 ### Printing
 
