@@ -6,6 +6,17 @@ exports.unregister = function (events) {
   removeMouseEventListeners(events);
 };
 
+function throttle(events, eventName) {
+  var timestamp = null;
+  return function() {
+    var now = Date.now();
+    if (timestamp === null || now - timestamp > 100) {
+      events.emit(eventName);
+    }
+    timestamp = now;
+  };
+}
+
 function addMouseEventListeners (events, options) {
   if (options.click) {
     events.on('click', function (event) {
@@ -27,13 +38,15 @@ function addMouseEventListeners (events, options) {
     });
   }
 
+  var throttledPrev = throttle(events, 'gotoPreviousSlide');
+  var throttledNext = throttle(events, 'gotoNextSlide');
   if (options.scroll !== false) {
     var scrollHandler = function (event) {
       if (event.wheelDeltaY > 0 || event.detail < 0) {
-        events.emit('gotoPreviousSlide');
+        throttledPrev();
       }
       else if (event.wheelDeltaY < 0 || event.detail > 0) {
-        events.emit('gotoNextSlide');
+        throttledNext();
       }
     };
 
