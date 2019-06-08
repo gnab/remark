@@ -64,7 +64,6 @@ function Slideshow (events, dom, options, callback) {
     loadFromUrl(options.sourceUrl, callback);
   }
   else if (options.sourceUrls){
-    console.log(options.sourceUrls)
     loadFromUrls(options.sourceUrls, callback);
   }
   else {
