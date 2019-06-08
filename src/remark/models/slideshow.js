@@ -114,46 +114,53 @@ function Slideshow (events, dom, options, callback) {
     return xhr;
   }
 
-
   function loadFromUrls(urls, callback) {
 
     function xhrOnload(e) {
       if (this.readyState === 4) {
         if (this.status === 200) {
-          if (options.source !== '')
-            options.source += '---\n';
-          options.source += this.responseText.replace(/\r\n/g, '\n');
-          this.status = true;
+          options.sources[this.index] = this.responseText.replace(/\r\n/g, '\n') ;
+          options.loadingCompleted++;
+          if(options.loadingCompleted === urls.length)
+            xhrLoadSlides();
         } else {
-          this.status = false;
           throw Error(this.statusText);
         }
       }
     }
 
     function xhrOnerror(e) {
-      this.status = false;
+      options.loadingCompleted++;
       throw Error(this.statusText);
     }
 
-    options.source = '';
+    function xhrLoadSlides() {
+      for (var j = 0; j < urls.length; j++) {
+        if (j !== 0)
+          options.source += '---\n';
+        options.source += options.sources[j];
+      }
+
+      loadFromString(options.source);
+      if (typeof callback === 'function') {
+        callback(self);
+      }
+
+    }
+
     var xhrs = [];
+    options.loadingCompleted = 0;
+    options.sources = [];
 
     for (var i =0 ; i < urls.length; i++) {
       var url = urls[i];
       xhrs[i] = new dom.XMLHttpRequest();
+      xhrs[i].index = i;
       xhrs[i].open('GET', url, true);
       xhrs[i].onload = xhrOnload;
       xhrs[i].onerror = xhrOnerror;
       xhrs[i].send(null);
     }
-    //FIXME: trick to avoid synchronization 
-    setTimeout(function(){
-      loadFromString(options.source);
-      if (typeof callback === 'function') {
-        callback(self);
-      }
-    },2000);
 
   }
 
