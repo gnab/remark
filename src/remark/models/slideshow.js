@@ -63,6 +63,10 @@ function Slideshow (events, dom, options, callback) {
   if (options.sourceUrl) {
     loadFromUrl(options.sourceUrl, callback);
   }
+  else if (options.sourceUrls){
+    console.log(options.sourceUrls)
+    loadFromUrls(options.sourceUrls, callback);
+  }
   else {
     loadFromString(options.source);
     if (typeof callback === 'function') {
@@ -109,6 +113,49 @@ function Slideshow (events, dom, options, callback) {
     };
     xhr.send(null);
     return xhr;
+  }
+
+
+  function loadFromUrls(urls, callback) {
+
+    function xhrOnload(e) {
+      if (this.readyState === 4) {
+        if (this.status === 200) {
+          if (options.source !== '')
+            options.source += '---\n';
+          options.source += this.responseText.replace(/\r\n/g, '\n');
+          this.status = true;
+        } else {
+          this.status = false;
+          throw Error(this.statusText);
+        }
+      }
+    }
+
+    function xhrOnerror(e) {
+      this.status = false;
+      throw Error(this.statusText);
+    }
+
+    options.source = '';
+    var xhrs = [];
+
+    for (var i =0 ; i < urls.length; i++) {
+      var url = urls[i];
+      xhrs[i] = new dom.XMLHttpRequest();
+      xhrs[i].open('GET', url, true);
+      xhrs[i].onload = xhrOnload;
+      xhrs[i].onerror = xhrOnerror;
+      xhrs[i].send(null);
+    }
+    //FIXME: trick to avoid synchronization 
+    setTimeout(function(){
+      loadFromString(options.source);
+      if (typeof callback === 'function') {
+        callback(self);
+      }
+    },2000);
+
   }
 
   function update () {
