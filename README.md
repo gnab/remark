@@ -24,7 +24,7 @@ It takes only a few, simple steps to get up and running with remark:
 1. Create an HTML file to contain your slideshow (see boilerplate below)
 2. Open the HTML file in a decent browser
 3. Edit the Markdown and/or CSS styles as needed, save and refresh!
-4. Press `C` to clone a display; then press `P` to switch to presenter mode. Opeh help menu with `h`.
+4. Press `C` to clone a display; then press `P` to switch to presenter mode. Open help menu with `h`.
 
 See any of the boilerplate-*.html files, or just copy the boilerplate HTML below to start:
 
