@@ -91,8 +91,6 @@ Other interesting stuff:
 
 - [gnab.github.com/editorjs](http://gnab.github.com/editorjs)
 - [judoole.github.com/GroovyBDD](http://judoole.github.com/GroovyBDD)
-- [kjbekkelund.github.com/nith-coffeescript](http://kjbekkelund.github.com/nith-coffeescript)
-- [kjbekkelund.github.com/js-architecture-backbone](http://kjbekkelund.github.com/js-architecture-backbone)
 - [bekkopen.github.com/infrastruktur-som-kode](http://bekkopen.github.com/infrastruktur-som-kode)
 - [ivarconr.github.com/Test-Driven-Web-Development/slides](http://ivarconr.github.com/Test-Driven-Web-Development/slides)
 - [havard.github.com/node.js-intro-norwegian](http://havard.github.com/node.js-intro-norwegian)
