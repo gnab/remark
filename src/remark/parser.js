@@ -78,6 +78,14 @@ Parser.prototype.parse = function (src, macros, options) {
         if (typeof value === 'string') {
           value = self.parse(value, macros);
           appendTo(stack[stack.length - 1], value[0].content[0]);
+          if (value.length > 1) {
+            slides.push(stack[0]);
+            value.slice(1, -1).forEach(function (slide) {
+              slides.push(slide);
+            });
+            stack = [createSlide()];
+            appendTo(stack[0], slides[slides.length - 1].content[0]);
+          }
         }
         else {
           appendTo(stack[stack.length - 1], value === undefined ?

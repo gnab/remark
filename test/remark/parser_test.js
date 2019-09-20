@@ -128,6 +128,69 @@ describe('Parser', function () {
       parser.parse('Uppercase => ![:addupper](word)', macros)[0].content
         .should.eql(['Uppercase => WORD']);
     });
+
+    it('should not end the slide if a macro returns only one slide', function () {
+      var macros = {
+        upper: function () {
+          return this.toUpperCase();
+        }
+      };
+      parser.parse('previous ![:upper](word) after', macros)[0].content
+        .should.eql(['previous WORD after']);
+    });
+
+    it('should add slides if macro returns multiple slides', function () {
+      var macros = {
+        multiPage: function (times) {
+          var content = [];
+          for (var i = 0; i < times; i++) {
+            content.push(this);
+          }
+          return content.join('\n---\n');
+        }
+      };
+
+      var parsed = parser.parse('![:multiPage 5](content)', macros);
+
+      parsed.length.should.eql(5);
+      parsed.forEach(function (page) {
+        page.content.should.eql(['content']);
+      });
+    });
+
+    it('should append the first slide of multi slide macros to the current slide', function () {
+      var macros = {
+        multiPage: function (times) {
+          var content = [];
+          for (var i = 0; i < times; i++) {
+            content.push(this);
+          }
+          return content.join('\n---\n');
+        }
+      };
+
+      var parsed = parser.parse('previous ![:multiPage 5](content)', macros);
+
+      parsed.length.should.eql(5);
+      parsed[0].content.should.eql(['previous content'])
+    });
+
+    it('should not close the last slide of a multi slide macro', function () {
+      var macros = {
+        multiPage: function (times) {
+          var content = [];
+          for (var i = 0; i < times; i++) {
+            content.push(this);
+          }
+          return content.join('\n---\n');
+        }
+      };
+
+      var parsed = parser.parse('![:multiPage 5](content) after', macros);
+
+      parsed.length.should.eql(5);
+      parsed[4].content.should.eql(['content after'])
+    })
   });
 
   describe('parsing content classes', function () {
