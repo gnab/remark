@@ -219,6 +219,10 @@ function createSlides (slideshowSource, options) {
       slides.byNumber[slideNumber] = [];
     }
 
+    if (options.includePresenterNotes !== undefined && !options.includePresenterNotes) {
+      slide.notes = '';
+    }
+
     slideViewModel = new Slide(slides.length, slideNumber, slide, template);
 
     if (slide.properties.name) {
