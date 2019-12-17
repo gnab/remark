@@ -97,12 +97,6 @@ Other interesting stuff:
 - [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
 - [http://asmeurer.github.io/python3-presentation/slides.html](http://asmeurer.github.io/python3-presentation/slides.html)
 
-### Other systems integrating with remark
-
-- [http://platon.io](http://platon.io)
-- [http://markdowner.com](http://markdowner.com)
-- [http://remarks.sinaapp.com](http://remarks.sinaapp.com/)
-
 ### Credits
 
 - [torgeir](http://github.com/torgeir), for invaluable advice and feedback.
