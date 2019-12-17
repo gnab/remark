@@ -13,8 +13,9 @@ target.highlighter = function () {
   var config = require('./package.json').config;
   if (config && config.highlighter === false) {
     console.log('Bundling empty highlighter skeleton...');
-    "module.exports = {styles:[],engine:{highlightBlock:function(){}}};"
-      .to('src/remark/highlighter.js');
+    'module.exports = {styles:[],engine:{highlightBlock:function(){}}};'.to(
+      'src/remark/highlighter.js',
+    );
     return;
   }
 
@@ -38,7 +39,7 @@ target.test = function () {
   target['test-bundle']();
 
   console.log('Running tests...');
-  run('mocha-phantomjs test/runner.html', true);
+  run('mocha-chrome test/runner.html', true);
 };
 
 target.lint = function () {
@@ -52,16 +53,27 @@ target.bundle = function () {
 
   mkdir('-p', 'out');
 
-  run('browserify ' + components() + ' src/remark.js').stdout.to('out/remark.js');
+  run('browserify ' + components() + ' src/remark.js').stdout.to(
+    'out/remark.js',
+  );
 };
 
-function components () {
+function components() {
   var componentsPath = './src/remark/components';
 
   return ls(componentsPath)
     .map(function (component) {
-      return '-r ' + componentsPath + '/' + component + '/' + component +
-        '.js:' + 'components/' + component;
+      return (
+        '-r ' +
+        componentsPath +
+        '/' +
+        component +
+        '/' +
+        component +
+        '.js:' +
+        'components/' +
+        component
+      );
     })
     .join(' ');
 }
@@ -69,17 +81,18 @@ function components () {
 target['test-bundle'] = function () {
   console.log('Bundling tests...');
 
-  [
-    "require('should');",
-    "require('sinon');",
-    "require('should-sinon');"
-  ]
-    .concat(find('./test')
-      .filter(function(file) { return file.match(/\.js$/); })
-      .map(function (file) { return "require('./" + file + "');" })
+  ["require('should');", "require('sinon');", "require('should-sinon');"]
+    .concat(
+      find('./test')
+        .filter(function (file) {
+          return file.match(/\.js$/);
+        })
+        .map(function (file) {
+          return "require('./" + file + "');";
+        }),
     )
-      .join('\n')
-      .to('_tests.js');
+    .join('\n')
+    .to('_tests.js');
 
   run('browserify ' + components() + ' _tests.js').stdout.to('out/tests.js');
   rm('_tests.js');
@@ -87,7 +100,7 @@ target['test-bundle'] = function () {
 
 target.boilerplate = function () {
   console.log('Generating boilerplate...');
-  generateBoilerplateSingle("boilerplate-single.html");
+  generateBoilerplateSingle('boilerplate-single.html');
 };
 
 target.minify = function () {
@@ -121,21 +134,17 @@ target.deploy = function () {
 
 // Helper functions
 
-var path = require('path')
-  , package = require('./package.json')
-  , version = package.version
-  , config = package.config
-  , ignoredStyles = ['brown_paper', 'school_book', 'pojoaque']
-  ;
-
-function bundleResources (target) {
+var path = require('path'),
+  package = require('./package.json'),
+  version = package.version,
+  config = package.config,
+  ignoredStyles = ['brown_paper', 'school_book', 'pojoaque'];
+function bundleResources(target) {
   var resources = {
-        VERSION: version
-      , DOCUMENT_STYLES: JSON.stringify(
-          less('src/remark.less'))
-      , CONTAINER_LAYOUT: JSON.stringify(
-          cat('src/remark.html'))
-      };
+    VERSION: version,
+    DOCUMENT_STYLES: JSON.stringify(less('src/remark.less')),
+    CONTAINER_LAYOUT: JSON.stringify(cat('src/remark.html')),
+  };
 
   cat('src/templates/resources.js.template')
     .replace(/%(\w+)%/g, function (match, key) {
@@ -144,24 +153,24 @@ function bundleResources (target) {
     .to(target);
 }
 
-function bundleHighlighter (target) {
-  var highlightjs = 'vendor/highlight.js/src/'
-    , resources = {
-        HIGHLIGHTER_STYLES: JSON.stringify(
-          ls(highlightjs + 'styles/*.css').reduce(mapStyle, {}))
-      , HIGHLIGHTER_ENGINE:
-          cat(highlightjs + 'highlight.js')
-      , HIGHLIGHTER_LANGUAGES:
-          Array.prototype.sort.call(ls(highlightjs + 'languages/*.js'),
-            function (a, b) {
-              // Other languages depend on cpp, so put it first
-              return a.indexOf('cpp.js') !== -1 ? -1 : 0;
-            })
-            .map(function (file) {
-              var language = path.basename(file, path.extname(file))
-              return '{name:"' + language + '",create:' + cat(file) + '}';
-            }).join(',')
-      };
+function bundleHighlighter(target) {
+  var highlightjs = 'vendor/highlight.js/src/',
+    resources = {
+      HIGHLIGHTER_STYLES: JSON.stringify(
+        ls(highlightjs + 'styles/*.css').reduce(mapStyle, {}),
+      ),
+      HIGHLIGHTER_ENGINE: cat(highlightjs + 'highlight.js'),
+      HIGHLIGHTER_LANGUAGES: Array.prototype.sort
+        .call(ls(highlightjs + 'languages/*.js'), function (a, b) {
+          // Other languages depend on cpp, so put it first
+          return a.indexOf('cpp.js') !== -1 ? -1 : 0;
+        })
+        .map(function (file) {
+          var language = path.basename(file, path.extname(file));
+          return '{name:"' + language + '",create:' + cat(file) + '}';
+        })
+        .join(','),
+    };
 
   cat('src/templates/highlighter.js.template')
     .replace(/%(\w+)%/g, function (match, key) {
@@ -172,11 +181,13 @@ function bundleHighlighter (target) {
 
 function generateBoilerplateSingle(target) {
   var resources = {
-        REMARK_MINJS: escape(cat('out/remark.min.js')
-                              // highlighter has a ending script tag as a string literal, and
-                              // that causes early termination of escaped script. Split that literal.
-                              .replace('"</script>"', '"</" + "script>"'))
-      };
+    REMARK_MINJS: escape(
+      cat('out/remark.min.js')
+        // highlighter has a ending script tag as a string literal, and
+        // that causes early termination of escaped script. Split that literal.
+        .replace('"</script>"', '"</" + "script>"'),
+    ),
+  };
 
   cat('src/templates/boilerplate-single.html.template')
     .replace(/%(\w+)%/g, function (match, key) {
@@ -185,11 +196,9 @@ function generateBoilerplateSingle(target) {
     .to(target);
 }
 
-function mapStyle (map, file) {
-  var key = path.basename(file, path.extname(file))
-    , tmpfile = path.join(tempdir(), 'remark.tmp')
-    ;
-
+function mapStyle(map, file) {
+  var key = path.basename(file, path.extname(file)),
+    tmpfile = path.join(tempdir(), 'remark.tmp');
   if (ignoredStyles.indexOf(key) === -1) {
     ('.hljs-' + key + ' {\n' + cat(file) + '\n}').to(tmpfile);
     map[key] = less(tmpfile);
@@ -199,16 +208,19 @@ function mapStyle (map, file) {
   return map;
 }
 
-function less (file) {
+function less(file) {
   return run('lessc -x -s ' + file).stdout.replace(/\n/g, '');
 }
 
-function git (cmd) {
-  return exec('git ' + cmd, {silent: true}).stdout;
+function git(cmd) {
+  return exec('git ' + cmd, { silent: true }).stdout;
 }
 
-function run (command, loud) {
-  var result = exec('"' + pwd() + '/node_modules/.bin/' + '"' + command, {silent: !loud, fatal: false});
+function run(command, loud) {
+  const cmd = '"' + pwd() + '/node_modules/.bin/' + '"' + command;
+
+  console.log(`Executing command ${cmd}`);
+  var result = exec(cmd, { silent: !loud, fatal: false });
 
   if (result.code !== 0) {
     if (!options || options.silent) {
