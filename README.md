@@ -95,7 +95,6 @@ Other interesting stuff:
 - [ivarconr.github.com/Test-Driven-Web-Development/slides](http://ivarconr.github.com/Test-Driven-Web-Development/slides)
 - [havard.github.com/node.js-intro-norwegian](http://havard.github.com/node.js-intro-norwegian)
 - [mobmad.github.com/js-tdd-erfaringer](http://mobmad.github.com/js-tdd-erfaringer)
-- [torgeir.github.com/busterjs-lightning-talk](http://torgeir.github.com/busterjs-lightning-talk)
 - [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
 - [http://asmeurer.github.io/python3-presentation/slides.html](http://asmeurer.github.io/python3-presentation/slides.html)
 - [Lecture notes using remark](http://keysan.me/ee361/)
