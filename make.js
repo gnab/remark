@@ -23,9 +23,9 @@ target.highlighter = function () {
   rm('-rf', 'vendor/highlight.js');
   mkdir('-p', 'vendor');
   pushd('vendor');
-  exec('git clone https://github.com/isagalaev/highlight.js.git');
+  exec('git clone https://github.com/highlightjs/highlight.js.git');
   pushd('highlight.js');
-  exec('git checkout tags/9.12.0');
+  exec('git checkout tags/9.15.10');
   popd();
   popd();
 
