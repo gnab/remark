@@ -9,8 +9,9 @@ var SlideView = require('./slideView')
 
 module.exports = SlideshowView;
 
-function SlideshowView (events, dom, containerElement, slideshow) {
+function SlideshowView (events, dom, options, slideshow) {
   var self = this;
+  var containerElement = options.container;
 
   self.events = events;
   self.dom = dom;
