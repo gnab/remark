@@ -80,6 +80,15 @@ describe('Timer', function () {
       timer = new Timer(events, element);
     });
 
+    it('timer in INITIAL state does not progresses the elapsed time', function (done) {
+      setTimeout(function () {
+        timer.tick();
+
+        timer.chronos.elapsedTime.should.equal(0);
+        done();
+      })
+    });
+
     it('timer in RUNNING state progresses the elapsed time', function (done) {
       events.emit('startTimer');
 
@@ -89,50 +98,17 @@ describe('Timer', function () {
         timer.chronos.elapsedTime.should.be.above(0);
         done();
       })
-    })
-  });
-});
-
-describe('Timer States', function () {
-  var events
-    , element
-    , timer
-    ;
-
-  beforeEach(function () {
-    events = new EventEmitter();
-    element = document.createElement('div');
-    timer = new Timer(events, element);
-  });
-
-  describe('INITIAL', function () {
-    it('does not increment the elapsed time', function () {
-      var chronos = { currentTick: 1, lastTick: 0, elapsedTime: 0 };
-
-      timer.INITIAL.update(chronos);
-
-      chronos.elapsedTime.should.equal(0);
     });
+ 
+    it('timer in PAUSED state does not progresses the elapsed time', function (done) {
+      events.emit('pauseTimer');
 
-  });
+      setTimeout(function () {
+        timer.tick();
 
-  describe('PAUSED', function () {
-    it('does not increment the elapsed time', function () {
-      var chronos = { currentTick: 1, lastTick: 0, elapsedTime: 0 };
-
-      timer.PAUSED.update(chronos);
-
-      chronos.elapsedTime.should.equal(0);
-    });
-  });
-
-  describe('RUNNING', function () {
-    it('does increment the elapsed time by the difference between currentTick and lastTick', function () {
-      var chronos = { currentTick: 5, lastTick: 3, elapsedTime: 0 };
-
-      timer.RUNNING.update(chronos);
-
-      chronos.elapsedTime.should.equal(2);
+        timer.chronos.elapsedTime.should.equal(0);
+        done();
+      })
     });
   });
 });

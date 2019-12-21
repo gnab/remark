@@ -7,7 +7,7 @@ function TimerViewModel(events, element) {
 
   self.events = events;
   self.element = element;
-  self.chronos = initialChronos();
+  self.chronos = new Chronos();
 
   self.state = self.INITIAL;
 
@@ -35,24 +35,35 @@ function TimerViewModel(events, element) {
 TimerViewModel.prototype.tick = function () {
   var self = this;
 
-  var now = new Date().getTime();
-  self.chronos.lastTick = self.chronos.currentTick;
-  self.chronos.currentTick = now;
+  self.chronos.tick();
   self.state.update(self.chronos);
 };
 
 TimerViewModel.prototype.INITIAL = new State('INITIAL', function (chronos) { /* do nothing */ });
-TimerViewModel.prototype.RUNNING = new State('RUNNING', function (chronos) { var delta = chronos.currentTick - chronos.lastTick; chronos.elapsedTime += delta; });
+TimerViewModel.prototype.RUNNING = new State('RUNNING', function (chronos) { chronos.addDelta(); });
 TimerViewModel.prototype.PAUSED = new State('PAUSED', function (chronos) { /* do nothing */ });
 
-function initialChronos() {
+function Chronos() {
+  var self = this;
+
   var now = new Date().getTime();
-  return {
-    currentTick: now,
-    lastTick: now,
-    elapsedTime: 0
-  };
+  self.currentTick = now;
+  self.lastTick = now;
+  self.elapsedTime = 0;
 }
+Chronos.prototype.tick = function () {
+  var self = this;
+
+  var now = new Date().getTime();
+  self.lastTick = self.currentTick;
+  self.currentTick = now;
+};
+Chronos.prototype.addDelta = function () {
+  var self = this;
+
+  var delta = self.currentTick - self.lastTick;
+  self.elapsedTime += delta;
+};
 
 function State(identifier, updater) {
   var self = this;
@@ -60,7 +71,6 @@ function State(identifier, updater) {
   self.identifier = identifier;
   self.updater = updater;
 }
-
 State.prototype.update = function (chronos) {
   this.updater(chronos);
 };
