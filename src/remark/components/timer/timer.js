@@ -8,10 +8,11 @@ function TimerViewModel(events, element) {
   self.events = events;
   self.element = element;
   self.chronos = new Chronos();
-
   self.state = self.INITIAL;
 
   element.innerHTML = '0:00:00';
+
+  self.reset();
 
   events.on('startTimer', function () {
     self.state = self.RUNNING;
@@ -22,7 +23,7 @@ function TimerViewModel(events, element) {
   });
 
   events.on('resetTimer', function () {
-    self.state = self.INITIAL;
+    self.reset();
   });
 
 
@@ -31,12 +32,17 @@ function TimerViewModel(events, element) {
   }, 100);
 
 }
-
 TimerViewModel.prototype.tick = function () {
   var self = this;
 
   self.chronos.tick();
   self.state.update(self.chronos);
+};
+TimerViewModel.prototype.reset = function () {
+  var self = this;
+
+  self.chronos = new Chronos();
+  self.state = self.INITIAL;
 };
 
 TimerViewModel.prototype.INITIAL = new State('INITIAL', function (chronos) { /* do nothing */ });
