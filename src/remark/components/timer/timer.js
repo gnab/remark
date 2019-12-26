@@ -5,19 +5,15 @@ module.exports = TimerViewModel;
 function TimerViewModel(events, element) {
   var self = this;
 
-  self.events = events;
-  self.chronos = new Chronos();
-  self.state = self.INITIAL;
-  self.view = new TimerView(element);
-
+  self.element = element;
   self.reset();
 
   events.on('startTimer', function () {
-    self.state = self.RUNNING;
+    self.start();
   });
 
   events.on('pauseTimer', function () {
-    self.state = self.PAUSED;
+    self.pause();
   });
 
   events.on('resetTimer', function () {
@@ -28,7 +24,6 @@ function TimerViewModel(events, element) {
   setInterval(function () {
     self.tick();
   }, 100);
-
 }
 TimerViewModel.prototype.tick = function () {
   var self = this;
@@ -37,11 +32,22 @@ TimerViewModel.prototype.tick = function () {
   self.state.update(self.chronos);
   self.view.update(self.chronos.elapsedTime);
 };
+TimerViewModel.prototype.start = function () {
+  var self = this;
+
+  self.state = self.RUNNING;
+};
+TimerViewModel.prototype.pause = function () {
+  var self = this;
+
+  self.state = self.PAUSED;
+};
 TimerViewModel.prototype.reset = function () {
   var self = this;
 
   self.chronos = new Chronos();
   self.state = self.INITIAL;
+  self.view = new TimerView(self.element);
 };
 
 TimerViewModel.prototype.INITIAL = new State('INITIAL', function (chronos) { /* do nothing */ });
