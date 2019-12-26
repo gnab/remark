@@ -78,7 +78,7 @@ describe('Timer', function () {
   describe('tick', function () {
     beforeEach(function () {
       timer = new Timer(events, element);
-    });
+   });
 
     it('timer in INITIAL state does not progresses the elapsed time', function (done) {
       setTimeout(function () {
@@ -99,7 +99,7 @@ describe('Timer', function () {
         done();
       })
     });
- 
+
     it('timer in PAUSED state does not progresses the elapsed time', function (done) {
       events.emit('pauseTimer');
 
@@ -110,5 +110,21 @@ describe('Timer', function () {
         done();
       })
     });
+  });
+
+  describe('view', function () {
+    var millis = 1,
+      seconds = 1000 * millis,
+      minutes = 60 * seconds,
+      hours = 60 * minutes;
+
+    it('defaults to H:mm:ss', function(){
+      timer = new Timer(events, element);
+      timer.chronos.elapsedTime = 1 * hours + 23 * minutes + 45 * seconds + 678 * millis;
+
+      timer.tick();
+
+      element.innerHTML = '01:23:45';
+    })
   });
 });

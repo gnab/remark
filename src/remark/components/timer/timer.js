@@ -6,11 +6,9 @@ function TimerViewModel(events, element) {
   var self = this;
 
   self.events = events;
-  self.element = element;
   self.chronos = new Chronos();
   self.state = self.INITIAL;
-
-  element.innerHTML = '0:00:00';
+  self.view = new TimerView(element);
 
   self.reset();
 
@@ -37,6 +35,7 @@ TimerViewModel.prototype.tick = function () {
 
   self.chronos.tick();
   self.state.update(self.chronos);
+  self.view.update(self.chronos.elapsedTime);
 };
 TimerViewModel.prototype.reset = function () {
   var self = this;
@@ -80,3 +79,39 @@ function State(identifier, updater) {
 State.prototype.update = function (chronos) {
   this.updater(chronos);
 };
+
+function TimerView(element) {
+  var self = this;
+
+  self.element = element;
+  self.formatter = function (hours, minutes, seconds, millis) {
+    return [hours, minutes, seconds]
+      .map(function (d) { return '' + d; })
+      .map(function (s) { return padStart(s, 2, '0'); })
+      .join(':');
+  };
+}
+TimerView.prototype.update = function (elapsedTime) {
+  var self = this;
+
+  var left = elapsedTime;
+  var millis = left % 1000; left = idiv(left, 1000);
+  var seconds = left % 60; left = idiv(left, 60);
+  var minutes = left % 60; left = idiv(left, 60);
+  var hours = left;
+
+  var content = self.formatter(hours, minutes, seconds, millis);
+  self.element.innerHTML = content;
+};
+
+function idiv(n, d) {
+  return Math.floor(n / d);
+}
+
+function padStart(s, length, pad) {
+  var result = s;
+  while (result.length < length) {
+    result = pad + result;
+  }
+  return result;
+}
