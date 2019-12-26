@@ -16,6 +16,10 @@ function TimerViewModel(events, element) {
     self.pause();
   });
 
+  events.on('toggleTimer', function () {
+    self.toggle();
+  });
+
   events.on('resetTimer', function () {
     self.reset();
   });
@@ -41,6 +45,15 @@ TimerViewModel.prototype.pause = function () {
   var self = this;
 
   self.state = self.PAUSED;
+};
+TimerViewModel.prototype.toggle = function () {
+  var self = this;
+
+  if (self.state === self.RUNNING) {
+    self.state = self.PAUSED;
+  } else { // state === PAUSED || state == INITIAL
+    self.state = self.RUNNING;
+  }
 };
 TimerViewModel.prototype.reset = function () {
   var self = this;

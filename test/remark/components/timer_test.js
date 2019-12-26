@@ -34,6 +34,20 @@ describe('Timer', function () {
       timer.state.should.equal(timer.PAUSED);
     });
 
+    it('should respond to a toggleTimer event', function () {
+      events.emit('toggleTimer');
+
+      timer.state.should.equal(timer.RUNNING);
+
+      events.emit('toggleTimer');
+
+      timer.state.should.equal(timer.PAUSED);
+
+      events.emit('toggleTimer');
+
+      timer.state.should.equal(timer.RUNNING);
+    });
+
     it('should respond to a resetTimer event', function () {
       events.emit('resetTimer');
 
