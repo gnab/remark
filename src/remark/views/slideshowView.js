@@ -26,7 +26,7 @@ function SlideshowView (events, dom, options, slideshow) {
   self.scaleElements();
   self.updateSlideViews();
 
-  self.timer = new Timer(events, self.timerElement);
+  self.timer = new Timer(events, self.timerElement, options.timer);
 
   events.on('slidesChanged', function () {
     self.updateSlideViews();

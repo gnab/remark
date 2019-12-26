@@ -2,9 +2,10 @@ var utils = require('../../utils');
 
 module.exports = TimerViewModel;
 
-function TimerViewModel(events, element) {
+function TimerViewModel(events, element, options) {
   var self = this;
 
+  self.options = options || {};
   self.element = element;
   self.reset();
 
@@ -60,7 +61,7 @@ TimerViewModel.prototype.reset = function () {
 
   self.chronos = new Chronos();
   self.state = self.INITIAL;
-  self.view = new TimerView(self.element);
+  self.view = new TimerView(self.element, self.options.timer);
 };
 
 TimerViewModel.prototype.INITIAL = new State('INITIAL', function (chronos) { /* do nothing */ });
@@ -99,29 +100,32 @@ State.prototype.update = function (chronos) {
   this.updater(chronos);
 };
 
-function TimerView(element) {
+function TimerView(element, options) {
   var self = this;
-
+  
+  options = options || {};
   self.element = element;
-  self.formatter = function (hours, minutes, seconds, millis) {
-    return [hours, minutes, seconds]
-      .map(function (d) { return '' + d; })
-      .map(function (s) { return padStart(s, 2, '0'); })
-      .join(':');
-  };
+  self.formatter = options.formatter || defaultFormatter;
 }
 TimerView.prototype.update = function (elapsedTime) {
   var self = this;
 
+  var content = self.formatter(elapsedTime);
+  self.element.innerHTML = content;
+};
+
+function defaultFormatter(elapsedTime) {
   var left = elapsedTime;
   var millis = left % 1000; left = idiv(left, 1000);
   var seconds = left % 60; left = idiv(left, 60);
   var minutes = left % 60; left = idiv(left, 60);
   var hours = left;
 
-  var content = self.formatter(hours, minutes, seconds, millis);
-  self.element.innerHTML = content;
-};
+  return [hours, minutes, seconds]
+    .map(function (d) { return '' + d; })
+    .map(function (s) { return padStart(s, 2, '0'); })
+    .join(':');
+}
 
 function idiv(n, d) {
   return Math.floor(n / d);

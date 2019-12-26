@@ -92,7 +92,7 @@ describe('Timer', function () {
   describe('tick', function () {
     beforeEach(function () {
       timer = new Timer(events, element);
-   });
+    });
 
     it('timer in INITIAL state does not progresses the elapsed time', function (done) {
       setTimeout(function () {
@@ -132,13 +132,45 @@ describe('Timer', function () {
       minutes = 60 * seconds,
       hours = 60 * minutes;
 
-    it('defaults to H:mm:ss', function(){
+    it('defaults to hh:mm:ss', function () {
       timer = new Timer(events, element);
       timer.chronos.elapsedTime = 1 * hours + 23 * minutes + 45 * seconds + 678 * millis;
 
       timer.tick();
 
-      element.innerHTML = '01:23:45';
+      element.innerHTML.should.equal('01:23:45');
+    })
+
+    it('defaults to can be overriden', function () {
+      timer = new Timer(events, element, {
+        timer: {
+          formatter: function (elapsedTime) {
+            var left = elapsedTime;
+            var millis = left % 1000; left = Math.floor(left / 1000);
+            var seconds = left % 60; left = Math.floor(left / 60);
+            var minutes = left;
+
+            return [minutes, seconds]
+              .map(function (d) { return '' + d; })
+              .map(function (s) { return padStart(s, 2, '0'); })
+              .join(':');
+
+          }
+        }
+      });
+      timer.chronos.elapsedTime = 1 * hours + 23 * minutes + 45 * seconds + 678 * millis;
+
+      timer.tick();
+
+      element.innerHTML.should.equal('83:45');
     })
   });
 });
+
+function padStart(s, length, pad) {
+  var result = s;
+  while (result.length < length) {
+    result = pad + result;
+  }
+  return result;
+}
