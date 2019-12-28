@@ -93,6 +93,9 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
       case 'f':
         events.emit('toggleFullscreen');
         break;
+      case 's':
+        events.emit('toggleTimer');
+        break;
       case 't':
         events.emit('resetTimer');
         break;

@@ -6,9 +6,15 @@ module.exports = TimerViewModel;
 function TimerViewModel(events, element, options) {
   var self = this;
 
-  self.options = extend({}, { enabled: true, formatter: defaultFormatter }, (options || {}).timer || {});
+  self.options = extend({}, { enabled: true, resetable: true, startOnChange: true, formatter: defaultFormatter }, options || {});
   self.element = element;
   self.reset();
+
+  events.on('start', function(){
+    if (self.options.startOnChange) {
+      events.emit('startTimer');
+    }
+  });
 
   events.on('startTimer', function () {
     self.start();
@@ -23,7 +29,9 @@ function TimerViewModel(events, element, options) {
   });
 
   events.on('resetTimer', function () {
-    self.reset();
+    if (self.options.resetable) {
+      self.reset();
+    }
   });
 
 

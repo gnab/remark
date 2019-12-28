@@ -13,6 +13,24 @@ describe('Timer', function () {
     element = document.createElement('div');
   });
 
+  describe('start event', function () {
+    it('should respond to a \'start\' event', function () {
+      timer = new Timer(events, element);
+
+      events.emit('start');
+
+      timer.state.should.equal(timer.RUNNING);
+    });
+
+    it('should respond to a \'start\' event unless \'startOnChange\' option is \'false\'', function () {
+      timer = new Timer(events, element, { startOnChange: false });
+
+      events.emit('start');
+
+      timer.state.should.equal(timer.INITIAL);
+    });
+  });
+
   describe('timer events', function () {
     beforeEach(function () {
       timer = new Timer(events, element);
@@ -52,6 +70,15 @@ describe('Timer', function () {
       events.emit('resetTimer');
 
       timer.state.should.equal(timer.INITIAL);
+    });
+
+    it('should respond to a resetTimer event unless \'resetable\' option is set to \'false\'', function () {
+      timer = new Timer(events, element, { resetable: false });
+
+      events.emit('startTimer');
+      events.emit('resetTimer');
+
+      timer.state.should.equal(timer.RUNNING);
     });
 
     describe('sequence of events', function () {
@@ -143,18 +170,16 @@ describe('Timer', function () {
 
     it('defaults view can be overriden', function () {
       timer = new Timer(events, element, {
-        timer: {
-          formatter: function (elapsedTime) {
-            var left = elapsedTime;
-            var millis = left % 1000; left = Math.floor(left / 1000);
-            var seconds = left % 60; left = Math.floor(left / 60);
-            var minutes = left;
+        formatter: function (elapsedTime) {
+          var left = elapsedTime;
+          var millis = left % 1000; left = Math.floor(left / 1000);
+          var seconds = left % 60; left = Math.floor(left / 60);
+          var minutes = left;
 
-            return [minutes, seconds]
-              .map(function (d) { return '' + d; })
-              .map(function (s) { return padStart(s, 2, '0'); })
-              .join(':');
-          }
+          return [minutes, seconds]
+            .map(function (d) { return '' + d; })
+            .map(function (s) { return padStart(s, 2, '0'); })
+            .join(':');
         }
       });
       timer.chronos.elapsedTime = 1 * hours + 23 * minutes + 45 * seconds + 678 * millis;
@@ -166,9 +191,7 @@ describe('Timer', function () {
 
     it('can be disabled', function () {
       timer = new Timer(events, element, {
-        timer: {
-          enabled: false
-        }
+        enabled: false
       });
       timer.chronos.elapsedTime = 1 * hours + 23 * minutes + 45 * seconds + 678 * millis;
 
