@@ -1,11 +1,12 @@
 var utils = require('../../utils');
+var extend = require('extend');
 
 module.exports = TimerViewModel;
 
 function TimerViewModel(events, element, options) {
   var self = this;
 
-  self.options = options || {};
+  self.options = extend({}, { formatter: defaultFormatter }, (options || {}).timer || {});
   self.element = element;
   self.reset();
 
@@ -61,7 +62,7 @@ TimerViewModel.prototype.reset = function () {
 
   self.chronos = new Chronos();
   self.state = self.INITIAL;
-  self.view = new TimerView(self.element, self.options.timer);
+  self.view = new TimerView(self.element, self.options);
 };
 
 TimerViewModel.prototype.INITIAL = new State('INITIAL', function (chronos) { /* do nothing */ });
@@ -102,10 +103,9 @@ State.prototype.update = function (chronos) {
 
 function TimerView(element, options) {
   var self = this;
-  
-  options = options || {};
+
   self.element = element;
-  self.formatter = options.formatter || defaultFormatter;
+  self.formatter = options.formatter;
 }
 TimerView.prototype.update = function (elapsedTime) {
   var self = this;
