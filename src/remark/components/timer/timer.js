@@ -115,6 +115,10 @@ function TimerView(element, options) {
   self.element = element;
   self.enabled = options.enabled;
   self.formatter = options.formatter;
+
+  if (!self.enabled) {
+    self.element.style = 'display: none';
+  }
 }
 TimerView.prototype.update = function (elapsedTime) {
   var self = this;
