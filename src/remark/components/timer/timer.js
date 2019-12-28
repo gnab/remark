@@ -10,7 +10,7 @@ function TimerViewModel(events, element, options) {
   self.element = element;
   self.reset();
 
-  events.on('start', function(){
+  events.on('start', function () {
     if (self.options.startOnChange) {
       events.emit('startTimer');
     }
@@ -130,10 +130,10 @@ function defaultFormatter(elapsedTime) {
   var minutes = left % 60; left = idiv(left, 60);
   var hours = left;
 
-  return [hours, minutes, seconds]
+  return '' + hours + ':' + ([minutes, seconds]
     .map(function (d) { return '' + d; })
     .map(function (s) { return padStart(s, 2, '0'); })
-    .join(':');
+    .join(':'));
 }
 
 function idiv(n, d) {

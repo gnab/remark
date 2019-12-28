@@ -159,13 +159,13 @@ describe('Timer', function () {
       minutes = 60 * seconds,
       hours = 60 * minutes;
 
-    it('defaults to hh:mm:ss', function () {
+    it('defaults to H:mm:ss', function () {
       timer = new Timer(events, element);
       timer.chronos.elapsedTime = 1 * hours + 23 * minutes + 45 * seconds + 678 * millis;
 
       timer.tick();
 
-      element.innerHTML.should.equal('01:23:45');
+      element.innerHTML.should.equal('1:23:45');
     })
 
     it('defaults view can be overriden', function () {
