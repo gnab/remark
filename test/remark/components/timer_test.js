@@ -141,7 +141,7 @@ describe('Timer', function () {
       element.innerHTML.should.equal('01:23:45');
     })
 
-    it('defaults to can be overriden', function () {
+    it('defaults view can be overriden', function () {
       timer = new Timer(events, element, {
         timer: {
           formatter: function (elapsedTime) {
@@ -154,7 +154,6 @@ describe('Timer', function () {
               .map(function (d) { return '' + d; })
               .map(function (s) { return padStart(s, 2, '0'); })
               .join(':');
-
           }
         }
       });
@@ -163,6 +162,19 @@ describe('Timer', function () {
       timer.tick();
 
       element.innerHTML.should.equal('83:45');
+    })
+
+    it('can be disabled', function () {
+      timer = new Timer(events, element, {
+        timer: {
+          enabled: false
+        }
+      });
+      timer.chronos.elapsedTime = 1 * hours + 23 * minutes + 45 * seconds + 678 * millis;
+
+      timer.tick();
+
+      element.innerHTML.should.equal('');
     })
   });
 });

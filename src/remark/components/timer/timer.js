@@ -6,7 +6,7 @@ module.exports = TimerViewModel;
 function TimerViewModel(events, element, options) {
   var self = this;
 
-  self.options = extend({}, { formatter: defaultFormatter }, (options || {}).timer || {});
+  self.options = extend({}, { enabled: true, formatter: defaultFormatter }, (options || {}).timer || {});
   self.element = element;
   self.reset();
 
@@ -105,12 +105,13 @@ function TimerView(element, options) {
   var self = this;
 
   self.element = element;
+  self.enabled = options.enabled;
   self.formatter = options.formatter;
 }
 TimerView.prototype.update = function (elapsedTime) {
   var self = this;
 
-  var content = self.formatter(elapsedTime);
+  var content = self.enabled ? self.formatter(elapsedTime) : '';
   self.element.innerHTML = content;
 };
 
