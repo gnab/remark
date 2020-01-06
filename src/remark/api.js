@@ -45,7 +45,7 @@ Api.prototype.create = function (options, callback) {
   events.setMaxListeners(0);
 
   slideshow = new Slideshow(events, this.dom, options, function (slideshow) {
-    slideshowView = new SlideshowView(events, self.dom, options.container, slideshow);
+    slideshowView = new SlideshowView(events, self.dom, options, slideshow);
     controller = options.controller || new DefaultController(events, self.dom, slideshowView, options.navigation);
     if (typeof callback === 'function') {
       callback(slideshow);

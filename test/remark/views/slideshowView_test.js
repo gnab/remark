@@ -10,6 +10,7 @@ describe('SlideshowView', function () {
     , dom
     , model
     , containerElement
+    , options
     , view
     ;
 
@@ -18,11 +19,12 @@ describe('SlideshowView', function () {
     dom = new TestDom();
     model = new Slideshow(events, dom);
     containerElement = document.createElement('div');
+    options = { container: containerElement };
   });
 
   describe('container element configuration', function () {
     beforeEach(function () {
-      view = new SlideshowView(events, dom, containerElement, model);
+      view = new SlideshowView(events, dom, options, model);
     });
 
     it('should style element', function () {
@@ -94,7 +96,8 @@ describe('SlideshowView', function () {
     beforeEach(function () {
       body = dom.getBodyElement();
       containerElement = body;
-      view = new SlideshowView(events, dom, containerElement, model);
+      options = { container : containerElement };
+      view = new SlideshowView(events, dom, options, model);
     });
 
     it('should style HTML element', function () {
@@ -176,7 +179,7 @@ describe('SlideshowView', function () {
     it('should calculate element size for 4:3', function () {
       model = new Slideshow(events, dom, {ratio: '4:3'});
 
-      view = new SlideshowView(events, dom, containerElement, model);
+      view = new SlideshowView(events, dom, options, model);
 
       view.slideViews[0].scalingElement.style.width.should.equal('908px');
       view.slideViews[0].scalingElement.style.height.should.equal('681px');
@@ -185,7 +188,7 @@ describe('SlideshowView', function () {
     it('should calculate element size for 16:9', function () {
       model = new Slideshow(events, dom, {ratio: '16:9'});
 
-      view = new SlideshowView(events, dom, containerElement, model);
+      view = new SlideshowView(events, dom, options, model);
 
       view.slideViews[0].scalingElement.style.width.should.equal('1210px');
       view.slideViews[0].scalingElement.style.height.should.equal('681px');
@@ -194,7 +197,7 @@ describe('SlideshowView', function () {
 
   describe('model synchronization', function () {
     beforeEach(function () {
-      view = new SlideshowView(events, dom, containerElement, model);
+      view = new SlideshowView(events, dom, options, model);
     });
 
     it('should create initial slide views', function () {
@@ -210,7 +213,7 @@ describe('SlideshowView', function () {
 
   describe('modes', function () {
     beforeEach(function () {
-      view = new SlideshowView(events, dom, containerElement, model);
+      view = new SlideshowView(events, dom, options, model);
     });
 
     it('should toggle blackout on event', function () {
