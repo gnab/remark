@@ -118,33 +118,82 @@ Alternatively, you can use [DeckTape](https://github.com/astefanutti/decktape), 
 
 ### Contributors
 
-- [kjbekkelund](https://github.com/kjbekkelund)
-- [DanTup](https://github.com/DanTup)
-- [freakboy3742](https://github.com/freakboy3742)
-- [nanoant](https://github.com/nanoant)
-- [gurjeet](https://github.com/gurjeet)
-- [torgeir](https://github.com/torgeir)
-- [junderhill](https://github.com/junderhill)
-- [gureckis](https://github.com/gureckis)
-- [hfukada](https://github.com/hfukada)
-- [danielstankiewicz](https://github.com/danielstankiewicz)
-- [andrewgaul](https://github.com/andrewgaul)
-- [tripu](https://github.com/tripu)
-- [kud](https://github.com/kud)
-- [toenuff](https://github.com/toenuff)
-- [obfusk](https://github.com/obfusk)
-- [trumbitta](https://github.com/trumbitta)
-- [peter50216](https://github.com/peter50216)
-- [mhor](https://github.com/mhor)
-- [roberto](https://github.com/roberto)
-- [camerond](https://github.com/camerond)
-- [avdv](https://github.com/avdv)
-- [WouterSioen](https://github.com/WouterSioen)
-- [tchajed](https://github.com/tchajed)
-- [venthur](https://github.com/venthur)
-- [mathiasbynens](https://github.com/mathiasbynens)
-- [aminb](https://github.com/aminb)
-- [sol](https://github.com/sol)
+Thanks goes to these people for their contributions:
+
+- Adam Strzelecki
+- Alexander Brett
+- Amin Bandali
+- Andrew Gaul
+- Antonin Stefanutti
+- Axel Rauschmayer
+- Bastian Venthur
+- bobappleyard
+- Brandon Keepers
+- Breno Polanski
+- Bruno Fagundez
+- Cameron Daigle
+- Christian Dreier
+- Claudio Bley
+- Daan van Berkel
+- Daniel Stankiewicz
+- Daniel Wang
+- Danny Tuppeny
+- Dave Henderson
+- Dirk Husemann
+- Erwänn Mest
+- Felix C. Stegerman
+- Gerard Capes
+- Gurjeet Singh
+- Hadrien Frank Cardinal de Cuzey
+- Hiroshi Fukada
+- hydroid7
+- Jason Underhill
+- Joe Beda
+- Joel Porquet
+- Johannes Wienke
+- Julien Wajsberg
+- Jérôme Petazzoni
+- Kim Joar Bekkelund
+- Marcel Schilling
+- Markus Schanz
+- Mathias Bynens
+- mhor
+- Michael Mol
+- Michael Sanford
+- Mike Pennisi
+- Morton Fox
+- Nicolas Hart
+- Ole Petter Bang
+- Ozan K
+- Pedro Martin
+- Peter Jausovec
+- petitviolet
+- pille1842
+- Pi-Hsun Shih
+- pospi
+- Radovan Bast
+- Rasmus Vestergaard Hansen
+- Roberto Soares
+- Robin Berjon
+- Russell Keith-Magee
+- Sarah Binney
+- Sebastian Pipping
+- Sequoia McDowell
+- Shane Curcuru
+- Shaun Hammill
+- Simon Hengel
+- Tej Chajed
+- Tobias Løfgren
+- Todd Brannam
+- Todd Gureckis
+- Tom Kraak
+- Tome Tanasovski
+- Torgeir Thoresen
+- tripu
+- William Ghelfi
+- Wouter Sioen
+- Yohan Lasorsa
+- Yoshiya Hinosawa
 
 ### License
 
