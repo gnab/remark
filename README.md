@@ -98,7 +98,7 @@ Other interesting stuff:
 - [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
 - [http://asmeurer.github.io/python3-presentation/slides.html](http://asmeurer.github.io/python3-presentation/slides.html)
 - [Lecture notes using remark](http://keysan.me/ee361/)
-- [Big Data in Time - Progress and Challenges from Oceanography](http://www.jmlilly.net/talks/bigdata16.html)
+- [Time series analysis: theory and practice (a course using Remark)](http://jmlilly.net/course.html)
 
 ### Other systems integrating with remark
 
@@ -109,6 +109,8 @@ Other interesting stuff:
 - [Backslide](https://github.com/sinedied/backslide) - CLI for automating creation, export and PDF conversion of Remark presentations
 - [Remarker](https://github.com/kt3k/remarker) - CLI for serving and building Remark slideshow from markdown file
 - [Cicero](https://github.com/bast/cicero) - Serves presentation slides written in markdown using remark or reveal.js, directly from GitHub or GitLab
+- [Liminal: A theme for scientific presentations using Remark.js](https://github.com/jonathanlilly/liminal) - with portable offline equation rendering using KaTeX
+
 
 ### Printing
 
