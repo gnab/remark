@@ -120,33 +120,153 @@ Alternatively, you can use [DeckTape](https://github.com/astefanutti/decktape), 
 
 ### Contributors
 
-- [kjbekkelund](https://github.com/kjbekkelund)
-- [DanTup](https://github.com/DanTup)
-- [freakboy3742](https://github.com/freakboy3742)
-- [nanoant](https://github.com/nanoant)
-- [gurjeet](https://github.com/gurjeet)
-- [torgeir](https://github.com/torgeir)
-- [junderhill](https://github.com/junderhill)
-- [gureckis](https://github.com/gureckis)
-- [hfukada](https://github.com/hfukada)
-- [danielstankiewicz](https://github.com/danielstankiewicz)
-- [andrewgaul](https://github.com/andrewgaul)
-- [tripu](https://github.com/tripu)
-- [kud](https://github.com/kud)
-- [toenuff](https://github.com/toenuff)
-- [obfusk](https://github.com/obfusk)
-- [trumbitta](https://github.com/trumbitta)
-- [peter50216](https://github.com/peter50216)
-- [mhor](https://github.com/mhor)
-- [roberto](https://github.com/roberto)
-- [camerond](https://github.com/camerond)
-- [avdv](https://github.com/avdv)
-- [WouterSioen](https://github.com/WouterSioen)
-- [tchajed](https://github.com/tchajed)
-- [venthur](https://github.com/venthur)
-- [mathiasbynens](https://github.com/mathiasbynens)
-- [aminb](https://github.com/aminb)
-- [sol](https://github.com/sol)
+Thanks goes to these people for their contributions:
+
+- Aaron Meurer
+- Adam Obeng
+- Adam Strzelecki
+- Aleksandar Trifunovic
+- Alexander Brett
+- Alex Claman
+- Alex Y. Wagner
+- Allan Jiang
+- Amin Bandali
+- Andrea Georgieva
+- Andrew Gaul
+- Andrey Ustyuzhanin
+- Antonin Stefanutti
+- Axel Rauschmayer
+- Baron Schwartz
+- Bastian Venthur
+- Bengt Lüers
+- Benjamin Stigsen
+- Bernát Kalló
+- bobappleyard
+- Brandon Keepers
+- Breno Polanski
+- Bruno Fagundez
+- bugdone
+- Cameron Daigle
+- Chris Kanich
+- Christian Dreier
+- Christopher McClellan
+- Christoph Gnip
+- cjwit
+- Claudio Bley
+- Daan van Berkel
+- Daniel Stankiewicz
+- Daniel Wang
+- Danny Tuppeny
+- Dan Steingart
+- datamike
+- Dave Henderson
+- David Richards
+- derickfay
+- Dirk Husemann
+- Erwänn Mest
+- Fabian
+- Felix C. Stegerman
+- Florian Rathgeber
+- follower
+- Gerard Capes
+- gnab
+- Grégoire Pineau
+- Gurjeet Singh
+- Hadrien Frank Cardinal de Cuzey
+- Hiroshi Fukada
+- Hubert Chen
+- Hunter-Github
+- hydroid7
+- Ivo Wever
+- J_4lexander
+- Jason
+- Jason Underhill
+- Jérôme Petazzoni
+- Jimmy Merrild Krag
+- Joe Beda
+- Joel Porquet
+- Johannes Wienke
+- Julien Wajsberg
+- kellyoconor
+- kerim
+- kernc
+- Kim Joar Bekkelund
+- Lauro Caetano
+- Loreia
+- Marcel Schilling
+- Markus Schanz
+- Martin
+- Martin 'Hasan' Bramwell
+- Mathias Bynens
+- Matthew
+- Mears-UFL
+- mhor
+- Michael Byrne
+- Michael Grosser
+- Michael Mol
+- Michael Sanford
+- Mike Pennisi
+- Morton Fox
+- mrbald
+- Nicolas Hart
+- Oleksiy Syvokon
+- Ole Petter Bang
+- Ozan K
+- Pavel Boldyrev
+- Pedro
+- Pedro Martin
+- Peter Jausovec
+- petitviolet
+- Pi-Hsun Shih
+- pille1842
+- piranha
+- pospi
+- Psychos-Yi
+- punkish
+- Radovan Bast
+- Rahul Bansal
+- Rasmus Vestergaard Hansen
+- rasmusvhansen
+- Renato Alves
+- rglepe
+- Rich Trott
+- Roberto Soares
+- Robert Perce
+- Robert Szmurło
+- Robin Berjon
+- Rolf
+- Rostyk
+- Russell Keith-Magee
+- Ryan Thomson
+- Sarah Binney
+- Scott Hewitt
+- Sebastian Pipping
+- Sequoia McDowell
+- Shane Curcuru
+- Shaun Hammill
+- siba prasad samal
+- Simon Hengel
+- Stian Mathiassen
+- stu-b-doo
+- Sylvain Abélard
+- Takashi Kanemoto
+- Tej Chajed
+- Thomas Ballinger
+- Tobias Løfgren
+- Todd Brannam
+- Todd Gureckis
+- Tome Tanasovski
+- Tom Kraak
+- Torgeir Thoresen
+- tripu
+- vdepabk2t
+- William Ghelfi
+- Willi Rath
+- Wouter Sioen
+- Yihui Xie
+- Yinhe Zhang
+- Yohan Lasorsa
+- Yoshiya Hinosawa
 
 ### License
 
