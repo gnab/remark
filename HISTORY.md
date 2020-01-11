@@ -1,3 +1,50 @@
+
+### 0.15
+* #374: Improve some descriptions
+* #379: Enable excluding highlight.js from build
+* #381: Use explicit Array.sort instead of implicit ShellJS.sort
+* #390: Add remark-slide-incremental CSS class to incremental slides
+* #400: Add CDNJS version badge in README.md
+* #417: Allow to exclude sets of slides by class
+* #419: Fix 'mixed content' error due to redirect
+* #420: Fix for boilerplate-remote.html
+* #426: Added Backslide reference
+* #427: Shift-space to go to previous slide
+* #428: Enable scroll slide content
+* #431: Propagate blackout mode from clone to opener window
+* #436: Allow custom delimiters for highlightSpans
+* #437: Fixed a bug in higlightBlockSpans
+* #442: Docs: add link to remarker
+* #454: Continued slides are now concatenated syntactically correct
+* #456: Update inline code regex to accommodate multiple backticks
+* #463: Prevent default on keys that can trigger browser functionality like fast search 
+* #471: Alt+Left and Alt+Right changes slides
+* #472: Fix: "node make" could not work if the path contains space characters
+* #476: Normalize boilerplate-{remote, single} with local
+* #477: Windows CR LF not working properly
+* #485: Update marked for security fix 
+* #490: Font size fixes
+* #491: Option for disabling incremental slides
+* #496: Make keyboard respect non-countable slides
+* #497: Skip preventDefault() when testing with dummy events
+* #499: Travis CI: test with Node.js 6 and 8 (not 0.10)
+* #519: Escaped backticks to match code correctly, fixes bug #502
+* #535: Change document.origin to window.origin on DOM JS
+* #536: Upgrade highlight.js version to 9.12.0
+* #550: Mention cicero as tool integrating with remark
+* #552: Fix vulnerabilities by updating dependencies
+* #566: Add shortcut documentation for help menu
+* #575: Remove dead links in real world examples
+* #569: Fix typo in README
+* #588: Update highlight to latest version (9.15.10)
+* #590: Add option to hide presenter notes
+* #594: Move from mocha-phantomjs to mocha-chrome for tests
+* #595: README.md drop links that lost value
+* #596: Implement more controls over the timer (fixes #195)
+* #605: Update list of contributors
+* #606: Updated README with two new projects
+* #607: Add missing final newline to Travis YAML
+
 ### 0.14.1
 * #365: Fix casing issue with reference links ([tbfe-de](https://github.com/tbfe-de))
 * #357: Fix variables inheritance ([tbfe-de](https://github.com/tbfe-de))
