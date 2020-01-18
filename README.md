@@ -100,18 +100,6 @@ Other interesting stuff:
 - [Lecture notes using remark](http://keysan.me/ee361/)
 - [Time series analysis: theory and practice (a course using Remark)](http://jmlilly.net/course.html)
 
-### Other systems integrating with remark
-
-- [http://platon.io](http://platon.io)
-- [Remarkymark (Remark.js in Middleman)](https://github.com/camerond/remarkymark)
-- [Remark Boilerplate](https://github.com/brenopolanski/remark-boilerplate)
-- [Repositorium](https://github.com/pille1842/repositorium)
-- [Backslide](https://github.com/sinedied/backslide) - CLI for automating creation, export and PDF conversion of Remark presentations
-- [Remarker](https://github.com/kt3k/remarker) - CLI for serving and building Remark slideshow from markdown file
-- [Cicero](https://github.com/bast/cicero) - Serves presentation slides written in markdown using remark or reveal.js, directly from GitHub or GitLab
-- [Liminal: A theme for scientific presentations using Remark.js](https://github.com/jonathanlilly/liminal) - with portable offline equation rendering using KaTeX
-
-
 ### Printing
 
 Converting to PDF is primarily supported via Chrome's Print to PDF feature. Note that the styling is not exact; See [#50](https://github.com/gnab/remark/issues/50#issuecomment-223887379) for some recommended CSS to add to your styles.
