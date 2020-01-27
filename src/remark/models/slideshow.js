@@ -234,7 +234,9 @@ function createSlides (slideshowSource, options) {
     } else {
       if (slideIsIncluded) {
         slides.push(slideViewModel);
-        slides.byNumber[slideNumber].push(slideViewModel);
+        if (slides.byNumber[slideNumber] !== undefined) {
+          slides.byNumber[slideNumber].push(slideViewModel);
+        }
       }
       if (slide.properties.name) {
         slides.byName[slide.properties.name] = slideViewModel;
