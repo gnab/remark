@@ -19,7 +19,7 @@ function Slideshow (events, dom, options, callback) {
 
   // Extend slideshow functionality
   Events.call(self, events);
-  Navigation.call(self, events);
+  Navigation.call(self, events, options);
 
   self.loadFromString = loadFromString;
   self.loadFromUrl = loadFromUrl;
