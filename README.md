@@ -142,6 +142,7 @@ Thanks goes to these people for their contributions:
 - cjwit
 - Claudio Bley
 - Daan van Berkel
+- Daniel Pecos Martinez
 - Daniel Stankiewicz
 - Daniel Wang
 - Danny Tuppeny
