@@ -11,16 +11,17 @@ var Keyboard = require('./inputs/keyboard')
   ;
 
 function Controller (events, dom, slideshowView, options) {
-  options = options || {};
 
-  var keyboard = new Keyboard(events);
+  var keyboard = new Keyboard(events, options);
+
+  var navigationOptions = options ? options.navigation || {} : {};
 
   message.register(events);
   location.register(events, dom, slideshowView);
-  mouse.register(events, options);
-  touch.register(events, options);
+  mouse.register(events, navigationOptions);
+  touch.register(events, navigationOptions);
 
-  addApiEventListeners(events, keyboard, slideshowView, options);
+  addApiEventListeners(events, keyboard, slideshowView, navigationOptions);
 }
 
 function addApiEventListeners (events, keyboard, slideshowView, options) {

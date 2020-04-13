@@ -1,7 +1,8 @@
 module.exports = Keyboard;
 
-function Keyboard(events) {
+function Keyboard(events, options) {
   this._events = events;
+  this._disablePresentationShortcuts = options ? options.disablePresentationShortcuts : false;
 
   this.activate();
 }
@@ -79,25 +80,39 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
         events.emit('gotoPreviousSlide');
         break;
       case 'b':
-        events.emit('toggleBlackout');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('toggleBlackout');
+        }
         break;
       case 'm':
-        events.emit('toggleMirrored');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('toggleMirrored');
+        }
         break;
       case 'c':
-        events.emit('createClone');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('createClone');
+        }
         break;
       case 'p':
-        events.emit('togglePresenterMode');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('togglePresenterMode');
+        }
         break;
       case 'f':
-        events.emit('toggleFullscreen');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('toggleFullscreen');
+        }
         break;
       case 's':
-        events.emit('toggleTimer');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('toggleTimer');
+        }
         break;
       case 't':
-        events.emit('resetTimer');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('resetTimer');
+        }
         break;
       case '1':
       case '2':
@@ -113,7 +128,9 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
         break;
       case 'h':
       case '?':
-        events.emit('toggleHelp');
+        if (!self._disablePresentationShortcuts) {
+          events.emit('toggleHelp');
+        }
         break;
       default:
         tryToPreventDefault = false;

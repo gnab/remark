@@ -30,14 +30,16 @@ function Slideshow (events, dom, options, callback) {
   self.getSlideByName = getSlideByName;
   self.getSlidesByNumber = getSlidesByNumber;
 
-  self.togglePresenterMode = togglePresenterMode;
-  self.toggleHelp = toggleHelp;
-  self.toggleBlackout = toggleBlackout;
-  self.toggleMirrored = toggleMirrored;
-  self.toggleFullscreen = toggleFullscreen;
-  self.createClone = createClone;
+  if (!options.disablePresentationShortcuts) {
+    self.togglePresenterMode = togglePresenterMode;
+    self.toggleHelp = toggleHelp;
+    self.toggleBlackout = toggleBlackout;
+    self.toggleMirrored = toggleMirrored;
+    self.toggleFullscreen = toggleFullscreen;
+    self.createClone = createClone;
 
-  self.resetTimer = resetTimer;
+    self.resetTimer = resetTimer;
+  }
 
   self.getRatio = getOrDefault('ratio', '4:3');
   self.getHighlightStyle = getOrDefault('highlightStyle', 'default');
