@@ -128,9 +128,7 @@ Keyboard.prototype.addKeyboardEventListeners = function () {
         break;
       case 'h':
       case '?':
-        if (!self._disablePresentationShortcuts) {
-          events.emit('toggleHelp');
-        }
+        events.emit('toggleHelp');
         break;
       default:
         tryToPreventDefault = false;
