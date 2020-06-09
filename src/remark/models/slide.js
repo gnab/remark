@@ -2,7 +2,7 @@ var converter = require('../converter');
 
 module.exports = Slide;
 
-function Slide (slideIndex, slideNumber, slide, template) {
+function Slide (slideIndex, slideNumber, slide, template, options) {
   var self = this;
 
   self.properties = slide.properties || {};
@@ -14,14 +14,14 @@ function Slide (slideIndex, slideNumber, slide, template) {
   self.getSlideNumber = function () { return slideNumber; };
 
   if (template) {
-    inherit(self, template);
+    inherit(self, template, options);
   }
 }
 
-function inherit (slide, template) {
+function inherit (slide, template, options) {
   inheritProperties(slide, template);
   inheritContent(slide, template);
-  inheritNotes(slide, template);
+  inheritNotes(slide, template, options);
 }
 
 function inheritProperties (slide, template) {
@@ -86,8 +86,8 @@ function deepCopyContent(target, content) {
   }
 }
 
-function inheritNotes (slide, template) {
-  if (template.notes) {
+function inheritNotes (slide, template, options) {
+  if (template.notes && options.inheritPresenterNotes) {
     slide.notes = template.notes + '\n\n' + slide.notes;
   }
 }

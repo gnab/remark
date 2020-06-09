@@ -223,7 +223,7 @@ function createSlides (slideshowSource, options) {
       slide.notes = '';
     }
 
-    slideViewModel = new Slide(slides.length, slideNumber, slide, template);
+    slideViewModel = new Slide(slides.length, slideNumber, slide, template, options);
 
     if (slide.properties.name) {
       byName[slide.properties.name] = slideViewModel;
