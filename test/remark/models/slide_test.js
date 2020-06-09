@@ -32,7 +32,7 @@ describe('Slide', function () {
       slide.notes.should.equal('template notes\n\nslide notes');
     });
 
-    it('should not inherit notes when inheritTemplateNotes is undefined', () => {
+    it('should not inherit notes when inheritPresenterNotes option is undefined', () => {
       var template = new Slide(1, 1, {
             content: [''],
             properties: {},
