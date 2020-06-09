@@ -27,7 +27,7 @@ It takes only a few, simple steps to get up and running with remark:
 3. Edit the Markdown and/or CSS styles as needed, save and refresh!
 4. Press `C` to clone a display; then press `P` to switch to presenter mode. Open help menu with `h`.
 
-See any of the boilerplate-*.html files, or just copy the boilerplate HTML below to start:
+See any of the boilerplate-*.html files (the -local one requires building remark first), or just copy the boilerplate HTML below to start:
 
 ```html
 <!DOCTYPE html>
