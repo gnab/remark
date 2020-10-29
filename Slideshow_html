@@ -1,0 +1,211 @@
+Slideshow 1:- 
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+.mySlides {display:none;}
+</style>
+<body>
+
+<div class="w3-container">
+  <h2>Slideshow Caption</h2>
+  <p>Add a caption text for each image slide with the w3-display-* classes (topleft, topmiddle, topright, bottomleft, bottommiddle, bottomright or middle).</p>
+</div>
+
+<div class="w3-content w3-display-container">
+
+<div class="w3-display-container mySlides">
+  <img src="https://1.bp.blogspot.com/-e0LahBaEUao/XEyt52942YI/AAAAAAAACik/jfZ4f-wXgkQ2vnUXTFctfeXfOe3VvMJGACLcBGAs/s320/valentines-day.gif" style="width:100%">
+  <div class="w3-display-bottomleft w3-large w3-container w3-padding-16 w3-black">
+    French Alps
+  </div>
+</div>
+
+<div class="w3-display-container mySlides">
+  <img src="https://4.bp.blogspot.com/-DQqp-aVI48c/XExhrbmNrWI/AAAAAAAACiY/m4vOnm5rvrsJpNpVRPC7zqP5J90QZZIwgCLcBGAs/s1600/animated-heart.gif" style="width:100%">
+  <div class="w3-display-bottomright w3-large w3-container w3-padding-16 w3-black">
+    Northern Lights
+  </div>
+</div>
+
+<div class="w3-display-container mySlides">
+  <img src="https://4.bp.blogspot.com/-87KPNOW3LBo/XExgkzBXYiI/AAAAAAAACiA/5RpxNSZNbgcHMD9HhelJMCuUmO2vXtXVACLcBGAs/s320/Happy%2BValentine%2527s%2BDay%2B2019%2Bmiss%2Byou.gif" style="width:100%">
+  <div class="w3-display-topleft w3-large w3-container w3-padding-16 w3-black">
+    Beautiful Mountains
+  </div>
+</div>
+
+<div class="w3-display-container mySlides">
+  <img src="https://2.bp.blogspot.com/-bRGzm8jU0fA/XExhXWYboAI/AAAAAAAACiQ/grESHVYd1FgJZGFwJHRQRCBakFcEyS7yACLcBGAs/s320/SmoggyYellowEider.gif" style="width:100%">
+  <div class="w3-display-topright w3-large w3-container w3-padding-16 w3-black">
+    The Rain Forest
+  </div>
+</div>
+
+<div class="w3-display-container mySlides">
+  <img src="https://4.bp.blogspot.com/-QosIrzlKEAI/XExhGWRsxQI/AAAAAAAACiI/bUXn0_xmaJsvG7TVSfGd9Wkv-ZsvOJ7RwCLcBGAs/s1600/Animated_Valentines.gif" style="width:100%">
+  <div class="w3-display-middle w3-large w3-container w3-padding-16 w3-black">
+    Mountains!
+  </div>
+</div>
+
+<button class="w3-button w3-display-left w3-black" onclick="plusDivs(-1)">&#10094;</button>
+<button class="w3-button w3-display-right w3-black" onclick="plusDivs(1)">&#10095;</button>
+
+</div>
+
+<script>
+var slideIndex = 1;
+showDivs(slideIndex);
+
+function plusDivs(n) {
+  showDivs(slideIndex += n);
+}
+
+function showDivs(n) {
+  var i;
+  var x = document.getElementsByClassName("mySlides");
+  if (n > x.length) {slideIndex = 1}
+  if (n < 1) {slideIndex = x.length}
+  for (i = 0; i < x.length; i++) {
+     x[i].style.display = "none";  
+  }
+  x[slideIndex-1].style.display = "block";  
+}
+</script>
+
+Slideshow 2:- 
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+.mySlides {display:none;}
+</style>
+<body>
+
+<h2 class="w3-center">HTML Slides</h2>
+
+<div class="w3-content" style="max-width:400px">
+  <div class="mySlides w3-container w3-red">
+    <h1><b>Did You Know?</b></h1>
+    <h1><i>We plan to sell trips to the moon in the 2020s</i></h1>
+  </div>
+
+  <img class="mySlides" src="https://1.bp.blogspot.com/-e0LahBaEUao/XEyt52942YI/AAAAAAAACik/jfZ4f-wXgkQ2vnUXTFctfeXfOe3VvMJGACLcBGAs/s320/valentines-day.gif" style="width:100%">
+
+  <div class="mySlides w3-container w3-xlarge w3-white w3-card-4">
+    <p><span class="w3-tag w3-yellow">New!</span>
+    <p>6 Crystal Glasses</p>
+    <p>Only $99 !!!</p>
+  </div>
+
+  <img class="mySlides" src="https://4.bp.blogspot.com/-DQqp-aVI48c/XExhrbmNrWI/AAAAAAAACiY/m4vOnm5rvrsJpNpVRPC7zqP5J90QZZIwgCLcBGAs/s1600/animated-heart.gif" style="width:100%">
+</div>
+
+<script>
+var slideIndex = 0;
+carousel();
+
+function carousel() {
+  var i;
+  var x = document.getElementsByClassName("mySlides");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none"; 
+  }
+  slideIndex++;
+  if (slideIndex > x.length) {slideIndex = 1} 
+  x[slideIndex-1].style.display = "block"; 
+  setTimeout(carousel, 2000); 
+}
+</script>
+
+Slideshow 3:- 
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+.mySlides {display:none}
+</style>
+<body>
+
+<div class="w3-container">
+  <h2>Slideshow Indicators</h2>
+  <p>An example of using buttons to indicate how many slides there are in the slideshow, and which slide the user is currently viewing.</p>
+</div>
+
+<div class="w3-content" style="max-width:800px">
+  <img class="mySlides" src="https://1.bp.blogspot.com/-e0LahBaEUao/XEyt52942YI/AAAAAAAACik/jfZ4f-wXgkQ2vnUXTFctfeXfOe3VvMJGACLcBGAs/s320/valentines-day.gif" style="width:100%">
+  <img class="mySlides" src="https://4.bp.blogspot.com/-DQqp-aVI48c/XExhrbmNrWI/AAAAAAAACiY/m4vOnm5rvrsJpNpVRPC7zqP5J90QZZIwgCLcBGAs/s1600/animated-heart.gif" style="width:100%">
+  <img class="mySlides" src="https://4.bp.blogspot.com/-87KPNOW3LBo/XExgkzBXYiI/AAAAAAAACiA/5RpxNSZNbgcHMD9HhelJMCuUmO2vXtXVACLcBGAs/s320/Happy%2BValentine%2527s%2BDay%2B2019%2Bmiss%2Byou.gif" style="width:100%">
+</div>
+
+<div class="w3-center">
+  <div class="w3-section">
+    <button class="w3-button w3-light-grey" onclick="plusDivs(-1)">❮ Prev</button>
+    <button class="w3-button w3-light-grey" onclick="plusDivs(1)">Next ❯</button>
+  </div>
+  <button class="w3-button demo" onclick="currentDiv(1)">1</button> 
+  <button class="w3-button demo" onclick="currentDiv(2)">2</button> 
+  <button class="w3-button demo" onclick="currentDiv(3)">3</button> 
+</div>
+
+<script>
+var slideIndex = 1;
+showDivs(slideIndex);
+
+function plusDivs(n) {
+  showDivs(slideIndex += n);
+}
+
+function currentDiv(n) {
+  showDivs(slideIndex = n);
+}
+
+function showDivs(n) {
+  var i;
+  var x = document.getElementsByClassName("mySlides");
+  var dots = document.getElementsByClassName("demo");
+  if (n > x.length) {slideIndex = 1}    
+  if (n < 1) {slideIndex = x.length}
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";  
+  }
+  for (i = 0; i < dots.length; i++) {
+    dots[i].className = dots[i].className.replace(" w3-red", "");
+  }
+  x[slideIndex-1].style.display = "block";  
+  dots[slideIndex-1].className += " w3-red";
+}
+</script>
+
+Slideshow 4:-
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<body>
+
+<div class="w3-content w3-section" style="max-width:500px">
+  <p>The w3-animate-fading class animates an element in and out (takes about 5 seconds).</p>
+
+  <img class="mySlides w3-animate-fading" src="https://1.bp.blogspot.com/-e0LahBaEUao/XEyt52942YI/AAAAAAAACik/jfZ4f-wXgkQ2vnUXTFctfeXfOe3VvMJGACLcBGAs/s320/valentines-day.gif" style="width:100%">
+  <img class="mySlides w3-animate-fading" src="https://4.bp.blogspot.com/-DQqp-aVI48c/XExhrbmNrWI/AAAAAAAACiY/m4vOnm5rvrsJpNpVRPC7zqP5J90QZZIwgCLcBGAs/s1600/animated-heart.gif" style="width:100%">
+  <img class="mySlides w3-animate-fading" src="https://4.bp.blogspot.com/-87KPNOW3LBo/XExgkzBXYiI/AAAAAAAACiA/5RpxNSZNbgcHMD9HhelJMCuUmO2vXtXVACLcBGAs/s320/Happy%2BValentine%2527s%2BDay%2B2019%2Bmiss%2Byou.gif" style="width:100%">
+  <img class="mySlides w3-animate-fading" src="https://4.bp.blogspot.com/-DQqp-aVI48c/XExhrbmNrWI/AAAAAAAACiY/m4vOnm5rvrsJpNpVRPC7zqP5J90QZZIwgCLcBGAs/s1600/animated-heart.gif" style="width:100%">
+</div>
+
+<script>
+var myIndex = 0;
+carousel();
+
+function carousel() {
+  var i;
+  var x = document.getElementsByClassName("mySlides");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";  
+  }
+  myIndex++;
+  if (myIndex > x.length) {myIndex = 1}    
+  x[myIndex-1].style.display = "block";  
+  setTimeout(carousel, 5000);    
+}
+</script>
