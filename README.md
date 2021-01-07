@@ -152,7 +152,7 @@ Thanks goes to these people for their contributions:
 - David Richards
 - derickfay
 - Dirk Husemann
-- Erwänn Mest
+- Erwann Mest
 - Fabian
 - Felix C. Stegerman
 - Florian Rathgeber
