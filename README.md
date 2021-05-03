@@ -14,7 +14,7 @@ A simple, in-browser, markdown-driven slideshow tool targeted at people who know
 - Simple markdown templates for customized slides
 - Touch support for smart phones and pads, i.e. swipe to navigate slides
 
-Check out [this remark slideshow](http://gnab.github.com/remark) for a brief introduction.
+Check out [this remark slideshow](https://remarkjs.com/) for a brief introduction.
 
 To render your Markdown-based slideshow on the fly, checkout [Remarkise](https://gnab.github.io/remark/remarkise).
 
@@ -85,7 +85,7 @@ The [wiki](http://github.com/gnab/remark/wiki) pages contain all the how-to, tem
 
 On using remark:
 
-- [The Official remark Slideshow](http://gnab.github.com/remark)
+- [The Official remark Slideshow](https://remarkjs.com/)
 - [Coloured Terminal Listings in remark](http://joshbode.github.com/remark/ansi.html) by [joshbode](https://github.com/joshbode)
 
 Other interesting stuff:
