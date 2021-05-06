@@ -28,6 +28,8 @@ function SlideshowView (events, dom, options, slideshow) {
 
   self.timer = new Timer(events, self.timerElement, options.timer);
 
+  self.disablePresentationShortcuts = options ? options.disablePresentationShortcuts : false;
+
   events.on('slidesChanged', function () {
     self.updateSlideViews();
   });
@@ -70,6 +72,9 @@ function SlideshowView (events, dom, options, slideshow) {
 
   events.on('toggleHelp', function () {
     utils.toggleClass(self.containerElement, 'remark-help-mode');
+    if (self.disablePresentationShortcuts) {
+      utils.toggleClass(self.containerElement, 'remark-help-mode-not-presenting');
+    }
   });
 
   events.on('toggleBlackout', function () {
@@ -83,6 +88,7 @@ function SlideshowView (events, dom, options, slideshow) {
   events.on('hideOverlay', function () {
     utils.removeClass(self.containerElement, 'remark-blackout-mode');
     utils.removeClass(self.containerElement, 'remark-help-mode');
+    utils.removeClass(self.containerElement, 'remark-help-mode-not-presenting');
   });
 
   events.on('pause', function () {

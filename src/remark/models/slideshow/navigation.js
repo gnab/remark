@@ -1,6 +1,6 @@
 module.exports = Navigation;
 
-function Navigation (events) {
+function Navigation (events, options) {
   var self = this
     , currentSlideIndex = -1
     , started = null
@@ -31,7 +31,11 @@ function Navigation (events) {
 
   events.on('createClone', function () {
     if (!self.clone || self.clone.closed) {
-      self.clone = window.open(location.href, self.getCloneTarget(), 'location=no');
+      if (options.createClone) {
+        self.clone = options.createClone();
+      } else {
+        self.clone = window.open(location.href, self.getCloneTarget(), 'location=no');
+      }
     }
     else {
       self.clone.focus();
