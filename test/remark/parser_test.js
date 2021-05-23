@@ -11,6 +11,10 @@ describe('Parser', function () {
       parser.parse('1\n---\n2\n---\n3').length.should.equal(3);
     });
 
+    it('should handle multiple slides with the silent separator', function () {
+      parser.parse('1\n<!-- break -->\n2\n<!-- break -->\n3').length.should.equal(3);
+    });
+
     it('should treat empty source as single slide', function () {
       parser.parse('').length.should.equal(1);
     });
