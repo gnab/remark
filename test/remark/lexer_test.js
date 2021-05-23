@@ -27,6 +27,24 @@ describe('Lexer', function () {
       ]);
     });
 
+    it('should recognize silent separator', function () {
+      lexer.lex('\n<!-- break -->').should.eql([
+        {type: 'separator', text: '<!-- break -->'}
+      ]);
+    });
+
+    it('should not preserve trailing line breaks of silent separators', function () {
+      lexer.lex('\n<!-- break -->\n').should.eql([
+        {type: 'separator', text: '<!-- break -->'}
+      ]);
+    });
+
+    it('should ignore additional whitespace inside of silent separator', function() {
+      lexer.lex('\n<!--    break  -->').should.eql([
+        {type: 'separator', text: '<!--    break  -->'}
+      ]);
+    });
+
     it('should recognize continued separator', function () {
       lexer.lex('\n--').should.eql([
         {type: 'separator', text: '--'},
