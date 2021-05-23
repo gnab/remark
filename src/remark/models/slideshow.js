@@ -63,6 +63,9 @@ function Slideshow (events, dom, options, callback) {
   if (options.sourceUrl) {
     loadFromUrl(options.sourceUrl, callback);
   }
+  else if (options.sourceUrls){
+    loadFromUrls(options.sourceUrls, callback);
+  }
   else {
     loadFromString(options.source);
     if (typeof callback === 'function') {
@@ -109,6 +112,56 @@ function Slideshow (events, dom, options, callback) {
     };
     xhr.send(null);
     return xhr;
+  }
+
+  function loadFromUrls(urls, callback) {
+
+    function xhrOnload(e) {
+      if (this.readyState === 4) {
+        if (this.status === 200) {
+          options.sources[this.index] = this.responseText.replace(/\r\n/g, '\n') ;
+          options.loadingCompleted++;
+          if(options.loadingCompleted === urls.length)
+            xhrLoadSlides();
+        } else {
+          throw Error(this.statusText);
+        }
+      }
+    }
+
+    function xhrOnerror(e) {
+      options.loadingCompleted++;
+      throw Error(this.statusText);
+    }
+
+    function xhrLoadSlides() {
+      for (var j = 0; j < urls.length; j++) {
+        if (j !== 0)
+          options.source += '---\n';
+        options.source += options.sources[j];
+      }
+
+      loadFromString(options.source);
+      if (typeof callback === 'function') {
+        callback(self);
+      }
+
+    }
+
+    var xhrs = [];
+    options.loadingCompleted = 0;
+    options.sources = [];
+
+    for (var i =0 ; i < urls.length; i++) {
+      var url = urls[i];
+      xhrs[i] = new dom.XMLHttpRequest();
+      xhrs[i].index = i;
+      xhrs[i].open('GET', url, true);
+      xhrs[i].onload = xhrOnload;
+      xhrs[i].onerror = xhrOnerror;
+      xhrs[i].send(null);
+    }
+
   }
 
   function update () {
