@@ -8,10 +8,6 @@ marked.setOptions({
   tables: true,
   breaks: false,
 
-  // Without this set to true, converting something like
-  // <p>*</p><p>*</p> will become <p><em></p><p></em></p>
-  pedantic: true,
-
   sanitize: false,
   smartLists: true,
   langPrefix: ''
