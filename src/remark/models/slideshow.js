@@ -223,7 +223,7 @@ function createSlides (slideshowSource, options) {
       slide.notes = '';
     }
 
-    slideViewModel = new Slide(slides.length, slideNumber, slide, template);
+    slideViewModel = new Slide(slides.length, slideNumber, slide, template, options);
 
     if (slide.properties.name) {
       byName[slide.properties.name] = slideViewModel;
@@ -234,7 +234,9 @@ function createSlides (slideshowSource, options) {
     } else {
       if (slideIsIncluded) {
         slides.push(slideViewModel);
-        slides.byNumber[slideNumber].push(slideViewModel);
+        if (slides.byNumber[slideNumber] !== undefined) {
+          slides.byNumber[slideNumber].push(slideViewModel);
+        }
       }
       if (slide.properties.name) {
         slides.byName[slide.properties.name] = slideViewModel;

@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/gnab/remark.svg?branch=develop)](https://travis-ci.org/gnab/remark)
 [![CDNJS](https://img.shields.io/cdnjs/v/remark.svg)](https://cdnjs.com/libraries/remark)
+[![xscode](https://img.shields.io/badge/Available%20on-xs%3Acode-blue?style=?style=plastic&logo=appveyor&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////////VXz1bAAAAAJ0Uk5T/wDltzBKAAAAlUlEQVR42uzXSwqAMAwE0Mn9L+3Ggtgkk35QwcnSJo9S+yGwM9DCooCbgn4YrJ4CIPUcQF7/XSBbx2TEz4sAZ2q1RAECBAiYBlCtvwN+KiYAlG7UDGj59MViT9hOwEqAhYCtAsUZvL6I6W8c2wcbd+LIWSCHSTeSAAECngN4xxIDSK9f4B9t377Wd7H5Nt7/Xz8eAgwAvesLRjYYPuUAAAAASUVORK5CYII=)](https://xscode.com/gnab/remark)
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4ADT275DY7JTG)
 
 A simple, in-browser, markdown-driven slideshow tool targeted at people who know their way around HTML and CSS, featuring:
@@ -13,7 +14,7 @@ A simple, in-browser, markdown-driven slideshow tool targeted at people who know
 - Simple markdown templates for customized slides
 - Touch support for smart phones and pads, i.e. swipe to navigate slides
 
-Check out [this remark slideshow](http://gnab.github.com/remark) for a brief introduction.
+Check out [this remark slideshow](https://remarkjs.com/) for a brief introduction.
 
 To render your Markdown-based slideshow on the fly, checkout [Remarkise](https://gnab.github.io/remark/remarkise).
 
@@ -26,7 +27,7 @@ It takes only a few, simple steps to get up and running with remark:
 3. Edit the Markdown and/or CSS styles as needed, save and refresh!
 4. Press `C` to clone a display; then press `P` to switch to presenter mode. Open help menu with `h`.
 
-See any of the boilerplate-*.html files, or just copy the boilerplate HTML below to start:
+See any of the boilerplate-*.html files (the -local one requires building remark first), or just copy the boilerplate HTML below to start:
 
 ```html
 <!DOCTYPE html>
@@ -84,7 +85,7 @@ The [wiki](http://github.com/gnab/remark/wiki) pages contain all the how-to, tem
 
 On using remark:
 
-- [The Official remark Slideshow](http://gnab.github.com/remark)
+- [The Official remark Slideshow](https://remarkjs.com/)
 - [Coloured Terminal Listings in remark](http://joshbode.github.com/remark/ansi.html) by [joshbode](https://github.com/joshbode)
 
 Other interesting stuff:
@@ -151,7 +152,7 @@ Thanks goes to these people for their contributions:
 - David Richards
 - derickfay
 - Dirk Husemann
-- Erwänn Mest
+- Erwann Mest
 - Fabian
 - Felix C. Stegerman
 - Florian Rathgeber

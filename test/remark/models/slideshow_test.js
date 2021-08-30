@@ -105,6 +105,14 @@ describe('Slideshow', function () {
     });
   });
 
+  describe('non-countable slides', function() {
+    it('should not be counted if set on first slide', function() {
+      slideshow.loadFromString('count: false\n\na\n---\nb');
+      slideshow.getSlides().length.should.equal(2);
+      slideshow.getSlidesByNumber(1)[0].getSlideNumber().should.equal(1);
+    });
+  });
+
   describe('name mapping', function () {
     it('should map named slide', function () {
       slideshow.loadFromString('name: a\n---\nno name\n---\nname: b');
