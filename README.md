@@ -86,7 +86,7 @@ The [wiki](http://github.com/gnab/remark/wiki) pages contain all the how-to, tem
 On using remark:
 
 - [The Official remark Slideshow](https://remarkjs.com/)
-- [Coloured Terminal Listings in remark](http://joshbode.github.com/remark/ansi.html) by [joshbode](https://github.com/joshbode)
+- [Coloured Terminal Listings in remark](https://joshbode.github.io/remark/ansi.html) by [joshbode](https://github.com/joshbode)
 
 Other interesting stuff:
 
