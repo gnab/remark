@@ -26,6 +26,7 @@ target.highlighter = function () {
   pushd('vendor');
   exec('git clone https://github.com/highlightjs/highlight.js.git');
   pushd('highlight.js');
+  // exec('git checkout tags/11.8.0');
   exec('git checkout tags/9.15.10');
   popd();
   popd();
@@ -34,28 +35,11 @@ target.highlighter = function () {
 };
 
 target.test = function () {
-  target['lint']();
-  target['bundle']();
+  bundleResources('src/remark/resources.js');
   target['test-bundle']();
 
   console.log('Running tests...');
   run('mocha-chrome test/runner.html', true);
-};
-
-target.lint = function () {
-  console.log('Linting...');
-  run('jshint src');
-};
-
-target.bundle = function () {
-  console.log('Bundling...');
-  bundleResources('src/remark/resources.js');
-
-  mkdir('-p', 'out');
-
-  run('browserify ' + components() + ' src/remark.js').stdout.to(
-    'out/remark.js',
-  );
 };
 
 function components() {

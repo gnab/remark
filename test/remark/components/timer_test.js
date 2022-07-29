@@ -138,7 +138,7 @@ describe('Timer', function () {
 
         timer.chronos.elapsedTime.should.be.above(0);
         done();
-      })
+      }, 100)
     });
 
     it('timer in PAUSED state does not progresses the elapsed time', function (done) {

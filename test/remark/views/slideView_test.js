@@ -166,16 +166,21 @@ describe('SlideView', function () {
     });
   });
 
-  describe('code line highlighting', function () {
+describe('code line highlighting', function () {
     it('should add class to prefixed lines', function () {
       var slide = new Slide(1, 1, { content: ['```\nline 1\n* line 2\nline 3\n```'] })
         , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
         ;
 
-      var lines = slideView.element.getElementsByClassName('remark-code-line-highlighted');
+        console.debug('---------------------------------------');
+        // console.debug(JSON.stringify(slideView.element, null, 4));
+        // console.debug(JSON.stringify(slideView, null, 4));
+        console.debug(slideView.innerHTML);
+        // console.debug(slideView.element.innerHTML);
+        var lines = slideView.element.getElementsByClassName('remark-code-line-highlighted');
 
       lines.length.should.equal(1);
-      lines[0].innerHTML.should.equal('  line 2');
+      lines.item(0).innerHTML.should.equal('  line 2');
     });
 
     it('should be possible to disable', function () {
@@ -187,7 +192,8 @@ describe('SlideView', function () {
 
       var lines = slideView.element.getElementsByClassName('remark-code-line');
 
-      lines[0].innerHTML.should.equal('* line');
+      lines.length.should.be.greaterThan(0);
+      lines.item(0).innerHTML.should.equal('* line');
     });
   });
 
@@ -198,7 +204,8 @@ describe('SlideView', function () {
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
       var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a `f` b');
+      lines.length.should.be.greaterThan(0);
+      lines.item(0).innerHTML.should.equal('a `f` b');
     });
 
     it('should allow custom delimiters', function () {
@@ -209,7 +216,8 @@ describe('SlideView', function () {
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
       var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a <span class="remark-code-span-highlighted">f</span> b');
+      lines.length.should.be.greaterThan(0);
+      lines.item(0).innerHTML.should.equal('a <span class="remark-code-span-highlighted">f</span> b');
     });
 
     it('should allow escaping opening custom delimiter', function () {
@@ -220,7 +228,8 @@ describe('SlideView', function () {
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
       var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a «f» b');
+      lines.length.should.be.greaterThan(0);
+      lines.item(0).innerHTML.should.equal('a «f» b');
     });
 
     it('should be possible to disable', function () {
@@ -231,7 +240,8 @@ describe('SlideView', function () {
       var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
 
       var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a `f` b');
+      lines.length.should.be.greaterThan(0);
+      lines.item(0).innerHTML.should.equal('a `f` b');
     });
   });
 });

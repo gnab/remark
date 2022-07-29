@@ -2,7 +2,7 @@ all: deps
 	node make all
 
 deps:
-	npm install
+	npm ci
 
 test:
 	node make test

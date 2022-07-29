@@ -4,7 +4,7 @@ var marked = require('marked')
   ;
 
 marked.setOptions({
-  gfm: true,
+  gfm: false,
   tables: true,
   breaks: false,
 
@@ -24,6 +24,7 @@ converter.convertMarkdown = function (content, links, inline) {
 };
 
 function convertMarkdown (content, links, insideContentClass) {
+  // console.debug(content, links);
   var i, tag, markdown = '', html;
 
   for (i = 0; i < content.length; ++i) {
@@ -49,5 +50,6 @@ function convertMarkdown (content, links, insideContentClass) {
     }
   }
 
+  // console.debug(html);
   return html;
 }
