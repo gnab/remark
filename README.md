@@ -86,17 +86,17 @@ The [wiki](http://github.com/gnab/remark/wiki) pages contain all the how-to, tem
 On using remark:
 
 - [The Official remark Slideshow](https://remarkjs.com/)
-- [Coloured Terminal Listings in remark](http://joshbode.github.io/remark/ansi.html) by [joshbode](https://github.com/joshbode)
+- [Coloured Terminal Listings in remark](https://joshbode.github.io/remark/ansi.html) by [joshbode](https://github.com/joshbode)
 
 Other interesting stuff:
 
-- [gnab.github.com/editorjs](http://gnab.github.com/editorjs)
-- [judoole.github.com/GroovyBDD](http://judoole.github.com/GroovyBDD)
-- [bekkopen.github.com/infrastruktur-som-kode](http://bekkopen.github.com/infrastruktur-som-kode)
-- [ivarconr.github.com/Test-Driven-Web-Development/slides](http://ivarconr.github.com/Test-Driven-Web-Development/slides)
-- [havard.github.com/node.js-intro-norwegian](http://havard.github.com/node.js-intro-norwegian)
-- [mobmad.github.com/js-tdd-erfaringer](http://mobmad.github.com/js-tdd-erfaringer)
-- [roberto.github.com/ruby-sinform-2012](http://roberto.github.com/ruby-sinform-2012)
+- [gnab.github.com/editorjs](http://gnab.github.io/editorjs)
+- [judoole.github.com/GroovyBDD](http://judoole.github.io/GroovyBDD)
+- [bekkopen.github.com/infrastruktur-som-kode](http://bekkopen.github.io/infrastruktur-som-kode)
+- [ivarconr.github.com/Test-Driven-Web-Development/slides](http://ivarconr.github.io/Test-Driven-Web-Development/slides)
+- [havard.github.com/node.js-intro-norwegian](http://havard.github.io/node.js-intro-norwegian)
+- [mobmad.github.com/js-tdd-erfaringer](http://mobmad.github.io/js-tdd-erfaringer)
+- [roberto.github.com/ruby-sinform-2012](http://roberto.github.io/ruby-sinform-2012)
 - [http://asmeurer.github.io/python3-presentation/slides.html](http://asmeurer.github.io/python3-presentation/slides.html)
 - [Lecture notes using remark](http://keysan.me/ee361/)
 - [Time series analysis: theory and practice (a course using Remark)](http://jmlilly.net/course.html)
