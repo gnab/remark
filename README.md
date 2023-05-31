@@ -100,6 +100,7 @@ Other interesting stuff:
 - [http://asmeurer.github.io/python3-presentation/slides.html](http://asmeurer.github.io/python3-presentation/slides.html)
 - [Lecture notes using remark](http://keysan.me/ee361/)
 - [Time series analysis: theory and practice (a course using Remark)](http://jmlilly.net/course.html)
+- [sinedied.github.com/backslide](https://github.com/sinedied/backslide)
 
 ### Printing
 
