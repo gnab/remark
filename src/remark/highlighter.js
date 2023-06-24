@@ -40,16 +40,21 @@ https://highlightjs.org/
   var languages = {},
       aliases   = {};
 
+  // safe/production mode - swallows more errors, tries to keep running
+  // even if a single syntax or parse hits a fatal error
+  var SAFE_MODE = true;
+
   // Regular expressions used throughout the highlight.js library.
   var noHighlightRe    = /^(no-?highlight|plain|text)$/i,
       languagePrefixRe = /\blang(?:uage)?-([\w-]+)\b/i,
       fixMarkupRe      = /((^(<[^>]+>|\t|)+|(?:\n)))/gm;
 
-  // The object will be assigned by the build tool. It used to synchronize API 
+  // The object will be assigned by the build tool. It used to synchronize API
   // of external language files with minified version of the highlight.js library.
   var API_REPLACES;
 
   var spanEndTag = '</span>';
+  var LANGUAGE_NOT_FOUND = "Could not find the language '{}', did you forget to load/include a language module?";
 
   // Global options used when within external APIs. This is modified when
   // calling the `hljs.configure` function.
@@ -59,6 +64,9 @@ https://highlightjs.org/
     useBR: false,
     languages: undefined
   };
+
+  // keywords that should have no default relevance value
+  var COMMON_KEYWORDS = 'of and for in not or if then'.split(' ');
 
 
   /* Utility functions */
@@ -89,7 +97,12 @@ https://highlightjs.org/
     // language-* takes precedence over non-prefixed class names.
     match = languagePrefixRe.exec(classes);
     if (match) {
-      return getLanguage(match[1]) ? match[1] : 'no-highlight';
+      var language = getLanguage(match[1]);
+      if (!language) {
+        console.warn(LANGUAGE_NOT_FOUND.replace("{}", match[1]));
+        console.warn("Falling back to no-highlight mode for this block.", block);
+      }
+      return language ? match[1] : 'no-highlight';
     }
 
     classes = classes.split(/\s+/);
@@ -103,6 +116,12 @@ https://highlightjs.org/
     }
   }
 
+  /**
+   * performs a shallow merge of multiple objects into one
+   *
+   * @arguments list of objects with properties to merge
+   * @returns a single new object
+   */
   function inherit(parent) {  // inherit(parent, override_obj, override_obj, ...)
     var key;
     var result = {};
@@ -181,7 +200,9 @@ https://highlightjs.org/
     }
 
     function open(node) {
-      function attr_str(a) {return ' ' + a.nodeName + '="' + escape(a.value).replace('"', '&quot;') + '"';}
+      function attr_str(a) {
+        return ' ' + a.nodeName + '="' + escape(a.value).replace(/"/g, '&quot;') + '"';
+      }
       result += '<' + tag(node) + ArrayProto.map.call(node.attributes, attr_str).join('') + '>';
     }
 
@@ -224,22 +245,87 @@ https://highlightjs.org/
 
   /* Initialization */
 
-  function expand_mode(mode) {
+  function dependencyOnParent(mode) {
+    if (!mode) return false;
+
+    return mode.endsWithParent || dependencyOnParent(mode.starts);
+  }
+
+  function expand_or_clone_mode(mode) {
     if (mode.variants && !mode.cached_variants) {
       mode.cached_variants = mode.variants.map(function(variant) {
         return inherit(mode, {variants: null}, variant);
       });
     }
-    return mode.cached_variants || (mode.endsWithParent && [inherit(mode)]) || [mode];
+
+    // EXPAND
+    // if we have variants then essentially "replace" the mode with the variants
+    // this happens in compileMode, where this function is called from
+    if (mode.cached_variants)
+      return mode.cached_variants;
+
+    // CLONE
+    // if we have dependencies on parents then we need a unique
+    // instance of ourselves, so we can be reused with many
+    // different parents without issue
+    if (dependencyOnParent(mode))
+      return [inherit(mode, { starts: mode.starts ? inherit(mode.starts) : null })];
+
+    if (Object.isFrozen(mode))
+      return [inherit(mode)];
+
+    // no special dependency issues, just return ourselves
+    return [mode];
   }
 
   function restoreLanguageApi(obj) {
     if(API_REPLACES && !obj.langApiRestored) {
       obj.langApiRestored = true;
-      for(var key in API_REPLACES)
-        obj[key] && (obj[API_REPLACES[key]] = obj[key]);
+      for(var key in API_REPLACES) {
+        if (obj[key]) {
+          obj[API_REPLACES[key]] = obj[key];
+        }
+      }
       (obj.contains || []).concat(obj.variants || []).forEach(restoreLanguageApi);
     }
+  }
+
+  function compileKeywords(rawKeywords, case_insensitive) {
+      var compiled_keywords = {};
+
+      if (typeof rawKeywords === 'string') { // string
+        splitAndCompile('keyword', rawKeywords);
+      } else {
+        objectKeys(rawKeywords).forEach(function (className) {
+          splitAndCompile(className, rawKeywords[className]);
+        });
+      }
+    return compiled_keywords;
+
+    // ---
+
+    function splitAndCompile(className, str) {
+      if (case_insensitive) {
+        str = str.toLowerCase();
+      }
+      str.split(' ').forEach(function(keyword) {
+        var pair = keyword.split('|');
+        compiled_keywords[pair[0]] = [className, scoreForKeyword(pair[0], pair[1])];
+      });
+    }
+  }
+
+  function scoreForKeyword(keyword, providedScore) {
+    // manual scores always win over common keywords
+    // so you can force a score of 1 if you really insist
+    if (providedScore)
+      return Number(providedScore);
+
+    return commonKeyword(keyword) ? 0 : 1;
+  }
+
+  function commonKeyword(word) {
+    return COMMON_KEYWORDS.indexOf(word.toLowerCase()) != -1;
   }
 
   function compileLanguage(language) {
@@ -255,8 +341,15 @@ https://highlightjs.org/
       );
     }
 
+    function reCountMatchGroups(re) {
+      return (new RegExp(re.toString() + '|')).exec('').length - 1;
+    }
+
     // joinRe logically computes regexps.join(separator), but fixes the
     // backreferences so they continue to match.
+    // it also places each individual regular expression into it's own
+    // match group, keeping track of the sequencing of those match groups
+    // is currently an exercise for the caller. :-)
     function joinRe(regexps, separator) {
       // backreferenceRe matches an open parenthesis or backreference. To avoid
       // an incorrect parse, it additionally matches the following:
@@ -269,11 +362,13 @@ https://highlightjs.org/
       var numCaptures = 0;
       var ret = '';
       for (var i = 0; i < regexps.length; i++) {
+        numCaptures += 1;
         var offset = numCaptures;
         var re = reStr(regexps[i]);
         if (i > 0) {
           ret += separator;
         }
+        ret += "(";
         while (re.length > 0) {
           var match = backreferenceRe.exec(re);
           if (match == null) {
@@ -292,8 +387,73 @@ https://highlightjs.org/
             }
           }
         }
+        ret += ")";
       }
       return ret;
+    }
+
+    function buildModeRegex(mode) {
+
+      var matchIndexes = {};
+      var matcherRe;
+      var regexes = [];
+      var matcher = {};
+      var matchAt = 1;
+
+      function addRule(rule, regex) {
+        matchIndexes[matchAt] = rule;
+        regexes.push([rule, regex]);
+        matchAt += reCountMatchGroups(regex) + 1;
+      }
+
+      var term;
+      for (var i=0; i < mode.contains.length; i++) {
+        var re;
+        term = mode.contains[i];
+        if (term.beginKeywords) {
+          re = '\\.?(?:' + term.begin + ')\\.?';
+        } else {
+          re = term.begin;
+        }
+        addRule(term, re);
+      }
+      if (mode.terminator_end)
+        addRule("end", mode.terminator_end);
+      if (mode.illegal)
+        addRule("illegal", mode.illegal);
+
+      var terminators = regexes.map(function(el) { return el[1]; });
+      matcherRe = langRe(joinRe(terminators, '|'), true);
+
+      matcher.lastIndex = 0;
+      matcher.exec = function(s) {
+        var rule;
+
+        if( regexes.length === 0) return null;
+
+        matcherRe.lastIndex = matcher.lastIndex;
+        var match = matcherRe.exec(s);
+        if (!match) { return null; }
+
+        for(var i = 0; i<match.length; i++) {
+          if (match[i] != undefined && matchIndexes["" +i] != undefined ) {
+            rule = matchIndexes[""+i];
+            break;
+          }
+        }
+
+        // illegal or end match
+        if (typeof rule === "string") {
+          match.type = rule;
+          match.extra = [mode.illegal, mode.terminator_end];
+        } else {
+          match.type = "begin";
+          match.rule = rule;
+        }
+        return match;
+      };
+
+      return matcher;
     }
 
     function compileMode(mode, parent) {
@@ -302,28 +462,9 @@ https://highlightjs.org/
       mode.compiled = true;
 
       mode.keywords = mode.keywords || mode.beginKeywords;
-      if (mode.keywords) {
-        var compiled_keywords = {};
+      if (mode.keywords)
+        mode.keywords = compileKeywords(mode.keywords, language.case_insensitive);
 
-        var flatten = function(className, str) {
-          if (language.case_insensitive) {
-            str = str.toLowerCase();
-          }
-          str.split(' ').forEach(function(kw) {
-            var pair = kw.split('|');
-            compiled_keywords[pair[0]] = [className, pair[1] ? Number(pair[1]) : 1];
-          });
-        };
-
-        if (typeof mode.keywords === 'string') { // string
-          flatten('keyword', mode.keywords);
-        } else {
-          objectKeys(mode.keywords).forEach(function (className) {
-            flatten(className, mode.keywords[className]);
-          });
-        }
-        mode.keywords = compiled_keywords;
-      }
       mode.lexemesRe = langRe(mode.lexemes || /\w+/, true);
 
       if (parent) {
@@ -351,7 +492,7 @@ https://highlightjs.org/
         mode.contains = [];
       }
       mode.contains = Array.prototype.concat.apply([], mode.contains.map(function(c) {
-        return expand_mode(c === 'self' ? mode : c);
+        return expand_or_clone_mode(c === 'self' ? mode : c);
       }));
       mode.contains.forEach(function(c) {compileMode(c, mode);});
 
@@ -359,45 +500,44 @@ https://highlightjs.org/
         compileMode(mode.starts, parent);
       }
 
-      var terminators =
-        mode.contains.map(function(c) {
-          return c.beginKeywords ? '\\.?(?:' + c.begin + ')\\.?' : c.begin;
-        })
-        .concat([mode.terminator_end, mode.illegal])
-        .map(reStr)
-        .filter(Boolean);
-      mode.terminators = terminators.length ? langRe(joinRe(terminators, '|'), true) : {exec: function(/*s*/) {return null;}};
+      mode.terminators = buildModeRegex(mode);
     }
-    
+
+    // self is not valid at the top-level
+    if (language.contains && language.contains.indexOf('self') != -1) {
+      if (!SAFE_MODE) {
+        throw new Error("ERR: contains `self` is not supported at the top-level of a language.  See documentation.")
+      } else {
+        // silently remove the broken rule (effectively ignoring it), this has historically
+        // been the behavior in the past, so this removal preserves compatibility with broken
+        // grammars when running in Safe Mode
+        language.contains = language.contains.filter(function(mode) { return mode != 'self'; });
+      }
+    }
     compileMode(language);
   }
 
-  /*
-  Core highlighting function. Accepts a language name, or an alias, and a
-  string with the code to highlight. Returns an object with the following
-  properties:
 
-  - relevance (int)
-  - value (an HTML string with highlighting markup)
-
+  /**
+   * Core highlighting function.
+   *
+   * @param {string} languageName - the language to use for highlighting
+   * @param {string} code - the code to highlight
+   * @param {boolean} ignore_illegals - whether to ignore illegal matches, default is to bail
+   * @param {array<mode>} continuation - array of continuation modes
+   *
+   * @returns an object that represents the result
+   * @property {string} language - the language name
+   * @property {number} relevance - the relevance score
+   * @property {string} value - the highlighted HTML code
+   * @property {mode} top - top of the current mode stack
+   * @property {boolean} illegal - indicates whether any illegal matches were found
   */
-  function highlight(name, value, ignore_illegals, continuation) {
+  function highlight(languageName, code, ignore_illegals, continuation) {
+    var codeToHighlight = code;
 
     function escapeRe(value) {
       return new RegExp(value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'm');
-    }
-
-    function subMode(lexeme, mode) {
-      var i, length;
-
-      for (i = 0, length = mode.contains.length; i < length; i++) {
-        if (testRe(mode.contains[i].beginRe, lexeme)) {
-          if (mode.contains[i].endSameAsBegin) {
-            mode.contains[i].endRe = escapeRe( mode.contains[i].beginRe.exec(lexeme)[0] );
-          }
-          return mode.contains[i];
-        }
-      }
     }
 
     function endOfMode(mode, lexeme) {
@@ -412,23 +552,21 @@ https://highlightjs.org/
       }
     }
 
-    function isIllegal(lexeme, mode) {
-      return !ignore_illegals && testRe(mode.illegalRe, lexeme);
-    }
-
     function keywordMatch(mode, match) {
       var match_str = language.case_insensitive ? match[0].toLowerCase() : match[0];
       return mode.keywords.hasOwnProperty(match_str) && mode.keywords[match_str];
     }
 
-    function buildSpan(classname, insideSpan, leaveOpen, noPrefix) {
+    function buildSpan(className, insideSpan, leaveOpen, noPrefix) {
+      if (!leaveOpen && insideSpan === '') return '';
+      if (!className) return insideSpan;
+
       var classPrefix = noPrefix ? '' : options.classPrefix,
           openSpan    = '<span class="' + classPrefix,
           closeSpan   = leaveOpen ? '' : spanEndTag;
 
-      openSpan += classname + '">';
+      openSpan += className + '">';
 
-      if (!classname) return insideSpan;
       return openSpan + insideSpan + closeSpan;
     }
 
@@ -469,7 +607,7 @@ https://highlightjs.org/
                    highlightAuto(mode_buffer, top.subLanguage.length ? top.subLanguage : undefined);
 
       // Counting embedded language score towards the host language may be disabled
-      // with zeroing the containing mode relevance. Usecase in point is Markdown that
+      // with zeroing the containing mode relevance. Use case in point is Markdown that
       // allows XML everywhere and makes every XML snippet to have a much larger Markdown
       // score.
       if (top.relevance > 0) {
@@ -491,79 +629,121 @@ https://highlightjs.org/
       top = Object.create(mode, {parent: {value: top}});
     }
 
-    function processLexeme(buffer, lexeme) {
 
-      mode_buffer += buffer;
+    function doBeginMatch(match) {
+      var lexeme = match[0];
+      var new_mode = match.rule;
+
+      if (new_mode && new_mode.endSameAsBegin) {
+        new_mode.endRe = escapeRe( lexeme );
+      }
+
+      if (new_mode.skip) {
+        mode_buffer += lexeme;
+      } else {
+        if (new_mode.excludeBegin) {
+          mode_buffer += lexeme;
+        }
+        processBuffer();
+        if (!new_mode.returnBegin && !new_mode.excludeBegin) {
+          mode_buffer = lexeme;
+        }
+      }
+      startNewMode(new_mode);
+      return new_mode.returnBegin ? 0 : lexeme.length;
+    }
+
+    function doEndMatch(match) {
+      var lexeme = match[0];
+      var matchPlusRemainder = codeToHighlight.substr(match.index);
+      var end_mode = endOfMode(top, matchPlusRemainder);
+      if (!end_mode) { return; }
+
+      var origin = top;
+      if (origin.skip) {
+        mode_buffer += lexeme;
+      } else {
+        if (!(origin.returnEnd || origin.excludeEnd)) {
+          mode_buffer += lexeme;
+        }
+        processBuffer();
+        if (origin.excludeEnd) {
+          mode_buffer = lexeme;
+        }
+      }
+      do {
+        if (top.className) {
+          result += spanEndTag;
+        }
+        if (!top.skip && !top.subLanguage) {
+          relevance += top.relevance;
+        }
+        top = top.parent;
+      } while (top !== end_mode.parent);
+      if (end_mode.starts) {
+        if (end_mode.endSameAsBegin) {
+          end_mode.starts.endRe = end_mode.endRe;
+        }
+        startNewMode(end_mode.starts);
+      }
+      return origin.returnEnd ? 0 : lexeme.length;
+    }
+
+    var lastMatch = {};
+    function processLexeme(text_before_match, match) {
+
+      var lexeme = match && match[0];
+
+      // add non-matched text to the current mode buffer
+      mode_buffer += text_before_match;
 
       if (lexeme == null) {
         processBuffer();
         return 0;
       }
 
-      var new_mode = subMode(lexeme, top);
-      if (new_mode) {
-        if (new_mode.skip) {
-          mode_buffer += lexeme;
-        } else {
-          if (new_mode.excludeBegin) {
-            mode_buffer += lexeme;
-          }
-          processBuffer();
-          if (!new_mode.returnBegin && !new_mode.excludeBegin) {
-            mode_buffer = lexeme;
-          }
-        }
-        startNewMode(new_mode, lexeme);
-        return new_mode.returnBegin ? 0 : lexeme.length;
+      // we've found a 0 width match and we're stuck, so we need to advance
+      // this happens when we have badly behaved rules that have optional matchers to the degree that
+      // sometimes they can end up matching nothing at all
+      // Ref: https://github.com/highlightjs/highlight.js/issues/2140
+      if (lastMatch.type=="begin" && match.type=="end" && lastMatch.index == match.index && lexeme === "") {
+        // spit the "skipped" character that our regex choked on back into the output sequence
+        mode_buffer += codeToHighlight.slice(match.index, match.index + 1);
+        return 1;
       }
+      lastMatch = match;
 
-      var end_mode = endOfMode(top, lexeme);
-      if (end_mode) {
-        var origin = top;
-        if (origin.skip) {
-          mode_buffer += lexeme;
-        } else {
-          if (!(origin.returnEnd || origin.excludeEnd)) {
-            mode_buffer += lexeme;
-          }
-          processBuffer();
-          if (origin.excludeEnd) {
-            mode_buffer = lexeme;
-          }
-        }
-        do {
-          if (top.className) {
-            result += spanEndTag;
-          }
-          if (!top.skip && !top.subLanguage) {
-            relevance += top.relevance;
-          }
-          top = top.parent;
-        } while (top !== end_mode.parent);
-        if (end_mode.starts) {
-          if (end_mode.endSameAsBegin) {
-            end_mode.starts.endRe = end_mode.endRe;
-          }
-          startNewMode(end_mode.starts, '');
-        }
-        return origin.returnEnd ? 0 : lexeme.length;
-      }
-
-      if (isIllegal(lexeme, top))
+      if (match.type==="begin") {
+        return doBeginMatch(match);
+      } else if (match.type==="illegal" && !ignore_illegals) {
+        // illegal match, we do not continue processing
         throw new Error('Illegal lexeme "' + lexeme + '" for mode "' + (top.className || '<unnamed>') + '"');
+      } else if (match.type==="end") {
+        var processed = doEndMatch(match);
+        if (processed != undefined)
+          return processed;
+      }
 
       /*
-      Parser should not reach this point as all types of lexemes should be caught
-      earlier, but if it does due to some bug make sure it advances at least one
-      character forward to prevent infinite looping.
+      Why might be find ourselves here?  Only one occasion now.  An end match that was
+      triggered but could not be completed.  When might this happen?  When an `endSameasBegin`
+      rule sets the end rule to a specific match.  Since the overall mode termination rule that's
+      being used to scan the text isn't recompiled that means that any match that LOOKS like
+      the end (but is not, because it is not an exact match to the beginning) will
+      end up here.  A definite end match, but when `doEndMatch` tries to "reapply"
+      the end rule and fails to match, we wind up here, and just silently ignore the end.
+
+      This causes no real harm other than stopping a few times too many.
       */
+
       mode_buffer += lexeme;
-      return lexeme.length || 1;
+      return lexeme.length;
     }
 
-    var language = getLanguage(name);
+    var language = getLanguage(languageName);
     if (!language) {
-      throw new Error('Unknown language: "' + name + '"');
+      console.error(LANGUAGE_NOT_FOUND.replace("{}", languageName));
+      throw new Error('Unknown language: "' + languageName + '"');
     }
 
     compileLanguage(language);
@@ -581,13 +761,13 @@ https://highlightjs.org/
       var match, count, index = 0;
       while (true) {
         top.terminators.lastIndex = index;
-        match = top.terminators.exec(value);
+        match = top.terminators.exec(codeToHighlight);
         if (!match)
           break;
-        count = processLexeme(value.substring(index, match.index), match[0]);
+        count = processLexeme(codeToHighlight.substring(index, match.index), match);
         index = match.index + count;
       }
-      processLexeme(value.substr(index));
+      processLexeme(codeToHighlight.substr(index));
       for(current = top; current.parent; current = current.parent) { // close dangling modes
         if (current.className) {
           result += spanEndTag;
@@ -596,17 +776,27 @@ https://highlightjs.org/
       return {
         relevance: relevance,
         value: result,
-        language: name,
+        illegal:false,
+        language: languageName,
         top: top
       };
-    } catch (e) {
-      if (e.message && e.message.indexOf('Illegal') !== -1) {
+    } catch (err) {
+      if (err.message && err.message.indexOf('Illegal') !== -1) {
+        return {
+          illegal: true,
+          relevance: 0,
+          value: escape(codeToHighlight)
+        };
+      } else if (SAFE_MODE) {
         return {
           relevance: 0,
-          value: escape(value)
+          value: escape(codeToHighlight),
+          language: languageName,
+          top: top,
+          errorRaised: err
         };
       } else {
-        throw e;
+        throw err;
       }
     }
   }
@@ -622,15 +812,15 @@ https://highlightjs.org/
     detected language, may be absent)
 
   */
-  function highlightAuto(text, languageSubset) {
+  function highlightAuto(code, languageSubset) {
     languageSubset = languageSubset || options.languages || objectKeys(languages);
     var result = {
       relevance: 0,
-      value: escape(text)
+      value: escape(code)
     };
     var second_best = result;
     languageSubset.filter(getLanguage).filter(autoDetection).forEach(function(name) {
-      var current = highlight(name, text, false);
+      var current = highlight(name, code, false);
       current.language = name;
       if (current.relevance > second_best.relevance) {
         second_best = current;
@@ -654,16 +844,18 @@ https://highlightjs.org/
 
   */
   function fixMarkup(value) {
-    return !(options.tabReplace || options.useBR)
-      ? value
-      : value.replace(fixMarkupRe, function(match, p1) {
-          if (options.useBR && match === '\n') {
-            return '<br>';
-          } else if (options.tabReplace) {
-            return p1.replace(/\t/g, options.tabReplace);
-          }
-          return '';
-      });
+    if (!(options.tabReplace || options.useBR)) {
+      return value;
+    }
+
+    return value.replace(fixMarkupRe, function(match, p1) {
+        if (options.useBR && match === '\n') {
+          return '<br>';
+        } else if (options.tabReplace) {
+          return p1.replace(/\t/g, options.tabReplace);
+        }
+        return '';
+    });
   }
 
   function buildClassName(prevClassName, currentLang, resultLang) {
@@ -693,7 +885,7 @@ https://highlightjs.org/
         return;
 
     if (options.useBR) {
-      node = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+      node = document.createElement('div');
       node.innerHTML = block.innerHTML.replace(/\n/g, '').replace(/<br[ \/]*>/g, '\n');
     } else {
       node = block;
@@ -703,7 +895,7 @@ https://highlightjs.org/
 
     originalStream = nodeStream(node);
     if (originalStream.length) {
-      resultNode = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+      resultNode = document.createElement('div');
       resultNode.innerHTML = result.value;
       result.value = mergeStreams(originalStream, nodeStream(resultNode), text);
     }
@@ -746,13 +938,29 @@ https://highlightjs.org/
   Attaches highlighting to the page load event.
   */
   function initHighlightingOnLoad() {
-    addEventListener('DOMContentLoaded', initHighlighting, false);
-    addEventListener('load', initHighlighting, false);
+    window.addEventListener('DOMContentLoaded', initHighlighting, false);
+    window.addEventListener('load', initHighlighting, false);
   }
 
+  var PLAINTEXT_LANGUAGE = { disableAutodetect: true };
+
   function registerLanguage(name, language) {
-    var lang = languages[name] = language(hljs);
+    var lang;
+    try { lang = language(hljs); }
+    catch (error) {
+      console.error("Language definition for '{}' could not be registered.".replace("{}", name));
+      // hard or soft error
+      if (!SAFE_MODE) { throw error; } else { console.error(error); }
+      // languages that have serious errors are replaced with essentially a
+      // "plaintext" stand-in so that the code blocks will still get normal
+      // css classes applied to them - and one bad language won't break the
+      // entire highlighter
+      lang = PLAINTEXT_LANGUAGE;
+    }
+    languages[name] = lang;
     restoreLanguageApi(lang);
+    lang.rawDefinition = language.bind(null,hljs);
+
     if (lang.aliases) {
       lang.aliases.forEach(function(alias) {aliases[alias] = name;});
     }
@@ -760,6 +968,20 @@ https://highlightjs.org/
 
   function listLanguages() {
     return objectKeys(languages);
+  }
+
+  /*
+    intended usage: When one language truly requires another
+
+    Unlike `getLanguage`, this will throw when the requested language
+    is not available.
+  */
+  function requireLanguage(name) {
+    var lang = getLanguage(name);
+    if (lang) { return lang; }
+
+    var err = new Error('The \'{}\' language is required, but not loaded.'.replace('{}',name));
+    throw err;
   }
 
   function getLanguage(name) {
@@ -784,8 +1006,10 @@ https://highlightjs.org/
   hljs.registerLanguage = registerLanguage;
   hljs.listLanguages = listLanguages;
   hljs.getLanguage = getLanguage;
+  hljs.requireLanguage = requireLanguage;
   hljs.autoDetection = autoDetection;
   hljs.inherit = inherit;
+  hljs.debugMode = function() { SAFE_MODE = false; }
 
   // Common regexps
   hljs.IDENT_RE = '[a-zA-Z]\\w*';
@@ -891,6 +1115,48 @@ https://highlightjs.org/
     relevance: 0
   };
 
+  var constants = [
+    hljs.BACKSLASH_ESCAPE,
+    hljs.APOS_STRING_MODE,
+    hljs.QUOTE_STRING_MODE,
+    hljs.PHRASAL_WORDS_MODE,
+    hljs.COMMENT,
+    hljs.C_LINE_COMMENT_MODE,
+    hljs.C_BLOCK_COMMENT_MODE,
+    hljs.HASH_COMMENT_MODE,
+    hljs.NUMBER_MODE,
+    hljs.C_NUMBER_MODE,
+    hljs.BINARY_NUMBER_MODE,
+    hljs.CSS_NUMBER_MODE,
+    hljs.REGEXP_MODE,
+    hljs.TITLE_MODE,
+    hljs.UNDERSCORE_TITLE_MODE,
+    hljs.METHOD_GUARD
+  ]
+  constants.forEach(function(obj) { deepFreeze(obj); });
+
+  // https://github.com/substack/deep-freeze/blob/master/index.js
+  function deepFreeze (o) {
+    Object.freeze(o);
+
+    var objIsFunction = typeof o === 'function';
+
+    Object.getOwnPropertyNames(o).forEach(function (prop) {
+      if (o.hasOwnProperty(prop)
+      && o[prop] !== null
+      && (typeof o[prop] === "object" || typeof o[prop] === "function")
+      // IE11 fix: https://github.com/highlightjs/highlight.js/issues/2318
+      // TODO: remove in the future
+      && (objIsFunction ? prop !== 'caller' && prop !== 'callee' && prop !== 'arguments' : true)
+      && !Object.isFrozen(o[prop])) {
+        deepFreeze(o[prop]);
+      }
+    });
+
+    return o;
+  };
+
+
   return hljs;
 }));
 ;
@@ -901,14 +1167,28 @@ Language: C++
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Contributors: Evgeny Stepanischev <imbolk@gmail.com>, Zaven Muradyan <megalivoithos@gmail.com>, Roel Deckers <admin@codingcat.nl>, Sam Wu <samsam2310@gmail.com>, Jordi Petit <jordi.petit@gmail.com>, Pieter Vantorre <pietervantorre@gmail.com>, Google Inc. (David Benjamin) <davidben@google.com>
 Category: common, system
+Website: https://isocpp.org
 */
 
 function(hljs) {
+  function optional(s) {
+    return '(?:' + s + ')?';
+  }
+  var DECLTYPE_AUTO_RE = 'decltype\\(auto\\)'
+  var NAMESPACE_RE = '[a-zA-Z_]\\w*::'
+  var TEMPLATE_ARGUMENT_RE = '<.*?>';
+  var FUNCTION_TYPE_RE = '(' +
+    DECLTYPE_AUTO_RE + '|' +
+    optional(NAMESPACE_RE) +'[a-zA-Z_]\\w*' + optional(TEMPLATE_ARGUMENT_RE) +
+  ')';
   var CPP_PRIMITIVE_TYPES = {
     className: 'keyword',
     begin: '\\b[a-z\\d_]*_t\\b'
   };
 
+  // https://en.cppreference.com/w/cpp/language/escape
+  // \\ \x \xFF \u2837 \u00323747 \374
+  var CHARACTER_ESCAPES = '\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4,8}|[0-7]{3}|\\S)'
   var STRINGS = {
     className: 'string',
     variants: [
@@ -917,11 +1197,11 @@ function(hljs) {
         illegal: '\\n',
         contains: [hljs.BACKSLASH_ESCAPE]
       },
-      { begin: /(?:u8?|U|L)?R"([^()\\ ]{0,16})\((?:.|\n)*?\)\1"/ },
       {
-        begin: '\'\\\\?.', end: '\'',
+        begin: '(u8?|U|L)?\'(' + CHARACTER_ESCAPES + "|.)", end: '\'',
         illegal: '.'
-      }
+      },
+      { begin: /(?:u8?|U|L)?R"([^()\\ ]{0,16})\((?:.|\n)*?\)\1"/ }
     ]
   };
 
@@ -941,7 +1221,7 @@ function(hljs) {
     keywords: {
       'meta-keyword':
         'if else elif endif define undef warning error line ' +
-        'pragma ifdef ifndef include'
+        'pragma _Pragma ifdef ifndef include'
     },
     contains: [
       {
@@ -950,7 +1230,7 @@ function(hljs) {
       hljs.inherit(STRINGS, {className: 'meta-string'}),
       {
         className: 'meta-string',
-        begin: /<[^\n>]*>/, end: /$/,
+        begin: /<.*?>/, end: /$/,
         illegal: '\\n',
       },
       hljs.C_LINE_COMMENT_MODE,
@@ -958,29 +1238,36 @@ function(hljs) {
     ]
   };
 
-  var FUNCTION_TITLE = hljs.IDENT_RE + '\\s*\\(';
+  var TITLE_MODE = {
+    className: 'title',
+    begin: optional(NAMESPACE_RE) + hljs.IDENT_RE,
+    relevance: 0
+  };
+
+  var FUNCTION_TITLE = optional(NAMESPACE_RE) + hljs.IDENT_RE + '\\s*\\(';
 
   var CPP_KEYWORDS = {
-    keyword: 'int float while private char catch import module export virtual operator sizeof ' +
+    keyword: 'int float while private char char8_t char16_t char32_t catch import module export virtual operator sizeof ' +
       'dynamic_cast|10 typedef const_cast|10 const for static_cast|10 union namespace ' +
       'unsigned long volatile static protected bool template mutable if public friend ' +
-      'do goto auto void enum else break extern using asm case typeid ' +
+      'do goto auto void enum else break extern using asm case typeid wchar_t' +
       'short reinterpret_cast|10 default double register explicit signed typename try this ' +
-      'switch continue inline delete alignof constexpr decltype ' +
-      'noexcept static_assert thread_local restrict _Bool complex _Complex _Imaginary ' +
+      'switch continue inline delete alignas alignof constexpr consteval constinit decltype ' +
+      'concept co_await co_return co_yield requires ' +
+      'noexcept static_assert thread_local restrict final override ' +
       'atomic_bool atomic_char atomic_schar ' +
       'atomic_uchar atomic_short atomic_ushort atomic_int atomic_uint atomic_long atomic_ulong atomic_llong ' +
       'atomic_ullong new throw return ' +
-      'and or not',
-    built_in: 'std string cin cout cerr clog stdin stdout stderr stringstream istringstream ostringstream ' +
+      'and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq',
+    built_in: 'std string wstring cin cout cerr clog stdin stdout stderr stringstream istringstream ostringstream ' +
       'auto_ptr deque list queue stack vector map set bitset multiset multimap unordered_set ' +
-      'unordered_map unordered_multiset unordered_multimap array shared_ptr abort abs acos ' +
+      'unordered_map unordered_multiset unordered_multimap array shared_ptr abort terminate abs acos ' +
       'asin atan2 atan calloc ceil cosh cos exit exp fabs floor fmod fprintf fputs free frexp ' +
-      'fscanf isalnum isalpha iscntrl isdigit isgraph islower isprint ispunct isspace isupper ' +
+      'fscanf future isalnum isalpha iscntrl isdigit isgraph islower isprint ispunct isspace isupper ' +
       'isxdigit tolower toupper labs ldexp log10 log malloc realloc memchr memcmp memcpy memset modf pow ' +
       'printf putchar puts scanf sinh sin snprintf sprintf sqrt sscanf strcat strchr strcmp ' +
       'strcpy strcspn strlen strncat strncmp strncpy strpbrk strrchr strspn strstr tanh tan ' +
-      'vfprintf vprintf vsprintf endl initializer_list unique_ptr',
+      'vfprintf vprintf vsprintf endl initializer_list unique_ptr _Bool complex _Complex imaginary _Imaginary',
     literal: 'true false nullptr NULL'
   };
 
@@ -992,11 +1279,89 @@ function(hljs) {
     STRINGS
   ];
 
+  var EXPRESSION_CONTEXT = {
+    // This mode covers expression context where we can't expect a function
+    // definition and shouldn't highlight anything that looks like one:
+    // `return some()`, `else if()`, `(x*sum(1, 2))`
+    variants: [
+      {begin: /=/, end: /;/},
+      {begin: /\(/, end: /\)/},
+      {beginKeywords: 'new throw return else', end: /;/}
+    ],
+    keywords: CPP_KEYWORDS,
+    contains: EXPRESSION_CONTAINS.concat([
+      {
+        begin: /\(/, end: /\)/,
+        keywords: CPP_KEYWORDS,
+        contains: EXPRESSION_CONTAINS.concat(['self']),
+        relevance: 0
+      }
+    ]),
+    relevance: 0
+  };
+
+  var FUNCTION_DECLARATION = {
+    className: 'function',
+    begin: '(' + FUNCTION_TYPE_RE + '[\\*&\\s]+)+' + FUNCTION_TITLE,
+    returnBegin: true, end: /[{;=]/,
+    excludeEnd: true,
+    keywords: CPP_KEYWORDS,
+    illegal: /[^\w\s\*&:<>]/,
+    contains: [
+
+      { // to prevent it from being confused as the function title
+        begin: DECLTYPE_AUTO_RE,
+        keywords: CPP_KEYWORDS,
+        relevance: 0,
+      },
+      {
+        begin: FUNCTION_TITLE, returnBegin: true,
+        contains: [TITLE_MODE],
+        relevance: 0
+      },
+      {
+        className: 'params',
+        begin: /\(/, end: /\)/,
+        keywords: CPP_KEYWORDS,
+        relevance: 0,
+        contains: [
+          hljs.C_LINE_COMMENT_MODE,
+          hljs.C_BLOCK_COMMENT_MODE,
+          STRINGS,
+          NUMBERS,
+          CPP_PRIMITIVE_TYPES,
+          // Count matching parentheses.
+          {
+            begin: /\(/, end: /\)/,
+            keywords: CPP_KEYWORDS,
+            relevance: 0,
+            contains: [
+              'self',
+              hljs.C_LINE_COMMENT_MODE,
+              hljs.C_BLOCK_COMMENT_MODE,
+              STRINGS,
+              NUMBERS,
+              CPP_PRIMITIVE_TYPES
+            ]
+          }
+        ]
+      },
+      CPP_PRIMITIVE_TYPES,
+      hljs.C_LINE_COMMENT_MODE,
+      hljs.C_BLOCK_COMMENT_MODE,
+      PREPROCESSOR
+    ]
+  };
+
   return {
     aliases: ['c', 'cc', 'h', 'c++', 'h++', 'hpp', 'hh', 'hxx', 'cxx'],
     keywords: CPP_KEYWORDS,
     illegal: '</',
-    contains: EXPRESSION_CONTAINS.concat([
+    contains: [].concat(
+      EXPRESSION_CONTEXT,
+      FUNCTION_DECLARATION,
+      EXPRESSION_CONTAINS,
+      [
       PREPROCESSOR,
       {
         begin: '\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<', end: '>',
@@ -1006,71 +1371,6 @@ function(hljs) {
       {
         begin: hljs.IDENT_RE + '::',
         keywords: CPP_KEYWORDS
-      },
-      {
-        // This mode covers expression context where we can't expect a function
-        // definition and shouldn't highlight anything that looks like one:
-        // `return some()`, `else if()`, `(x*sum(1, 2))`
-        variants: [
-          {begin: /=/, end: /;/},
-          {begin: /\(/, end: /\)/},
-          {beginKeywords: 'new throw return else', end: /;/}
-        ],
-        keywords: CPP_KEYWORDS,
-        contains: EXPRESSION_CONTAINS.concat([
-          {
-            begin: /\(/, end: /\)/,
-            keywords: CPP_KEYWORDS,
-            contains: EXPRESSION_CONTAINS.concat(['self']),
-            relevance: 0
-          }
-        ]),
-        relevance: 0
-      },
-      {
-        className: 'function',
-        begin: '(' + hljs.IDENT_RE + '[\\*&\\s]+)+' + FUNCTION_TITLE,
-        returnBegin: true, end: /[{;=]/,
-        excludeEnd: true,
-        keywords: CPP_KEYWORDS,
-        illegal: /[^\w\s\*&]/,
-        contains: [
-          {
-            begin: FUNCTION_TITLE, returnBegin: true,
-            contains: [hljs.TITLE_MODE],
-            relevance: 0
-          },
-          {
-            className: 'params',
-            begin: /\(/, end: /\)/,
-            keywords: CPP_KEYWORDS,
-            relevance: 0,
-            contains: [
-              hljs.C_LINE_COMMENT_MODE,
-              hljs.C_BLOCK_COMMENT_MODE,
-              STRINGS,
-              NUMBERS,
-              CPP_PRIMITIVE_TYPES,
-              // Count matching parentheses.
-              {
-                begin: /\(/, end: /\)/,
-                keywords: CPP_KEYWORDS,
-                relevance: 0,
-                contains: [
-                  'self',
-                  hljs.C_LINE_COMMENT_MODE,
-                  hljs.C_BLOCK_COMMENT_MODE,
-                  STRINGS,
-                  NUMBERS,
-                  CPP_PRIMITIVE_TYPES
-                ]
-              }
-            ]
-          },
-          hljs.C_LINE_COMMENT_MODE,
-          hljs.C_BLOCK_COMMENT_MODE,
-          PREPROCESSOR
-        ]
       },
       {
         className: 'class',
@@ -1606,6 +1906,7 @@ function(hljs){
 }},{name:"abnf",create:/*
 Language: Augmented Backus-Naur Form
 Author: Alex McKibben <alex@nullscope.net>
+Website: https://tools.ietf.org/html/rfc5234
 */
 
 function(hljs) {
@@ -1656,11 +1957,8 @@ function(hljs) {
     };
 
     var ruleDeclarationMode = {
-        begin: regexes.ruleDeclaration + '\\s*=',
-        returnBegin: true,
-        end: /=/,
-        relevance: 0,
-        contains: [{className: "attribute", begin: regexes.ruleDeclaration}]
+        className: "attribute",
+        begin: regexes.ruleDeclaration + '(?=\\s*=)',
     };
 
     return {
@@ -1682,15 +1980,21 @@ function(hljs) {
  Language: Access log
  Author: Oleg Efimov <efimovov@gmail.com>
  Description: Apache/Nginx Access Logs
+ Website: https://httpd.apache.org/docs/2.4/logs.html#accesslog
  */
 
 function(hljs) {
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
+  var HTTP_VERBS = [
+    "GET", "POST", "HEAD", "PUT", "DELETE", "CONNECT", "OPTIONS", "PATCH", "TRACE"
+  ]
   return {
     contains: [
       // IP
       {
         className: 'number',
-        begin: '\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(:\\d{1,5})?\\b'
+        begin: '^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(:\\d{1,5})?\\b',
+        relevance:5
       },
       // Other numbers
       {
@@ -1701,22 +2005,44 @@ function(hljs) {
       // Requests
       {
         className: 'string',
-        begin: '"(GET|POST|HEAD|PUT|DELETE|CONNECT|OPTIONS|PATCH|TRACE)', end: '"',
-        keywords: 'GET POST HEAD PUT DELETE CONNECT OPTIONS PATCH TRACE',
+        begin: '"(' + HTTP_VERBS.join("|") + ')', end: '"',
+        keywords: HTTP_VERBS.join(" "),
         illegal: '\\n',
-        relevance: 10
+        relevance: 5,
+        contains: [{
+          begin: 'HTTP/[12]\\.\\d',
+          relevance:5
+        }]
       },
       // Dates
       {
         className: 'string',
+        // dates must have a certain length, this prevents matching
+        // simple array accesses a[123] and [] and other common patterns
+        // found in other languages
+        begin: /\[\d[^\]\n]{8,}\]/,
+        illegal: '\\n',
+        relevance: 1
+      },
+      {
+        className: 'string',
         begin: /\[/, end: /\]/,
-        illegal: '\\n'
+        illegal: '\\n',
+        relevance: 0
+      },
+      // User agent / relevance boost
+      {
+        className: 'string',
+        begin: '"Mozilla/\\d\\.\\d \\\(', end: '"',
+        illegal: '\\n',
+        relevance: 3
       },
       // Strings
       {
         className: 'string',
         begin: '"', end: '"',
-        illegal: '\\n'
+        illegal: '\\n',
+        relevance: 0
       }
     ]
   };
@@ -1985,6 +2311,7 @@ function(hljs) {
 Language: AngelScript
 Author: Melissa Geels <melissa@nimble.tools>
 Category: scripting
+Website: https://www.angelcode.com/angelscript/
 */
 
 function(hljs) {
@@ -2014,7 +2341,7 @@ function(hljs) {
       'for in|0 break continue while do|0 return if else case switch namespace is cast ' +
       'or and xor not get|0 in inout|10 out override set|0 private public const default|0 ' +
       'final shared external mixin|10 enum typedef funcdef this super import from interface ' +
-      'abstract|0 try catch protected explicit',
+      'abstract|0 try catch protected explicit property',
 
     // avoid close detection with C# and JS
     illegal: '(^using\\s+[A-Za-z0-9_\\.]+;$|\\bfunction\s*[^\\(])',
@@ -2097,7 +2424,7 @@ function(hljs) {
 Language: Apache
 Author: Ruslan Keba <rukeba@gmail.com>
 Contributors: Ivan Sagalaev <maniac@softwaremaniacs.org>
-Website: http://rukeba.com/
+Website: https://httpd.apache.org
 Description: language definition for Apache configuration files (httpd.conf & .htaccess)
 Category: common, config
 */
@@ -2151,6 +2478,7 @@ function(hljs) {
 Language: AppleScript
 Authors: Nathan Grigg <nathan@nathanamy.org>, Dr. Drang <drdrang@gmail.com>
 Category: scripting
+Website: https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/introduction/ASLR_intro.html
 */
 
 function(hljs) {
@@ -2242,6 +2570,7 @@ function(hljs) {
  Language: ArcGIS Arcade
  Category: scripting
  Author: John Foster <jfoster@esri.com>
+ Website: https://developers.arcgis.com/arcade/
  Description: ArcGIS Arcade is an expression language used in many Esri ArcGIS products such as Pro, Online, Server, Runtime, JavaScript, and Python
 */
 function(hljs) {
@@ -2250,23 +2579,24 @@ function(hljs) {
     keyword:
       'if for while var new function do return void else break',
     literal:
-      'true false null undefined NaN Infinity PI BackSlash DoubleQuote ForwardSlash NewLine SingleQuote Tab',
+      'BackSlash DoubleQuote false ForwardSlash Infinity NaN NewLine null PI SingleQuote Tab TextFormatting true undefined',
     built_in:
-      'Abs Acos Area AreaGeodetic Asin Atan Atan2 Average Boolean Buffer BufferGeodetic ' +
+      'Abs Acos Angle Attachments Area AreaGeodetic Asin Atan Atan2 Average Bearing Boolean Buffer BufferGeodetic ' +
       'Ceil Centroid Clip Console Constrain Contains Cos Count Crosses Cut Date DateAdd ' +
-      'DateDiff Day Decode DefaultValue Dictionary Difference Disjoint Distance Distinct ' +
-      'DomainCode DomainName Equals Exp Extent Feature FeatureSet FeatureSetById FeatureSetByTitle ' +
-      'FeatureSetByUrl Filter First Floor Geometry Guid HasKey Hour IIf IndexOf Intersection ' +
-      'Intersects IsEmpty Length LengthGeodetic Log Max Mean Millisecond Min Minute Month ' +
+      'DateDiff Day Decode DefaultValue Dictionary Difference Disjoint Distance DistanceGeodetic Distinct ' +
+      'DomainCode DomainName Equals Exp Extent Feature FeatureSet FeatureSetByAssociation FeatureSetById FeatureSetByPortalItem ' +
+      'FeatureSetByRelationshipName FeatureSetByTitle FeatureSetByUrl Filter First Floor Geometry GroupBy Guid HasKey Hour IIf IndexOf ' +
+      'Intersection Intersects IsEmpty IsNan IsSelfIntersecting Length LengthGeodetic Log Max Mean Millisecond Min Minute Month ' +
       'MultiPartToSinglePart Multipoint NextSequenceValue Now Number OrderBy Overlaps Point Polygon ' +
-      'Polyline Pow Random Relate Reverse Round Second SetGeometry Sin Sort Sqrt Stdev Sum ' +
-      'SymmetricDifference Tan Text Timestamp Today ToLocal Top Touches ToUTC TypeOf Union Variance ' +
+      'Polyline Portal Pow Random Relate Reverse RingIsClockWise Round Second SetGeometry Sin Sort Sqrt Stdev Sum ' +
+      'SymmetricDifference Tan Text Timestamp Today ToLocal Top Touches ToUTC TrackCurrentTime ' +
+      'TrackGeometryWindow TrackIndex TrackStartTime TrackWindow TypeOf Union UrlEncode Variance ' +
       'Weekday When Within Year '
   };
   var EXPRESSIONS;
   var SYMBOL = {
     className: 'symbol',
-    begin: '\\$[feature|layer|map|value|view]+'
+    begin: '\\$[datastore|feature|layer|map|measure|sourcefeature|sourcelayer|targetfeature|targetlayer|value|view]+'
   };
   var NUMBER = {
     className: 'number',
@@ -2385,17 +2715,16 @@ Language: Arduino
 Author: Stefania Mellai <s.mellai@arduino.cc>
 Description: The Arduino® Language is a superset of C++. This rules are designed to highlight the Arduino® source code. For info about language see http://www.arduino.cc.
 Requires: cpp.js
+Website: https://www.arduino.cc
 */
 
 function(hljs) {
-  var CPP = hljs.getLanguage('cpp').exports;
-	return {
-    keywords: {
+
+	var ARDUINO_KW = {
       keyword:
-        'boolean byte word string String array ' + CPP.keywords.keyword,
+        'boolean byte word String',
       built_in:
-        'setup loop while catch for if do goto try switch case else ' +
-        'default break continue return ' +
+        'setup loop' +
         'KeyboardController MouseController SoftwareSerial ' +
         'EthernetServer EthernetClient LiquidCrystal ' +
         'RobotControl GSMVoiceCall EthernetUDP EsploraTFT ' +
@@ -2475,16 +2804,17 @@ function(hljs) {
         'SET_PIN_MODE INTERNAL2V56 SYSTEM_RESET LED_BUILTIN ' +
         'INTERNAL1V1 SYSEX_START INTERNAL EXTERNAL ' +
         'DEFAULT OUTPUT INPUT HIGH LOW'
-    },
-    contains: [
-      CPP.preprocessor,
-      hljs.C_LINE_COMMENT_MODE,
-      hljs.C_BLOCK_COMMENT_MODE,
-      hljs.APOS_STRING_MODE,
-      hljs.QUOTE_STRING_MODE,
-      hljs.C_NUMBER_MODE
-    ]
   };
+
+  var ARDUINO = hljs.requireLanguage('cpp').rawDefinition();
+
+  var kws = ARDUINO.keywords;
+
+  kws.keyword += ' ' + ARDUINO_KW.keyword;
+  kws.literal += ' ' + ARDUINO_KW.literal;
+  kws.built_in += ' ' + ARDUINO_KW.built_in;
+
+  return ARDUINO;
 }
 },{name:"armasm",create:/*
 Language: ARM Assembly
@@ -2588,7 +2918,7 @@ function(hljs) {
 Language: AsciiDoc
 Requires: xml.js
 Author: Dan Allen <dan.j.allen@gmail.com>
-Website: http://google.com/profiles/dan.j.allen
+Website: http://asciidoc.org
 Description: A semantic, text-based document format that can be exported to HTML, DocBook and other backends.
 Category: markup
 */
@@ -2783,6 +3113,7 @@ function(hljs) {
 },{name:"aspectj",create:/*
 Language: AspectJ
 Author: Hakan Ozler <ozler.hakan@gmail.com>
+Website: https://www.eclipse.org/aspectj/
 Description: Syntax Highlighting for the AspectJ Language which is a general-purpose aspect-oriented extension to the Java programming language.
  */
 function (hljs) {
@@ -3139,6 +3470,7 @@ function(hljs) {
 Language: AVR Assembler
 Author: Vladimir Ermakov <vooon341@gmail.com>
 Category: assembler
+Website: https://www.microchip.com/webdoc/avrassembler/avrassembler.wb_instruction_list.html
 */
 
 function(hljs) {
@@ -3195,7 +3527,7 @@ function(hljs) {
       },
       {className: 'symbol',  begin: '^[A-Za-z0-9_.$]+:'},
       {className: 'meta', begin: '#', end: '$'},
-      {  // подстановка в «.macro»
+      {  // substitution within a macro
         className: 'subst',
         begin: '@[0-9]+'
       }
@@ -3205,7 +3537,7 @@ function(hljs) {
 },{name:"awk",create:/*
 Language: Awk
 Author: Matthew Daly <matthewbdaly@gmail.com>
-Website: http://matthewdaly.co.uk/
+Website: https://www.gnu.org/software/gawk/manual/gawk.html
 Description: language definition for Awk scripts
 */
 
@@ -3262,8 +3594,9 @@ function(hljs) {
   }
 }
 },{name:"axapta",create:/*
-Language: Axapta
+Language: Microsoft Axapta (now Dynamics 365)
 Author: Dmitri Roudakov <dmitri@roudakov.ru>
+Website: https://dynamics.microsoft.com/en-us/ax-overview/
 Category: enterprise
 */
 
@@ -3301,6 +3634,7 @@ function(hljs) {
 Language: Bash
 Author: vah <vahtenberg@gmail.com>
 Contributrors: Benjamin Pannell <contact@sierrasoftworks.com>
+Website: https://www.gnu.org/software/bash/
 Category: common
 */
 
@@ -3388,6 +3722,7 @@ function(hljs) {
 Language: Basic
 Author: Raphaël Assénat <raph@raphnet.net>
 Description: Based on the BASIC reference from the Tandy 1000 guide
+Website: https://en.wikipedia.org/wiki/Tandy_1000
 */
 function(hljs) {
   return {
@@ -3401,7 +3736,7 @@ function(hljs) {
           'CLEAR CLOSE CLS COLOR COM COMMON CONT COS CSNG CSRLIN CVD CVI CVS DATA DATE$ ' +
           'DEFDBL DEFINT DEFSNG DEFSTR DEF|0 SEG USR DELETE DIM DRAW EDIT END ENVIRON ENVIRON$ ' +
           'EOF EQV ERASE ERDEV ERDEV$ ERL ERR ERROR EXP FIELD FILES FIX FOR|0 FRE GET GOSUB|10 GOTO ' +
-          'HEX$ IF|0 THEN ELSE|0 INKEY$ INP INPUT INPUT# INPUT$ INSTR IMP INT IOCTL IOCTL$ KEY ON ' +
+          'HEX$ IF THEN ELSE|0 INKEY$ INP INPUT INPUT# INPUT$ INSTR IMP INT IOCTL IOCTL$ KEY ON ' +
           'OFF LIST KILL LEFT$ LEN LET LINE LLIST LOAD LOC LOCATE LOF LOG LPRINT USING LSET ' +
           'MERGE MID$ MKDIR MKD$ MKI$ MKS$ MOD NAME NEW NEXT NOISE NOT OCT$ ON OR PEN PLAY STRIG OPEN OPTION ' +
           'BASE OUT PAINT PALETTE PCOPY PEEK PMAP POINT POKE POS PRINT PRINT] PSET PRESET ' +
@@ -3441,6 +3776,7 @@ function(hljs) {
 }
 },{name:"bnf",create:/*
 Language: Backus–Naur Form
+Website: https://en.wikipedia.org/wiki/Backus–Naur_form
 Author: Oleg Efimov <efimovov@gmail.com>
 */
 
@@ -3475,6 +3811,7 @@ function(hljs){
 },{name:"brainfuck",create:/*
 Language: Brainfuck
 Author: Evgeny Stepanischev <imbolk@gmail.com>
+Website: https://esolangs.org/wiki/Brainfuck
 */
 
 function(hljs){
@@ -3506,7 +3843,7 @@ function(hljs){
       },
       {
         // this mode works as the only relevance counter
-        begin: /\+\+|\-\-/, returnBegin: true,
+        begin: /(?:\+\+|\-\-)/,
         contains: [LITERAL]
       },
       LITERAL
@@ -3517,6 +3854,7 @@ function(hljs){
 Language: C/AL
 Author: Kenneth Fuglsang Christensen <kfuglsang@gmail.com>
 Description: Provides highlighting of Microsoft Dynamics NAV C/AL code files
+Website: https://docs.microsoft.com/en-us/dynamics-nav/programming-in-c-al
 */
 
 function(hljs) {
@@ -3602,6 +3940,7 @@ function(hljs) {
 Language: Cap’n Proto
 Author: Oleg Efimov <efimovov@gmail.com>
 Description: Cap’n Proto message definition format
+Website: https://capnproto.org/capnp-tool.html
 Category: protocols
 */
 
@@ -3656,6 +3995,7 @@ function(hljs) {
 },{name:"ceylon",create:/*
 Language: Ceylon
 Author: Lucas Werkmeister <mail@lucaswerkmeister.de>
+Website: https://ceylon-lang.org
 */
 function(hljs) {
   // 2.3. Identifiers and keywords
@@ -3761,6 +4101,7 @@ Language: Clojure REPL
 Description: Clojure REPL sessions
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Requires: clojure.js
+Website: https://clojure.org
 Category: lisp
 */
 
@@ -3783,6 +4124,7 @@ Language: Clojure
 Description: Clojure syntax (based on lisp.js)
 Author: mfornos
 Contributors: Martin Clausen <martin.clausene@gmail.com>
+Website: https://clojure.org
 Category: lisp
 */
 
@@ -3885,7 +4227,7 @@ function(hljs) {
 Language: CMake
 Description: CMake is an open-source cross-platform system for build automation.
 Author: Igor Kalnitsky <igor@kalnitsky.org>
-Website: http://kalnitsky.org/
+Website: https://cmake.org
 */
 
 function(hljs) {
@@ -3946,6 +4288,7 @@ Author: Dmytrii Nagirniak <dnagir@gmail.com>
 Contributors: Oleg Efimov <efimovov@gmail.com>, Cédric Néhémie <cedric.nehemie@gmail.com>
 Description: CoffeeScript is a programming language that transcompiles to JavaScript. For info about language see http://coffeescript.org/
 Category: common, scripting
+Website: https://coffeescript.org
 */
 
 function(hljs) {
@@ -4002,13 +4345,13 @@ function(hljs) {
           contains: [SUBST, hljs.HASH_COMMENT_MODE]
         },
         {
-          begin: '//[gim]*',
+          begin: '//[gim]{0,3}(?=\\W)',
           relevance: 0
         },
         {
           // regex can't start with space to parse x / 2 / 3 as two divisions
           // regex can't start with *, and it supports an "illegal" in the main mode
-          begin: /\/(?![ *])(\\\/|.)*?\/[gim]*(?=\W|$)/
+          begin: /\/(?![ *]).*?(?![\\]).\/[gim]{0,3}(?=\W)/
         }
       ]
     },
@@ -4097,13 +4440,14 @@ function(hljs) {
 Language: Coq
 Author: Stephan Boyer <stephan@stephanboyer.com>
 Category: functional
+Website: https://coq.inria.fr
 */
 
 function(hljs) {
   return {
     keywords: {
       keyword:
-        '_ as at cofix else end exists exists2 fix for forall fun if IF in let ' +
+        '_|0 as at cofix else end exists exists2 fix for forall fun if IF in let ' +
         'match mod Prop return Set then Type using where with ' +
         'Abort About Add Admit Admitted All Arguments Assumptions Axiom Back BackTo ' +
         'Backtrack Bind Blacklist Canonical Cd Check Class Classes Close Coercion ' +
@@ -4169,6 +4513,7 @@ function(hljs) {
 Language: Caché Object Script
 Author: Nikita Savchenko <zitros.lab@gmail.com>
 Category: enterprise, scripting
+Website: https://cedocs.intersystems.com/latest/csp/docbook/DocBook.UI.Page.cls
 */
 function cos (hljs) {
 
@@ -4397,13 +4742,14 @@ function(hljs) {
 },{name:"crystal",create:/*
 Language: Crystal
 Author: TSUYUSATO Kitsune <make.just.on@gmail.com>
+Website: https://crystal-lang.org
 */
 
 function(hljs) {
   var INT_SUFFIX = '(_*[ui](8|16|32|64|128))?';
   var FLOAT_SUFFIX = '(_*f(32|64))?';
   var CRYSTAL_IDENT_RE = '[a-zA-Z_]\\w*[!?=]?';
-  var CRYSTAL_METHOD_RE = '[a-zA-Z_]\\w*[!?=]?|[-+~]\\@|<<|>>|=~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~|]|//|//=|&[-+*]=?|&\\*\\*|\\[\\][=?]?';
+  var CRYSTAL_METHOD_RE = '[a-zA-Z_]\\w*[!?=]?|[-+~]\\@|<<|>>|[=!]~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~|]|//|//=|&[-+*]=?|&\\*\\*|\\[\\][=?]?';
   var CRYSTAL_PATH_RE = '[A-Za-z_]\\w*(::\\w+)*(\\?|\\!)?';
   var CRYSTAL_KEYWORDS = {
     keyword:
@@ -4590,6 +4936,7 @@ function(hljs) {
 Language: C#
 Author: Jason Diamond <jason@diamond.name>
 Contributor: Nicolas LLOBERA <nllobera@gmail.com>, Pieter Vantorre <pietervantorre@gmail.com>
+Website: https://docs.microsoft.com/en-us/dotnet/csharp/
 Category: common
 */
 
@@ -4599,13 +4946,13 @@ function(hljs) {
       // Normal keywords.
       'abstract as base bool break byte case catch char checked const continue decimal ' +
       'default delegate do double enum event explicit extern finally fixed float ' +
-      'for foreach goto if implicit in int interface internal is lock long nameof ' +
+      'for foreach goto if implicit in int interface internal is lock long ' +
       'object operator out override params private protected public readonly ref sbyte ' +
       'sealed short sizeof stackalloc static string struct switch this try typeof ' +
       'uint ulong unchecked unsafe ushort using virtual void volatile while ' +
       // Contextual keywords.
       'add alias ascending async await by descending dynamic equals from get global group into join ' +
-      'let on orderby partial remove select set value var where yield',
+      'let nameof on orderby partial remove select set value var when where yield',
     literal:
       'null false true'
   };
@@ -4779,8 +5126,9 @@ function(hljs) {
 }
 },{name:"csp",create:/*
 Language: CSP
-Description: Content Security Policy definition highlighting 
+Description: Content Security Policy definition highlighting
 Author: Taras <oxdef@oxdef.info>
+Website: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
 
 vim: ts=2 sw=2 st=2
 */
@@ -4792,7 +5140,7 @@ function(hljs) {
     keywords: {
       keyword: 'base-uri child-src connect-src default-src font-src form-action' +
         ' frame-ancestors frame-src img-src media-src object-src plugin-types' +
-        ' report-uri sandbox script-src style-src', 
+        ' report-uri sandbox script-src style-src',
     },
     contains: [
     {
@@ -4809,48 +5157,56 @@ function(hljs) {
 },{name:"css",create:/*
 Language: CSS
 Category: common, css
+Website: https://developer.mozilla.org/en-US/docs/Web/CSS
 */
 
 function(hljs) {
+  var FUNCTION_LIKE = {
+    begin: /[\w-]+\(/, returnBegin: true,
+    contains: [
+      {
+        className: 'built_in',
+        begin: /[\w-]+/
+      },
+      {
+        begin: /\(/, end: /\)/,
+        contains: [
+          hljs.APOS_STRING_MODE,
+          hljs.QUOTE_STRING_MODE,
+          hljs.CSS_NUMBER_MODE,
+        ]
+      }
+    ]
+  }
+  var ATTRIBUTE = {
+    className: 'attribute',
+    begin: /\S/, end: ':', excludeEnd: true,
+    starts: {
+      endsWithParent: true, excludeEnd: true,
+      contains: [
+        FUNCTION_LIKE,
+        hljs.CSS_NUMBER_MODE,
+        hljs.QUOTE_STRING_MODE,
+        hljs.APOS_STRING_MODE,
+        hljs.C_BLOCK_COMMENT_MODE,
+        {
+          className: 'number', begin: '#[0-9A-Fa-f]+'
+        },
+        {
+          className: 'meta', begin: '!important'
+        }
+      ]
+    }
+  }
+  var AT_IDENTIFIER = '@[a-z-]+' // @font-face
+  var AT_MODIFIERS = "and or not only"
+  var MEDIA_TYPES = "all print screen speech"
+  var AT_PROPERTY_RE = /@\-?\w[\w]*(\-\w+)*/ // @-webkit-keyframes
   var IDENT_RE = '[a-zA-Z-][a-zA-Z0-9_-]*';
   var RULE = {
     begin: /(?:[A-Z\_\.\-]+|--[a-zA-Z0-9_-]+)\s*:/, returnBegin: true, end: ';', endsWithParent: true,
     contains: [
-      {
-        className: 'attribute',
-        begin: /\S/, end: ':', excludeEnd: true,
-        starts: {
-          endsWithParent: true, excludeEnd: true,
-          contains: [
-            {
-              begin: /[\w-]+\(/, returnBegin: true,
-              contains: [
-                {
-                  className: 'built_in',
-                  begin: /[\w-]+/
-                },
-                {
-                  begin: /\(/, end: /\)/,
-                  contains: [
-                    hljs.APOS_STRING_MODE,
-                    hljs.QUOTE_STRING_MODE
-                  ]
-                }
-              ]
-            },
-            hljs.CSS_NUMBER_MODE,
-            hljs.QUOTE_STRING_MODE,
-            hljs.APOS_STRING_MODE,
-            hljs.C_BLOCK_COMMENT_MODE,
-            {
-              className: 'number', begin: '#[0-9A-Fa-f]+'
-            },
-            {
-              className: 'meta', begin: '!important'
-            }
-          ]
-        }
-      }
+      ATTRIBUTE
     ]
   };
 
@@ -4868,16 +5224,23 @@ function(hljs) {
       {
         className: 'selector-attr',
         begin: /\[/, end: /\]/,
-        illegal: '$'
+        illegal: '$',
+        contains: [
+          hljs.APOS_STRING_MODE,
+          hljs.QUOTE_STRING_MODE,
+        ]
       },
       {
         className: 'selector-pseudo',
         begin: /:(:)?[a-zA-Z0-9\_\-\+\(\)"'.]+/
       },
+      // matching these here allows us to treat them more like regular CSS
+      // rules so everything between the {} gets regular rule highlighting,
+      // which is what we want for page and font-face
       {
-        begin: '@(font-face|page)',
-        lexemes: '[a-z-]+',
-        keywords: 'font-face page'
+        begin: '@(page|font-face)',
+        lexemes: AT_IDENTIFIER,
+        keywords: '@page @font-face'
       },
       {
         begin: '@', end: '[{;]', // at_rule eating first "{" is a good thing
@@ -4885,16 +5248,23 @@ function(hljs) {
                                  // a rule set but instead drops parser into
                                  // the default mode which is how it should be.
         illegal: /:/, // break on Less variables @var: ...
+        returnBegin: true,
         contains: [
           {
             className: 'keyword',
-            begin: /\w+/
+            begin: AT_PROPERTY_RE
           },
           {
             begin: /\s/, endsWithParent: true, excludeEnd: true,
             relevance: 0,
+            keywords: AT_MODIFIERS,
             contains: [
-              hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE,
+              {
+                begin: /[a-z-]+:/,
+                className:"attribute"
+              },
+              hljs.APOS_STRING_MODE,
+              hljs.QUOTE_STRING_MODE,
               hljs.CSS_NUMBER_MODE
             ]
           }
@@ -4920,6 +5290,7 @@ Language: D
 Author: Aleksandar Ruzicic <aleksandar@ruzicic.info>
 Description: D is a language with C-like syntax and static typing. It pragmatically combines efficiency, control, and modeling power, with safety and programmer productivity.
 Version: 1.0a
+Website: https://dlang.org
 Date: 2012-04-08
 */
 
@@ -5185,57 +5556,66 @@ Language: Dart
 Requires: markdown.js
 Author: Maxim Dikun <dikmax@gmail.com>
 Description: Dart a modern, object-oriented language developed by Google. For more information see https://www.dartlang.org/
+Website: https://dart.dev
 Category: scripting
 */
 
-function (hljs) {
+function(hljs) {
   var SUBST = {
     className: 'subst',
-    variants: [
-       {begin: '\\$[A-Za-z0-9_]+'}
-    ],
+    variants: [{
+      begin: '\\$[A-Za-z0-9_]+'
+    }],
   };
 
   var BRACED_SUBST = {
     className: 'subst',
-    variants: [
-       {begin: '\\${', end: '}'},
-    ],
+    variants: [{
+      begin: '\\${',
+      end: '}'
+    }, ],
     keywords: 'true false null this is new super',
   };
 
   var STRING = {
     className: 'string',
-    variants: [
-      {
-        begin: 'r\'\'\'', end: '\'\'\''
+    variants: [{
+        begin: 'r\'\'\'',
+        end: '\'\'\''
       },
       {
-        begin: 'r"""', end: '"""'
+        begin: 'r"""',
+        end: '"""'
       },
       {
-        begin: 'r\'', end: '\'',
+        begin: 'r\'',
+        end: '\'',
         illegal: '\\n'
       },
       {
-        begin: 'r"', end: '"',
+        begin: 'r"',
+        end: '"',
         illegal: '\\n'
       },
       {
-        begin: '\'\'\'', end: '\'\'\'',
+        begin: '\'\'\'',
+        end: '\'\'\'',
         contains: [hljs.BACKSLASH_ESCAPE, SUBST, BRACED_SUBST]
       },
       {
-        begin: '"""', end: '"""',
+        begin: '"""',
+        end: '"""',
         contains: [hljs.BACKSLASH_ESCAPE, SUBST, BRACED_SUBST]
       },
       {
-        begin: '\'', end: '\'',
+        begin: '\'',
+        end: '\'',
         illegal: '\\n',
         contains: [hljs.BACKSLASH_ESCAPE, SUBST, BRACED_SUBST]
       },
       {
-        begin: '"', end: '"',
+        begin: '"',
+        end: '"',
         illegal: '\\n',
         contains: [hljs.BACKSLASH_ESCAPE, SUBST, BRACED_SUBST]
       }
@@ -5246,15 +5626,16 @@ function (hljs) {
   ];
 
   var KEYWORDS = {
-    keyword: 'assert async await break case catch class const continue default do else enum extends false final ' +
-      'finally for if in is new null rethrow return super switch sync this throw true try var void while with yield ' +
-      'abstract as dynamic export external factory get implements import library operator part set static typedef',
+    keyword: 'abstract as assert async await break case catch class const continue covariant default deferred do ' +
+      'dynamic else enum export extends extension external factory false final finally for Function get hide if ' +
+      'implements import in inferface is library mixin new null on operator part rethrow return set show static ' +
+      'super switch sync this throw true try typedef var void while with yield',
     built_in:
       // dart:core
-      'print Comparable DateTime Duration Function Iterable Iterator List Map Match Null Object Pattern RegExp Set ' +
-      'Stopwatch String StringBuffer StringSink Symbol Type Uri bool double int num ' +
+      'Comparable DateTime Duration Function Iterable Iterator List Map Match Null Object Pattern RegExp Set ' +
+      'Stopwatch String StringBuffer StringSink Symbol Type Uri bool double dynamic int num print ' +
       // dart:html
-      'document window querySelector querySelectorAll Element ElementList'
+      'Element ElementList document querySelector querySelectorAll window'
   };
 
   return {
@@ -5263,25 +5644,28 @@ function (hljs) {
       STRING,
       hljs.COMMENT(
         '/\\*\\*',
-        '\\*/',
-        {
+        '\\*/', {
           subLanguage: 'markdown'
         }
       ),
       hljs.COMMENT(
-        '///',
-        '$',
-        {
-          subLanguage: 'markdown'
+        '///+\\s*',
+        '$', {
+          contains: [{
+            subLanguage: 'markdown',
+            begin: '.',
+            end: '$',
+          }]
         }
       ),
       hljs.C_LINE_COMMENT_MODE,
       hljs.C_BLOCK_COMMENT_MODE,
       {
         className: 'class',
-        beginKeywords: 'class interface', end: '{', excludeEnd: true,
-        contains: [
-          {
+        beginKeywords: 'class interface',
+        end: '{',
+        excludeEnd: true,
+        contains: [{
             beginKeywords: 'extends implements'
           },
           hljs.UNDERSCORE_TITLE_MODE
@@ -5289,7 +5673,8 @@ function (hljs) {
       },
       hljs.C_NUMBER_MODE,
       {
-        className: 'meta', begin: '@[A-Za-z]+'
+        className: 'meta',
+        begin: '@[A-Za-z]+'
       },
       {
         begin: '=>' // No markup, just a relevance booster
@@ -5297,9 +5682,9 @@ function (hljs) {
     ]
   }
 }
-
 },{name:"delphi",create:/*
 Language: Delphi
+Website: https://www.embarcadero.com/products/delphi
 */
 
 function(hljs) {
@@ -5374,6 +5759,7 @@ function(hljs) {
 Language: Diff
 Description: Unified and context diff
 Author: Vasily Polovnyov <vast@whiteants.net>
+Website: https://www.gnu.org/software/diffutils/
 Category: common
 */
 
@@ -5398,7 +5784,7 @@ function(hljs) {
           {begin: /^\-{3}/, end: /$/},
           {begin: /^\*{3} /, end: /$/},
           {begin: /^\+{3}/, end: /$/},
-          {begin: /\*{5}/, end: /\*{5}$/}
+          {begin: /^\*{15}$/ }
         ]
       },
       {
@@ -5418,9 +5804,11 @@ function(hljs) {
 }
 },{name:"django",create:/*
 Language: Django
+Description: Django is a high-level Python Web framework that encourages rapid development and clean, pragmatic design.
 Requires: xml.js
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Contributors: Ilya Baryshev <baryshev@gmail.com>
+Website: https://www.djangoproject.com
 Category: template
 */
 
@@ -5491,6 +5879,7 @@ function(hljs) {
 Language: DNS Zone file
 Author: Tim Schumacher <tim@datenknoten.me>
 Category: config
+Website: https://en.wikipedia.org/wiki/Zone_file
 */
 
 function(hljs) {
@@ -5526,6 +5915,7 @@ Language: Dockerfile
 Requires: bash.js
 Author: Alexis Hénaut <alexis@henaut.net>
 Description: language definition for Dockerfile files
+Website: https://docs.docker.com/engine/reference/builder/
 Category: config
 */
 
@@ -5554,6 +5944,7 @@ function(hljs) {
 Language: DOS .bat
 Author: Alexander Makarov <sam@rmcreative.ru>
 Contributors: Anton Kochkov <anton.kochkov@gmail.com>
+Website: https://en.wikipedia.org/wiki/Batch_file
 */
 
 function(hljs) {
@@ -5663,6 +6054,7 @@ function(hljs) {
 Language: Device Tree
 Description: *.dts files used in the Linux kernel
 Author: Martin Braun <martin.braun@ettus.com>, Moritz Fischer <moritz.fischer@ettus.com>
+Website: https://elinux.org/Device_Tree_Reference
 Category: config
 */
 
@@ -5795,6 +6187,7 @@ Language: Dust
 Requires: xml.js
 Author: Michael Allen <michael.allen@benefitfocus.com>
 Description: Matcher for dust.js templates.
+Website: https://www.dustjs.com
 Category: template
 */
 
@@ -5832,6 +6225,7 @@ function(hljs) {
 },{name:"ebnf",create:/*
 Language: Extended Backus-Naur Form
 Author: Alex McKibben <alex@nullscope.net>
+Website: https://en.wikipedia.org/wiki/Extended_Backus–Naur_form
 */
 
 function(hljs) {
@@ -5839,7 +6233,7 @@ function(hljs) {
 
     var nonTerminalMode = {
         className: "attribute",
-        begin: /^[ ]*[a-zA-Z][a-zA-Z-]*([\s-]+[a-zA-Z][a-zA-Z]*)*/
+        begin: /^[ ]*[a-zA-Z][a-zA-Z-_]*([\s-_]+[a-zA-Z][a-zA-Z]*)*/
     };
 
     var specialSequenceMode = {
@@ -5848,12 +6242,19 @@ function(hljs) {
     };
 
     var ruleBodyMode = {
-        begin: /=/, end: /;/,
+        begin: /=/, end: /[.;]/,
         contains: [
             commentMode,
             specialSequenceMode,
-            // terminals
-            hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE
+            {
+              // terminals
+              className: 'string',
+              variants: [
+                hljs.APOS_STRING_MODE,
+                hljs.QUOTE_STRING_MODE,
+                {begin: '`', end: '`'},
+              ]
+            },
         ]
     };
 
@@ -5871,6 +6272,7 @@ Language: Elixir
 Author: Josh Adams <josh@isotope11.com>
 Description: language definition for Elixir source code files (.ex and .exs).  Based on ruby language support.
 Category: functional
+Website: https://elixir-lang.org
 */
 
 function(hljs) {
@@ -5886,16 +6288,78 @@ function(hljs) {
     lexemes: ELIXIR_IDENT_RE,
     keywords: ELIXIR_KEYWORDS
   };
+
+  var SIGIL_DELIMITERS = '[/|([{<"\']'
+  var LOWERCASE_SIGIL = {
+    className: 'string',
+    begin: '~[a-z]' + '(?=' + SIGIL_DELIMITERS + ')',
+    contains: [
+      {
+        endsParent:true,
+        contains: [{
+          contains: [hljs.BACKSLASH_ESCAPE, SUBST],
+          variants: [
+            { begin: /"/, end: /"/ },
+            { begin: /'/, end: /'/ },
+            { begin: /\//, end: /\// },
+            { begin: /\|/, end: /\|/ },
+            { begin: /\(/, end: /\)/ },
+            { begin: /\[/, end: /\]/ },
+            { begin: /\{/, end: /\}/ },
+            { begin: /</, end: />/ }
+          ]
+        }]
+      },
+    ],
+  };
+
+  var UPCASE_SIGIL = {
+    className: 'string',
+    begin: '~[A-Z]' + '(?=' + SIGIL_DELIMITERS + ')',
+    contains: [
+      { begin: /"/, end: /"/ },
+      { begin: /'/, end: /'/ },
+      { begin: /\//, end: /\// },
+      { begin: /\|/, end: /\|/ },
+      { begin: /\(/, end: /\)/ },
+      { begin: /\[/, end: /\]/ },
+      { begin: /\{/, end: /\}/ },
+      { begin: /\</, end: /\>/ }
+    ]
+  };
+
   var STRING = {
     className: 'string',
     contains: [hljs.BACKSLASH_ESCAPE, SUBST],
     variants: [
       {
+        begin: /"""/, end: /"""/,
+      },
+      {
+        begin: /'''/, end: /'''/,
+      },
+      {
+        begin: /~S"""/, end: /"""/,
+        contains: []
+      },
+      {
+        begin: /~S"/, end: /"/,
+        contains: []
+      },
+      {
+        begin: /~S'''/, end: /'''/,
+        contains: []
+      },
+      {
+        begin: /~S'/, end: /'/,
+        contains: []
+      },
+      {
         begin: /'/, end: /'/
       },
       {
         begin: /"/, end: /"/
-      }
+      },
     ]
   };
   var FUNCTION = {
@@ -5914,6 +6378,8 @@ function(hljs) {
   });
   var ELIXIR_DEFAULT_CONTAINS = [
     STRING,
+    UPCASE_SIGIL,
+    LOWERCASE_SIGIL,
     hljs.HASH_COMMENT_MODE,
     CLASS,
     FUNCTION,
@@ -5933,7 +6399,7 @@ function(hljs) {
     },
     {
       className: 'number',
-      begin: '(\\b0[0-7_]+)|(\\b0x[0-9a-fA-F_]+)|(\\b[1-9][0-9_]*(\\.[0-9_]+)?)|[0_]\\b',
+      begin: '(\\b0o[0-7_]+)|(\\b0b[01_]+)|(\\b0x[0-9a-fA-F_]+)|(-?\\b[1-9][0-9_]*(.[0-9_]+([eE][-+]?[0-9]+)?)?)',
       relevance: 0
     },
     {
@@ -5975,6 +6441,7 @@ function(hljs) {
 },{name:"elm",create:/*
 Language: Elm
 Author: Janis Voigtlaender <janis.voigtlaender@gmail.com>
+Website: https://elm-lang.org
 Category: functional
 */
 
@@ -6073,6 +6540,7 @@ Requires: xml.js, ruby.js
 Author: Lucas Mazza <lucastmazza@gmail.com>
 Contributors: Kassio Borges <kassioborgesm@gmail.com>
 Description: "Bridge" language defining fragments of Ruby in HTML within <% .. %>
+Website: https://ruby-doc.org/stdlib-2.6.5/libdoc/erb/rdoc/ERB.html
 Category: template
 */
 
@@ -6091,10 +6559,11 @@ function(hljs) {
   };
 }
 },{name:"erlang-repl",create:/*
- Language: Erlang REPL
- Author: Sergey Ignatov <sergey@ignatov.spb.su>
+Language: Erlang REPL
+Author: Sergey Ignatov <sergey@ignatov.spb.su>
+Website: https://www.erlang.org
 Category: functional
- */
+*/
 
 function(hljs) {
   return {
@@ -6145,6 +6614,7 @@ function(hljs) {
 Language: Erlang
 Description: Erlang is a general-purpose functional language, with strict evaluation, single assignment, and dynamic typing.
 Author: Nikolay Zakharov <nikolay.desh@gmail.com>, Dmitry Kovega <arhibot@gmail.com>
+Website: https://www.erlang.org
 Category: functional
 */
 
@@ -6297,6 +6767,7 @@ function(hljs) {
 Language: Excel
 Author: Victor Zhou <OiCMudkips@users.noreply.github.com>
 Description: Excel formulae
+Website: https://products.office.com/en-us/excel/
 */
 
 function(hljs) {
@@ -6306,11 +6777,11 @@ function(hljs) {
     lexemes: /[a-zA-Z][\w\.]*/,
     // built-in functions imported from https://web.archive.org/web/20160513042710/https://support.office.com/en-us/article/Excel-functions-alphabetical-b3944572-255d-4efb-bb96-c6d90033e188
     keywords: {
-        built_in: 'ABS ACCRINT ACCRINTM ACOS ACOSH ACOT ACOTH AGGREGATE ADDRESS AMORDEGRC AMORLINC AND ARABIC AREAS ASC ASIN ASINH ATAN ATAN2 ATANH AVEDEV AVERAGE AVERAGEA AVERAGEIF AVERAGEIFS BAHTTEXT BASE BESSELI BESSELJ BESSELK BESSELY BETADIST BETA.DIST BETAINV BETA.INV BIN2DEC BIN2HEX BIN2OCT BINOMDIST BINOM.DIST BINOM.DIST.RANGE BINOM.INV BITAND BITLSHIFT BITOR BITRSHIFT BITXOR CALL CEILING CEILING.MATH CEILING.PRECISE CELL CHAR CHIDIST CHIINV CHITEST CHISQ.DIST CHISQ.DIST.RT CHISQ.INV CHISQ.INV.RT CHISQ.TEST CHOOSE CLEAN CODE COLUMN COLUMNS COMBIN COMBINA COMPLEX CONCAT CONCATENATE CONFIDENCE CONFIDENCE.NORM CONFIDENCE.T CONVERT CORREL COS COSH COT COTH COUNT COUNTA COUNTBLANK COUNTIF COUNTIFS COUPDAYBS COUPDAYS COUPDAYSNC COUPNCD COUPNUM COUPPCD COVAR COVARIANCE.P COVARIANCE.S CRITBINOM CSC CSCH CUBEKPIMEMBER CUBEMEMBER CUBEMEMBERPROPERTY CUBERANKEDMEMBER CUBESET CUBESETCOUNT CUBEVALUE CUMIPMT CUMPRINC DATE DATEDIF DATEVALUE DAVERAGE DAY DAYS DAYS360 DB DBCS DCOUNT DCOUNTA DDB DEC2BIN DEC2HEX DEC2OCT DECIMAL DEGREES DELTA DEVSQ DGET DISC DMAX DMIN DOLLAR DOLLARDE DOLLARFR DPRODUCT DSTDEV DSTDEVP DSUM DURATION DVAR DVARP EDATE EFFECT ENCODEURL EOMONTH ERF ERF.PRECISE ERFC ERFC.PRECISE ERROR.TYPE EUROCONVERT EVEN EXACT EXP EXPON.DIST EXPONDIST FACT FACTDOUBLE FALSE|0 F.DIST FDIST F.DIST.RT FILTERXML FIND FINDB F.INV F.INV.RT FINV FISHER FISHERINV FIXED FLOOR FLOOR.MATH FLOOR.PRECISE FORECAST FORECAST.ETS FORECAST.ETS.CONFINT FORECAST.ETS.SEASONALITY FORECAST.ETS.STAT FORECAST.LINEAR FORMULATEXT FREQUENCY F.TEST FTEST FV FVSCHEDULE GAMMA GAMMA.DIST GAMMADIST GAMMA.INV GAMMAINV GAMMALN GAMMALN.PRECISE GAUSS GCD GEOMEAN GESTEP GETPIVOTDATA GROWTH HARMEAN HEX2BIN HEX2DEC HEX2OCT HLOOKUP HOUR HYPERLINK HYPGEOM.DIST HYPGEOMDIST IF|0 IFERROR IFNA IFS IMABS IMAGINARY IMARGUMENT IMCONJUGATE IMCOS IMCOSH IMCOT IMCSC IMCSCH IMDIV IMEXP IMLN IMLOG10 IMLOG2 IMPOWER IMPRODUCT IMREAL IMSEC IMSECH IMSIN IMSINH IMSQRT IMSUB IMSUM IMTAN INDEX INDIRECT INFO INT INTERCEPT INTRATE IPMT IRR ISBLANK ISERR ISERROR ISEVEN ISFORMULA ISLOGICAL ISNA ISNONTEXT ISNUMBER ISODD ISREF ISTEXT ISO.CEILING ISOWEEKNUM ISPMT JIS KURT LARGE LCM LEFT LEFTB LEN LENB LINEST LN LOG LOG10 LOGEST LOGINV LOGNORM.DIST LOGNORMDIST LOGNORM.INV LOOKUP LOWER MATCH MAX MAXA MAXIFS MDETERM MDURATION MEDIAN MID MIDBs MIN MINIFS MINA MINUTE MINVERSE MIRR MMULT MOD MODE MODE.MULT MODE.SNGL MONTH MROUND MULTINOMIAL MUNIT N NA NEGBINOM.DIST NEGBINOMDIST NETWORKDAYS NETWORKDAYS.INTL NOMINAL NORM.DIST NORMDIST NORMINV NORM.INV NORM.S.DIST NORMSDIST NORM.S.INV NORMSINV NOT NOW NPER NPV NUMBERVALUE OCT2BIN OCT2DEC OCT2HEX ODD ODDFPRICE ODDFYIELD ODDLPRICE ODDLYIELD OFFSET OR PDURATION PEARSON PERCENTILE.EXC PERCENTILE.INC PERCENTILE PERCENTRANK.EXC PERCENTRANK.INC PERCENTRANK PERMUT PERMUTATIONA PHI PHONETIC PI PMT POISSON.DIST POISSON POWER PPMT PRICE PRICEDISC PRICEMAT PROB PRODUCT PROPER PV QUARTILE QUARTILE.EXC QUARTILE.INC QUOTIENT RADIANS RAND RANDBETWEEN RANK.AVG RANK.EQ RANK RATE RECEIVED REGISTER.ID REPLACE REPLACEB REPT RIGHT RIGHTB ROMAN ROUND ROUNDDOWN ROUNDUP ROW ROWS RRI RSQ RTD SEARCH SEARCHB SEC SECH SECOND SERIESSUM SHEET SHEETS SIGN SIN SINH SKEW SKEW.P SLN SLOPE SMALL SQL.REQUEST SQRT SQRTPI STANDARDIZE STDEV STDEV.P STDEV.S STDEVA STDEVP STDEVPA STEYX SUBSTITUTE SUBTOTAL SUM SUMIF SUMIFS SUMPRODUCT SUMSQ SUMX2MY2 SUMX2PY2 SUMXMY2 SWITCH SYD T TAN TANH TBILLEQ TBILLPRICE TBILLYIELD T.DIST T.DIST.2T T.DIST.RT TDIST TEXT TEXTJOIN TIME TIMEVALUE T.INV T.INV.2T TINV TODAY TRANSPOSE TREND TRIM TRIMMEAN TRUE|0 TRUNC T.TEST TTEST TYPE UNICHAR UNICODE UPPER VALUE VAR VAR.P VAR.S VARA VARP VARPA VDB VLOOKUP WEBSERVICE WEEKDAY WEEKNUM WEIBULL WEIBULL.DIST WORKDAY WORKDAY.INTL XIRR XNPV XOR YEAR YEARFRAC YIELD YIELDDISC YIELDMAT Z.TEST ZTEST'
+        built_in: 'ABS ACCRINT ACCRINTM ACOS ACOSH ACOT ACOTH AGGREGATE ADDRESS AMORDEGRC AMORLINC AND ARABIC AREAS ASC ASIN ASINH ATAN ATAN2 ATANH AVEDEV AVERAGE AVERAGEA AVERAGEIF AVERAGEIFS BAHTTEXT BASE BESSELI BESSELJ BESSELK BESSELY BETADIST BETA.DIST BETAINV BETA.INV BIN2DEC BIN2HEX BIN2OCT BINOMDIST BINOM.DIST BINOM.DIST.RANGE BINOM.INV BITAND BITLSHIFT BITOR BITRSHIFT BITXOR CALL CEILING CEILING.MATH CEILING.PRECISE CELL CHAR CHIDIST CHIINV CHITEST CHISQ.DIST CHISQ.DIST.RT CHISQ.INV CHISQ.INV.RT CHISQ.TEST CHOOSE CLEAN CODE COLUMN COLUMNS COMBIN COMBINA COMPLEX CONCAT CONCATENATE CONFIDENCE CONFIDENCE.NORM CONFIDENCE.T CONVERT CORREL COS COSH COT COTH COUNT COUNTA COUNTBLANK COUNTIF COUNTIFS COUPDAYBS COUPDAYS COUPDAYSNC COUPNCD COUPNUM COUPPCD COVAR COVARIANCE.P COVARIANCE.S CRITBINOM CSC CSCH CUBEKPIMEMBER CUBEMEMBER CUBEMEMBERPROPERTY CUBERANKEDMEMBER CUBESET CUBESETCOUNT CUBEVALUE CUMIPMT CUMPRINC DATE DATEDIF DATEVALUE DAVERAGE DAY DAYS DAYS360 DB DBCS DCOUNT DCOUNTA DDB DEC2BIN DEC2HEX DEC2OCT DECIMAL DEGREES DELTA DEVSQ DGET DISC DMAX DMIN DOLLAR DOLLARDE DOLLARFR DPRODUCT DSTDEV DSTDEVP DSUM DURATION DVAR DVARP EDATE EFFECT ENCODEURL EOMONTH ERF ERF.PRECISE ERFC ERFC.PRECISE ERROR.TYPE EUROCONVERT EVEN EXACT EXP EXPON.DIST EXPONDIST FACT FACTDOUBLE FALSE|0 F.DIST FDIST F.DIST.RT FILTERXML FIND FINDB F.INV F.INV.RT FINV FISHER FISHERINV FIXED FLOOR FLOOR.MATH FLOOR.PRECISE FORECAST FORECAST.ETS FORECAST.ETS.CONFINT FORECAST.ETS.SEASONALITY FORECAST.ETS.STAT FORECAST.LINEAR FORMULATEXT FREQUENCY F.TEST FTEST FV FVSCHEDULE GAMMA GAMMA.DIST GAMMADIST GAMMA.INV GAMMAINV GAMMALN GAMMALN.PRECISE GAUSS GCD GEOMEAN GESTEP GETPIVOTDATA GROWTH HARMEAN HEX2BIN HEX2DEC HEX2OCT HLOOKUP HOUR HYPERLINK HYPGEOM.DIST HYPGEOMDIST IF IFERROR IFNA IFS IMABS IMAGINARY IMARGUMENT IMCONJUGATE IMCOS IMCOSH IMCOT IMCSC IMCSCH IMDIV IMEXP IMLN IMLOG10 IMLOG2 IMPOWER IMPRODUCT IMREAL IMSEC IMSECH IMSIN IMSINH IMSQRT IMSUB IMSUM IMTAN INDEX INDIRECT INFO INT INTERCEPT INTRATE IPMT IRR ISBLANK ISERR ISERROR ISEVEN ISFORMULA ISLOGICAL ISNA ISNONTEXT ISNUMBER ISODD ISREF ISTEXT ISO.CEILING ISOWEEKNUM ISPMT JIS KURT LARGE LCM LEFT LEFTB LEN LENB LINEST LN LOG LOG10 LOGEST LOGINV LOGNORM.DIST LOGNORMDIST LOGNORM.INV LOOKUP LOWER MATCH MAX MAXA MAXIFS MDETERM MDURATION MEDIAN MID MIDBs MIN MINIFS MINA MINUTE MINVERSE MIRR MMULT MOD MODE MODE.MULT MODE.SNGL MONTH MROUND MULTINOMIAL MUNIT N NA NEGBINOM.DIST NEGBINOMDIST NETWORKDAYS NETWORKDAYS.INTL NOMINAL NORM.DIST NORMDIST NORMINV NORM.INV NORM.S.DIST NORMSDIST NORM.S.INV NORMSINV NOT NOW NPER NPV NUMBERVALUE OCT2BIN OCT2DEC OCT2HEX ODD ODDFPRICE ODDFYIELD ODDLPRICE ODDLYIELD OFFSET OR PDURATION PEARSON PERCENTILE.EXC PERCENTILE.INC PERCENTILE PERCENTRANK.EXC PERCENTRANK.INC PERCENTRANK PERMUT PERMUTATIONA PHI PHONETIC PI PMT POISSON.DIST POISSON POWER PPMT PRICE PRICEDISC PRICEMAT PROB PRODUCT PROPER PV QUARTILE QUARTILE.EXC QUARTILE.INC QUOTIENT RADIANS RAND RANDBETWEEN RANK.AVG RANK.EQ RANK RATE RECEIVED REGISTER.ID REPLACE REPLACEB REPT RIGHT RIGHTB ROMAN ROUND ROUNDDOWN ROUNDUP ROW ROWS RRI RSQ RTD SEARCH SEARCHB SEC SECH SECOND SERIESSUM SHEET SHEETS SIGN SIN SINH SKEW SKEW.P SLN SLOPE SMALL SQL.REQUEST SQRT SQRTPI STANDARDIZE STDEV STDEV.P STDEV.S STDEVA STDEVP STDEVPA STEYX SUBSTITUTE SUBTOTAL SUM SUMIF SUMIFS SUMPRODUCT SUMSQ SUMX2MY2 SUMX2PY2 SUMXMY2 SWITCH SYD T TAN TANH TBILLEQ TBILLPRICE TBILLYIELD T.DIST T.DIST.2T T.DIST.RT TDIST TEXT TEXTJOIN TIME TIMEVALUE T.INV T.INV.2T TINV TODAY TRANSPOSE TREND TRIM TRIMMEAN TRUE|0 TRUNC T.TEST TTEST TYPE UNICHAR UNICODE UPPER VALUE VAR VAR.P VAR.S VARA VARP VARPA VDB VLOOKUP WEBSERVICE WEEKDAY WEEKNUM WEIBULL WEIBULL.DIST WORKDAY WORKDAY.INTL XIRR XNPV XOR YEAR YEARFRAC YIELD YIELDDISC YIELDMAT Z.TEST ZTEST'
     },
     contains: [
       {
-        /* matches a beginning equal sign found in Excel formula examples */ 
+        /* matches a beginning equal sign found in Excel formula examples */
         begin: /^=/,
         end: /[^=]/, returnEnd: true, illegal: /=/, /* only allow single equal sign at front of line */
         relevance: 10
@@ -6383,6 +6854,7 @@ function(hljs) {
  Language: Flix
  Category: functional
  Author: Magnus Madsen <mmadsen@uwaterloo.ca>
+ Website: https://flix.dev/
  */
 
 function (hljs) {
@@ -6432,6 +6904,7 @@ function (hljs) {
 },{name:"fortran",create:/*
 Language: Fortran
 Author: Anthony Scemama <scemama@irsamc.ups-tlse.fr>
+Website: https://en.wikipedia.org/wiki/Fortran
 Category: scientific
 */
 
@@ -6444,7 +6917,7 @@ function(hljs) {
   var F_KEYWORDS = {
     literal: '.False. .True.',
     keyword: 'kind do while private call intrinsic where elsewhere ' +
-      'type endtype endmodule endselect endinterface end enddo endif if forall endforall only contains default return stop then ' +
+      'type endtype endmodule endselect endinterface end enddo endif if forall endforall only contains default return stop then block endblock ' +
       'public subroutine|10 function program .and. .or. .not. .le. .eq. .ge. .gt. .lt. ' +
       'goto save else use module select case ' +
       'access blank direct exist file fmt form formatted iostat name named nextrec number opened rec recl sequential status unformatted unit ' +
@@ -6509,6 +6982,7 @@ function(hljs) {
 Language: F#
 Author: Jonas Follesø <jonas@follesoe.no>
 Contributors: Troy Kershaw <hello@troykershaw.com>, Henrik Feldt <henrik@haf.se>
+Website: https://docs.microsoft.com/en-us/dotnet/fsharp/
 Category: functional
 */
 function(hljs) {
@@ -6575,6 +7049,7 @@ function(hljs) {
  Author: Stefan Bechert <stefan.bechert@gmx.net>
  Contributors: Oleg Efimov <efimovov@gmail.com>, Mikko Kouhia <mikko.kouhia@iki.fi>
  Description: The General Algebraic Modeling System language
+ Website: https://www.gams.com
  Category: scientific
  */
 
@@ -6734,8 +7209,9 @@ function (hljs) {
 },{name:"gauss",create:/*
 Language: GAUSS
 Author: Matt Evans <matt@aptech.com>
-Category: scientific
 Description: GAUSS Mathematical and Statistical language
+Website: https://www.aptech.com
+Category: scientific
 */
 function(hljs) {
   var KEYWORDS = {
@@ -7031,6 +7507,7 @@ function(hljs) {
  Language: G-code (ISO 6983)
  Contributors: Adam Joseph Cook <adam.joseph.cook@gmail.com>
  Description: G-code syntax highlighter for Fanuc and other common CNC machine tool controls.
+ Website: https://www.sis.se/api/document/preview/911952/
  */
 
 function(hljs) {
@@ -7102,7 +7579,8 @@ function(hljs) {
 },{name:"gherkin",create:/*
  Language: Gherkin
  Author: Sam Pikesley (@pikesley) <sam.pikesley@theodi.org>
- Description: Gherkin (Cucumber etc)
+ Description: Gherkin is the format for cucumber specifications. It is a domain specific language which helps you to describe business behavior without the need to go into detail of implementation.
+ Website: https://cucumber.io/docs/gherkin/
  */
 
 function (hljs) {
@@ -7145,6 +7623,7 @@ function (hljs) {
 Language: GLSL
 Description: OpenGL Shading Language
 Author: Sergey Tikhomirov <sergey@tikhomirov.io>
+Website: https://en.wikipedia.org/wiki/OpenGL_Shading_Language
 Category: graphics
 */
 
@@ -7268,12 +7747,13 @@ function(hljs) {
 Language: GML
 Author: Meseta <meseta@gmail.com>
 Description: Game Maker Language for GameMaker Studio 2
+Website: https://docs2.yoyogames.com
 Category: scripting
 */
 
 function(hljs) {
   var GML_KEYWORDS = {
-    keywords: 'begin end if then else while do for break continue with until ' +
+    keyword: 'begin end if then else while do for break continue with until ' +
       'repeat exit and or xor not return mod div switch case default var ' +
       'globalvar enum #macro #region #endregion',
     built_in: 'is_real is_string is_array is_undefined is_int32 is_int64 ' +
@@ -8147,8 +8627,9 @@ function(hljs) {
 Language: Go
 Author: Stephan Kountso aka StepLg <steplg@gmail.com>
 Contributors: Evgeny Stepanischev <imbolk@gmail.com>
-Description: Google go language (golang). For info about language see http://golang.org/
-Category: system
+Description: Google go language (golang). For info about language
+Website: http://golang.org/
+Category: common, system
 */
 
 function(hljs) {
@@ -8174,7 +8655,7 @@ function(hljs) {
         className: 'string',
         variants: [
           hljs.QUOTE_STRING_MODE,
-          {begin: '\'', end: '[^\\\\]\''},
+          hljs.APOS_STRING_MODE,
           {begin: '`', end: '`'},
         ]
       },
@@ -8190,7 +8671,7 @@ function(hljs) {
       },
       {
         className: 'function',
-        beginKeywords: 'func', end: /\s*\{/, excludeEnd: true,
+        beginKeywords: 'func', end: '\\s*(\\{|$)', excludeEnd: true,
         contains: [
           hljs.TITLE_MODE,
           {
@@ -8207,7 +8688,8 @@ function(hljs) {
 },{name:"golo",create:/*
 Language: Golo
 Author: Philippe Charriere <ph.charriere@gmail.com>
-Description: a lightweight dynamic language for the JVM, see http://golo-lang.org/
+Description: a lightweight dynamic language for the JVM
+Website: http://golo-lang.org/
 */
 
 function(hljs) {
@@ -8234,8 +8716,9 @@ function(hljs) {
 }
 },{name:"gradle",create:/*
 Language: Gradle
+Description: Gradle is an open-source build automation tool focused on flexibility and performance.
+Website: https://gradle.org
 Author: Damian Mee <mee.damian@gmail.com>
-Website: http://meeDamian.com
 */
 
 function(hljs) {
@@ -8275,8 +8758,8 @@ function(hljs) {
 },{name:"groovy",create:/*
  Language: Groovy
  Author: Guillaume Laforge <glaforge@gmail.com>
- Website: http://glaforge.appspot.com
  Description: Groovy programming language implementation inspired from Vsevolod's Java mode
+ Website: https://groovy-lang.org
  */
 
 function(hljs) {
@@ -8376,7 +8859,7 @@ function(hljs) {
 Language: Haml
 Requires: ruby.js
 Author: Dan Allen <dan.j.allen@gmail.com>
-Website: http://google.com/profiles/dan.j.allen
+Website: http://haml.info
 Category: template
 */
 
@@ -8491,38 +8974,79 @@ Language: Handlebars
 Requires: xml.js
 Author: Robin Ward <robin.ward@gmail.com>
 Description: Matcher for Handlebars as well as EmberJS additions.
+Website: https://handlebarsjs.com
 Category: template
 */
+function (hljs) {
+  var BUILT_INS = {'builtin-name': 'each in with if else unless bindattr action collection debugger log outlet template unbound view yield lookup'};
 
-function(hljs) {
-  var BUILT_INS = {'builtin-name': 'each in with if else unless bindattr action collection debugger log outlet template unbound view yield'};
+  var IDENTIFIER_PLAIN_OR_QUOTED = {
+    begin: /".*?"|'.*?'|\[.*?\]|\w+/
+  };
+
+  var EXPRESSION_OR_HELPER_CALL = hljs.inherit(IDENTIFIER_PLAIN_OR_QUOTED, {
+    keywords: BUILT_INS,
+    starts: {
+      // helper params
+      endsWithParent: true,
+      relevance: 0,
+      contains: [hljs.inherit(IDENTIFIER_PLAIN_OR_QUOTED, {relevance: 0})]
+    }
+  });
+
+  var BLOCK_MUSTACHE_CONTENTS = hljs.inherit(EXPRESSION_OR_HELPER_CALL, {
+    className: 'name'
+  });
+
+  var BASIC_MUSTACHE_CONTENTS = hljs.inherit(EXPRESSION_OR_HELPER_CALL, {
+    // relevance 0 for backward compatibility concerning auto-detection
+    relevance: 0
+  });
+
+  var ESCAPE_MUSTACHE_WITH_PRECEEDING_BACKSLASH = {begin: /\\\{\{/, skip: true};
+  var PREVENT_ESCAPE_WITH_ANOTHER_PRECEEDING_BACKSLASH = {begin: /\\\\(?=\{\{)/, skip: true};
+
   return {
     aliases: ['hbs', 'html.hbs', 'html.handlebars'],
     case_insensitive: true,
     subLanguage: 'xml',
     contains: [
-    hljs.COMMENT('{{!(--)?', '(--)?}}'),
+      ESCAPE_MUSTACHE_WITH_PRECEEDING_BACKSLASH,
+      PREVENT_ESCAPE_WITH_ANOTHER_PRECEEDING_BACKSLASH,
+      hljs.COMMENT(/\{\{!--/, /--\}\}/),
+      hljs.COMMENT(/\{\{!/, /\}\}/),
       {
+        // open raw block "{{{{raw}}}} content not evaluated {{{{/raw}}}}"
         className: 'template-tag',
-        begin: /\{\{[#\/]/, end: /\}\}/,
-        contains: [
-          {
-            className: 'name',
-            begin: /[a-zA-Z\.-]+/,
-            keywords: BUILT_INS,
-            starts: {
-              endsWithParent: true, relevance: 0,
-              contains: [
-                hljs.QUOTE_STRING_MODE
-              ]
-            }
-          }
-        ]
+        begin: /\{\{\{\{(?!\/)/, end: /\}\}\}\}/,
+        contains: [BLOCK_MUSTACHE_CONTENTS],
+        starts: {end: /\{\{\{\{\//, returnEnd: true, subLanguage: 'xml'}
       },
       {
+        // close raw block
+        className: 'template-tag',
+        begin: /\{\{\{\{\//, end: /\}\}\}\}/,
+        contains: [BLOCK_MUSTACHE_CONTENTS]
+      },
+      {
+        // open block statement
+        className: 'template-tag',
+        begin: /\{\{[#\/]/, end: /\}\}/,
+        contains: [BLOCK_MUSTACHE_CONTENTS],
+      },
+      {
+        // template variable or helper-call that is NOT html-escaped
+        className: 'template-variable',
+        begin: /\{\{\{/, end: /\}\}\}/,
+        keywords: BUILT_INS,
+        contains: [BASIC_MUSTACHE_CONTENTS]
+      },
+      {
+        // template variable or helper-call that is html-escaped
         className: 'template-variable',
         begin: /\{\{/, end: /\}\}/,
-        keywords: BUILT_INS
+        keywords: BUILT_INS,
+        contains: [BASIC_MUSTACHE_CONTENTS]
       }
     ]
   };
@@ -8531,6 +9055,7 @@ function(hljs) {
 Language: Haskell
 Author: Jeremy Hull <sourdrums@gmail.com>
 Contributors: Zena Treep <zena.treep@gmail.com>
+Website: https://www.haskell.org
 Category: functional
 */
 
@@ -8657,8 +9182,10 @@ function(hljs) {
 }
 },{name:"haxe",create:/*
 Language: Haxe
+Description: Haxe is an open source toolkit based on a modern, high level, strictly typed programming language.
 Author: Christopher Kaster <ikasoki@gmail.com> (Based on the actionscript.js language file by Alexander Myadzel)
 Contributors: Kenton Hamaluik <kentonh@gmail.com>
+Website: https://haxe.org
 */
 
 function(hljs) {
@@ -8775,7 +9302,7 @@ function(hljs) {
 },{name:"hsp",create:/*
 Language: HSP
 Author: prince <MC.prince.0203@gmail.com>
-Website: http://prince.webcrow.jp/
+Website: https://en.wikipedia.org/wiki/Hot_Soup_Processor
 Category: scripting
 */
 
@@ -8829,6 +9356,7 @@ Language: HTMLBars
 Requires: xml.js
 Author: Michael Johnston <lastobelus@gmail.com>
 Description: Matcher for HTMLBars
+Website: https://github.com/tildeio/htmlbars
 Category: template
 */
 
@@ -8907,6 +9435,7 @@ Language: HTTP
 Description: HTTP request and response headers with automatic body highlighting
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Category: common, protocols
+Website: https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview
 */
 
 function(hljs) {
@@ -8951,8 +9480,9 @@ function(hljs) {
 }
 },{name:"hy",create:/*
 Language: Hy
-Description: Hy syntax (based on clojure.js)
+Description: Hy is a wonderful dialect of Lisp that’s embedded in Python.
 Author: Sergey Sobko <s.sobko@profitware.ru>
+Website: http://docs.hylang.org/en/stable/
 Category: lisp
 */
 
@@ -9061,6 +9591,7 @@ function(hljs) {
 Language: Inform 7
 Author: Bruno Dias <bruno.r.dias@gmail.com>
 Description: Language definition for Inform 7, a DSL for writing parser interactive fiction.
+Website: http://inform7.com
 */
 
 function(hljs) {
@@ -9120,74 +9651,85 @@ function(hljs) {
   };
 }
 },{name:"ini",create:/*
-Language: Ini, TOML
+Language: TOML, also INI
+Description: TOML aims to be a minimal configuration file format that's easy to read due to obvious semantics.
 Contributors: Guillaume Gomez <guillaume1.gomez@gmail.com>
 Category: common, config
+Website: https://github.com/toml-lang/toml
 */
 
 function(hljs) {
-  var STRING = {
+  var NUMBERS = {
+    className: 'number',
+    relevance: 0,
+    variants: [
+      { begin: /([\+\-]+)?[\d]+_[\d_]+/ },
+      { begin: hljs.NUMBER_RE }
+    ]
+  };
+  var COMMENTS = hljs.COMMENT();
+  COMMENTS.variants = [
+    {begin: /;/, end: /$/},
+    {begin: /#/, end: /$/},
+  ];
+  var VARIABLES = {
+    className: 'variable',
+    variants: [
+      { begin: /\$[\w\d"][\w\d_]*/ },
+      { begin: /\$\{(.*?)}/ }
+    ]
+  };
+  var LITERALS = {
+    className: 'literal',
+    begin: /\bon|off|true|false|yes|no\b/
+  };
+  var STRINGS = {
     className: "string",
     contains: [hljs.BACKSLASH_ESCAPE],
     variants: [
-      {
-        begin: "'''", end: "'''",
-        relevance: 10
-      }, {
-        begin: '"""', end: '"""',
-        relevance: 10
-      }, {
-        begin: '"', end: '"'
-      }, {
-        begin: "'", end: "'"
-      }
+      { begin: "'''", end: "'''", relevance: 10 },
+      { begin: '"""', end: '"""', relevance: 10 },
+      { begin: '"', end: '"' },
+      { begin: "'", end: "'" }
     ]
   };
+  var ARRAY = {
+    begin: /\[/, end: /\]/,
+    contains: [
+      COMMENTS,
+      LITERALS,
+      VARIABLES,
+      STRINGS,
+      NUMBERS,
+      'self'
+    ],
+    relevance:0
+  };
+
   return {
     aliases: ['toml'],
     case_insensitive: true,
     illegal: /\S/,
     contains: [
-      hljs.COMMENT(';', '$'),
-      hljs.HASH_COMMENT_MODE,
+      COMMENTS,
       {
         className: 'section',
-        begin: /^\s*\[+/, end: /\]+/
+        begin: /\[+/, end: /\]+/
       },
       {
-        begin: /^[a-z0-9\[\]_\.-]+\s*=\s*/, end: '$',
-        returnBegin: true,
-        contains: [
-          {
-            className: 'attr',
-            begin: /[a-z0-9\[\]_\.-]+/
-          },
-          {
-            begin: /=/, endsWithParent: true,
-            relevance: 0,
-            contains: [
-              hljs.COMMENT(';', '$'),
-              hljs.HASH_COMMENT_MODE,
-              {
-                className: 'literal',
-                begin: /\bon|off|true|false|yes|no\b/
-              },
-              {
-                className: 'variable',
-                variants: [
-                  {begin: /\$[\w\d"][\w\d_]*/},
-                  {begin: /\$\{(.*?)}/}
-                ]
-              },
-              STRING,
-              {
-                className: 'number',
-                begin: /([\+\-]+)?[\d]+_[\d_]+/
-              },
-              hljs.NUMBER_MODE
-            ]
-          }
-        ]
+        begin: /^[a-z0-9\[\]_\.-]+(?=\s*=\s*)/,
+        className: 'attr',
+        starts: {
+          end: /$/,
+          contains: [
+            COMMENTS,
+            ARRAY,
+            LITERALS,
+            VARIABLES,
+            STRINGS,
+            NUMBERS
+          ]
+        }
       }
     ]
   };
@@ -9195,7 +9737,8 @@ function(hljs) {
 },{name:"irpf90",create:/*
 Language: IRPF90
 Author: Anthony Scemama <scemama@irsamc.ups-tlse.fr>
-Description: IRPF90 is an open-source Fortran code generator : http://irpf90.ups-tlse.fr
+Description: IRPF90 is an open-source Fortran code generator
+Website: http://irpf90.ups-tlse.fr
 Category: scientific
 */
 
@@ -12457,6 +13000,7 @@ function(hljs) {
 Language: Java
 Author: Vsevolod Solovyov <vsevolod.solovyov@gmail.com>
 Category: common, enterprise
+Website: https://www.java.com/
 */
 
 function(hljs) {
@@ -12568,10 +13112,20 @@ function(hljs) {
 }
 },{name:"javascript",create:/*
 Language: JavaScript
+Description: JavaScript (JS) is a lightweight, interpreted, or just-in-time compiled programming language with first-class functions.
 Category: common, scripting
+Website: https://developer.mozilla.org/en-US/docs/Web/JavaScript
 */
 
 function(hljs) {
+  var FRAGMENT = {
+    begin: '<>',
+    end: '</>'
+  };
+  var XML_TAG = {
+    begin: /<[A-Za-z0-9\\._:-]+/,
+    end: /\/[A-Za-z0-9\\._:-]+>|\/>/
+  };
   var IDENT_RE = '[A-Za-z$_][0-9A-Za-z$_]*';
   var KEYWORDS = {
     keyword:
@@ -12596,9 +13150,9 @@ function(hljs) {
   var NUMBER = {
     className: 'number',
     variants: [
-      { begin: '\\b(0[bB][01]+)' },
-      { begin: '\\b(0[oO][0-7]+)' },
-      { begin: hljs.C_NUMBER_RE }
+      { begin: '\\b(0[bB][01]+)n?' },
+      { begin: '\\b(0[oO][0-7]+)n?' },
+      { begin: hljs.C_NUMBER_RE + 'n?' }
     ],
     relevance: 0
   };
@@ -12653,7 +13207,7 @@ function(hljs) {
   ]);
 
   return {
-    aliases: ['js', 'jsx'],
+    aliases: ['js', 'jsx', 'mjs', 'cjs'],
     keywords: KEYWORDS,
     contains: [
       {
@@ -12671,10 +13225,43 @@ function(hljs) {
       CSS_TEMPLATE,
       TEMPLATE_STRING,
       hljs.C_LINE_COMMENT_MODE,
+      hljs.COMMENT(
+        '/\\*\\*',
+        '\\*/',
+        {
+          relevance : 0,
+          contains : [
+            {
+              className : 'doctag',
+              begin : '@[A-Za-z]+',
+              contains : [
+                {
+                  className: 'type',
+                  begin: '\\{',
+                  end: '\\}',
+                  relevance: 0
+                },
+                {
+                  className: 'variable',
+                  begin: IDENT_RE + '(?=\\s*(-)|$)',
+                  endsParent: true,
+                  relevance: 0
+                },
+                // eat spaces (not newlines) so we can find
+                // types or variables
+                {
+                  begin: /(?=[^\n])\s/,
+                  relevance: 0
+                },
+              ]
+            }
+          ]
+        }
+      ),
       hljs.C_BLOCK_COMMENT_MODE,
       NUMBER,
       { // object attr container
-        begin: /[{,]\s*/, relevance: 0,
+        begin: /[{,\n]\s*/, relevance: 0,
         contains: [
           {
             begin: IDENT_RE + '\\s*:', returnBegin: true,
@@ -12720,20 +13307,19 @@ function(hljs) {
             end: /\s*/,
             skip: true,
           },
-          { // E4X / JSX
-            begin: /</, end: /(\/[A-Za-z0-9\\._:-]+|[A-Za-z0-9\\._:-]+\/)>/,
+          { // JSX
+            variants: [
+              { begin: FRAGMENT.begin, end: FRAGMENT.end },
+              { begin: XML_TAG.begin, end: XML_TAG.end }
+            ],
             subLanguage: 'xml',
             contains: [
-              { begin: /<[A-Za-z0-9\\._:-]+\s*\/>/, skip: true },
               {
-                begin: /<[A-Za-z0-9\\._:-]+/, end: /(\/[A-Za-z0-9\\._:-]+|[A-Za-z0-9\\._:-]+\/)>/, skip: true,
-                contains: [
-                  { begin: /<[A-Za-z0-9\\._:-]+\s*\/>/, skip: true },
-                  'self'
-                ]
+                begin: XML_TAG.begin, end: XML_TAG.end, skip: true,
+                contains: ['self']
               }
             ]
-          }
+          },
         ],
         relevance: 0
       },
@@ -12776,6 +13362,7 @@ function(hljs) {
  Language: jboss-cli
  Author: Raphaël Parrëe <rparree@edc4it.com>
  Description: language definition jboss cli
+ Website: https://docs.jboss.org/author/display/WFLY/Command+Line+Interface
  Category: config
  */
 
@@ -12826,13 +13413,19 @@ function (hljs) {
   }
 }
 },{name:"json",create:/*
-Language: JSON
+Language: JSON / JSON with Comments
+Description: JSON (JavaScript Object Notation) is a lightweight data-interchange format.
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
+Website: http://www.json.org
 Category: common, protocols
 */
 
 function(hljs) {
   var LITERALS = {literal: 'true false null'};
+  var ALLOWED_COMMENTS = [
+    hljs.C_LINE_COMMENT_MODE,
+    hljs.C_BLOCK_COMMENT_MODE
+  ]
   var TYPES = [
     hljs.QUOTE_STRING_MODE,
     hljs.C_NUMBER_MODE
@@ -12852,7 +13445,7 @@ function(hljs) {
         illegal: '\\n',
       },
       hljs.inherit(VALUE_CONTAINER, {begin: /:/})
-    ],
+    ].concat(ALLOWED_COMMENTS),
     illegal: '\\S'
   };
   var ARRAY = {
@@ -12860,7 +13453,10 @@ function(hljs) {
     contains: [hljs.inherit(VALUE_CONTAINER)], // inherit is a workaround for a bug that makes shared modes with endsWithParent compile only the ending of one of the parents
     illegal: '\\S'
   };
-  TYPES.splice(TYPES.length, 0, OBJECT, ARRAY);
+  TYPES.push(OBJECT, ARRAY);
+  ALLOWED_COMMENTS.forEach(function(rule) {
+    TYPES.push(rule)
+  })
   return {
     contains: TYPES,
     keywords: LITERALS,
@@ -12871,6 +13467,7 @@ function(hljs) {
 Language: Julia REPL
 Description: Julia REPL sessions
 Author: Morten Piibeleht <morten.piibeleht@gmail.com>
+Website: https://julialang.org
 Requires: julia.js
 
 The Julia REPL code blocks look something like the following:
@@ -12915,8 +13512,10 @@ function(hljs) {
 }
 },{name:"julia",create:/*
 Language: Julia
+Description: Julia is a high-level, high-performance, dynamic programming language.
 Author: Kenta Sato <bicycle1885@gmail.com>
 Contributors: Alex Arslan <ararslan@comcast.net>
+Website: https://julialang.org
 */
 
 function(hljs) {
@@ -13082,7 +13681,10 @@ function(hljs) {
 }
 },{name:"kotlin",create:/*
  Language: Kotlin
+ Description: Kotlin is an OSS statically typed programming language that targets the JVM, Android, JavaScript and Native.
  Author: Sergey Mashkov <cy6erGn0m@gmail.com>
+ Website: https://kotlinlang.org
+ Category: common
  */
 
 
@@ -13120,7 +13722,7 @@ function(hljs) {
   // for string templates
   var SUBST = {
     className: 'subst',
-    begin: '\\${', end: '}', contains: [hljs.APOS_STRING_MODE, hljs.C_NUMBER_MODE]
+    begin: '\\${', end: '}', contains: [hljs.C_NUMBER_MODE]
   };
   var VARIABLE = {
     className: 'variable', begin: '\\$' + hljs.UNDERSCORE_IDENT_RE
@@ -13129,7 +13731,7 @@ function(hljs) {
     className: 'string',
     variants: [
       {
-        begin: '"""', end: '"""',
+        begin: '"""', end: '"""(?=[^"])',
         contains: [VARIABLE, SUBST]
       },
       // Can't use built-in modes easily, as we want to use STRING in the meta
@@ -13147,6 +13749,7 @@ function(hljs) {
       }
     ]
   };
+  SUBST.contains.push(STRING)
 
   var ANNOTATION_USE_SITE = {
     className: 'meta', begin: '@(?:file|property|field|get|set|receiver|param|setparam|delegate)\\s*:(?:\\s*' + hljs.UNDERSCORE_IDENT_RE + ')?'
@@ -13305,6 +13908,7 @@ function(hljs) {
 Language: Lasso
 Author: Eric Knibbe <eric@lassosoft.com>
 Description: Lasso is a language and server platform for database-driven web applications. This definition handles Lasso 9 syntax and LassoScript for Lasso 8.6 and earlier.
+Website: http://www.lassosoft.com/What-Is-Lasso
 */
 
 function(hljs) {
@@ -13473,6 +14077,7 @@ function(hljs) {
 Language: LDIF
 Contributors: Jacob Childress <jacobc@gmail.com>
 Category: enterprise, config
+Website: https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format
 */
 function(hljs) {
   return {
@@ -13543,8 +14148,10 @@ function (hljs) {
 }
 },{name:"less",create:/*
 Language: Less
+Description: It's CSS, with just a little more.
 Author:   Max Mikhailov <seven.phases.max@gmail.com>
-Category: css
+Website: http://lesscss.org
+Category: common, css
 */
 
 function(hljs) {
@@ -13970,6 +14577,7 @@ Author: Taneli Vatanen <taneli.vatanen@gmail.com>
 Contributors: Jen Evers-Corvina <jen@sevvie.net>
 Origin: coffeescript.js
 Description: LiveScript is a programming language that transcompiles to JavaScript. For info about language see http://livescript.net/
+Website: https://livescript.net
 Category: scripting
 */
 
@@ -13981,7 +14589,7 @@ function(hljs) {
       'switch continue typeof delete debugger case default function var with ' +
       // LiveScript keywords
       'then unless until loop of by when and or is isnt not it that otherwise from to til fallthrough super ' +
-      'case default function var void const let enum export import native ' +
+      'case default function var void const let enum export import native list map ' +
       '__hasProp __extends __slice __bind __indexOf',
     literal:
       // JS literals
@@ -14046,7 +14654,7 @@ function(hljs) {
         {
           // regex can't start with space to parse x / 2 / 3 as two divisions
           // regex can't start with *, and it supports an "illegal" in the main mode
-          begin: /\/(?![ *])(\\\/|.)*?\/[gim]*(?=\W|$)/
+          begin: /\/(?![ *])(\\\/|.)*?\/[gim]*(?=\W)/
         }
       ]
     },
@@ -14075,6 +14683,10 @@ function(hljs) {
     ]
   };
 
+  var SYMBOLS = {
+    begin: '(#=>|=>|\\|>>|-?->|\\!->)'
+  };
+
   return {
     aliases: ['ls'],
     keywords: KEYWORDS,
@@ -14082,6 +14694,7 @@ function(hljs) {
     contains: EXPRESSIONS.concat([
       hljs.COMMENT('\\/\\*', '\\*\\/'),
       hljs.HASH_COMMENT_MODE,
+      SYMBOLS, // relevance booster
       {
         className: 'function',
         contains: [TITLE, PARAMS],
@@ -14125,6 +14738,7 @@ function(hljs) {
 Language: LLVM IR
 Author: Michael Rodler <contact@f0rki.at>
 Description: language used as intermediate representation in the LLVM compiler framework
+Website: https://llvm.org/docs/LangRef.html
 Category: assembler
 */
 
@@ -14217,9 +14831,10 @@ function(hljs) {
   };
 }
 },{name:"lsl",create:/*
-Language: Linden Scripting Language
+Language: LSL (Linden Scripting Language)
 Description: The Linden Scripting Language is used in Second Life by Linden Labs.
 Author: Builder's Brewery <buildersbrewery@gmail.com>
+Website: http://wiki.secondlife.com/wiki/LSL_Portal
 Category: scripting
 */
 
@@ -14251,7 +14866,7 @@ function(hljs) {
                 begin: '\\b(?:PI|TWO_PI|PI_BY_TWO|DEG_TO_RAD|RAD_TO_DEG|SQRT2)\\b'
             },
             {
-                begin: '\\b(?:XP_ERROR_(?:EXPERIENCES_DISABLED|EXPERIENCE_(?:DISABLED|SUSPENDED)|INVALID_(?:EXPERIENCE|PARAMETERS)|KEY_NOT_FOUND|MATURITY_EXCEEDED|NONE|NOT_(?:FOUND|PERMITTED(?:_LAND)?)|NO_EXPERIENCE|QUOTA_EXCEEDED|RETRY_UPDATE|STORAGE_EXCEPTION|STORE_DISABLED|THROTTLED|UNKNOWN_ERROR)|JSON_APPEND|STATUS_(?:PHYSICS|ROTATE_[XYZ]|PHANTOM|SANDBOX|BLOCK_GRAB(?:_OBJECT)?|(?:DIE|RETURN)_AT_EDGE|CAST_SHADOWS|OK|MALFORMED_PARAMS|TYPE_MISMATCH|BOUNDS_ERROR|NOT_(?:FOUND|SUPPORTED)|INTERNAL_ERROR|WHITELIST_FAILED)|AGENT(?:_(?:BY_(?:LEGACY_|USER)NAME|FLYING|ATTACHMENTS|SCRIPTED|MOUSELOOK|SITTING|ON_OBJECT|AWAY|WALKING|IN_AIR|TYPING|CROUCHING|BUSY|ALWAYS_RUN|AUTOPILOT|LIST_(?:PARCEL(?:_OWNER)?|REGION)))?|CAMERA_(?:PITCH|DISTANCE|BEHINDNESS_(?:ANGLE|LAG)|(?:FOCUS|POSITION)(?:_(?:THRESHOLD|LOCKED|LAG))?|FOCUS_OFFSET|ACTIVE)|ANIM_ON|LOOP|REVERSE|PING_PONG|SMOOTH|ROTATE|SCALE|ALL_SIDES|LINK_(?:ROOT|SET|ALL_(?:OTHERS|CHILDREN)|THIS)|ACTIVE|PASS(?:IVE|_(?:ALWAYS|IF_NOT_HANDLED|NEVER))|SCRIPTED|CONTROL_(?:FWD|BACK|(?:ROT_)?(?:LEFT|RIGHT)|UP|DOWN|(?:ML_)?LBUTTON)|PERMISSION_(?:RETURN_OBJECTS|DEBIT|OVERRIDE_ANIMATIONS|SILENT_ESTATE_MANAGEMENT|TAKE_CONTROLS|TRIGGER_ANIMATION|ATTACH|CHANGE_LINKS|(?:CONTROL|TRACK)_CAMERA|TELEPORT)|INVENTORY_(?:TEXTURE|SOUND|OBJECT|SCRIPT|LANDMARK|CLOTHING|NOTECARD|BODYPART|ANIMATION|GESTURE|ALL|NONE)|CHANGED_(?:INVENTORY|COLOR|SHAPE|SCALE|TEXTURE|LINK|ALLOWED_DROP|OWNER|REGION(?:_START)?|TELEPORT|MEDIA)|OBJECT_(?:CLICK_ACTION|HOVER_HEIGHT|LAST_OWNER_ID|(?:PHYSICS|SERVER|STREAMING)_COST|UNKNOWN_DETAIL|CHARACTER_TIME|PHANTOM|PHYSICS|TEMP_ON_REZ|NAME|DESC|POS|PRIM_(?:COUNT|EQUIVALENCE)|RETURN_(?:PARCEL(?:_OWNER)?|REGION)|REZZER_KEY|ROO?T|VELOCITY|OMEGA|OWNER|GROUP|CREATOR|ATTACHED_POINT|RENDER_WEIGHT|(?:BODY_SHAPE|PATHFINDING)_TYPE|(?:RUNNING|TOTAL)_SCRIPT_COUNT|TOTAL_INVENTORY_COUNT|SCRIPT_(?:MEMORY|TIME))|TYPE_(?:INTEGER|FLOAT|STRING|KEY|VECTOR|ROTATION|INVALID)|(?:DEBUG|PUBLIC)_CHANNEL|ATTACH_(?:AVATAR_CENTER|CHEST|HEAD|BACK|PELVIS|MOUTH|CHIN|NECK|NOSE|BELLY|[LR](?:SHOULDER|HAND|FOOT|EAR|EYE|[UL](?:ARM|LEG)|HIP)|(?:LEFT|RIGHT)_PEC|HUD_(?:CENTER_[12]|TOP_(?:RIGHT|CENTER|LEFT)|BOTTOM(?:_(?:RIGHT|LEFT))?)|[LR]HAND_RING1|TAIL_(?:BASE|TIP)|[LR]WING|FACE_(?:JAW|[LR]EAR|[LR]EYE|TOUNGE)|GROIN|HIND_[LR]FOOT)|LAND_(?:LEVEL|RAISE|LOWER|SMOOTH|NOISE|REVERT)|DATA_(?:ONLINE|NAME|BORN|SIM_(?:POS|STATUS|RATING)|PAYINFO)|PAYMENT_INFO_(?:ON_FILE|USED)|REMOTE_DATA_(?:CHANNEL|REQUEST|REPLY)|PSYS_(?:PART_(?:BF_(?:ZERO|ONE(?:_MINUS_(?:DEST_COLOR|SOURCE_(ALPHA|COLOR)))?|DEST_COLOR|SOURCE_(ALPHA|COLOR))|BLEND_FUNC_(DEST|SOURCE)|FLAGS|(?:START|END)_(?:COLOR|ALPHA|SCALE|GLOW)|MAX_AGE|(?:RIBBON|WIND|INTERP_(?:COLOR|SCALE)|BOUNCE|FOLLOW_(?:SRC|VELOCITY)|TARGET_(?:POS|LINEAR)|EMISSIVE)_MASK)|SRC_(?:MAX_AGE|PATTERN|ANGLE_(?:BEGIN|END)|BURST_(?:RATE|PART_COUNT|RADIUS|SPEED_(?:MIN|MAX))|ACCEL|TEXTURE|TARGET_KEY|OMEGA|PATTERN_(?:DROP|EXPLODE|ANGLE(?:_CONE(?:_EMPTY)?)?)))|VEHICLE_(?:REFERENCE_FRAME|TYPE_(?:NONE|SLED|CAR|BOAT|AIRPLANE|BALLOON)|(?:LINEAR|ANGULAR)_(?:FRICTION_TIMESCALE|MOTOR_DIRECTION)|LINEAR_MOTOR_OFFSET|HOVER_(?:HEIGHT|EFFICIENCY|TIMESCALE)|BUOYANCY|(?:LINEAR|ANGULAR)_(?:DEFLECTION_(?:EFFICIENCY|TIMESCALE)|MOTOR_(?:DECAY_)?TIMESCALE)|VERTICAL_ATTRACTION_(?:EFFICIENCY|TIMESCALE)|BANKING_(?:EFFICIENCY|MIX|TIMESCALE)|FLAG_(?:NO_DEFLECTION_UP|LIMIT_(?:ROLL_ONLY|MOTOR_UP)|HOVER_(?:(?:WATER|TERRAIN|UP)_ONLY|GLOBAL_HEIGHT)|MOUSELOOK_(?:STEER|BANK)|CAMERA_DECOUPLED))|PRIM_(?:ALPHA_MODE(?:_(?:BLEND|EMISSIVE|MASK|NONE))?|NORMAL|SPECULAR|TYPE(?:_(?:BOX|CYLINDER|PRISM|SPHERE|TORUS|TUBE|RING|SCULPT))?|HOLE_(?:DEFAULT|CIRCLE|SQUARE|TRIANGLE)|MATERIAL(?:_(?:STONE|METAL|GLASS|WOOD|FLESH|PLASTIC|RUBBER))?|SHINY_(?:NONE|LOW|MEDIUM|HIGH)|BUMP_(?:NONE|BRIGHT|DARK|WOOD|BARK|BRICKS|CHECKER|CONCRETE|TILE|STONE|DISKS|GRAVEL|BLOBS|SIDING|LARGETILE|STUCCO|SUCTION|WEAVE)|TEXGEN_(?:DEFAULT|PLANAR)|SCULPT_(?:TYPE_(?:SPHERE|TORUS|PLANE|CYLINDER|MASK)|FLAG_(?:MIRROR|INVERT))|PHYSICS(?:_(?:SHAPE_(?:CONVEX|NONE|PRIM|TYPE)))?|(?:POS|ROT)_LOCAL|SLICE|TEXT|FLEXIBLE|POINT_LIGHT|TEMP_ON_REZ|PHANTOM|POSITION|SIZE|ROTATION|TEXTURE|NAME|OMEGA|DESC|LINK_TARGET|COLOR|BUMP_SHINY|FULLBRIGHT|TEXGEN|GLOW|MEDIA_(?:ALT_IMAGE_ENABLE|CONTROLS|(?:CURRENT|HOME)_URL|AUTO_(?:LOOP|PLAY|SCALE|ZOOM)|FIRST_CLICK_INTERACT|(?:WIDTH|HEIGHT)_PIXELS|WHITELIST(?:_ENABLE)?|PERMS_(?:INTERACT|CONTROL)|PARAM_MAX|CONTROLS_(?:STANDARD|MINI)|PERM_(?:NONE|OWNER|GROUP|ANYONE)|MAX_(?:URL_LENGTH|WHITELIST_(?:SIZE|COUNT)|(?:WIDTH|HEIGHT)_PIXELS)))|MASK_(?:BASE|OWNER|GROUP|EVERYONE|NEXT)|PERM_(?:TRANSFER|MODIFY|COPY|MOVE|ALL)|PARCEL_(?:MEDIA_COMMAND_(?:STOP|PAUSE|PLAY|LOOP|TEXTURE|URL|TIME|AGENT|UNLOAD|AUTO_ALIGN|TYPE|SIZE|DESC|LOOP_SET)|FLAG_(?:ALLOW_(?:FLY|(?:GROUP_)?SCRIPTS|LANDMARK|TERRAFORM|DAMAGE|CREATE_(?:GROUP_)?OBJECTS)|USE_(?:ACCESS_(?:GROUP|LIST)|BAN_LIST|LAND_PASS_LIST)|LOCAL_SOUND_ONLY|RESTRICT_PUSHOBJECT|ALLOW_(?:GROUP|ALL)_OBJECT_ENTRY)|COUNT_(?:TOTAL|OWNER|GROUP|OTHER|SELECTED|TEMP)|DETAILS_(?:NAME|DESC|OWNER|GROUP|AREA|ID|SEE_AVATARS))|LIST_STAT_(?:MAX|MIN|MEAN|MEDIAN|STD_DEV|SUM(?:_SQUARES)?|NUM_COUNT|GEOMETRIC_MEAN|RANGE)|PAY_(?:HIDE|DEFAULT)|REGION_FLAG_(?:ALLOW_DAMAGE|FIXED_SUN|BLOCK_TERRAFORM|SANDBOX|DISABLE_(?:COLLISIONS|PHYSICS)|BLOCK_FLY|ALLOW_DIRECT_TELEPORT|RESTRICT_PUSHOBJECT)|HTTP_(?:METHOD|MIMETYPE|BODY_(?:MAXLENGTH|TRUNCATED)|CUSTOM_HEADER|PRAGMA_NO_CACHE|VERBOSE_THROTTLE|VERIFY_CERT)|STRING_(?:TRIM(?:_(?:HEAD|TAIL))?)|CLICK_ACTION_(?:NONE|TOUCH|SIT|BUY|PAY|OPEN(?:_MEDIA)?|PLAY|ZOOM)|TOUCH_INVALID_FACE|PROFILE_(?:NONE|SCRIPT_MEMORY)|RC_(?:DATA_FLAGS|DETECT_PHANTOM|GET_(?:LINK_NUM|NORMAL|ROOT_KEY)|MAX_HITS|REJECT_(?:TYPES|AGENTS|(?:NON)?PHYSICAL|LAND))|RCERR_(?:CAST_TIME_EXCEEDED|SIM_PERF_LOW|UNKNOWN)|ESTATE_ACCESS_(?:ALLOWED_(?:AGENT|GROUP)_(?:ADD|REMOVE)|BANNED_AGENT_(?:ADD|REMOVE))|DENSITY|FRICTION|RESTITUTION|GRAVITY_MULTIPLIER|KFM_(?:COMMAND|CMD_(?:PLAY|STOP|PAUSE)|MODE|FORWARD|LOOP|PING_PONG|REVERSE|DATA|ROTATION|TRANSLATION)|ERR_(?:GENERIC|PARCEL_PERMISSIONS|MALFORMED_PARAMS|RUNTIME_PERMISSIONS|THROTTLED)|CHARACTER_(?:CMD_(?:(?:SMOOTH_)?STOP|JUMP)|DESIRED_(?:TURN_)?SPEED|RADIUS|STAY_WITHIN_PARCEL|LENGTH|ORIENTATION|ACCOUNT_FOR_SKIPPED_FRAMES|AVOIDANCE_MODE|TYPE(?:_(?:[ABCD]|NONE))?|MAX_(?:DECEL|TURN_RADIUS|(?:ACCEL|SPEED)))|PURSUIT_(?:OFFSET|FUZZ_FACTOR|GOAL_TOLERANCE|INTERCEPT)|REQUIRE_LINE_OF_SIGHT|FORCE_DIRECT_PATH|VERTICAL|HORIZONTAL|AVOID_(?:CHARACTERS|DYNAMIC_OBSTACLES|NONE)|PU_(?:EVADE_(?:HIDDEN|SPOTTED)|FAILURE_(?:DYNAMIC_PATHFINDING_DISABLED|INVALID_(?:GOAL|START)|NO_(?:NAVMESH|VALID_DESTINATION)|OTHER|TARGET_GONE|(?:PARCEL_)?UNREACHABLE)|(?:GOAL|SLOWDOWN_DISTANCE)_REACHED)|TRAVERSAL_TYPE(?:_(?:FAST|NONE|SLOW))?|CONTENT_TYPE_(?:ATOM|FORM|HTML|JSON|LLSD|RSS|TEXT|XHTML|XML)|GCNP_(?:RADIUS|STATIC)|(?:PATROL|WANDER)_PAUSE_AT_WAYPOINTS|OPT_(?:AVATAR|CHARACTER|EXCLUSION_VOLUME|LEGACY_LINKSET|MATERIAL_VOLUME|OTHER|STATIC_OBSTACLE|WALKABLE)|SIM_STAT_PCT_CHARS_STEPPED)\\b'
+                begin: '\\b(?:XP_ERROR_(?:EXPERIENCES_DISABLED|EXPERIENCE_(?:DISABLED|SUSPENDED)|INVALID_(?:EXPERIENCE|PARAMETERS)|KEY_NOT_FOUND|MATURITY_EXCEEDED|NONE|NOT_(?:FOUND|PERMITTED(?:_LAND)?)|NO_EXPERIENCE|QUOTA_EXCEEDED|RETRY_UPDATE|STORAGE_EXCEPTION|STORE_DISABLED|THROTTLED|UNKNOWN_ERROR)|JSON_APPEND|STATUS_(?:PHYSICS|ROTATE_[XYZ]|PHANTOM|SANDBOX|BLOCK_GRAB(?:_OBJECT)?|(?:DIE|RETURN)_AT_EDGE|CAST_SHADOWS|OK|MALFORMED_PARAMS|TYPE_MISMATCH|BOUNDS_ERROR|NOT_(?:FOUND|SUPPORTED)|INTERNAL_ERROR|WHITELIST_FAILED)|AGENT(?:_(?:BY_(?:LEGACY_|USER)NAME|FLYING|ATTACHMENTS|SCRIPTED|MOUSELOOK|SITTING|ON_OBJECT|AWAY|WALKING|IN_AIR|TYPING|CROUCHING|BUSY|ALWAYS_RUN|AUTOPILOT|LIST_(?:PARCEL(?:_OWNER)?|REGION)))?|CAMERA_(?:PITCH|DISTANCE|BEHINDNESS_(?:ANGLE|LAG)|(?:FOCUS|POSITION)(?:_(?:THRESHOLD|LOCKED|LAG))?|FOCUS_OFFSET|ACTIVE)|ANIM_ON|LOOP|REVERSE|PING_PONG|SMOOTH|ROTATE|SCALE|ALL_SIDES|LINK_(?:ROOT|SET|ALL_(?:OTHERS|CHILDREN)|THIS)|ACTIVE|PASS(?:IVE|_(?:ALWAYS|IF_NOT_HANDLED|NEVER))|SCRIPTED|CONTROL_(?:FWD|BACK|(?:ROT_)?(?:LEFT|RIGHT)|UP|DOWN|(?:ML_)?LBUTTON)|PERMISSION_(?:RETURN_OBJECTS|DEBIT|OVERRIDE_ANIMATIONS|SILENT_ESTATE_MANAGEMENT|TAKE_CONTROLS|TRIGGER_ANIMATION|ATTACH|CHANGE_LINKS|(?:CONTROL|TRACK)_CAMERA|TELEPORT)|INVENTORY_(?:TEXTURE|SOUND|OBJECT|SCRIPT|LANDMARK|CLOTHING|NOTECARD|BODYPART|ANIMATION|GESTURE|ALL|NONE)|CHANGED_(?:INVENTORY|COLOR|SHAPE|SCALE|TEXTURE|LINK|ALLOWED_DROP|OWNER|REGION(?:_START)?|TELEPORT|MEDIA)|OBJECT_(?:CLICK_ACTION|HOVER_HEIGHT|LAST_OWNER_ID|(?:PHYSICS|SERVER|STREAMING)_COST|UNKNOWN_DETAIL|CHARACTER_TIME|PHANTOM|PHYSICS|TEMP_(?:ATTACHED|ON_REZ)|NAME|DESC|POS|PRIM_(?:COUNT|EQUIVALENCE)|RETURN_(?:PARCEL(?:_OWNER)?|REGION)|REZZER_KEY|ROO?T|VELOCITY|OMEGA|OWNER|GROUP(?:_TAG)?|CREATOR|ATTACHED_(?:POINT|SLOTS_AVAILABLE)|RENDER_WEIGHT|(?:BODY_SHAPE|PATHFINDING)_TYPE|(?:RUNNING|TOTAL)_SCRIPT_COUNT|TOTAL_INVENTORY_COUNT|SCRIPT_(?:MEMORY|TIME))|TYPE_(?:INTEGER|FLOAT|STRING|KEY|VECTOR|ROTATION|INVALID)|(?:DEBUG|PUBLIC)_CHANNEL|ATTACH_(?:AVATAR_CENTER|CHEST|HEAD|BACK|PELVIS|MOUTH|CHIN|NECK|NOSE|BELLY|[LR](?:SHOULDER|HAND|FOOT|EAR|EYE|[UL](?:ARM|LEG)|HIP)|(?:LEFT|RIGHT)_PEC|HUD_(?:CENTER_[12]|TOP_(?:RIGHT|CENTER|LEFT)|BOTTOM(?:_(?:RIGHT|LEFT))?)|[LR]HAND_RING1|TAIL_(?:BASE|TIP)|[LR]WING|FACE_(?:JAW|[LR]EAR|[LR]EYE|TOUNGE)|GROIN|HIND_[LR]FOOT)|LAND_(?:LEVEL|RAISE|LOWER|SMOOTH|NOISE|REVERT)|DATA_(?:ONLINE|NAME|BORN|SIM_(?:POS|STATUS|RATING)|PAYINFO)|PAYMENT_INFO_(?:ON_FILE|USED)|REMOTE_DATA_(?:CHANNEL|REQUEST|REPLY)|PSYS_(?:PART_(?:BF_(?:ZERO|ONE(?:_MINUS_(?:DEST_COLOR|SOURCE_(ALPHA|COLOR)))?|DEST_COLOR|SOURCE_(ALPHA|COLOR))|BLEND_FUNC_(DEST|SOURCE)|FLAGS|(?:START|END)_(?:COLOR|ALPHA|SCALE|GLOW)|MAX_AGE|(?:RIBBON|WIND|INTERP_(?:COLOR|SCALE)|BOUNCE|FOLLOW_(?:SRC|VELOCITY)|TARGET_(?:POS|LINEAR)|EMISSIVE)_MASK)|SRC_(?:MAX_AGE|PATTERN|ANGLE_(?:BEGIN|END)|BURST_(?:RATE|PART_COUNT|RADIUS|SPEED_(?:MIN|MAX))|ACCEL|TEXTURE|TARGET_KEY|OMEGA|PATTERN_(?:DROP|EXPLODE|ANGLE(?:_CONE(?:_EMPTY)?)?)))|VEHICLE_(?:REFERENCE_FRAME|TYPE_(?:NONE|SLED|CAR|BOAT|AIRPLANE|BALLOON)|(?:LINEAR|ANGULAR)_(?:FRICTION_TIMESCALE|MOTOR_DIRECTION)|LINEAR_MOTOR_OFFSET|HOVER_(?:HEIGHT|EFFICIENCY|TIMESCALE)|BUOYANCY|(?:LINEAR|ANGULAR)_(?:DEFLECTION_(?:EFFICIENCY|TIMESCALE)|MOTOR_(?:DECAY_)?TIMESCALE)|VERTICAL_ATTRACTION_(?:EFFICIENCY|TIMESCALE)|BANKING_(?:EFFICIENCY|MIX|TIMESCALE)|FLAG_(?:NO_DEFLECTION_UP|LIMIT_(?:ROLL_ONLY|MOTOR_UP)|HOVER_(?:(?:WATER|TERRAIN|UP)_ONLY|GLOBAL_HEIGHT)|MOUSELOOK_(?:STEER|BANK)|CAMERA_DECOUPLED))|PRIM_(?:ALLOW_UNSIT|ALPHA_MODE(?:_(?:BLEND|EMISSIVE|MASK|NONE))?|NORMAL|SPECULAR|TYPE(?:_(?:BOX|CYLINDER|PRISM|SPHERE|TORUS|TUBE|RING|SCULPT))?|HOLE_(?:DEFAULT|CIRCLE|SQUARE|TRIANGLE)|MATERIAL(?:_(?:STONE|METAL|GLASS|WOOD|FLESH|PLASTIC|RUBBER))?|SHINY_(?:NONE|LOW|MEDIUM|HIGH)|BUMP_(?:NONE|BRIGHT|DARK|WOOD|BARK|BRICKS|CHECKER|CONCRETE|TILE|STONE|DISKS|GRAVEL|BLOBS|SIDING|LARGETILE|STUCCO|SUCTION|WEAVE)|TEXGEN_(?:DEFAULT|PLANAR)|SCRIPTED_SIT_ONLY|SCULPT_(?:TYPE_(?:SPHERE|TORUS|PLANE|CYLINDER|MASK)|FLAG_(?:MIRROR|INVERT))|PHYSICS(?:_(?:SHAPE_(?:CONVEX|NONE|PRIM|TYPE)))?|(?:POS|ROT)_LOCAL|SLICE|TEXT|FLEXIBLE|POINT_LIGHT|TEMP_ON_REZ|PHANTOM|POSITION|SIT_TARGET|SIZE|ROTATION|TEXTURE|NAME|OMEGA|DESC|LINK_TARGET|COLOR|BUMP_SHINY|FULLBRIGHT|TEXGEN|GLOW|MEDIA_(?:ALT_IMAGE_ENABLE|CONTROLS|(?:CURRENT|HOME)_URL|AUTO_(?:LOOP|PLAY|SCALE|ZOOM)|FIRST_CLICK_INTERACT|(?:WIDTH|HEIGHT)_PIXELS|WHITELIST(?:_ENABLE)?|PERMS_(?:INTERACT|CONTROL)|PARAM_MAX|CONTROLS_(?:STANDARD|MINI)|PERM_(?:NONE|OWNER|GROUP|ANYONE)|MAX_(?:URL_LENGTH|WHITELIST_(?:SIZE|COUNT)|(?:WIDTH|HEIGHT)_PIXELS)))|MASK_(?:BASE|OWNER|GROUP|EVERYONE|NEXT)|PERM_(?:TRANSFER|MODIFY|COPY|MOVE|ALL)|PARCEL_(?:MEDIA_COMMAND_(?:STOP|PAUSE|PLAY|LOOP|TEXTURE|URL|TIME|AGENT|UNLOAD|AUTO_ALIGN|TYPE|SIZE|DESC|LOOP_SET)|FLAG_(?:ALLOW_(?:FLY|(?:GROUP_)?SCRIPTS|LANDMARK|TERRAFORM|DAMAGE|CREATE_(?:GROUP_)?OBJECTS)|USE_(?:ACCESS_(?:GROUP|LIST)|BAN_LIST|LAND_PASS_LIST)|LOCAL_SOUND_ONLY|RESTRICT_PUSHOBJECT|ALLOW_(?:GROUP|ALL)_OBJECT_ENTRY)|COUNT_(?:TOTAL|OWNER|GROUP|OTHER|SELECTED|TEMP)|DETAILS_(?:NAME|DESC|OWNER|GROUP|AREA|ID|SEE_AVATARS))|LIST_STAT_(?:MAX|MIN|MEAN|MEDIAN|STD_DEV|SUM(?:_SQUARES)?|NUM_COUNT|GEOMETRIC_MEAN|RANGE)|PAY_(?:HIDE|DEFAULT)|REGION_FLAG_(?:ALLOW_DAMAGE|FIXED_SUN|BLOCK_TERRAFORM|SANDBOX|DISABLE_(?:COLLISIONS|PHYSICS)|BLOCK_FLY|ALLOW_DIRECT_TELEPORT|RESTRICT_PUSHOBJECT)|HTTP_(?:METHOD|MIMETYPE|BODY_(?:MAXLENGTH|TRUNCATED)|CUSTOM_HEADER|PRAGMA_NO_CACHE|VERBOSE_THROTTLE|VERIFY_CERT)|SIT_(?:INVALID_(?:AGENT|LINK_OBJECT)|NO(?:T_EXPERIENCE|_(?:ACCESS|EXPERIENCE_PERMISSION|SIT_TARGET)))|STRING_(?:TRIM(?:_(?:HEAD|TAIL))?)|CLICK_ACTION_(?:NONE|TOUCH|SIT|BUY|PAY|OPEN(?:_MEDIA)?|PLAY|ZOOM)|TOUCH_INVALID_FACE|PROFILE_(?:NONE|SCRIPT_MEMORY)|RC_(?:DATA_FLAGS|DETECT_PHANTOM|GET_(?:LINK_NUM|NORMAL|ROOT_KEY)|MAX_HITS|REJECT_(?:TYPES|AGENTS|(?:NON)?PHYSICAL|LAND))|RCERR_(?:CAST_TIME_EXCEEDED|SIM_PERF_LOW|UNKNOWN)|ESTATE_ACCESS_(?:ALLOWED_(?:AGENT|GROUP)_(?:ADD|REMOVE)|BANNED_AGENT_(?:ADD|REMOVE))|DENSITY|FRICTION|RESTITUTION|GRAVITY_MULTIPLIER|KFM_(?:COMMAND|CMD_(?:PLAY|STOP|PAUSE)|MODE|FORWARD|LOOP|PING_PONG|REVERSE|DATA|ROTATION|TRANSLATION)|ERR_(?:GENERIC|PARCEL_PERMISSIONS|MALFORMED_PARAMS|RUNTIME_PERMISSIONS|THROTTLED)|CHARACTER_(?:CMD_(?:(?:SMOOTH_)?STOP|JUMP)|DESIRED_(?:TURN_)?SPEED|RADIUS|STAY_WITHIN_PARCEL|LENGTH|ORIENTATION|ACCOUNT_FOR_SKIPPED_FRAMES|AVOIDANCE_MODE|TYPE(?:_(?:[ABCD]|NONE))?|MAX_(?:DECEL|TURN_RADIUS|(?:ACCEL|SPEED)))|PURSUIT_(?:OFFSET|FUZZ_FACTOR|GOAL_TOLERANCE|INTERCEPT)|REQUIRE_LINE_OF_SIGHT|FORCE_DIRECT_PATH|VERTICAL|HORIZONTAL|AVOID_(?:CHARACTERS|DYNAMIC_OBSTACLES|NONE)|PU_(?:EVADE_(?:HIDDEN|SPOTTED)|FAILURE_(?:DYNAMIC_PATHFINDING_DISABLED|INVALID_(?:GOAL|START)|NO_(?:NAVMESH|VALID_DESTINATION)|OTHER|TARGET_GONE|(?:PARCEL_)?UNREACHABLE)|(?:GOAL|SLOWDOWN_DISTANCE)_REACHED)|TRAVERSAL_TYPE(?:_(?:FAST|NONE|SLOW))?|CONTENT_TYPE_(?:ATOM|FORM|HTML|JSON|LLSD|RSS|TEXT|XHTML|XML)|GCNP_(?:RADIUS|STATIC)|(?:PATROL|WANDER)_PAUSE_AT_WAYPOINTS|OPT_(?:AVATAR|CHARACTER|EXCLUSION_VOLUME|LEGACY_LINKSET|MATERIAL_VOLUME|OTHER|STATIC_OBSTACLE|WALKABLE)|SIM_STAT_PCT_CHARS_STEPPED)\\b'
             },
             {
                 begin: '\\b(?:FALSE|TRUE)\\b'
@@ -14270,7 +14885,7 @@ function(hljs) {
 
     var LSL_FUNCTIONS = {
         className: 'built_in',
-        begin: '\\b(?:ll(?:AgentInExperience|(?:Create|DataSize|Delete|KeyCount|Keys|Read|Update)KeyValue|GetExperience(?:Details|ErrorMessage)|ReturnObjectsBy(?:ID|Owner)|Json(?:2List|[GS]etValue|ValueType)|Sin|Cos|Tan|Atan2|Sqrt|Pow|Abs|Fabs|Frand|Floor|Ceil|Round|Vec(?:Mag|Norm|Dist)|Rot(?:Between|2(?:Euler|Fwd|Left|Up))|(?:Euler|Axes)2Rot|Whisper|(?:Region|Owner)?Say|Shout|Listen(?:Control|Remove)?|Sensor(?:Repeat|Remove)?|Detected(?:Name|Key|Owner|Type|Pos|Vel|Grab|Rot|Group|LinkNumber)|Die|Ground|Wind|(?:[GS]et)(?:AnimationOverride|MemoryLimit|PrimMediaParams|ParcelMusicURL|Object(?:Desc|Name)|PhysicsMaterial|Status|Scale|Color|Alpha|Texture|Pos|Rot|Force|Torque)|ResetAnimationOverride|(?:Scale|Offset|Rotate)Texture|(?:Rot)?Target(?:Remove)?|(?:Stop)?MoveToTarget|Apply(?:Rotational)?Impulse|Set(?:KeyframedMotion|ContentType|RegionPos|(?:Angular)?Velocity|Buoyancy|HoverHeight|ForceAndTorque|TimerEvent|ScriptState|Damage|TextureAnim|Sound(?:Queueing|Radius)|Vehicle(?:Type|(?:Float|Vector|Rotation)Param)|(?:Touch|Sit)?Text|Camera(?:Eye|At)Offset|PrimitiveParams|ClickAction|Link(?:Alpha|Color|PrimitiveParams(?:Fast)?|Texture(?:Anim)?|Camera|Media)|RemoteScriptAccessPin|PayPrice|LocalRot)|ScaleByFactor|Get(?:(?:Max|Min)ScaleFactor|ClosestNavPoint|StaticPath|SimStats|Env|PrimitiveParams|Link(?:PrimitiveParams|Number(?:OfSides)?|Key|Name|Media)|HTTPHeader|FreeURLs|Object(?:Details|PermMask|PrimCount)|Parcel(?:MaxPrims|Details|Prim(?:Count|Owners))|Attached(?:List)?|(?:SPMax|Free|Used)Memory|Region(?:Name|TimeDilation|FPS|Corner|AgentCount)|Root(?:Position|Rotation)|UnixTime|(?:Parcel|Region)Flags|(?:Wall|GMT)clock|SimulatorHostname|BoundingBox|GeometricCenter|Creator|NumberOf(?:Prims|NotecardLines|Sides)|Animation(?:List)?|(?:Camera|Local)(?:Pos|Rot)|Vel|Accel|Omega|Time(?:stamp|OfDay)|(?:Object|CenterOf)?Mass|MassMKS|Energy|Owner|(?:Owner)?Key|SunDirection|Texture(?:Offset|Scale|Rot)|Inventory(?:Number|Name|Key|Type|Creator|PermMask)|Permissions(?:Key)?|StartParameter|List(?:Length|EntryType)|Date|Agent(?:Size|Info|Language|List)|LandOwnerAt|NotecardLine|Script(?:Name|State))|(?:Get|Reset|GetAndReset)Time|PlaySound(?:Slave)?|LoopSound(?:Master|Slave)?|(?:Trigger|Stop|Preload)Sound|(?:(?:Get|Delete)Sub|Insert)String|To(?:Upper|Lower)|Give(?:InventoryList|Money)|RezObject|(?:Stop)?LookAt|Sleep|CollisionFilter|(?:Take|Release)Controls|DetachFromAvatar|AttachToAvatar(?:Temp)?|InstantMessage|(?:GetNext)?Email|StopHover|MinEventDelay|RotLookAt|String(?:Length|Trim)|(?:Start|Stop)Animation|TargetOmega|Request(?:Experience)?Permissions|(?:Create|Break)Link|BreakAllLinks|(?:Give|Remove)Inventory|Water|PassTouches|Request(?:Agent|Inventory)Data|TeleportAgent(?:Home|GlobalCoords)?|ModifyLand|CollisionSound|ResetScript|MessageLinked|PushObject|PassCollisions|AxisAngle2Rot|Rot2(?:Axis|Angle)|A(?:cos|sin)|AngleBetween|AllowInventoryDrop|SubStringIndex|List2(?:CSV|Integer|Json|Float|String|Key|Vector|Rot|List(?:Strided)?)|DeleteSubList|List(?:Statistics|Sort|Randomize|(?:Insert|Find|Replace)List)|EdgeOfWorld|AdjustSoundVolume|Key2Name|TriggerSoundLimited|EjectFromLand|(?:CSV|ParseString)2List|OverMyLand|SameGroup|UnSit|Ground(?:Slope|Normal|Contour)|GroundRepel|(?:Set|Remove)VehicleFlags|(?:AvatarOn)?(?:Link)?SitTarget|Script(?:Danger|Profiler)|Dialog|VolumeDetect|ResetOtherScript|RemoteLoadScriptPin|(?:Open|Close)RemoteDataChannel|SendRemoteData|RemoteDataReply|(?:Integer|String)ToBase64|XorBase64|Log(?:10)?|Base64To(?:String|Integer)|ParseStringKeepNulls|RezAtRoot|RequestSimulatorData|ForceMouselook|(?:Load|Release|(?:E|Une)scape)URL|ParcelMedia(?:CommandList|Query)|ModPow|MapDestination|(?:RemoveFrom|AddTo|Reset)Land(?:Pass|Ban)List|(?:Set|Clear)CameraParams|HTTP(?:Request|Response)|TextBox|DetectedTouch(?:UV|Face|Pos|(?:N|Bin)ormal|ST)|(?:MD5|SHA1|DumpList2)String|Request(?:Secure)?URL|Clear(?:Prim|Link)Media|(?:Link)?ParticleSystem|(?:Get|Request)(?:Username|DisplayName)|RegionSayTo|CastRay|GenerateKey|TransferLindenDollars|ManageEstateAccess|(?:Create|Delete)Character|ExecCharacterCmd|Evade|FleeFrom|NavigateTo|PatrolPoints|Pursue|UpdateCharacter|WanderWithin))\\b'
+        begin: '\\b(?:ll(?:AgentInExperience|(?:Create|DataSize|Delete|KeyCount|Keys|Read|Update)KeyValue|GetExperience(?:Details|ErrorMessage)|ReturnObjectsBy(?:ID|Owner)|Json(?:2List|[GS]etValue|ValueType)|Sin|Cos|Tan|Atan2|Sqrt|Pow|Abs|Fabs|Frand|Floor|Ceil|Round|Vec(?:Mag|Norm|Dist)|Rot(?:Between|2(?:Euler|Fwd|Left|Up))|(?:Euler|Axes)2Rot|Whisper|(?:Region|Owner)?Say|Shout|Listen(?:Control|Remove)?|Sensor(?:Repeat|Remove)?|Detected(?:Name|Key|Owner|Type|Pos|Vel|Grab|Rot|Group|LinkNumber)|Die|Ground|Wind|(?:[GS]et)(?:AnimationOverride|MemoryLimit|PrimMediaParams|ParcelMusicURL|Object(?:Desc|Name)|PhysicsMaterial|Status|Scale|Color|Alpha|Texture|Pos|Rot|Force|Torque)|ResetAnimationOverride|(?:Scale|Offset|Rotate)Texture|(?:Rot)?Target(?:Remove)?|(?:Stop)?MoveToTarget|Apply(?:Rotational)?Impulse|Set(?:KeyframedMotion|ContentType|RegionPos|(?:Angular)?Velocity|Buoyancy|HoverHeight|ForceAndTorque|TimerEvent|ScriptState|Damage|TextureAnim|Sound(?:Queueing|Radius)|Vehicle(?:Type|(?:Float|Vector|Rotation)Param)|(?:Touch|Sit)?Text|Camera(?:Eye|At)Offset|PrimitiveParams|ClickAction|Link(?:Alpha|Color|PrimitiveParams(?:Fast)?|Texture(?:Anim)?|Camera|Media)|RemoteScriptAccessPin|PayPrice|LocalRot)|ScaleByFactor|Get(?:(?:Max|Min)ScaleFactor|ClosestNavPoint|StaticPath|SimStats|Env|PrimitiveParams|Link(?:PrimitiveParams|Number(?:OfSides)?|Key|Name|Media)|HTTPHeader|FreeURLs|Object(?:Details|PermMask|PrimCount)|Parcel(?:MaxPrims|Details|Prim(?:Count|Owners))|Attached(?:List)?|(?:SPMax|Free|Used)Memory|Region(?:Name|TimeDilation|FPS|Corner|AgentCount)|Root(?:Position|Rotation)|UnixTime|(?:Parcel|Region)Flags|(?:Wall|GMT)clock|SimulatorHostname|BoundingBox|GeometricCenter|Creator|NumberOf(?:Prims|NotecardLines|Sides)|Animation(?:List)?|(?:Camera|Local)(?:Pos|Rot)|Vel|Accel|Omega|Time(?:stamp|OfDay)|(?:Object|CenterOf)?Mass|MassMKS|Energy|Owner|(?:Owner)?Key|SunDirection|Texture(?:Offset|Scale|Rot)|Inventory(?:Number|Name|Key|Type|Creator|PermMask)|Permissions(?:Key)?|StartParameter|List(?:Length|EntryType)|Date|Agent(?:Size|Info|Language|List)|LandOwnerAt|NotecardLine|Script(?:Name|State))|(?:Get|Reset|GetAndReset)Time|PlaySound(?:Slave)?|LoopSound(?:Master|Slave)?|(?:Trigger|Stop|Preload)Sound|(?:(?:Get|Delete)Sub|Insert)String|To(?:Upper|Lower)|Give(?:InventoryList|Money)|RezObject|(?:Stop)?LookAt|Sleep|CollisionFilter|(?:Take|Release)Controls|DetachFromAvatar|AttachToAvatar(?:Temp)?|InstantMessage|(?:GetNext)?Email|StopHover|MinEventDelay|RotLookAt|String(?:Length|Trim)|(?:Start|Stop)Animation|TargetOmega|Request(?:Experience)?Permissions|(?:Create|Break)Link|BreakAllLinks|(?:Give|Remove)Inventory|Water|PassTouches|Request(?:Agent|Inventory)Data|TeleportAgent(?:Home|GlobalCoords)?|ModifyLand|CollisionSound|ResetScript|MessageLinked|PushObject|PassCollisions|AxisAngle2Rot|Rot2(?:Axis|Angle)|A(?:cos|sin)|AngleBetween|AllowInventoryDrop|SubStringIndex|List2(?:CSV|Integer|Json|Float|String|Key|Vector|Rot|List(?:Strided)?)|DeleteSubList|List(?:Statistics|Sort|Randomize|(?:Insert|Find|Replace)List)|EdgeOfWorld|AdjustSoundVolume|Key2Name|TriggerSoundLimited|EjectFromLand|(?:CSV|ParseString)2List|OverMyLand|SameGroup|UnSit|Ground(?:Slope|Normal|Contour)|GroundRepel|(?:Set|Remove)VehicleFlags|SitOnLink|(?:AvatarOn)?(?:Link)?SitTarget|Script(?:Danger|Profiler)|Dialog|VolumeDetect|ResetOtherScript|RemoteLoadScriptPin|(?:Open|Close)RemoteDataChannel|SendRemoteData|RemoteDataReply|(?:Integer|String)ToBase64|XorBase64|Log(?:10)?|Base64To(?:String|Integer)|ParseStringKeepNulls|RezAtRoot|RequestSimulatorData|ForceMouselook|(?:Load|Release|(?:E|Une)scape)URL|ParcelMedia(?:CommandList|Query)|ModPow|MapDestination|(?:RemoveFrom|AddTo|Reset)Land(?:Pass|Ban)List|(?:Set|Clear)CameraParams|HTTP(?:Request|Response)|TextBox|DetectedTouch(?:UV|Face|Pos|(?:N|Bin)ormal|ST)|(?:MD5|SHA1|DumpList2)String|Request(?:Secure)?URL|Clear(?:Prim|Link)Media|(?:Link)?ParticleSystem|(?:Get|Request)(?:Username|DisplayName)|RegionSayTo|CastRay|GenerateKey|TransferLindenDollars|ManageEstateAccess|(?:Create|Delete)Character|ExecCharacterCmd|Evade|FleeFrom|NavigateTo|PatrolPoints|Pursue|UpdateCharacter|WanderWithin))\\b'
     };
 
     return {
@@ -14282,7 +14897,8 @@ function(hljs) {
                 variants: [
                     hljs.COMMENT('//', '$'),
                     hljs.COMMENT('/\\*', '\\*/')
-                ]
+                ],
+                relevance: 0
             },
             LSL_NUMBERS,
             {
@@ -14307,8 +14923,10 @@ function(hljs) {
 }
 },{name:"lua",create:/*
 Language: Lua
+Description: Lua is a powerful, efficient, lightweight, embeddable scripting language.
 Author: Andrew Fedorov <dmmdrs@mail.ru>
-Category: scripting
+Category: common, scripting
+Website: https://www.lua.org
 */
 
 function(hljs) {
@@ -14380,6 +14998,7 @@ function(hljs) {
 Language: Makefile
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Contributors: Joël Porquet <joel@porquet.org>
+Website: https://www.gnu.org/software/make/manual/html_node/Introduction.html
 Category: common
 */
 
@@ -14422,16 +15041,8 @@ function(hljs) {
     ]
   };
   /* Variable assignment */
-  var VAR_ASSIG = {
-    begin: '^' + hljs.UNDERSCORE_IDENT_RE + '\\s*[:+?]?=',
-    illegal: '\\n',
-    returnBegin: true,
-    contains: [
-      {
-        begin: '^' + hljs.UNDERSCORE_IDENT_RE, end: '[:+?]?=',
-        excludeEnd: true,
-      }
-    ]
+  var ASSIGNMENT = {
+    begin: '^' + hljs.UNDERSCORE_IDENT_RE + '\\s*(?=[:+?]?=)'
   };
   /* Meta targets (.PHONY) */
   var META = {
@@ -14457,7 +15068,7 @@ function(hljs) {
       VARIABLE,
       QUOTE_STRING,
       FUNC,
-      VAR_ASSIG,
+      ASSIGNMENT,
       META,
       TARGET,
     ]
@@ -14467,7 +15078,7 @@ function(hljs) {
 Language: Markdown
 Requires: xml.js
 Author: John Crepezzi <john.crepezzi@gmail.com>
-Website: http://seejohncode.com/
+Website: https://daringfireball.net/projects/markdown/
 Category: common, markup
 */
 
@@ -14519,13 +15130,13 @@ function(hljs) {
         className: 'code',
         variants: [
           {
-            begin: '^```\w*\s*$', end: '^```\s*$'
+            begin: '^```\\w*\\s*$', end: '^```[ ]*$'
           },
           {
             begin: '`.+?`'
           },
           {
-            begin: '^( {4}|\t)', end: '$',
+            begin: '^( {4}|\\t)', end: '$',
             relevance: 0
           }
         ]
@@ -14580,7 +15191,9 @@ function(hljs) {
 }
 },{name:"mathematica",create:/*
 Language: Mathematica
+Description: Wolfram Mathematica (usually termed Mathematica) is a modern technical computing system spanning most areas of technical computing.
 Authors: Daniel Kvasnicka <dkvasnicka@vendavo.com>, Jan Poeschko <jan@poeschko.com>
+Website: https://www.wolfram.com/mathematica/
 Category: scientific
 */
 
@@ -14636,6 +15249,7 @@ function(hljs) {
 Language: Matlab
 Author: Denis Bardadym <bardadymchik@gmail.com>
 Contributors: Eugene Nizhibitsky <nizhibitsky@ya.ru>, Egor Rogov <e.rogov@postgrespro.ru>
+Website: https://www.mathworks.com/products/matlab.html
 Category: scientific
 */
 
@@ -14737,6 +15351,7 @@ function(hljs) {
 },{name:"maxima",create:/*
 Language: Maxima
 Author: Robert Dodier <robert.dodier@gmail.com>
+Website: http://maxima.sourceforge.net
 Category: scientific
 */
 
@@ -15150,6 +15765,7 @@ function(hljs) {
 Language: MEL
 Description: Maya Embedded Language
 Author: Shuen-Huei Guan <drake.guan@gmail.com>
+Website: http://www.autodesk.com/products/autodesk-maya/overview
 Category: graphics
 */
 
@@ -15381,6 +15997,7 @@ function(hljs) {
 Language: Mercury
 Author: mucaho <mkucko@gmail.com>
 Description: Mercury is a logic/functional programming language which combines the clarity and expressiveness of declarative programming with advanced static analysis and error detection features.
+Website: https://www.mercurylang.org
 */
 
 function(hljs) {
@@ -15427,6 +16044,7 @@ function(hljs) {
     begin: '\\\\[abfnrtv]\\|\\\\x[0-9a-fA-F]*\\\\\\|%[-+# *.0-9]*[dioxXucsfeEgGp]',
     relevance: 0
   };
+  STRING.contains = STRING.contains.slice() // we need our own copy of contains
   STRING.contains.push(STRING_FMT);
 
   var IMPLICATION = {
@@ -15460,7 +16078,8 @@ function(hljs) {
       hljs.NUMBER_MODE,
       ATOM,
       STRING,
-      {begin: /:-/} // relevance booster
+      {begin: /:-/}, // relevance booster
+      {begin: /\.$/} // relevance booster
     ]
   };
 }
@@ -15468,6 +16087,7 @@ function(hljs) {
 Language: MIPS Assembly
 Author: Nebuleon Fumika <nebuleon.fumika@gmail.com>
 Description: MIPS Assembly (up to MIPS32R2)
+Website: https://en.wikipedia.org/wiki/MIPS_architecture
 Category: assembler
 */
 
@@ -15520,7 +16140,8 @@ function(hljs) {
         ')',
         end: '\\s'
       },
-      hljs.COMMENT('[;#]', '$'),
+      // lines ending with ; or # aren't really comments, probably auto-detect fail
+      hljs.COMMENT('[;#](?!\s*$)', '$'),
       hljs.C_BLOCK_COMMENT_MODE,
       hljs.QUOTE_STRING_MODE,
       {
@@ -15558,7 +16179,9 @@ function(hljs) {
 }
 },{name:"mizar",create:/*
 Language: Mizar
+Description: The Mizar Language is a formal language derived from the mathematical vernacular.
 Author: Kelley van Evert <kelleyvanevert@gmail.com>
+Website: http://mizar.org/language/
 Category: scientific
 */
 
@@ -15585,6 +16208,7 @@ Language: Mojolicious
 Requires: xml.js, perl.js
 Author: Dotan Dimet <dotan@corky.net>
 Description: Mojolicious .ep (Embedded Perl) templates
+Website: https://mojolicious.org
 Category: template
 */
 function(hljs) {
@@ -15613,7 +16237,9 @@ function(hljs) {
 }
 },{name:"monkey",create:/*
 Language: Monkey
+Description: Monkey2 is an easy to use, cross platform, games oriented programming language from Blitz Research.
 Author: Arthur Bikmullin <devolonter@gmail.com>
+Website: https://blitzresearch.itch.io/monkey2
 */
 
 function(hljs) {
@@ -15693,8 +16319,9 @@ function(hljs) {
 },{name:"moonscript",create:/*
 Language: MoonScript
 Author: Billy Quith <chinbillybilbo@gmail.com>
-Description: MoonScript is a programming language that transcompiles to Lua. For info about language see http://moonscript.org/
+Description: MoonScript is a programming language that transcompiles to Lua.
 Origin: coffeescript.js
+Website: http://moonscript.org/
 Category: scripting
 */
 
@@ -15814,6 +16441,7 @@ function(hljs) {
  Author: Andres Täht <andres.taht@gmail.com>
  Contributors: Rene Saarsoo <nene@triin.net>
  Description: Couchbase query language
+ Website: https://www.couchbase.com/products/n1ql
  */
 
 function(hljs) {
@@ -15889,6 +16517,7 @@ Language: Nginx
 Author: Peter Leonov <gojpeg@yandex.ru>
 Contributors: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Category: common, config
+Website: https://www.nginx.com
 */
 
 function(hljs) {
@@ -15984,7 +16613,10 @@ function(hljs) {
   };
 }
 },{name:"nimrod",create:/*
-Language: Nimrod
+Language: Nim (formerly Nimrod)
+Description: Nim is a statically typed compiled systems programming language.
+Website: https://nim-lang.org
+Category: system
 */
 
 function(hljs) {
@@ -16044,7 +16676,8 @@ function(hljs) {
 },{name:"nix",create:/*
 Language: Nix
 Author: Domen Kožar <domen@dev.si>
-Description: Nix functional language. See http://nixos.org/nix
+Description: Nix functional language
+Website: http://nixos.org/nix
 */
 
 
@@ -16100,7 +16733,7 @@ function(hljs) {
 Language: NSIS
 Description: Nullsoft Scriptable Install System
 Author: Jan T. Sott <jan.sott@gmail.com>
-Website: http://github.com/idleberg
+Website: https://nsis.sourceforge.io/Main_Page
 */
 
 function(hljs) {
@@ -16212,6 +16845,7 @@ function(hljs) {
 Language: Objective-C
 Author: Valerii Hiora <valerii.hiora@gmail.com>
 Contributors: Angel G. Olloqui <angelgarcia.mail@gmail.com>, Matt Diephouse <matt@diephouse.com>, Andrew Farmer <ahfarmer@gmail.com>, Minh Nguyễn <mxn@1ec5.org>
+Website: https://developer.apple.com/documentation/objectivec
 Category: common
 */
 
@@ -16262,6 +16896,7 @@ function(hljs) {
       hljs.C_BLOCK_COMMENT_MODE,
       hljs.C_NUMBER_MODE,
       hljs.QUOTE_STRING_MODE,
+      hljs.APOS_STRING_MODE,
       {
         className: 'string',
         variants: [
@@ -16269,25 +16904,29 @@ function(hljs) {
             begin: '@"', end: '"',
             illegal: '\\n',
             contains: [hljs.BACKSLASH_ESCAPE]
-          },
-          {
-            begin: '\'', end: '[^\\\\]\'',
-            illegal: '[^\\\\][^\']'
           }
         ]
       },
       {
         className: 'meta',
-        begin: '#',
-        end: '$',
+        begin: /#\s*[a-z]+\b/, end: /$/,
+        keywords: {
+          'meta-keyword':
+            'if else elif endif define undef warning error line ' +
+            'pragma ifdef ifndef include'
+        },
         contains: [
           {
+            begin: /\\\n/, relevance: 0
+          },
+          hljs.inherit(hljs.QUOTE_STRING_MODE, {className: 'meta-string'}),
+          {
             className: 'meta-string',
-            variants: [
-              { begin: '\"', end: '\"' },
-              { begin: '<', end: '>' }
-            ]
-          }
+            begin: /<.*?>/, end: /$/,
+            illegal: '\\n',
+          },
+          hljs.C_LINE_COMMENT_MODE,
+          hljs.C_BLOCK_COMMENT_MODE
         ]
       },
       {
@@ -16310,8 +16949,10 @@ Language: OCaml
 Author: Mehdi Dogguy <mehdi@dogguy.org>
 Contributors: Nicolas Braud-Santoni <nicolas.braud-santoni@ens-cachan.fr>, Mickael Delahaye <mickael.delahaye@gmail.com>
 Description: OCaml language definition.
+Website: https://ocaml.org
 Category: functional
 */
+
 function(hljs) {
   /* missing support for heredoc-like string (OCaml 4.0.2+) */
   return {
@@ -16386,6 +17027,7 @@ function(hljs) {
 Language: OpenSCAD
 Author: Dan Panzarella <alsoelp@gmail.com>
 Description: OpenSCAD is a language for the 3D CAD modeling software of the same name.
+Website: https://www.openscad.org
 Category: scientific
 */
 
@@ -16448,7 +17090,8 @@ function(hljs) {
 },{name:"oxygene",create:/*
 Language: Oxygene
 Author: Carlo Kok <ck@remobjects.com>
-Description: Language definition for RemObjects Oxygene (http://www.remobjects.com)
+Description: Oxygene is built on the foundation of Object Pascal, revamped and extended to be a modern language for the twenty-first century.
+Website: https://www.elementscompiler.com/elements/default.aspx
 */
 
 function(hljs) {
@@ -16524,6 +17167,7 @@ function(hljs) {
 Language: Parser3
 Requires: xml.js
 Author: Oleg Volchkov <oleg@volchkov.net>
+Website: https://www.parser.ru/en/
 Category: template
 */
 
@@ -16577,6 +17221,7 @@ function(hljs) {
 },{name:"perl",create:/*
 Language: Perl
 Author: Peter Leonov <gojpeg@yandex.ru>
+Website: https://www.perl.org
 Category: common
 */
 
@@ -16737,10 +17382,11 @@ function(hljs) {
   };
 }
 },{name:"pf",create:/*
-Language: pf
-Category: config
+Language: pf.conf
+Description: pf.conf — packet filter configuration file (OpenBSD)
 Author: Peter Piwowarski <oldlaptop654@aol.com>
-Description: The pf.conf(5) format as of OpenBSD 5.6
+Website: http://man.openbsd.org/pf.conf
+Category: config
 */
 
 function(hljs) {
@@ -16797,6 +17443,7 @@ function(hljs) {
 },{name:"pgsql",create:/*
 Language: PostgreSQL SQL dialect and PL/pgSQL
 Author: Egor Rogov (e.rogov@postgrespro.ru)
+Website: https://www.postgresql.org/docs/11/sql.html
 Description:
     This language incorporates both PostgreSQL SQL dialect and PL/pgSQL language.
     It is based on PostgreSQL version 11. Some notes:
@@ -16817,7 +17464,7 @@ function(hljs) {
   var DOLLAR_STRING = '\\$([a-zA-Z_]?|[a-zA-Z_][a-zA-Z_0-9]*)\\$';
   var LABEL = '<<\\s*' + UNQUOTED_IDENT + '\\s*>>';
 
-  var SQL_KW = 
+  var SQL_KW =
     // https://www.postgresql.org/docs/11/static/sql-keywords-appendix.html
     // https://www.postgresql.org/docs/11/static/sql-commands.html
     // SQL commands (starting words)
@@ -16867,7 +17514,7 @@ function(hljs) {
     'SUPERUSER NOSUPERUSER CREATEDB NOCREATEDB CREATEROLE NOCREATEROLE INHERIT NOINHERIT ' +
     'LOGIN NOLOGIN REPLICATION NOREPLICATION BYPASSRLS NOBYPASSRLS ';
 
-  var PLPGSQL_KW = 
+  var PLPGSQL_KW =
     'ALIAS BEGIN CONSTANT DECLARE END EXCEPTION RETURN PERFORM|10 RAISE GET DIAGNOSTICS ' +
     'STACKED|10 FOREACH LOOP ELSIF EXIT WHILE REVERSE SLICE DEBUG LOG INFO NOTICE WARNING ASSERT ' +
     'OPEN ';
@@ -16890,8 +17537,8 @@ function(hljs) {
     'REGNAMESPACE|10 REGCONFIG|10 REGDICTIONARY|10 ';// +
     // some types from standard extensions
     'HSTORE|10 LO LTREE|10 ';
-    
-  var TYPES_RE = 
+
+  var TYPES_RE =
     TYPES.trim()
          .split(' ')
          .map( function(val) { return val.split('|')[0]; } )
@@ -17078,7 +17725,7 @@ function(hljs) {
     //
     'GROUPING CAST ';
 
-    var FUNCTIONS_RE = 
+    var FUNCTIONS_RE =
       FUNCTIONS.trim()
                .split(' ')
                .map( function(val) { return val.split('|')[0]; } )
@@ -17302,6 +17949,7 @@ function(hljs) {
 Language: PHP
 Author: Victor Karamzin <Victor.Karamzin@enterra-inc.com>
 Contributors: Evgeny Stepanischev <imbolk@gmail.com>, Ivan Sagalaev <maniac@softwaremaniacs.org>
+Website: https://www.php.net
 Category: common
 */
 
@@ -17434,8 +18082,8 @@ function(hljs) {
 },{name:"plaintext",create:/*
 Language: plaintext
 Author: Egor Rogov (e.rogov@postgrespro.ru)
-Description:
-    Plain text without any highlighting.
+Description: Plain text without any highlighting.
+Category: common
 */
 
 function(hljs) {
@@ -17448,6 +18096,7 @@ Language: Pony
 Author: Joe Eli McIlvain <joe.eli.mac@gmail.com>
 Description: Pony is an open-source, object-oriented, actor-model,
              capabilities-secure, high performance programming language.
+Website: https://www.ponylang.io
 */
 
 function(hljs) {
@@ -17493,6 +18142,12 @@ function(hljs) {
     begin: hljs.IDENT_RE + '\'', relevance: 0
   };
 
+  var NUMBER_MODE = {
+    className: 'number',
+    begin: '(-?)(\\b0[xX][a-fA-F0-9]+|\\b0[bB][01]+|(\\b\\d+(_\\d+)?(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)',
+    relevance: 0
+  };
+
   /**
    * The `FUNCTION` and `CLASS` modes were intentionally removed to simplify
    * highlighting and fix cases like
@@ -17512,7 +18167,7 @@ function(hljs) {
       QUOTE_STRING_MODE,
       SINGLE_QUOTE_CHAR_MODE,
       PRIMED_NAME,
-      hljs.C_NUMBER_MODE,
+      NUMBER_MODE,
       hljs.C_LINE_COMMENT_MODE,
       hljs.C_BLOCK_COMMENT_MODE
     ]
@@ -17520,23 +18175,69 @@ function(hljs) {
 }
 },{name:"powershell",create:/*
 Language: PowerShell
+Description: PowerShell is a task-based command-line shell and scripting language built on .NET.
 Author: David Mohundro <david@mohundro.com>
 Contributors: Nicholas Blumhardt <nblumhardt@nblumhardt.com>, Victor Zhou <OiCMudkips@users.noreply.github.com>, Nicolas Le Gall <contact@nlegall.fr>
+Website: https://docs.microsoft.com/en-us/powershell/
 */
 
 function(hljs){
+
+  var TYPES =
+    ["string", "char", "byte", "int", "long", "bool",  "decimal",  "single",
+     "double", "DateTime", "xml", "array", "hashtable", "void"];
+
+  // https://msdn.microsoft.com/en-us/library/ms714428(v=vs.85).aspx
+  var VALID_VERBS =
+    'Add|Clear|Close|Copy|Enter|Exit|Find|Format|Get|Hide|Join|Lock|' +
+    'Move|New|Open|Optimize|Pop|Push|Redo|Remove|Rename|Reset|Resize|' +
+    'Search|Select|Set|Show|Skip|Split|Step|Switch|Undo|Unlock|' +
+    'Watch|Backup|Checkpoint|Compare|Compress|Convert|ConvertFrom|' +
+    'ConvertTo|Dismount|Edit|Expand|Export|Group|Import|Initialize|' +
+    'Limit|Merge|New|Out|Publish|Restore|Save|Sync|Unpublish|Update|' +
+    'Approve|Assert|Complete|Confirm|Deny|Disable|Enable|Install|Invoke|Register|' +
+    'Request|Restart|Resume|Start|Stop|Submit|Suspend|Uninstall|' +
+    'Unregister|Wait|Debug|Measure|Ping|Repair|Resolve|Test|Trace|Connect|' +
+    'Disconnect|Read|Receive|Send|Write|Block|Grant|Protect|Revoke|Unblock|' +
+    'Unprotect|Use|ForEach|Sort|Tee|Where';
+
+  var COMPARISON_OPERATORS =
+    '-and|-as|-band|-bnot|-bor|-bxor|-casesensitive|-ccontains|-ceq|-cge|-cgt|' +
+    '-cle|-clike|-clt|-cmatch|-cne|-cnotcontains|-cnotlike|-cnotmatch|-contains|' +
+    '-creplace|-csplit|-eq|-exact|-f|-file|-ge|-gt|-icontains|-ieq|-ige|-igt|' +
+    '-ile|-ilike|-ilt|-imatch|-in|-ine|-inotcontains|-inotlike|-inotmatch|' +
+    '-ireplace|-is|-isnot|-isplit|-join|-le|-like|-lt|-match|-ne|-not|' +
+    '-notcontains|-notin|-notlike|-notmatch|-or|-regex|-replace|-shl|-shr|' +
+    '-split|-wildcard|-xor';
+
+  var KEYWORDS = {
+    keyword: 'if else foreach return do while until elseif begin for trap data dynamicparam ' +
+    'end break throw param continue finally in switch exit filter try process catch ' +
+    'hidden static parameter'
+    // TODO: 'validate[A-Z]+' can't work in keywords
+  };
+
+  var TITLE_NAME_RE = /\w[\w\d]*((-)[\w\d]+)*/;
+
   var BACKTICK_ESCAPE = {
-    begin: "`[\\s\\S]",
-    relevance: 0,
+    begin: '`[\\s\\S]',
+    relevance: 0
   };
+
   var VAR = {
-    className: "variable",
-    variants: [{ begin: /\$[\w\d][\w\d_:]*/ }],
+    className: 'variable',
+    variants: [
+      { begin: /\$\B/ },
+      { className: 'keyword', begin: /\$this/ },
+      { begin: /\$[\w\d][\w\d_:]*/ }
+    ]
   };
+
   var LITERAL = {
-    className: "literal",
-    begin: /\$(null|true|false)\b/,
+    className: 'literal',
+    begin: /\$(null|true|false)\b/
   };
+
   var QUOTE_STRING = {
     className: "string",
     variants: [{ begin: /"/, end: /"/ }, { begin: /@"/, end: /^"@/ }],
@@ -17544,260 +18245,189 @@ function(hljs){
       BACKTICK_ESCAPE,
       VAR,
       {
-        className: "variable",
-        begin: /\$[A-z]/,
-        end: /[^A-z]/,
-      },
-    ],
+        className: 'variable',
+        begin: /\$[A-z]/, end: /[^A-z]/
+      }
+    ]
   };
+
   var APOS_STRING = {
-    className: "string",
-    variants: [{ begin: /'/, end: /'/ }, { begin: /@'/, end: /^'@/ }],
+    className: 'string',
+    variants: [
+      { begin: /'/, end: /'/ },
+      { begin: /@'/, end: /^'@/ }
+    ]
   };
 
   var PS_HELPTAGS = {
     className: "doctag",
     variants: [
       /* no paramater help tags */
-
       {
-        begin: /\.(synopsis|description|example|inputs|outputs|notes|link|component|role|functionality)/,
+        begin: /\.(synopsis|description|example|inputs|outputs|notes|link|component|role|functionality)/
       },
       /* one parameter help tags */
-      {
-        begin: /\.(parameter|forwardhelptargetname|forwardhelpcategory|remotehelprunspace|externalhelp)\s+\S+/,
-      },
-    ],
+      { begin: /\.(parameter|forwardhelptargetname|forwardhelpcategory|remotehelprunspace|externalhelp)\s+\S+/ }
+    ]
   };
-  var PS_COMMENT = hljs.inherit(hljs.COMMENT(null, null), {
-    variants: [
-      /* single-line comment */
-      { begin: /#/, end: /$/ },
-      /* multi-line comment */
-      { begin: /<#/, end: /#>/ },
-    ],
-    contains: [PS_HELPTAGS],
-  });
 
-  return {
-    aliases: ["ps"],
-    lexemes: /-?[A-z\.\-]+/,
-    case_insensitive: true,
-    keywords: {
-      keyword:
-        "if else foreach return function do while until elseif begin for trap data dynamicparam end break throw param continue finally in switch exit filter try process catch" +
-        "ValidateNoCircleInNodeResources ValidateNodeExclusiveResources ValidateNodeManager ValidateNodeResources ValidateNodeResourceSource ValidateNoNameNodeResources ThrowError IsHiddenResource" +
-        "IsPatternMatched ",
-      built_in:
-        "Add-Computer Add-Content Add-History Add-JobTrigger Add-Member Add-PSSnapin Add-Type Checkpoint-Computer Clear-Content " +
-        "Clear-EventLog Clear-History Clear-Host Clear-Item Clear-ItemProperty Clear-Variable Compare-Object Complete-Transaction Connect-PSSession " +
-        "Connect-WSMan Convert-Path ConvertFrom-Csv ConvertFrom-Json ConvertFrom-SecureString ConvertFrom-StringData ConvertTo-Csv ConvertTo-Html " +
-        "ConvertTo-Json ConvertTo-SecureString ConvertTo-Xml Copy-Item Copy-ItemProperty Debug-Process Disable-ComputerRestore Disable-JobTrigger " +
-        "Disable-PSBreakpoint Disable-PSRemoting Disable-PSSessionConfiguration Disable-WSManCredSSP Disconnect-PSSession Disconnect-WSMan " +
-        "Disable-ScheduledJob Enable-ComputerRestore Enable-JobTrigger Enable-PSBreakpoint Enable-PSRemoting Enable-PSSessionConfiguration " +
-        "Enable-ScheduledJob Enable-WSManCredSSP Enter-PSSession Exit-PSSession Export-Alias Export-Clixml Export-Console Export-Counter Export-Csv " +
-        "Export-FormatData Export-ModuleMember Export-PSSession ForEach-Object Format-Custom Format-List Format-Table Format-Wide Get-Acl Get-Alias " +
-        "Get-AuthenticodeSignature Get-ChildItem Get-Command Get-ComputerRestorePoint Get-Content Get-ControlPanelItem Get-Counter Get-Credential " +
-        "Get-Culture Get-Date Get-Event Get-EventLog Get-EventSubscriber Get-ExecutionPolicy Get-FormatData Get-Host Get-HotFix Get-Help Get-History " +
-        "Get-IseSnippet Get-Item Get-ItemProperty Get-Job Get-JobTrigger Get-Location Get-Member Get-Module Get-PfxCertificate Get-Process " +
-        "Get-PSBreakpoint Get-PSCallStack Get-PSDrive Get-PSProvider Get-PSSession Get-PSSessionConfiguration Get-PSSnapin Get-Random Get-ScheduledJob " +
-        "Get-ScheduledJobOption Get-Service Get-TraceSource Get-Transaction Get-TypeData Get-UICulture Get-Unique Get-Variable Get-Verb Get-WinEvent " +
-        "Get-WmiObject Get-WSManCredSSP Get-WSManInstance Group-Object Import-Alias Import-Clixml Import-Counter Import-Csv Import-IseSnippet " +
-        "Import-LocalizedData Import-PSSession Import-Module Invoke-AsWorkflow Invoke-Command Invoke-Expression Invoke-History Invoke-Item " +
-        "Invoke-RestMethod Invoke-WebRequest Invoke-WmiMethod Invoke-WSManAction Join-Path Limit-EventLog Measure-Command Measure-Object Move-Item " +
-        "Move-ItemProperty New-Alias New-Event New-EventLog New-IseSnippet New-Item New-ItemProperty New-JobTrigger New-Object New-Module " +
-        "New-ModuleManifest New-PSDrive New-PSSession New-PSSessionConfigurationFile New-PSSessionOption New-PSTransportOption " +
-        "New-PSWorkflowExecutionOption New-PSWorkflowSession New-ScheduledJobOption New-Service New-TimeSpan New-Variable New-WebServiceProxy " +
-        "New-WinEvent New-WSManInstance New-WSManSessionOption Out-Default Out-File Out-GridView Out-Host Out-Null Out-Printer Out-String Pop-Location " +
-        "Push-Location Read-Host Receive-Job Register-EngineEvent Register-ObjectEvent Register-PSSessionConfiguration Register-ScheduledJob " +
-        "Register-WmiEvent Remove-Computer Remove-Event Remove-EventLog Remove-Item Remove-ItemProperty Remove-Job Remove-JobTrigger Remove-Module " +
-        "Remove-PSBreakpoint Remove-PSDrive Remove-PSSession Remove-PSSnapin Remove-TypeData Remove-Variable Remove-WmiObject Remove-WSManInstance " +
-        "Rename-Computer Rename-Item Rename-ItemProperty Reset-ComputerMachinePassword Resolve-Path Restart-Computer Restart-Service Restore-Computer " +
-        "Resume-Job Resume-Service Save-Help Select-Object Select-String Select-Xml Send-MailMessage Set-Acl Set-Alias Set-AuthenticodeSignature " +
-        "Set-Content Set-Date Set-ExecutionPolicy Set-Item Set-ItemProperty Set-JobTrigger Set-Location Set-PSBreakpoint Set-PSDebug " +
-        "Set-PSSessionConfiguration Set-ScheduledJob Set-ScheduledJobOption Set-Service Set-StrictMode Set-TraceSource Set-Variable Set-WmiInstance " +
-        "Set-WSManInstance Set-WSManQuickConfig Show-Command Show-ControlPanelItem Show-EventLog Sort-Object Split-Path Start-Job Start-Process " +
-        "Start-Service Start-Sleep Start-Transaction Start-Transcript Stop-Computer Stop-Job Stop-Process Stop-Service Stop-Transcript Suspend-Job " +
-        "Suspend-Service Tee-Object Test-ComputerSecureChannel Test-Connection Test-ModuleManifest Test-Path Test-PSSessionConfigurationFile " +
-        "Trace-Command Unblock-File Undo-Transaction Unregister-Event Unregister-PSSessionConfiguration Unregister-ScheduledJob Update-FormatData " +
-        "Update-Help Update-List Update-TypeData Use-Transaction Wait-Event Wait-Job Wait-Process Where-Object Write-Debug Write-Error Write-EventLog " +
-        "Write-Host Write-Output Write-Progress Write-Verbose Write-Warning Add-MDTPersistentDrive Disable-MDTMonitorService Enable-MDTMonitorService " +
-        "Get-MDTDeploymentShareStatistics Get-MDTMonitorData Get-MDTOperatingSystemCatalog Get-MDTPersistentDrive Import-MDTApplication " +
-        "Import-MDTDriver Import-MDTOperatingSystem Import-MDTPackage Import-MDTTaskSequence New-MDTDatabase Remove-MDTMonitorData " +
-        "Remove-MDTPersistentDrive Restore-MDTPersistentDrive Set-MDTMonitorData Test-MDTDeploymentShare Test-MDTMonitorData Update-MDTDatabaseSchema " +
-        "Update-MDTDeploymentShare Update-MDTLinkedDS Update-MDTMedia Add-VamtProductKey Export-VamtData Find-VamtManagedMachine " +
-        "Get-VamtConfirmationId Get-VamtProduct Get-VamtProductKey Import-VamtData Initialize-VamtData Install-VamtConfirmationId " +
-        "Install-VamtProductActivation Install-VamtProductKey Update-VamtProduct Add-CIDatastore Add-KeyManagementServer Add-NodeKeys " +
-        "Add-NsxDynamicCriteria Add-NsxDynamicMemberSet Add-NsxEdgeInterfaceAddress Add-NsxFirewallExclusionListMember Add-NsxFirewallRuleMember " +
-        "Add-NsxIpSetMember Add-NsxLicense Add-NsxLoadBalancerPoolMember Add-NsxLoadBalancerVip Add-NsxSecondaryManager Add-NsxSecurityGroupMember " +
-        "Add-NsxSecurityPolicyRule Add-NsxSecurityPolicyRuleGroup Add-NsxSecurityPolicyRuleService Add-NsxServiceGroupMember " +
-        "Add-NsxTransportZoneMember Add-PassthroughDevice Add-VDSwitchPhysicalNetworkAdapter Add-VDSwitchVMHost Add-VMHost Add-VMHostNtpServer " +
-        "Add-VirtualSwitchPhysicalNetworkAdapter Add-XmlElement Add-vRACustomForm Add-vRAPrincipalToTenantRole Add-vRAReservationNetwork " +
-        "Add-vRAReservationStorage Clear-NsxEdgeInterface Clear-NsxManagerTimeSettings Compress-Archive Connect-CIServer Connect-CisServer " +
-        "Connect-HCXServer Connect-NIServer Connect-NsxLogicalSwitch Connect-NsxServer Connect-NsxtServer Connect-SrmServer Connect-VIServer " +
-        "Connect-Vmc Connect-vRAServer Connect-vRNIServer ConvertFrom-Markdown ConvertTo-MOFInstance Copy-DatastoreItem Copy-HardDisk Copy-NsxEdge " +
-        "Copy-VDisk Copy-VMGuestFile Debug-Runspace Disable-NsxEdgeSsh Disable-RunspaceDebug Disable-vRNIDataSource Disconnect-CIServer " +
-        "Disconnect-CisServer Disconnect-HCXServer Disconnect-NsxLogicalSwitch Disconnect-NsxServer Disconnect-NsxtServer Disconnect-SrmServer " +
-        "Disconnect-VIServer Disconnect-Vmc Disconnect-vRAServer Disconnect-vRNIServer Dismount-Tools Enable-NsxEdgeSsh Enable-RunspaceDebug " +
-        "Enable-vRNIDataSource Expand-Archive Export-NsxObject Export-SpbmStoragePolicy Export-VApp Export-VDPortGroup Export-VDSwitch " +
-        "Export-VMHostProfile Export-vRAIcon Export-vRAPackage Find-Command Find-DscResource Find-Module Find-NsxWhereVMUsed Find-Package " +
-        "Find-PackageProvider Find-RoleCapability Find-Script Format-Hex Format-VMHostDiskPartition Format-XML Generate-VersionInfo " +
-        "Get-AdvancedSetting Get-AlarmAction Get-AlarmActionTrigger Get-AlarmDefinition Get-Annotation Get-CDDrive Get-CIAccessControlRule " +
-        "Get-CIDatastore Get-CINetworkAdapter Get-CIRole Get-CIUser Get-CIVApp Get-CIVAppNetwork Get-CIVAppStartRule Get-CIVAppTemplate Get-CIVM " +
-        "Get-CIVMTemplate Get-CIView Get-Catalog Get-CisCommand Get-CisService Get-CloudCommand Get-Cluster Get-CompatibleVersionAddtionaPropertiesStr " +
-        "Get-ComplexResourceQualifier Get-ConfigurationErrorCount Get-ContentLibraryItem Get-CustomAttribute Get-DSCResourceModules Get-Datacenter " +
-        "Get-Datastore Get-DatastoreCluster Get-DrsClusterGroup Get-DrsRecommendation Get-DrsRule Get-DrsVMHostRule Get-DscResource Get-EdgeGateway " +
-        "Get-EncryptedPassword Get-ErrorReport Get-EsxCli Get-EsxTop Get-ExternalNetwork Get-FileHash Get-FloppyDrive Get-Folder Get-HAPrimaryVMHost " +
-        "Get-HCXAppliance Get-HCXApplianceCompute Get-HCXApplianceDVS Get-HCXApplianceDatastore Get-HCXApplianceNetwork Get-HCXContainer " +
-        "Get-HCXDatastore Get-HCXGateway Get-HCXInterconnectStatus Get-HCXJob Get-HCXMigration Get-HCXNetwork Get-HCXNetworkExtension " +
-        "Get-HCXReplication Get-HCXReplicationSnapshot Get-HCXService Get-HCXSite Get-HCXSitePairing Get-HCXVM Get-HardDisk Get-IScsiHbaTarget " +
-        "Get-InnerMostErrorRecord Get-InstallPath Get-InstalledModule Get-InstalledScript Get-Inventory Get-ItemPropertyValue Get-KeyManagementServer " +
-        "Get-KmipClientCertificate Get-KmsCluster Get-Log Get-LogType Get-MarkdownOption Get-Media Get-MofInstanceName Get-MofInstanceText Get-NetworkAdapter Get-NetworkPool " +
-        "Get-NfsUser Get-NicTeamingPolicy Get-NsxApplicableMember Get-NsxApplicableSecurityAction Get-NsxBackingDVSwitch Get-NsxBackingPortGroup Get-NsxCliDfwAddrSet " +
-        "Get-NsxCliDfwFilter Get-NsxCliDfwRule Get-NsxClusterStatus Get-NsxController Get-NsxDynamicCriteria Get-NsxDynamicMemberSet Get-NsxEdge Get-NsxEdgeBgp " +
-        "Get-NsxEdgeBgpNeighbour Get-NsxEdgeCertificate Get-NsxEdgeCsr Get-NsxEdgeFirewall Get-NsxEdgeFirewallRule Get-NsxEdgeInterface Get-NsxEdgeInterfaceAddress " +
-        "Get-NsxEdgeNat Get-NsxEdgeNatRule Get-NsxEdgeOspf Get-NsxEdgeOspfArea Get-NsxEdgeOspfInterface Get-NsxEdgePrefix Get-NsxEdgeRedistributionRule Get-NsxEdgeRouting " +
-        "Get-NsxEdgeStaticRoute Get-NsxEdgeSubInterface Get-NsxFirewallExclusionListMember Get-NsxFirewallGlobalConfiguration Get-NsxFirewallPublishStatus Get-NsxFirewallRule " +
-        "Get-NsxFirewallRuleMember Get-NsxFirewallSavedConfiguration Get-NsxFirewallSection Get-NsxFirewallThreshold Get-NsxIpPool Get-NsxIpSet Get-NsxLicense Get-NsxLoadBalancer " +
-        "Get-NsxLoadBalancerApplicationProfile Get-NsxLoadBalancerApplicationRule Get-NsxLoadBalancerMonitor Get-NsxLoadBalancerPool Get-NsxLoadBalancerPoolMember Get-NsxLoadBalancerStats " +
-        "Get-NsxLoadBalancerVip Get-NsxLogicalRouter Get-NsxLogicalRouterBgp Get-NsxLogicalRouterBgpNeighbour Get-NsxLogicalRouterBridge Get-NsxLogicalRouterBridging " +
-        "Get-NsxLogicalRouterInterface Get-NsxLogicalRouterOspf Get-NsxLogicalRouterOspfArea Get-NsxLogicalRouterOspfInterface Get-NsxLogicalRouterPrefix " +
-        "Get-NsxLogicalRouterRedistributionRule Get-NsxLogicalRouterRouting Get-NsxLogicalRouterStaticRoute Get-NsxLogicalSwitch Get-NsxMacSet Get-NsxManagerBackup " +
-        "Get-NsxManagerCertificate Get-NsxManagerComponentSummary Get-NsxManagerNetwork Get-NsxManagerRole Get-NsxManagerSsoConfig Get-NsxManagerSyncStatus Get-NsxManagerSyslogServer " +
-        "Get-NsxManagerSystemSummary Get-NsxManagerTimeSettings Get-NsxManagerVcenterConfig Get-NsxSecondaryManager Get-NsxSecurityGroup Get-NsxSecurityGroupEffectiveIpAddress " +
-        "Get-NsxSecurityGroupEffectiveMacAddress Get-NsxSecurityGroupEffectiveMember Get-NsxSecurityGroupEffectiveVirtualMachine Get-NsxSecurityGroupEffectiveVnic " +
-        "Get-NsxSecurityGroupMemberTypes Get-NsxSecurityPolicy Get-NsxSecurityPolicyHighestUsedPrecedence Get-NsxSecurityPolicyRule Get-NsxSecurityTag Get-NsxSecurityTagAssignment " +
-        "Get-NsxSegmentIdRange Get-NsxService Get-NsxServiceDefinition Get-NsxServiceGroup Get-NsxServiceGroupMember Get-NsxServiceProfile Get-NsxSpoofguardNic Get-NsxSpoofguardPolicy " +
-        "Get-NsxSslVpn Get-NsxSslVpnAuthServer Get-NsxSslVpnClientInstallationPackage Get-NsxSslVpnIpPool Get-NsxSslVpnPrivateNetwork Get-NsxSslVpnUser Get-NsxTransportZone " +
-        "Get-NsxUserRole Get-NsxVdsContext Get-NsxtPolicyService Get-NsxtService Get-OSCustomizationNicMapping Get-OSCustomizationSpec Get-Org Get-OrgNetwork Get-OrgVdc " +
-        "Get-OrgVdcNetwork Get-OvfConfiguration Get-PSCurrentConfigurationNode Get-PSDefaultConfigurationDocument Get-PSMetaConfigDocumentInstVersionInfo Get-PSMetaConfigurationProcessed " +
-        "Get-PSReadLineKeyHandler Get-PSReadLineOption Get-PSRepository Get-PSTopConfigurationName Get-PSVersion Get-Package Get-PackageProvider Get-PackageSource Get-PassthroughDevice " +
-        "Get-PositionInfo Get-PowerCLICommunity Get-PowerCLIConfiguration Get-PowerCLIHelp Get-PowerCLIVersion Get-PowerNsxVersion Get-ProviderVdc Get-PublicKeyFromFile " +
-        "Get-PublicKeyFromStore Get-ResourcePool Get-Runspace Get-RunspaceDebug Get-ScsiController Get-ScsiLun Get-ScsiLunPath Get-SecurityInfo Get-SecurityPolicy Get-Snapshot " +
-        "Get-SpbmCapability Get-SpbmCompatibleStorage Get-SpbmEntityConfiguration Get-SpbmFaultDomain Get-SpbmPointInTimeReplica Get-SpbmReplicationGroup Get-SpbmReplicationPair " +
-        "Get-SpbmStoragePolicy Get-Stat Get-StatInterval Get-StatType Get-Tag Get-TagAssignment Get-TagCategory Get-Task Get-Template Get-TimeZone Get-Uptime Get-UsbDevice Get-VAIOFilter " +
-        "Get-VApp Get-VDBlockedPolicy Get-VDPort Get-VDPortgroup Get-VDPortgroupOverridePolicy Get-VDSecurityPolicy Get-VDSwitch Get-VDSwitchPrivateVlan Get-VDTrafficShapingPolicy " +
-        "Get-VDUplinkLacpPolicy Get-VDUplinkTeamingPolicy Get-VDisk Get-VIAccount Get-VICommand Get-VICredentialStoreItem Get-VIEvent Get-VIObjectByVIView Get-VIPermission Get-VIPrivilege " +
-        "Get-VIProperty Get-VIRole Get-VM Get-VMGuest Get-VMHost Get-VMHostAccount Get-VMHostAdvancedConfiguration Get-VMHostAuthentication Get-VMHostAvailableTimeZone " +
-        "Get-VMHostDiagnosticPartition Get-VMHostDisk Get-VMHostDiskPartition Get-VMHostFirewallDefaultPolicy Get-VMHostFirewallException Get-VMHostFirmware Get-VMHostHardware " +
-        "Get-VMHostHba Get-VMHostModule Get-VMHostNetwork Get-VMHostNetworkAdapter Get-VMHostNtpServer Get-VMHostPatch Get-VMHostPciDevice Get-VMHostProfile " +
-        "Get-VMHostProfileImageCacheConfiguration Get-VMHostProfileRequiredInput Get-VMHostProfileStorageDeviceConfiguration Get-VMHostProfileUserConfiguration " +
-        "Get-VMHostProfileVmPortGroupConfiguration Get-VMHostRoute Get-VMHostService Get-VMHostSnmp Get-VMHostStartPolicy Get-VMHostStorage Get-VMHostSysLogServer Get-VMQuestion " +
-        "Get-VMResourceConfiguration Get-VMStartPolicy Get-VTpm Get-VTpmCSR Get-VTpmCertificate Get-VasaProvider Get-VasaStorageArray Get-View Get-VirtualPortGroup Get-VirtualSwitch " +
-        "Get-VmcSddcNetworkService Get-VmcService Get-VsanClusterConfiguration Get-VsanComponent Get-VsanDisk Get-VsanDiskGroup Get-VsanEvacuationPlan Get-VsanFaultDomain " +
-        "Get-VsanIscsiInitiatorGroup Get-VsanIscsiInitiatorGroupTargetAssociation Get-VsanIscsiLun Get-VsanIscsiTarget Get-VsanObject Get-VsanResyncingComponent Get-VsanRuntimeInfo " +
-        "Get-VsanSpaceUsage Get-VsanStat Get-VsanView Get-vRAApplianceServiceStatus Get-vRAAuthorizationRole Get-vRABlueprint Get-vRABusinessGroup Get-vRACatalogItem " +
-        "Get-vRACatalogItemRequestTemplate Get-vRACatalogPrincipal Get-vRAComponentRegistryService Get-vRAComponentRegistryServiceEndpoint Get-vRAComponentRegistryServiceStatus " +
-        "Get-vRAContent Get-vRAContentData Get-vRAContentType Get-vRACustomForm Get-vRAEntitledCatalogItem Get-vRAEntitledService Get-vRAEntitlement Get-vRAExternalNetworkProfile " +
-        "Get-vRAGroupPrincipal Get-vRAIcon Get-vRANATNetworkProfile Get-vRANetworkProfileIPAddressList Get-vRANetworkProfileIPRangeSummary Get-vRAPackage Get-vRAPackageContent " +
-        "Get-vRAPropertyDefinition Get-vRAPropertyGroup Get-vRARequest Get-vRARequestDetail Get-vRAReservation Get-vRAReservationComputeResource Get-vRAReservationComputeResourceMemory " +
-        "Get-vRAReservationComputeResourceNetwork Get-vRAReservationComputeResourceResourcePool Get-vRAReservationComputeResourceStorage Get-vRAReservationPolicy " +
-        "Get-vRAReservationTemplate Get-vRAReservationType Get-vRAResource Get-vRAResourceAction Get-vRAResourceActionRequestTemplate Get-vRAResourceMetric Get-vRAResourceOperation " +
-        "Get-vRAResourceType Get-vRARoutedNetworkProfile Get-vRAService Get-vRAServiceBlueprint Get-vRASourceMachine Get-vRAStorageReservationPolicy Get-vRATenant Get-vRATenantDirectory " +
-        "Get-vRATenantDirectoryStatus Get-vRATenantRole Get-vRAUserPrincipal Get-vRAUserPrincipalGroupMembership Get-vRAVersion Get-vRNIAPIVersion Get-vRNIApplication " +
-        "Get-vRNIApplicationTier Get-vRNIDataSource Get-vRNIDataSourceSNMPConfig Get-vRNIDatastore Get-vRNIDistributedSwitch Get-vRNIDistributedSwitchPortGroup Get-vRNIEntity " +
-        "Get-vRNIEntityName Get-vRNIFirewallRule Get-vRNIFlow Get-vRNIHost Get-vRNIHostVMKNic Get-vRNIIPSet Get-vRNIL2Network Get-vRNINSXManager Get-vRNINodes Get-vRNIProblem " +
-        "Get-vRNIRecommendedRules Get-vRNIRecommendedRulesNsxBundle Get-vRNISecurityGroup Get-vRNISecurityTag Get-vRNIService Get-vRNIServiceGroup Get-vRNIVM Get-vRNIVMvNIC " +
-        "Get-vRNIvCenter Get-vRNIvCenterCluster Get-vRNIvCenterDatacenter Get-vRNIvCenterFolder Grant-NsxSpoofguardNicApproval Import-CIVApp Import-CIVAppTemplate Import-NsxObject " +
-        "Import-PackageProvider Import-PowerShellDataFile Import-SpbmStoragePolicy Import-VApp Import-VMHostProfile Import-vRAContentData Import-vRAIcon Import-vRAPackage " +
-        "Initialize-ConfigurationRuntimeState Install-Module Install-NsxCluster Install-Package Install-PackageProvider Install-Script Install-VMHostPatch Invoke-DrsRecommendation " +
-        "Invoke-NsxCli Invoke-NsxClusterResolveAll Invoke-NsxManagerSync Invoke-NsxRestMethod Invoke-NsxWebRequest Invoke-VMHostProfile Invoke-VMScript Invoke-XpathQuery " +
-        "Invoke-vRADataCollection Invoke-vRARestMethod Invoke-vRATenantDirectorySync Invoke-vRNIRestMethod Join-String Mount-Tools Move-Cluster Move-Datacenter Move-Datastore Move-Folder " +
-        "Move-HardDisk Move-Inventory Move-NsxSecurityPolicyRule Move-ResourcePool Move-Template Move-VApp Move-VDisk Move-VM Move-VMHost New-AdvancedSetting New-AlarmAction " +
-        "New-AlarmActionTrigger New-CDDrive New-CIAccessControlRule New-CIVApp New-CIVAppNetwork New-CIVAppTemplate New-CIVM New-Cluster New-CustomAttribute New-Datacenter New-Datastore " +
-        "New-DatastoreCluster New-DatastoreDrive New-DrsClusterGroup New-DrsRule New-DrsVMHostRule New-DscChecksum New-FloppyDrive New-Folder New-Guid New-HCXAppliance New-HCXMigration " +
-        "New-HCXNetworkExtension New-HCXNetworkMapping New-HCXReplication New-HCXSitePairing New-HCXStaticRoute New-HardDisk New-IScsiHbaTarget New-KmipClientCertificate " +
-        "New-NetworkAdapter New-NfsUser New-NsxAddressSpec New-NsxClusterVxlanConfig New-NsxController New-NsxDynamicCriteriaSpec New-NsxEdge New-NsxEdgeBgpNeighbour New-NsxEdgeCsr " +
-        "New-NsxEdgeFirewallRule New-NsxEdgeInterfaceSpec New-NsxEdgeNatRule New-NsxEdgeOspfArea New-NsxEdgeOspfInterface New-NsxEdgePrefix New-NsxEdgeRedistributionRule " +
-        "New-NsxEdgeSelfSignedCertificate New-NsxEdgeStaticRoute New-NsxEdgeSubInterface New-NsxEdgeSubInterfaceSpec New-NsxFirewallRule New-NsxFirewallSavedConfiguration " +
-        "New-NsxFirewallSection New-NsxIpPool New-NsxIpSet New-NsxLoadBalancerApplicationProfile New-NsxLoadBalancerApplicationRule New-NsxLoadBalancerMemberSpec " +
-        "New-NsxLoadBalancerMonitor New-NsxLoadBalancerPool New-NsxLogicalRouter New-NsxLogicalRouterBgpNeighbour New-NsxLogicalRouterBridge New-NsxLogicalRouterInterface " +
-        "New-NsxLogicalRouterInterfaceSpec New-NsxLogicalRouterOspfArea New-NsxLogicalRouterOspfInterface New-NsxLogicalRouterPrefix New-NsxLogicalRouterRedistributionRule " +
-        "New-NsxLogicalRouterStaticRoute New-NsxLogicalSwitch New-NsxMacSet New-NsxManager New-NsxSecurityGroup New-NsxSecurityPolicy New-NsxSecurityPolicyAssignment " +
-        "New-NsxSecurityPolicyFirewallRuleSpec New-NsxSecurityPolicyGuestIntrospectionSpec New-NsxSecurityPolicyNetworkIntrospectionSpec New-NsxSecurityTag New-NsxSecurityTagAssignment " +
-        "New-NsxSegmentIdRange New-NsxService New-NsxServiceGroup New-NsxSpoofguardPolicy New-NsxSslVpnAuthServer New-NsxSslVpnClientInstallationPackage New-NsxSslVpnIpPool " +
-        "New-NsxSslVpnPrivateNetwork New-NsxSslVpnUser New-NsxTransportZone New-NsxVdsContext New-OSCustomizationNicMapping New-OSCustomizationSpec New-Org New-OrgNetwork New-OrgVdc " +
-        "New-OrgVdcNetwork New-ResourcePool New-ScriptFileInfo New-ScsiController New-Snapshot New-SpbmRule New-SpbmRuleSet New-SpbmStoragePolicy New-StatInterval New-Tag " +
-        "New-TagAssignment New-TagCategory New-Template New-TemporaryFile New-VAIOFilter New-VApp New-VDPortgroup New-VDSwitch New-VDSwitchPrivateVlan New-VDisk " +
-        "New-VICredentialStoreItem New-VIInventoryDrive New-VIPermission New-VIProperty New-VIRole New-VISamlSecurityContext New-VM New-VMHostAccount New-VMHostNetworkAdapter " +
-        "New-VMHostProfile New-VMHostProfileVmPortGroupConfiguration New-VMHostRoute New-VTpm New-VasaProvider New-VcsOAuthSecurityContext New-VirtualPortGroup New-VirtualSwitch " +
-        "New-VsanDisk New-VsanDiskGroup New-VsanFaultDomain New-VsanIscsiInitiatorGroup New-VsanIscsiInitiatorGroupTargetAssociation New-VsanIscsiLun New-VsanIscsiTarget " +
-        "New-vRABusinessGroup New-vRAEntitlement New-vRAExternalNetworkProfile New-vRAGroupPrincipal New-vRANATNetworkProfile New-vRANetworkProfileIPRangeDefinition New-vRAPackage " +
-        "New-vRAPropertyDefinition New-vRAPropertyGroup New-vRAReservation New-vRAReservationNetworkDefinition New-vRAReservationPolicy New-vRAReservationStorageDefinition " +
-        "New-vRARoutedNetworkProfile New-vRAService New-vRAStorageReservationPolicy New-vRATenant New-vRATenantDirectory New-vRAUserPrincipal New-vRNIApplication New-vRNIApplicationTier " +
-        "New-vRNIDataSource Open-VMConsoleWindow Publish-Module Publish-NsxSpoofguardPolicy Publish-Script Register-PSRepository Register-PackageSource Remove-AdvancedSetting " +
-        "Remove-AlarmAction Remove-AlarmActionTrigger Remove-Alias Remove-CDDrive Remove-CIAccessControlRule Remove-CIVApp Remove-CIVAppNetwork Remove-CIVAppTemplate Remove-Cluster " +
-        "Remove-CustomAttribute Remove-Datacenter Remove-Datastore Remove-DatastoreCluster Remove-DrsClusterGroup Remove-DrsRule Remove-DrsVMHostRule Remove-FloppyDrive Remove-Folder " +
-        "Remove-HCXAppliance Remove-HCXNetworkExtension Remove-HCXReplication Remove-HCXSitePairing Remove-HardDisk Remove-IScsiHbaTarget Remove-Inventory Remove-KeyManagementServer " +
-        "Remove-NetworkAdapter Remove-NfsUser Remove-NsxCluster Remove-NsxClusterVxlanConfig Remove-NsxController Remove-NsxDynamicCriteria Remove-NsxDynamicMemberSet Remove-NsxEdge " +
-        "Remove-NsxEdgeBgpNeighbour Remove-NsxEdgeCertificate Remove-NsxEdgeCsr Remove-NsxEdgeFirewallRule Remove-NsxEdgeInterfaceAddress Remove-NsxEdgeNatRule Remove-NsxEdgeOspfArea " +
-        "Remove-NsxEdgeOspfInterface Remove-NsxEdgePrefix Remove-NsxEdgeRedistributionRule Remove-NsxEdgeStaticRoute Remove-NsxEdgeSubInterface Remove-NsxFirewallExclusionListMember " +
-        "Remove-NsxFirewallRule Remove-NsxFirewallRuleMember Remove-NsxFirewallSavedConfiguration Remove-NsxFirewallSection Remove-NsxIpPool Remove-NsxIpSet Remove-NsxIpSetMember " +
-        "Remove-NsxLoadBalancerApplicationProfile Remove-NsxLoadBalancerMonitor Remove-NsxLoadBalancerPool Remove-NsxLoadBalancerPoolMember Remove-NsxLoadBalancerVip " +
-        "Remove-NsxLogicalRouter Remove-NsxLogicalRouterBgpNeighbour Remove-NsxLogicalRouterBridge Remove-NsxLogicalRouterInterface Remove-NsxLogicalRouterOspfArea " +
-        "Remove-NsxLogicalRouterOspfInterface Remove-NsxLogicalRouterPrefix Remove-NsxLogicalRouterRedistributionRule Remove-NsxLogicalRouterStaticRoute Remove-NsxLogicalSwitch " +
-        "Remove-NsxMacSet Remove-NsxSecondaryManager Remove-NsxSecurityGroup Remove-NsxSecurityGroupMember Remove-NsxSecurityPolicy Remove-NsxSecurityPolicyAssignment " +
-        "Remove-NsxSecurityPolicyRule Remove-NsxSecurityPolicyRuleGroup Remove-NsxSecurityPolicyRuleService Remove-NsxSecurityTag Remove-NsxSecurityTagAssignment " +
-        "Remove-NsxSegmentIdRange Remove-NsxService Remove-NsxServiceGroup Remove-NsxSpoofguardPolicy Remove-NsxSslVpnClientInstallationPackage Remove-NsxSslVpnIpPool " +
-        "Remove-NsxSslVpnPrivateNetwork Remove-NsxSslVpnUser Remove-NsxTransportZone Remove-NsxTransportZoneMember Remove-NsxVdsContext Remove-OSCustomizationNicMapping " +
-        "Remove-OSCustomizationSpec Remove-Org Remove-OrgNetwork Remove-OrgVdc Remove-OrgVdcNetwork Remove-PSReadLineKeyHandler Remove-PassthroughDevice Remove-ResourcePool " +
-        "Remove-Snapshot Remove-SpbmStoragePolicy Remove-StatInterval Remove-Tag Remove-TagAssignment Remove-TagCategory Remove-Template Remove-UsbDevice Remove-VAIOFilter Remove-VApp " +
-        "Remove-VDPortGroup Remove-VDSwitch Remove-VDSwitchPhysicalNetworkAdapter Remove-VDSwitchPrivateVlan Remove-VDSwitchVMHost Remove-VDisk Remove-VICredentialStoreItem " +
-        "Remove-VIPermission Remove-VIProperty Remove-VIRole Remove-VM Remove-VMHost Remove-VMHostAccount Remove-VMHostNetworkAdapter Remove-VMHostNtpServer Remove-VMHostProfile " +
-        "Remove-VMHostProfileVmPortGroupConfiguration Remove-VMHostRoute Remove-VTpm Remove-VasaProvider Remove-VirtualPortGroup Remove-VirtualSwitch " +
-        "Remove-VirtualSwitchPhysicalNetworkAdapter Remove-VsanDisk Remove-VsanDiskGroup Remove-VsanFaultDomain Remove-VsanIscsiInitiatorGroup " +
-        "Remove-VsanIscsiInitiatorGroupTargetAssociation Remove-VsanIscsiLun Remove-VsanIscsiTarget Remove-vRABusinessGroup Remove-vRACustomForm Remove-vRAExternalNetworkProfile " +
-        "Remove-vRAGroupPrincipal Remove-vRAIcon Remove-vRANATNetworkProfile Remove-vRAPackage Remove-vRAPrincipalFromTenantRole Remove-vRAPropertyDefinition Remove-vRAPropertyGroup " +
-        "Remove-vRAReservation Remove-vRAReservationNetwork Remove-vRAReservationPolicy Remove-vRAReservationStorage Remove-vRARoutedNetworkProfile Remove-vRAService " +
-        "Remove-vRAStorageReservationPolicy Remove-vRATenant Remove-vRATenantDirectory Remove-vRAUserPrincipal Remove-vRNIApplication Remove-vRNIApplicationTier Remove-vRNIDataSource " +
-        "Repair-NsxEdge Repair-VsanObject Request-vRACatalogItem Request-vRAResourceAction Restart-CIVApp Restart-CIVAppGuest Restart-CIVM Restart-CIVMGuest Restart-VM Restart-VMGuest " +
-        "Restart-VMHost Restart-VMHostService Resume-HCXReplication Revoke-NsxSpoofguardNicApproval Save-Module Save-Package Save-Script Search-Cloud Set-AdvancedSetting " +
-        "Set-AlarmDefinition Set-Annotation Set-CDDrive Set-CIAccessControlRule Set-CINetworkAdapter Set-CIVApp Set-CIVAppNetwork Set-CIVAppStartRule Set-CIVAppTemplate Set-Cluster " +
-        "Set-CustomAttribute Set-Datacenter Set-Datastore Set-DatastoreCluster Set-DrsClusterGroup Set-DrsRule Set-DrsVMHostRule Set-FloppyDrive Set-Folder Set-HCXAppliance " +
-        "Set-HCXMigration Set-HCXReplication Set-HardDisk Set-IScsiHbaTarget Set-KeyManagementServer Set-KmsCluster Set-MarkdownOption Set-NetworkAdapter Set-NfsUser Set-NicTeamingPolicy " +
-        "Set-NodeExclusiveResources Set-NodeManager Set-NodeResourceSource Set-NodeResources Set-NsxEdge Set-NsxEdgeBgp Set-NsxEdgeFirewall Set-NsxEdgeInterface Set-NsxEdgeNat " +
-        "Set-NsxEdgeOspf Set-NsxEdgeRouting Set-NsxFirewallGlobalConfiguration Set-NsxFirewallRule Set-NsxFirewallSavedConfiguration Set-NsxFirewallThreshold Set-NsxLoadBalancer " +
-        "Set-NsxLoadBalancerPoolMember Set-NsxLogicalRouter Set-NsxLogicalRouterBgp Set-NsxLogicalRouterBridging Set-NsxLogicalRouterInterface Set-NsxLogicalRouterOspf " +
-        "Set-NsxLogicalRouterRouting Set-NsxManager Set-NsxManagerRole Set-NsxManagerTimeSettings Set-NsxSecurityPolicy Set-NsxSecurityPolicyFirewallRule Set-NsxSslVpn " +
-        "Set-OSCustomizationNicMapping Set-OSCustomizationSpec Set-Org Set-OrgNetwork Set-OrgVdc Set-OrgVdcNetwork Set-PSCurrentConfigurationNode Set-PSDefaultConfigurationDocument " +
-        "Set-PSMetaConfigDocInsProcessedBeforeMeta Set-PSMetaConfigVersionInfoV2 Set-PSReadLineKeyHandler Set-PSReadLineOption Set-PSRepository Set-PSTopConfigurationName " +
-        "Set-PackageSource Set-PowerCLIConfiguration Set-ResourcePool Set-ScsiController Set-ScsiLun Set-ScsiLunPath Set-SecurityPolicy Set-Snapshot Set-SpbmEntityConfiguration " +
-        "Set-SpbmStoragePolicy Set-StatInterval Set-Tag Set-TagCategory Set-Template Set-VAIOFilter Set-VApp Set-VDBlockedPolicy Set-VDPort Set-VDPortgroup Set-VDPortgroupOverridePolicy " +
-        "Set-VDSecurityPolicy Set-VDSwitch Set-VDTrafficShapingPolicy Set-VDUplinkLacpPolicy Set-VDUplinkTeamingPolicy Set-VDVlanConfiguration Set-VDisk Set-VIPermission Set-VIRole Set-VM " +
-        "Set-VMHost Set-VMHostAccount Set-VMHostAdvancedConfiguration Set-VMHostAuthentication Set-VMHostDiagnosticPartition Set-VMHostFirewallDefaultPolicy Set-VMHostFirewallException " +
-        "Set-VMHostFirmware Set-VMHostHba Set-VMHostModule Set-VMHostNetwork Set-VMHostNetworkAdapter Set-VMHostProfile Set-VMHostProfileImageCacheConfiguration " +
-        "Set-VMHostProfileStorageDeviceConfiguration Set-VMHostProfileUserConfiguration Set-VMHostProfileVmPortGroupConfiguration Set-VMHostRoute Set-VMHostService Set-VMHostSnmp " +
-        "Set-VMHostStartPolicy Set-VMHostStorage Set-VMHostSysLogServer Set-VMQuestion Set-VMResourceConfiguration Set-VMStartPolicy Set-VTpm Set-VirtualPortGroup Set-VirtualSwitch " +
-        "Set-VsanClusterConfiguration Set-VsanFaultDomain Set-VsanIscsiInitiatorGroup Set-VsanIscsiLun Set-VsanIscsiTarget Set-vRABusinessGroup Set-vRACatalogItem Set-vRACustomForm " +
-        "Set-vRAEntitlement Set-vRAExternalNetworkProfile Set-vRANATNetworkProfile Set-vRAReservation Set-vRAReservationNetwork Set-vRAReservationPolicy Set-vRAReservationStorage " +
-        "Set-vRARoutedNetworkProfile Set-vRAService Set-vRAStorageReservationPolicy Set-vRATenant Set-vRATenantDirectory Set-vRAUserPrincipal Set-vRNIDataSourceSNMPConfig Show-Markdown " +
-        "Start-CIVApp Start-CIVM Start-HCXMigration Start-HCXReplication Start-SpbmReplicationFailover Start-SpbmReplicationPrepareFailover Start-SpbmReplicationPromote " +
-        "Start-SpbmReplicationReverse Start-SpbmReplicationTestFailover Start-ThreadJob Start-VApp Start-VM Start-VMHost Start-VMHostService Start-VsanClusterDiskUpdate " +
-        "Start-VsanClusterRebalance Start-VsanEncryptionConfiguration Stop-CIVApp Stop-CIVAppGuest Stop-CIVM Stop-CIVMGuest Stop-SpbmReplicationTestFailover Stop-Task Stop-VApp Stop-VM " +
-        "Stop-VMGuest Stop-VMHost Stop-VMHostService Stop-VsanClusterRebalance Suspend-CIVApp Suspend-CIVM Suspend-HCXReplication Suspend-VM Suspend-VMGuest Suspend-VMHost " +
-        "Sync-SpbmReplicationGroup Test-ConflictingResources Test-HCXMigration Test-HCXReplication Test-Json Test-ModuleReloadRequired Test-MofInstanceText Test-NodeManager " +
-        "Test-NodeResourceSource Test-NodeResources Test-ScriptFileInfo Test-VMHostProfileCompliance Test-VMHostSnmp Test-VsanClusterHealth Test-VsanNetworkPerformance " +
-        "Test-VsanStoragePerformance Test-VsanVMCreation Test-vRAPackage Uninstall-Module Uninstall-Package Uninstall-Script Unlock-VM Unregister-PSRepository Unregister-PackageSource " +
-        "Update-ConfigurationDocumentRef Update-ConfigurationErrorCount Update-DependsOn Update-LocalConfigManager Update-Module Update-ModuleManifest Update-ModuleVersion Update-PowerNsx " +
-        "Update-Script Update-ScriptFileInfo Update-Tools Update-VsanHclDatabase ValidateUpdate-ConfigurationData Wait-Debugger Wait-NsxControllerJob Wait-NsxGenericJob Wait-NsxJob " +
-        "Wait-Task Wait-Tools Write-Information Write-Log Write-MetaConfigFile Write-NodeMOFFile",
-      nomarkup:
-        "-ne -eq -lt -gt -ge -le -not -like -notlike -match -notmatch -contains -notcontains -in -notin -replace",
-    },
+  var PS_COMMENT = hljs.inherit(
+    hljs.COMMENT(null, null),
+    {
+      variants: [
+        /* single-line comment */
+        { begin: /#/, end: /$/ },
+        /* multi-line comment */
+        { begin: /<#/, end: /#>/ }
+      ],
+      contains: [PS_HELPTAGS]
+    }
+  );
+
+  var CMDLETS = {
+    className: 'built_in',
+    variants: [
+      { begin: '('.concat(VALID_VERBS, ')+(-)[\\w\\d]+') }
+    ]
+  };
+
+  var PS_CLASS = {
+    className: 'class',
+    beginKeywords: 'class enum', end: /\s*[{]/, excludeEnd: true,
+    relevance: 0,
+    contains: [hljs.TITLE_MODE]
+  };
+
+  var PS_FUNCTION = {
+    className: 'function',
+    begin: /function\s+/, end: /\s*\{|$/,
+    excludeEnd: true,
+    returnBegin: true,
+    relevance: 0,
     contains: [
-      BACKTICK_ESCAPE,
-      hljs.NUMBER_MODE,
+      { begin: "function", relevance: 0, className: "keyword" },
+      { className: "title",
+        begin: TITLE_NAME_RE, relevance:0 },
+      { begin: /\(/, end: /\)/, className: "params",
+        relevance: 0,
+        contains: [VAR] }
+      // CMDLETS
+    ]
+  };
+
+  // Using statment, plus type, plus assembly name.
+  var PS_USING = {
+    begin: /using\s/, end: /$/,
+    returnBegin: true,
+    contains: [
       QUOTE_STRING,
       APOS_STRING,
-      LITERAL,
-      VAR,
-      PS_COMMENT,
-    ],
+      { className: 'keyword', begin: /(using|assembly|command|module|namespace|type)/ }
+    ]
+  };
+
+  // Comperison operators & function named parameters.
+  var PS_ARGUMENTS = {
+    variants: [
+      // PS literals are pretty verbose so it's a good idea to accent them a bit.
+      { className: 'operator', begin: '('.concat(COMPARISON_OPERATORS, ')\\b') },
+      { className: 'literal', begin: /(-)[\w\d]+/, relevance:0 }
+    ]
+  };
+
+  var STATIC_MEMBER = {
+    className: 'selector-tag',
+    begin: /::\w+\b/, end: /$/,
+    returnBegin: true,
+    contains: [
+      { className: 'attribute', begin: /\w+/, endsParent: true }
+    ]
+  };
+
+  var HASH_SIGNS = {
+    className: 'selector-tag',
+    begin: /\@\B/,
+    relevance: 0
+  };
+
+  var PS_NEW_OBJECT_TYPE = {
+    className: 'built_in',
+    begin: /New-Object\s+\w/, end: /$/,
+    returnBegin: true,
+    contains: [
+      { begin: /New-Object\s+/, relevance: 0 },
+      { className: 'meta', begin: /([\w\.])+/, endsParent: true }
+    ]
+  };
+
+  // It's a very general rule so I'll narrow it a bit with some strict boundaries
+  // to avoid any possible false-positive collisions!
+  var PS_METHODS = {
+    className: 'function',
+    begin: /\[.*\]\s*[\w]+[ ]??\(/, end: /$/,
+    returnBegin: true,
+    relevance: 0,
+    contains: [
+      {
+        className: 'keyword', begin: '('.concat(
+        KEYWORDS.keyword.toString().replace(/\s/g, '|'
+        ), ')\\b'),
+        endsParent: true,
+        relevance: 0
+      },
+      hljs.inherit(hljs.TITLE_MODE, { endsParent: true })
+    ]
+  };
+
+  var GENTLEMANS_SET = [
+    // STATIC_MEMBER,
+    PS_METHODS,
+    PS_COMMENT,
+    BACKTICK_ESCAPE,
+    hljs.NUMBER_MODE,
+    QUOTE_STRING,
+    APOS_STRING,
+    // PS_NEW_OBJECT_TYPE,
+    CMDLETS,
+    VAR,
+    LITERAL,
+    HASH_SIGNS
+  ];
+
+  var PS_TYPE = {
+    begin: /\[/, end: /\]/,
+    excludeBegin: true,
+    excludeEnd: true,
+    relevance: 0,
+    contains: [].concat(
+      'self',
+      GENTLEMANS_SET,
+      { begin: "(" + TYPES.join("|") + ")", className: "built_in", relevance:0 },
+      { className: 'type', begin: /[\.\w\d]+/, relevance: 0 }
+    )
+  };
+
+  PS_METHODS.contains.unshift(PS_TYPE)
+
+  return {
+    aliases: ["ps", "ps1"],
+    lexemes: /-?[A-z\.\-]+/,
+    case_insensitive: true,
+    keywords: KEYWORDS,
+    contains: GENTLEMANS_SET.concat(
+      PS_CLASS,
+      PS_FUNCTION,
+      PS_USING,
+      PS_ARGUMENTS,
+      PS_TYPE
+    )
   };
 }
 },{name:"processing",create:/*
 Language: Processing
+Description: Processing is a flexible software sketchbook and a language for learning how to code within the context of the visual arts.
 Author: Erik Paluka <erik.paluka@gmail.com>
+Website: https://processing.org
 Category: graphics
 */
 
@@ -17887,6 +18517,7 @@ function(hljs) {
 Language: Prolog
 Description: Prolog is a general purpose logic programming language associated with artificial intelligence and computational linguistics.
 Author: Raivo Laanemets <raivo@infdot.com>
+Website: https://en.wikipedia.org/wiki/Prolog
 */
 
 function(hljs) {
@@ -18055,6 +18686,7 @@ function(hljs) {
 Language: Protocol Buffers
 Author: Dan Tao <daniel.tao@gmail.com>
 Description: Protocol buffer message definition format
+Website: https://developers.google.com/protocol-buffers/docs/proto3
 Category: protocols
 */
 
@@ -18096,6 +18728,7 @@ function(hljs) {
 },{name:"puppet",create:/*
 Language: Puppet
 Author: Jose Molina Colmenero <gaudy41@gmail.com>
+Website: https://puppet.com/docs
 Category: config
 */
 
@@ -18218,6 +18851,7 @@ Language: PureBASIC
 Author: Tristano Ajmone <tajmone@gmail.com>
 Description: Syntax highlighting for PureBASIC (v.5.00-5.60). No inline ASM highlighting. (v.1.2, May 2017)
 Credits: I've taken inspiration from the PureBasic language file for GeSHi, created by Gustavo Julio Fiorenza (GuShH).
+Website: https://www.purebasic.com
 */
 
 // Base deafult colors in PB IDE: background: #FFFFDF; foreground: #000000;
@@ -18284,7 +18918,7 @@ function(hljs) {
 }
 
 /*  ==============================================================================
-                                      CHANGELOG                                   
+                                      CHANGELOG
     ==============================================================================
     - v.1.2 (2017-05-12)
         -- BUG-FIX: Some keywords were accidentally joyned together. Now fixed.
@@ -18303,8 +18937,11 @@ function(hljs) {
         -- Keywords list taken and adapted from GuShH's (Gustavo Julio Fiorenza)
            PureBasic language file for GeSHi:
            -- https://github.com/easybook/geshi/blob/master/geshi/purebasic.php
-*/},{name:"python",create:/*
+*/
+},{name:"python",create:/*
 Language: Python
+Description: Python is an interpreted, object-oriented, high-level programming language with dynamic semantics.
+Website: https://www.python.org
 Category: common
 */
 
@@ -18327,6 +18964,10 @@ function(hljs) {
     keywords: KEYWORDS,
     illegal: /#/
   };
+  var LITERAL_BRACKET = {
+    begin: /\{\{/,
+    relevance: 0
+  };
   var STRING = {
     className: 'string',
     contains: [hljs.BACKSLASH_ESCAPE],
@@ -18343,11 +18984,11 @@ function(hljs) {
       },
       {
         begin: /(fr|rf|f)'''/, end: /'''/,
-        contains: [hljs.BACKSLASH_ESCAPE, PROMPT, SUBST]
+        contains: [hljs.BACKSLASH_ESCAPE, PROMPT, LITERAL_BRACKET, SUBST]
       },
       {
         begin: /(fr|rf|f)"""/, end: /"""/,
-        contains: [hljs.BACKSLASH_ESCAPE, PROMPT, SUBST]
+        contains: [hljs.BACKSLASH_ESCAPE, PROMPT, LITERAL_BRACKET, SUBST]
       },
       {
         begin: /(u|r|ur)'/, end: /'/,
@@ -18365,11 +19006,11 @@ function(hljs) {
       },
       {
         begin: /(fr|rf|f)'/, end: /'/,
-        contains: [hljs.BACKSLASH_ESCAPE, SUBST]
+        contains: [hljs.BACKSLASH_ESCAPE, LITERAL_BRACKET, SUBST]
       },
       {
         begin: /(fr|rf|f)"/, end: /"/,
-        contains: [hljs.BACKSLASH_ESCAPE, SUBST]
+        contains: [hljs.BACKSLASH_ESCAPE, LITERAL_BRACKET, SUBST]
       },
       hljs.APOS_STRING_MODE,
       hljs.QUOTE_STRING_MODE
@@ -18386,7 +19027,7 @@ function(hljs) {
   var PARAMS = {
     className: 'params',
     begin: /\(/, end: /\)/,
-    contains: ['self', PROMPT, NUMBER, STRING]
+    contains: ['self', PROMPT, NUMBER, STRING, hljs.HASH_COMMENT_MODE]
   };
   SUBST.contains = [STRING, NUMBER, PROMPT];
   return {
@@ -18396,6 +19037,9 @@ function(hljs) {
     contains: [
       PROMPT,
       NUMBER,
+      // eat "if" prior to string so that it won't accidentally be
+      // labeled as an f-string as in:
+      { beginKeywords: "if", relevance: 0 },
       STRING,
       hljs.HASH_COMMENT_MODE,
       {
@@ -18426,8 +19070,10 @@ function(hljs) {
 }
 },{name:"q",create:/*
 Language: Q
+Description: Q is a vector-based functional paradigm programming language built into the kdb+ database.
+             (K/Q/Kdb+ from Kx Systems)
 Author: Sergey Vidyuk <svidyuk@gmail.com>
-Description: K/Q/Kdb+ from Kx Systems
+Website: https://kx.com/connect-with-us/developers/
 */
 function(hljs) {
   var Q_KEYWORDS = {
@@ -18457,6 +19103,7 @@ Requires: javascript.js, xml.js
 Author: John Foster <jfoster@esri.com>
 Description: Syntax highlighting for the Qt Quick QML scripting language, based mostly off
              the JavaScript parser.
+Website: https://doc.qt.io/qt-5/qmlapplications.html
 Category: scripting
 */
 
@@ -18630,7 +19277,9 @@ function(hljs) {
 }
 },{name:"r",create:/*
 Language: R
+Description: R is a free software environment for statistical computing and graphics.
 Author: Joe Cheng <joe@rstudio.org>
+Website: https://www.r-project.org
 Category: scientific
 */
 
@@ -18705,6 +19354,8 @@ function(hljs) {
 }
 },{name:"reasonml",create:/*
 Language: ReasonML
+Description: Reason lets you write simple, fast and quality type safe code while leveraging both the JavaScript & OCaml ecosystems.
+Website: https://reasonml.github.io
 Author: Gidi Meir Morris <oss@gidi.io>
 Category: functional
 */
@@ -19011,6 +19662,7 @@ function(hljs) {
 Language: RenderMan RIB
 Author: Konstantin Evdokimenko <qewerty@gmail.com>
 Contributors: Shuen-Huei Guan <drake.guan@gmail.com>
+Website: https://renderman.pixar.com/resources/RenderMan_20/ribBinding.html
 Category: graphics
 */
 
@@ -19043,8 +19695,8 @@ function(hljs) {
 },{name:"roboconf",create:/*
 Language: Roboconf
 Author: Vincent Zurczak <vzurczak@linagora.com>
-Website: http://roboconf.net
 Description: Syntax highlighting for Roboconf's DSL
+Website: http://roboconf.net
 Category: config
 */
 
@@ -19118,7 +19770,7 @@ function(hljs) {
 Language: Microtik RouterOS script
 Author: Ivan Dementev <ivan_div@mail.ru>
 Description: Scripting host provides a way to automate some router maintenance tasks by means of executing user-defined scripts bounded to some event occurrence
-URL: https://wiki.mikrotik.com/wiki/Manual:Scripting
+Website: https://wiki.mikrotik.com/wiki/Manual:Scripting
 */
 
 // Colors from RouterOS terminal:
@@ -19146,7 +19798,7 @@ function(hljs) {
   // ToDo: var PARAMETERS_PRINT = 'append as-value brief detail count-only file follow follow-only from interval terse value-list without-paging where info';
   // ToDo: var OPERATORS = '&& and ! not || or in ~ ^ & << >> + - * /';
   // ToDo: var TYPES = 'num number bool boolean str string ip ip6-prefix id time array';
-  // ToDo: The following tokens serve as delimiters in the grammar: ()  []  {}  :   ;   $   / 
+  // ToDo: The following tokens serve as delimiters in the grammar: ()  []  {}  :   ;   $   /
 
   var VAR_PREFIX = 'global local set for foreach';
 
@@ -19157,7 +19809,7 @@ function(hljs) {
       {begin: /\$\{(.*?)}/}
     ]
   };
-  
+
   var QUOTE_STRING = {
     className: 'string',
     begin: /"/, end: /"/,
@@ -19171,12 +19823,12 @@ function(hljs) {
       }
     ]
   };
-  
+
   var APOS_STRING = {
     className: 'string',
     begin: /'/, end: /'/
   };
-  
+
   var IPADDR = '((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\b';
   var IPADDR_wBITMASK =  IPADDR+'/(3[0-2]|[1-2][0-9]|\\d)';
   //////////////////////////////////////////////////////////////////////
@@ -19200,7 +19852,7 @@ function(hljs) {
           { begin: /^\[\</, end: /\>\]$/, },        // F# class declaration?
           { begin: /<\//, end: />/, },              // HTML tags
           { begin: /^facet /, end: /\}/, },         // roboconf - лютый костыль )))
-          { begin: '^1\\.\\.(\\d+)$', end: /$/, },  // tap  
+          { begin: '^1\\.\\.(\\d+)$', end: /$/, },  // tap
         ],
         illegal: /./,
       },
@@ -19209,7 +19861,7 @@ function(hljs) {
       APOS_STRING,
       VAR,
       { // attribute=value
-        begin: /[\w-]+\=([^\s\{\}\[\]\(\)]+)/, 
+        begin: /[\w-]+\=([^\s\{\}\[\]\(\)]+)/,
         relevance: 0,
         returnBegin: true,
         contains: [
@@ -19218,7 +19870,7 @@ function(hljs) {
             begin: /[^=]+/
           },
           {
-            begin: /=/, 
+            begin: /=/,
             endsWithParent:  true,
             relevance: 0,
             contains: [
@@ -19245,7 +19897,7 @@ function(hljs) {
               }, //*/
               {
                 // Не форматировать не классифицированные значения. Необходимо для исключения подсветки значений как built_in.
-                // className: 'number',  
+                // className: 'number',
                 begin: /("[^"]*"|[^\s\{\}\[\]]+)/,
               }, //*/
             ]
@@ -19258,7 +19910,7 @@ function(hljs) {
         begin: /\*[0-9a-fA-F]+/,
       }, //*/
 
-      { 
+      {
         begin: '\\b(' + COMMON_COMMANDS.split(' ').join('|') + ')([\\s\[\(]|\])',
         returnBegin: true,
         contains: [
@@ -19266,10 +19918,10 @@ function(hljs) {
             className: 'builtin-name', //'function',
             begin: /\w+/,
           },
-        ],  
+        ],
       },
-      
-      { 
+
+      {
         className: 'built_in',
         variants: [
           {begin: '(\\.\\./|/|\\s)((' + OBJECTS.split(' ').join('|') + ');?\\s)+',relevance: 10,},
@@ -19287,6 +19939,7 @@ function(hljs) {
 Language: RenderMan RSL
 Author: Konstantin Evdokimenko <qewerty@gmail.com>
 Contributors: Shuen-Huei Guan <drake.guan@gmail.com>
+Website: https://renderman.pixar.com/resources/RenderMan_20/shadingLanguage.html
 Category: graphics
 */
 
@@ -19327,6 +19980,8 @@ function(hljs) {
 }
 },{name:"ruby",create:/*
 Language: Ruby
+Description: Ruby is a dynamic, open source programming language with a focus on simplicity and productivity.
+Website: https://www.ruby-lang.org/
 Author: Anton Kovalyov <anton@kovalyov.net>
 Contributors: Peter Leonov <gojpeg@yandex.ru>, Vasily Polovnyov <vast@whiteants.net>, Loren Segal <lsegal@soen.ca>, Pascal Hurni <phi@ruby-reactive.org>, Cedric Sohrauer <sohrauer@googlemail.com>
 Category: common
@@ -19520,6 +20175,7 @@ function(hljs) {
 Language: Oracle Rules Language
 Author: Jason Jacobson <jason.a.jacobson@gmail.com>
 Description: The Oracle Utilities Rules Language is used to program the Oracle Utilities Applications acquired from LODESTAR Corporation.  The products include Billing Component, LPSS, Pricing Component etc. through version 1.6.1.
+Website: https://docs.oracle.com/cd/E17904_01/dev.1111/e10227/rlref.htm
 Category: enterprise
 */
 
@@ -19587,7 +20243,8 @@ function(hljs) {
 Language: Rust
 Author: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
 Contributors: Roman Shmatov <romanshmatov@gmail.com>, Kasper Andersen <kma_untrusted@protonmail.com>
-Category: system
+Website: https://www.rust-lang.org
+Category: common, system
 */
 
 function(hljs) {
@@ -19833,6 +20490,7 @@ Language: Scala
 Category: functional
 Author: Jan Berkel <jan.berkel@gmail.com>
 Contributors: Erik Osheim <d_m@plastic-idolatry.com>
+Website: https://www.scala-lang.org
 */
 
 function(hljs) {
@@ -19951,10 +20609,12 @@ function(hljs) {
 }
 },{name:"scheme",create:/*
 Language: Scheme
-Description: Keywords based on http://community.schemewiki.org/?scheme-keywords
+Description: Scheme is a programming language in the Lisp family.
+             (keywords based on http://community.schemewiki.org/?scheme-keywords)
 Author: JP Verkamp <me@jverkamp.com>
 Contributors: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Origin: clojure.js
+Website: http://community.schemewiki.org/?what-is-scheme
 Category: lisp
 */
 
@@ -20106,6 +20766,7 @@ Language: Scilab
 Author: Sylvestre Ledru <sylvestre.ledru@scilab-enterprises.com>
 Origin: matlab.js
 Description: Scilab is a port from Matlab
+Website: https://www.scilab.org
 Category: scientific
 */
 
@@ -20164,10 +20825,14 @@ function(hljs) {
 }
 },{name:"scss",create:/*
 Language: SCSS
+Description: Scss is an extension of the syntax of CSS.
 Author: Kurt Emch <kurt@kurtemch.com>
-Category: css
+Website: https://sass-lang.com
+Category: common, css
 */
 function(hljs) {
+  var AT_IDENTIFIER = '@[a-z-]+' // @font-face
+  var AT_MODIFIERS = "and or not only"
   var IDENT_RE = '[a-zA-Z-][a-zA-Z0-9_-]*';
   var VARIABLE = {
     className: 'variable',
@@ -20219,15 +20884,17 @@ function(hljs) {
         relevance: 0
       },
       {
+        className: 'selector-pseudo',
         begin: ':(visited|valid|root|right|required|read-write|read-only|out-range|optional|only-of-type|only-child|nth-of-type|nth-last-of-type|nth-last-child|nth-child|not|link|left|last-of-type|last-child|lang|invalid|indeterminate|in-range|hover|focus|first-of-type|first-line|first-letter|first-child|first|enabled|empty|disabled|default|checked|before|after|active)'
       },
       {
+        className: 'selector-pseudo',
         begin: '::(after|before|choices|first-letter|first-line|repeat-index|repeat-item|selection|value)'
       },
       VARIABLE,
       {
         className: 'attribute',
-        begin: '\\b(z-index|word-wrap|word-spacing|word-break|width|widows|white-space|visibility|vertical-align|unicode-bidi|transition-timing-function|transition-property|transition-duration|transition-delay|transition|transform-style|transform-origin|transform|top|text-underline-position|text-transform|text-shadow|text-rendering|text-overflow|text-indent|text-decoration-style|text-decoration-line|text-decoration-color|text-decoration|text-align-last|text-align|tab-size|table-layout|right|resize|quotes|position|pointer-events|perspective-origin|perspective|page-break-inside|page-break-before|page-break-after|padding-top|padding-right|padding-left|padding-bottom|padding|overflow-y|overflow-x|overflow-wrap|overflow|outline-width|outline-style|outline-offset|outline-color|outline|orphans|order|opacity|object-position|object-fit|normal|none|nav-up|nav-right|nav-left|nav-index|nav-down|min-width|min-height|max-width|max-height|mask|marks|margin-top|margin-right|margin-left|margin-bottom|margin|list-style-type|list-style-position|list-style-image|list-style|line-height|letter-spacing|left|justify-content|initial|inherit|ime-mode|image-orientation|image-resolution|image-rendering|icon|hyphens|height|font-weight|font-variant-ligatures|font-variant|font-style|font-stretch|font-size-adjust|font-size|font-language-override|font-kerning|font-feature-settings|font-family|font|float|flex-wrap|flex-shrink|flex-grow|flex-flow|flex-direction|flex-basis|flex|filter|empty-cells|display|direction|cursor|counter-reset|counter-increment|content|column-width|column-span|column-rule-width|column-rule-style|column-rule-color|column-rule|column-gap|column-fill|column-count|columns|color|clip-path|clip|clear|caption-side|break-inside|break-before|break-after|box-sizing|box-shadow|box-decoration-break|bottom|border-width|border-top-width|border-top-style|border-top-right-radius|border-top-left-radius|border-top-color|border-top|border-style|border-spacing|border-right-width|border-right-style|border-right-color|border-right|border-radius|border-left-width|border-left-style|border-left-color|border-left|border-image-width|border-image-source|border-image-slice|border-image-repeat|border-image-outset|border-image|border-color|border-collapse|border-bottom-width|border-bottom-style|border-bottom-right-radius|border-bottom-left-radius|border-bottom-color|border-bottom|border|background-size|background-repeat|background-position|background-origin|background-image|background-color|background-clip|background-attachment|background-blend-mode|background|backface-visibility|auto|animation-timing-function|animation-play-state|animation-name|animation-iteration-count|animation-fill-mode|animation-duration|animation-direction|animation-delay|animation|align-self|align-items|align-content)\\b',
+        begin: '\\b(src|z-index|word-wrap|word-spacing|word-break|width|widows|white-space|visibility|vertical-align|unicode-bidi|transition-timing-function|transition-property|transition-duration|transition-delay|transition|transform-style|transform-origin|transform|top|text-underline-position|text-transform|text-shadow|text-rendering|text-overflow|text-indent|text-decoration-style|text-decoration-line|text-decoration-color|text-decoration|text-align-last|text-align|tab-size|table-layout|right|resize|quotes|position|pointer-events|perspective-origin|perspective|page-break-inside|page-break-before|page-break-after|padding-top|padding-right|padding-left|padding-bottom|padding|overflow-y|overflow-x|overflow-wrap|overflow|outline-width|outline-style|outline-offset|outline-color|outline|orphans|order|opacity|object-position|object-fit|normal|none|nav-up|nav-right|nav-left|nav-index|nav-down|min-width|min-height|max-width|max-height|mask|marks|margin-top|margin-right|margin-left|margin-bottom|margin|list-style-type|list-style-position|list-style-image|list-style|line-height|letter-spacing|left|justify-content|initial|inherit|ime-mode|image-orientation|image-resolution|image-rendering|icon|hyphens|height|font-weight|font-variant-ligatures|font-variant|font-style|font-stretch|font-size-adjust|font-size|font-language-override|font-kerning|font-feature-settings|font-family|font|float|flex-wrap|flex-shrink|flex-grow|flex-flow|flex-direction|flex-basis|flex|filter|empty-cells|display|direction|cursor|counter-reset|counter-increment|content|column-width|column-span|column-rule-width|column-rule-style|column-rule-color|column-rule|column-gap|column-fill|column-count|columns|color|clip-path|clip|clear|caption-side|break-inside|break-before|break-after|box-sizing|box-shadow|box-decoration-break|bottom|border-width|border-top-width|border-top-style|border-top-right-radius|border-top-left-radius|border-top-color|border-top|border-style|border-spacing|border-right-width|border-right-style|border-right-color|border-right|border-radius|border-left-width|border-left-style|border-left-color|border-left|border-image-width|border-image-source|border-image-slice|border-image-repeat|border-image-outset|border-image|border-color|border-collapse|border-bottom-width|border-bottom-style|border-bottom-right-radius|border-bottom-left-radius|border-bottom-color|border-bottom|border|background-size|background-repeat|background-position|background-origin|background-image|background-color|background-clip|background-attachment|background-blend-mode|background|backface-visibility|auto|animation-timing-function|animation-play-state|animation-name|animation-iteration-count|animation-fill-mode|animation-duration|animation-direction|animation-delay|animation|align-self|align-items|align-content)\\b',
         illegal: '[^\\s]'
       },
       {
@@ -20246,19 +20913,32 @@ function(hljs) {
           }
         ]
       },
+      // matching these here allows us to treat them more like regular CSS
+      // rules so everything between the {} gets regular rule highlighting,
+      // which is what we want for page and font-face
+      {
+        begin: '@(page|font-face)',
+        lexemes: AT_IDENTIFIER,
+        keywords: '@page @font-face'
+      },
       {
         begin: '@', end: '[{;]',
-        keywords: 'mixin include extend for if else each while charset import debug media page content font-face namespace warn',
+        returnBegin: true,
+        keywords: AT_MODIFIERS,
         contains: [
+          {
+            begin: AT_IDENTIFIER,
+            className: "keyword"
+          },
           VARIABLE,
           hljs.QUOTE_STRING_MODE,
           hljs.APOS_STRING_MODE,
           HEXCOLOR,
           hljs.CSS_NUMBER_MODE,
-          {
-            begin: '\\s[A-Za-z0-9_.-]+',
-            relevance: 0
-          }
+          // {
+          //   begin: '\\s[A-Za-z0-9_.-]+',
+          //   relevance: 0
+          // }
         ]
       }
     ]
@@ -20277,7 +20957,7 @@ function(hljs) {
     contains: [
       {
         className: 'meta',
-        begin: '^\\s{0,3}[\\w\\d\\[\\]()@-]*[>%$#]',
+        begin: '^\\s{0,3}[/\\w\\d\\[\\]()@-]*[>%$#]',
         starts: {
           end: '$', subLanguage: 'bash'
         }
@@ -20289,6 +20969,7 @@ function(hljs) {
 Language: Smali
 Author: Dennis Titze <dennis.titze@gmail.com>
 Description: Basic Smali highlighting
+Website: https://github.com/JesusFreke/smali
 */
 
 function(hljs) {
@@ -20348,7 +21029,9 @@ function(hljs) {
 }
 },{name:"smalltalk",create:/*
 Language: Smalltalk
+Description: Smalltalk is an object-oriented, dynamically typed reflective programming language.
 Author: Vladimir Gubarkov <xonixx@gmail.com>
+Website: https://en.wikipedia.org/wiki/Smalltalk
 */
 
 function(hljs) {
@@ -20401,9 +21084,10 @@ function(hljs) {
   };
 }
 },{name:"sml",create:/*
-Language: SML
+Language: SML (Standard ML)
 Author: Edwin Dalorzo <edwin@dalorzo.org>
 Description: SML language definition.
+Website: https://www.smlnj.org
 Origin: ocaml.js
 Category: functional
 */
@@ -20477,12 +21161,11 @@ Language: SQF
 Author: Søren Enevoldsen <senevoldsen90@gmail.com>
 Contributors: Marvin Saignat <contact@zgmrvn.com>, Dedmen Miller <dedmen@dedmen.de>
 Description: Scripting language for the Arma game series
-Requires: cpp.js
+Website: https://community.bistudio.com/wiki/SQF_syntax
+Category: scripting
 */
 
 function(hljs) {
-  var CPP = hljs.getLanguage('cpp').exports;
-
   // In SQF, a variable start with _
   var VARIABLE = {
     className: 'variable',
@@ -20511,6 +21194,30 @@ function(hljs) {
         end: '\'',
         contains: [{begin: '\'\'', relevance: 0}]
       }
+    ]
+  };
+
+  // list of keywords from:
+  // https://community.bistudio.com/wiki/PreProcessor_Commands
+  var PREPROCESSOR = {
+    className: 'meta',
+    begin: /#\s*[a-z]+\b/, end: /$/,
+    keywords: {
+      'meta-keyword':
+        'define undef ifdef ifndef else endif include'
+    },
+    contains: [
+      {
+        begin: /\\\n/, relevance: 0
+      },
+      hljs.inherit(STRINGS, {className: 'meta-string'}),
+      {
+        className: 'meta-string',
+        begin: /<[^\n>]*>/, end: /$/,
+        illegal: '\\n',
+      },
+      hljs.C_LINE_COMMENT_MODE,
+      hljs.C_BLOCK_COMMENT_MODE
     ]
   };
 
@@ -20879,14 +21586,15 @@ function(hljs) {
       VARIABLE,
       FUNCTION,
       STRINGS,
-      CPP.preprocessor
+      PREPROCESSOR
     ],
     illegal: /#|^\$ /
   };
 }
 },{name:"sql",create:/*
- Language: SQL
+ Language: SQL (Structured Query Language)
  Contributors: Nikolay Lisienko <info@neor.ru>, Heiko August <post@auge8472.de>, Travis Odom <travis.a.odom@gmail.com>, Vadimtro <vadimtro@yahoo.com>, Benjamin Auder <benjamin.auder@gmail.com>
+ Website: https://en.wikipedia.org/wiki/SQL
  Category: common
  */
 
@@ -21021,23 +21729,22 @@ function(hljs) {
             'true false null unknown',
           built_in:
             'array bigint binary bit blob bool boolean char character date dec decimal float int int8 integer interval number ' +
-            'numeric real record serial serial8 smallint text time timestamp tinyint varchar varying void'
+            'numeric real record serial serial8 smallint text time timestamp tinyint varchar varchar2 varying void'
         },
         contains: [
           {
             className: 'string',
             begin: '\'', end: '\'',
-            contains: [hljs.BACKSLASH_ESCAPE, {begin: '\'\''}]
+            contains: [{begin: '\'\''}]
           },
           {
             className: 'string',
             begin: '"', end: '"',
-            contains: [hljs.BACKSLASH_ESCAPE, {begin: '""'}]
+            contains: [{begin: '""'}]
           },
           {
             className: 'string',
-            begin: '`', end: '`',
-            contains: [hljs.BACKSLASH_ESCAPE]
+            begin: '`', end: '`'
           },
           hljs.C_NUMBER_MODE,
           hljs.C_BLOCK_COMMENT_MODE,
@@ -21053,99 +21760,242 @@ function(hljs) {
 }
 },{name:"stan",create:/*
 Language: Stan
-Author: Brendan Rocks <rocks.brendan@gmail.com>
- Category: scientific
-Description: The Stan probabilistic programming language (http://mc-stan.org/).
+Description: The Stan probabilistic programming language
+Author: Jeffrey B. Arnold <jeffrey.arnold@gmail.com>
+Website: http://mc-stan.org/
+Category: scientific
 */
 
 function(hljs) {
+  // variable names cannot conflict with block identifiers
+  var BLOCKS = [
+    'functions',
+    'model',
+    'data',
+    'parameters',
+    'quantities',
+    'transformed',
+    'generated'
+  ];
+  var STATEMENTS = [
+    'for',
+    'in',
+    'if',
+    'else',
+    'while',
+    'break',
+    'continue',
+    'return'
+  ];
+  var SPECIAL_FUNCTIONS = [
+    'print',
+    'reject',
+    'increment_log_prob|10',
+    'integrate_ode|10',
+    'integrate_ode_rk45|10',
+    'integrate_ode_bdf|10',
+    'algebra_solver'
+  ];
+  var VAR_TYPES = [
+    'int',
+    'real',
+    'vector',
+    'ordered',
+    'positive_ordered',
+    'simplex',
+    'unit_vector',
+    'row_vector',
+    'matrix',
+    'cholesky_factor_corr|10',
+    'cholesky_factor_cov|10',
+    'corr_matrix|10',
+    'cov_matrix|10',
+    'void'
+  ];
+  var FUNCTIONS = [
+    'Phi', 'Phi_approx', 'abs', 'acos', 'acosh', 'algebra_solver', 'append_array',
+    'append_col', 'append_row', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
+    'bernoulli_cdf', 'bernoulli_lccdf', 'bernoulli_lcdf', 'bernoulli_logit_lpmf',
+    'bernoulli_logit_rng', 'bernoulli_lpmf', 'bernoulli_rng', 'bessel_first_kind',
+    'bessel_second_kind', 'beta_binomial_cdf', 'beta_binomial_lccdf',
+    'beta_binomial_lcdf', 'beta_binomial_lpmf', 'beta_binomial_rng', 'beta_cdf',
+    'beta_lccdf', 'beta_lcdf', 'beta_lpdf', 'beta_rng', 'binary_log_loss',
+    'binomial_cdf', 'binomial_coefficient_log', 'binomial_lccdf', 'binomial_lcdf',
+    'binomial_logit_lpmf', 'binomial_lpmf', 'binomial_rng', 'block',
+    'categorical_logit_lpmf', 'categorical_logit_rng', 'categorical_lpmf',
+    'categorical_rng', 'cauchy_cdf', 'cauchy_lccdf', 'cauchy_lcdf', 'cauchy_lpdf',
+    'cauchy_rng', 'cbrt', 'ceil', 'chi_square_cdf', 'chi_square_lccdf',
+    'chi_square_lcdf', 'chi_square_lpdf', 'chi_square_rng', 'cholesky_decompose',
+    'choose', 'col', 'cols', 'columns_dot_product', 'columns_dot_self', 'cos',
+    'cosh', 'cov_exp_quad', 'crossprod', 'csr_extract_u', 'csr_extract_v',
+    'csr_extract_w', 'csr_matrix_times_vector', 'csr_to_dense_matrix',
+    'cumulative_sum', 'determinant', 'diag_matrix', 'diag_post_multiply',
+    'diag_pre_multiply', 'diagonal', 'digamma', 'dims', 'dirichlet_lpdf',
+    'dirichlet_rng', 'distance', 'dot_product', 'dot_self',
+    'double_exponential_cdf', 'double_exponential_lccdf', 'double_exponential_lcdf',
+    'double_exponential_lpdf', 'double_exponential_rng', 'e', 'eigenvalues_sym',
+    'eigenvectors_sym', 'erf', 'erfc', 'exp', 'exp2', 'exp_mod_normal_cdf',
+    'exp_mod_normal_lccdf', 'exp_mod_normal_lcdf', 'exp_mod_normal_lpdf',
+    'exp_mod_normal_rng', 'expm1', 'exponential_cdf', 'exponential_lccdf',
+    'exponential_lcdf', 'exponential_lpdf', 'exponential_rng', 'fabs',
+    'falling_factorial', 'fdim', 'floor', 'fma', 'fmax', 'fmin', 'fmod',
+    'frechet_cdf', 'frechet_lccdf', 'frechet_lcdf', 'frechet_lpdf', 'frechet_rng',
+    'gamma_cdf', 'gamma_lccdf', 'gamma_lcdf', 'gamma_lpdf', 'gamma_p', 'gamma_q',
+    'gamma_rng', 'gaussian_dlm_obs_lpdf', 'get_lp', 'gumbel_cdf', 'gumbel_lccdf',
+    'gumbel_lcdf', 'gumbel_lpdf', 'gumbel_rng', 'head', 'hypergeometric_lpmf',
+    'hypergeometric_rng', 'hypot', 'inc_beta', 'int_step', 'integrate_ode',
+    'integrate_ode_bdf', 'integrate_ode_rk45', 'inv', 'inv_Phi',
+    'inv_chi_square_cdf', 'inv_chi_square_lccdf', 'inv_chi_square_lcdf',
+    'inv_chi_square_lpdf', 'inv_chi_square_rng', 'inv_cloglog', 'inv_gamma_cdf',
+    'inv_gamma_lccdf', 'inv_gamma_lcdf', 'inv_gamma_lpdf', 'inv_gamma_rng',
+    'inv_logit', 'inv_sqrt', 'inv_square', 'inv_wishart_lpdf', 'inv_wishart_rng',
+    'inverse', 'inverse_spd', 'is_inf', 'is_nan', 'lbeta', 'lchoose', 'lgamma',
+    'lkj_corr_cholesky_lpdf', 'lkj_corr_cholesky_rng', 'lkj_corr_lpdf',
+    'lkj_corr_rng', 'lmgamma', 'lmultiply', 'log', 'log10', 'log1m', 'log1m_exp',
+    'log1m_inv_logit', 'log1p', 'log1p_exp', 'log2', 'log_determinant',
+    'log_diff_exp', 'log_falling_factorial', 'log_inv_logit', 'log_mix',
+    'log_rising_factorial', 'log_softmax', 'log_sum_exp', 'logistic_cdf',
+    'logistic_lccdf', 'logistic_lcdf', 'logistic_lpdf', 'logistic_rng', 'logit',
+    'lognormal_cdf', 'lognormal_lccdf', 'lognormal_lcdf', 'lognormal_lpdf',
+    'lognormal_rng', 'machine_precision', 'matrix_exp', 'max', 'mdivide_left_spd',
+    'mdivide_left_tri_low', 'mdivide_right_spd', 'mdivide_right_tri_low', 'mean',
+    'min', 'modified_bessel_first_kind', 'modified_bessel_second_kind',
+    'multi_gp_cholesky_lpdf', 'multi_gp_lpdf', 'multi_normal_cholesky_lpdf',
+    'multi_normal_cholesky_rng', 'multi_normal_lpdf', 'multi_normal_prec_lpdf',
+    'multi_normal_rng', 'multi_student_t_lpdf', 'multi_student_t_rng',
+    'multinomial_lpmf', 'multinomial_rng', 'multiply_log',
+    'multiply_lower_tri_self_transpose', 'neg_binomial_2_cdf',
+    'neg_binomial_2_lccdf', 'neg_binomial_2_lcdf', 'neg_binomial_2_log_lpmf',
+    'neg_binomial_2_log_rng', 'neg_binomial_2_lpmf', 'neg_binomial_2_rng',
+    'neg_binomial_cdf', 'neg_binomial_lccdf', 'neg_binomial_lcdf',
+    'neg_binomial_lpmf', 'neg_binomial_rng', 'negative_infinity', 'normal_cdf',
+    'normal_lccdf', 'normal_lcdf', 'normal_lpdf', 'normal_rng', 'not_a_number',
+    'num_elements', 'ordered_logistic_lpmf', 'ordered_logistic_rng', 'owens_t',
+    'pareto_cdf', 'pareto_lccdf', 'pareto_lcdf', 'pareto_lpdf', 'pareto_rng',
+    'pareto_type_2_cdf', 'pareto_type_2_lccdf', 'pareto_type_2_lcdf',
+    'pareto_type_2_lpdf', 'pareto_type_2_rng', 'pi', 'poisson_cdf', 'poisson_lccdf',
+    'poisson_lcdf', 'poisson_log_lpmf', 'poisson_log_rng', 'poisson_lpmf',
+    'poisson_rng', 'positive_infinity', 'pow', 'print', 'prod', 'qr_Q', 'qr_R',
+    'quad_form', 'quad_form_diag', 'quad_form_sym', 'rank', 'rayleigh_cdf',
+    'rayleigh_lccdf', 'rayleigh_lcdf', 'rayleigh_lpdf', 'rayleigh_rng', 'reject',
+    'rep_array', 'rep_matrix', 'rep_row_vector', 'rep_vector', 'rising_factorial',
+    'round', 'row', 'rows', 'rows_dot_product', 'rows_dot_self',
+    'scaled_inv_chi_square_cdf', 'scaled_inv_chi_square_lccdf',
+    'scaled_inv_chi_square_lcdf', 'scaled_inv_chi_square_lpdf',
+    'scaled_inv_chi_square_rng', 'sd', 'segment', 'sin', 'singular_values', 'sinh',
+    'size', 'skew_normal_cdf', 'skew_normal_lccdf', 'skew_normal_lcdf',
+    'skew_normal_lpdf', 'skew_normal_rng', 'softmax', 'sort_asc', 'sort_desc',
+    'sort_indices_asc', 'sort_indices_desc', 'sqrt', 'sqrt2', 'square',
+    'squared_distance', 'step', 'student_t_cdf', 'student_t_lccdf',
+    'student_t_lcdf', 'student_t_lpdf', 'student_t_rng', 'sub_col', 'sub_row',
+    'sum', 'tail', 'tan', 'tanh', 'target', 'tcrossprod', 'tgamma', 'to_array_1d',
+    'to_array_2d', 'to_matrix', 'to_row_vector', 'to_vector', 'trace',
+    'trace_gen_quad_form', 'trace_quad_form', 'trigamma', 'trunc', 'uniform_cdf',
+    'uniform_lccdf', 'uniform_lcdf', 'uniform_lpdf', 'uniform_rng', 'variance',
+    'von_mises_lpdf', 'von_mises_rng', 'weibull_cdf', 'weibull_lccdf',
+    'weibull_lcdf', 'weibull_lpdf', 'weibull_rng', 'wiener_lpdf', 'wishart_lpdf',
+    'wishart_rng'
+  ];
+  var DISTRIBUTIONS = [
+    'bernoulli', 'bernoulli_logit', 'beta', 'beta_binomial', 'binomial',
+    'binomial_logit', 'categorical', 'categorical_logit', 'cauchy', 'chi_square',
+    'dirichlet', 'double_exponential', 'exp_mod_normal', 'exponential', 'frechet',
+    'gamma', 'gaussian_dlm_obs', 'gumbel', 'hypergeometric', 'inv_chi_square',
+    'inv_gamma', 'inv_wishart', 'lkj_corr', 'lkj_corr_cholesky', 'logistic',
+    'lognormal', 'multi_gp', 'multi_gp_cholesky', 'multi_normal',
+    'multi_normal_cholesky', 'multi_normal_prec', 'multi_student_t', 'multinomial',
+    'neg_binomial', 'neg_binomial_2', 'neg_binomial_2_log', 'normal',
+    'ordered_logistic', 'pareto', 'pareto_type_2', 'poisson', 'poisson_log',
+    'rayleigh', 'scaled_inv_chi_square', 'skew_normal', 'student_t', 'uniform',
+    'von_mises', 'weibull', 'wiener', 'wishart'
+  ];
+
   return {
+    aliases: ['stanfuncs'],
+    keywords: {
+      'title': BLOCKS.join(' '),
+      'keyword': STATEMENTS.concat(VAR_TYPES).concat(SPECIAL_FUNCTIONS).join(' '),
+      'built_in': FUNCTIONS.join(' ')
+    },
+    lexemes: hljs.IDENT_RE,
     contains: [
-      hljs.HASH_COMMENT_MODE,
       hljs.C_LINE_COMMENT_MODE,
-      hljs.C_BLOCK_COMMENT_MODE,
+      hljs.COMMENT(
+        /#/,
+        /$/,
+        {
+          relevance: 0,
+          keywords: {
+            'meta-keyword': 'include'
+          }
+        }
+      ),
+      hljs.COMMENT(
+        /\/\*/,
+        /\*\//,
+        {
+          relevance: 0,
+          // highlight doc strings mentioned in Stan reference
+          contains: [
+            {
+              className: 'doctag',
+              begin: /@(return|param)/
+            }
+          ]
+        }
+      ),
       {
-        begin: hljs.UNDERSCORE_IDENT_RE,
-        lexemes: hljs.UNDERSCORE_IDENT_RE,
-        keywords: {
-          // Stan's keywords
-          name:
-            'for in while repeat until if then else',
-          // Stan's probablity distributions (less beta and gamma, as commonly
-          // used for parameter names). So far, _log and _rng variants are not
-          // included
-          symbol:
-            'bernoulli bernoulli_logit binomial binomial_logit '               +
-            'beta_binomial hypergeometric categorical categorical_logit '      +
-            'ordered_logistic neg_binomial neg_binomial_2 '                    +
-            'neg_binomial_2_log poisson poisson_log multinomial normal '       +
-            'exp_mod_normal skew_normal student_t cauchy double_exponential '  +
-            'logistic gumbel lognormal chi_square inv_chi_square '             +
-            'scaled_inv_chi_square exponential inv_gamma weibull frechet '     +
-            'rayleigh wiener pareto pareto_type_2 von_mises uniform '          +
-            'multi_normal multi_normal_prec multi_normal_cholesky multi_gp '   +
-            'multi_gp_cholesky multi_student_t gaussian_dlm_obs dirichlet '    +
-            'lkj_corr lkj_corr_cholesky wishart inv_wishart',
-          // Stan's data types
-          'selector-tag':
-            'int real vector simplex unit_vector ordered positive_ordered '    +
-            'row_vector matrix cholesky_factor_corr cholesky_factor_cov '      +
-            'corr_matrix cov_matrix',
-          // Stan's model blocks
-          title:
-            'functions model data parameters quantities transformed '          +
-            'generated',
-          literal:
-            'true false'
-        },
-        relevance: 0
-      },
-      // The below is all taken from the R language definition
-      {
-        // hex value
-        className: 'number',
-        begin: "0[xX][0-9a-fA-F]+[Li]?\\b",
-        relevance: 0
+        // hack: in range constraints, lower must follow "<"
+        begin: /<\s*lower\s*=/,
+        keywords: 'lower'
       },
       {
-        // hex value
-        className: 'number',
-        begin: "0[xX][0-9a-fA-F]+[Li]?\\b",
-        relevance: 0
+        // hack: in range constraints, upper must follow either , or <
+        // <lower = ..., upper = ...> or <upper = ...>
+        begin: /[<,]*upper\s*=/,
+        keywords: 'upper'
       },
       {
-        // explicit integer
-        className: 'number',
-        begin: "\\d+(?:[eE][+\\-]?\\d*)?L\\b",
-        relevance: 0
+        className: 'keyword',
+        begin: /\btarget\s*\+=/,
+        relevance: 10
       },
       {
-        // number with trailing decimal
+        begin: '~\\s*(' + hljs.IDENT_RE + ')\\s*\\(',
+        keywords: DISTRIBUTIONS.join(' ')
+      },
+      {
         className: 'number',
-        begin: "\\d+\\.(?!\\d)(?:i\\b)?",
+        variants: [
+          {
+            begin: /\b\d+(?:\.\d*)?(?:[eE][+-]?\d+)?/
+          },
+          {
+            begin: /\.\d+(?:[eE][+-]?\d+)?\b/
+          }
+        ],
         relevance: 0
       },
       {
-        // number
-        className: 'number',
-        begin: "\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",
-        relevance: 0
-      },
-      {
-        // number with leading decimal
-        className: 'number',
-        begin: "\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",
+        className: 'string',
+        begin: '"',
+        end: '"',
         relevance: 0
       }
     ]
-  };
+  }
 }
 },{name:"stata",create:/*
 Language: Stata
 Author: Brian Quistorff <bquistorff@gmail.com>
 Contributors: Drew McDonald <drewmcdo@gmail.com>
-Description: Syntax highlighting for Stata code. This is a fork and modification of Drew McDonald's file (https://github.com/drewmcdonald/stata-highlighting). I have also included a list of builtin commands from https://bugs.kde.org/show_bug.cgi?id=135646.
+Description: Stata is a general-purpose statistical software package created in 1985 by StataCorp.
+Website: https://en.wikipedia.org/wiki/Stata
 Category: scientific
+*/
+
+/*
+  This is a fork and modification of Drew McDonald's file (https://github.com/drewmcdonald/stata-highlighting). I have also included a list of builtin commands from https://bugs.kde.org/show_bug.cgi?id=135646.
 */
 
 function(hljs) {
@@ -21174,7 +22024,7 @@ function(hljs) {
         className: 'built_in',
         variants: [
           {
-            begin: '\\b(abs|acos|asin|atan|atan2|atanh|ceil|cloglog|comb|cos|digamma|exp|floor|invcloglog|invlogit|ln|lnfact|lnfactorial|lngamma|log|log10|max|min|mod|reldif|round|sign|sin|sqrt|sum|tan|tanh|trigamma|trunc|betaden|Binomial|binorm|binormal|chi2|chi2tail|dgammapda|dgammapdada|dgammapdadx|dgammapdx|dgammapdxdx|F|Fden|Ftail|gammaden|gammap|ibeta|invbinomial|invchi2|invchi2tail|invF|invFtail|invgammap|invibeta|invnchi2|invnFtail|invnibeta|invnorm|invnormal|invttail|nbetaden|nchi2|nFden|nFtail|nibeta|norm|normal|normalden|normd|npnchi2|tden|ttail|uniform|abbrev|char|index|indexnot|length|lower|ltrim|match|plural|proper|real|regexm|regexr|regexs|reverse|rtrim|string|strlen|strlower|strltrim|strmatch|strofreal|strpos|strproper|strreverse|strrtrim|strtrim|strupper|subinstr|subinword|substr|trim|upper|word|wordcount|_caller|autocode|byteorder|chop|clip|cond|e|epsdouble|epsfloat|group|inlist|inrange|irecode|matrix|maxbyte|maxdouble|maxfloat|maxint|maxlong|mi|minbyte|mindouble|minfloat|minint|minlong|missing|r|recode|replay|return|s|scalar|d|date|day|dow|doy|halfyear|mdy|month|quarter|week|year|d|daily|dofd|dofh|dofm|dofq|dofw|dofy|h|halfyearly|hofd|m|mofd|monthly|q|qofd|quarterly|tin|twithin|w|weekly|wofd|y|yearly|yh|ym|yofd|yq|yw|cholesky|colnumb|colsof|corr|det|diag|diag0cnt|el|get|hadamard|I|inv|invsym|issym|issymmetric|J|matmissing|matuniform|mreldif|nullmat|rownumb|rowsof|sweep|syminv|trace|vec|vecdiag)(?=\\(|$)'
+            begin: '\\b(abs|acos|asin|atan|atan2|atanh|ceil|cloglog|comb|cos|digamma|exp|floor|invcloglog|invlogit|ln|lnfact|lnfactorial|lngamma|log|log10|max|min|mod|reldif|round|sign|sin|sqrt|sum|tan|tanh|trigamma|trunc|betaden|Binomial|binorm|binormal|chi2|chi2tail|dgammapda|dgammapdada|dgammapdadx|dgammapdx|dgammapdxdx|F|Fden|Ftail|gammaden|gammap|ibeta|invbinomial|invchi2|invchi2tail|invF|invFtail|invgammap|invibeta|invnchi2|invnFtail|invnibeta|invnorm|invnormal|invttail|nbetaden|nchi2|nFden|nFtail|nibeta|norm|normal|normalden|normd|npnchi2|tden|ttail|uniform|abbrev|char|index|indexnot|length|lower|ltrim|match|plural|proper|real|regexm|regexr|regexs|reverse|rtrim|string|strlen|strlower|strltrim|strmatch|strofreal|strpos|strproper|strreverse|strrtrim|strtrim|strupper|subinstr|subinword|substr|trim|upper|word|wordcount|_caller|autocode|byteorder|chop|clip|cond|e|epsdouble|epsfloat|group|inlist|inrange|irecode|matrix|maxbyte|maxdouble|maxfloat|maxint|maxlong|mi|minbyte|mindouble|minfloat|minint|minlong|missing|r|recode|replay|return|s|scalar|d|date|day|dow|doy|halfyear|mdy|month|quarter|week|year|d|daily|dofd|dofh|dofm|dofq|dofw|dofy|h|halfyearly|hofd|m|mofd|monthly|q|qofd|quarterly|tin|twithin|w|weekly|wofd|y|yearly|yh|ym|yofd|yq|yw|cholesky|colnumb|colsof|corr|det|diag|diag0cnt|el|get|hadamard|I|inv|invsym|issym|issymmetric|J|matmissing|matuniform|mreldif|nullmat|rownumb|rowsof|sweep|syminv|trace|vec|vecdiag)(?=\\()'
           }
         ]
       },
@@ -21189,6 +22039,7 @@ function(hljs) {
 Language: STEP Part 21
 Contributors: Adam Joseph Cook <adam.joseph.cook@gmail.com>
 Description: Syntax highlighter for STEP Part 21 files (ISO 10303-21).
+Website: https://en.wikipedia.org/wiki/ISO_10303-21
 */
 
 function(hljs) {
@@ -21240,7 +22091,8 @@ function(hljs) {
 },{name:"stylus",create:/*
 Language: Stylus
 Author: Bryant Williams <b.n.williams@gmail.com>
-Description: Stylus (https://github.com/LearnBoost/stylus/)
+Description: Stylus is an expressive, robust, feature-rich CSS language built for nodejs.
+Website: https://github.com/stylus/stylus
 Category: css
 */
 
@@ -21360,7 +22212,7 @@ function(hljs) {
     'video'
   ];
 
-  var TAG_END = '[\\.\\s\\n\\[\\:,]';
+  var LOOKAHEAD_TAG_END = '(?=[\\.\\s\\n\\[\\:,])';
 
   var ATTRIBUTES = [
     'align-content',
@@ -21603,34 +22455,25 @@ function(hljs) {
 
       // class tag
       {
-        begin: '\\.[a-zA-Z][a-zA-Z0-9_-]*' + TAG_END,
-        returnBegin: true,
-        contains: [
-          {className: 'selector-class', begin: '\\.[a-zA-Z][a-zA-Z0-9_-]*'}
-        ]
+        begin: '\\.[a-zA-Z][a-zA-Z0-9_-]*' + LOOKAHEAD_TAG_END,
+        className: 'selector-class'
       },
 
       // id tag
       {
-        begin: '\\#[a-zA-Z][a-zA-Z0-9_-]*' + TAG_END,
-        returnBegin: true,
-        contains: [
-          {className: 'selector-id', begin: '\\#[a-zA-Z][a-zA-Z0-9_-]*'}
-        ]
+        begin: '\\#[a-zA-Z][a-zA-Z0-9_-]*' + LOOKAHEAD_TAG_END,
+        className: 'selector-id'
       },
 
       // tags
       {
-        begin: '\\b(' + TAGS.join('|') + ')' + TAG_END,
-        returnBegin: true,
-        contains: [
-          {className: 'selector-tag', begin: '\\b[a-zA-Z][a-zA-Z0-9_-]*'}
-        ]
+        begin: '\\b(' + TAGS.join('|') + ')' + LOOKAHEAD_TAG_END,
+        className: 'selector-tag'
       },
 
       // psuedo selectors
       {
-        begin: '&?:?:\\b(' + PSEUDO_SELECTORS.join('|') + ')' + TAG_END
+        begin: '&?:?:\\b(' + PSEUDO_SELECTORS.join('|') + ')' + LOOKAHEAD_TAG_END
       },
 
       // @ keywords
@@ -21700,7 +22543,7 @@ function(hljs) {
 },{name:"subunit",create:/*
 Language: SubUnit
 Author: Sergey Bronnikov <sergeyb@bronevichok.ru>
-Website: https://bronevichok.ru/
+Website: https://pypi.org/project/python-subunit/
 */
 
 function(hljs) {
@@ -21738,9 +22581,11 @@ function(hljs) {
 }
 },{name:"swift",create:/*
 Language: Swift
+Description: Swift is a general-purpose programming language built using a modern approach to safety, performance, and software design patterns.
 Author: Chris Eidhof <chris@eidhof.nl>
 Contributors: Nate Cook <natecook@gmail.com>, Alexander Lichter <manniL@gmx.net>
-Category: system
+Website: https://swift.org
+Category: common, system
 */
 
 
@@ -21863,7 +22708,8 @@ function(hljs) {
                   '@NSCopying|@NSManaged|@objc|@objcMembers|@convention|@required|' +
                   '@noreturn|@IBAction|@IBDesignable|@IBInspectable|@IBOutlet|' +
                   '@infix|@prefix|@postfix|@autoclosure|@testable|@available|' +
-                  '@nonobjc|@NSApplicationMain|@UIApplicationMain)'
+                  '@nonobjc|@NSApplicationMain|@UIApplicationMain|@dynamicMemberLookup|' +
+                  '@propertyWrapper)'
 
       },
       {
@@ -21877,6 +22723,7 @@ function(hljs) {
 Language: Tagger Script
 Author: Philipp Wolfer <ph.wolfer@gmail.com>
 Description: Syntax Highlighting for the Tagger Script as used by MusicBrainz Picard.
+Website: https://picard.musicbrainz.org
  */
 function(hljs) {
 
@@ -21965,7 +22812,9 @@ function(hljs) {
 }
 },{name:"tcl",create:/*
 Language: Tcl
+Description: Tcl is a very simple programming language.
 Author: Radek Liska <radekliska@gmail.com>
+Website: https://www.tcl.tk/about/language.html
 */
 
 function(hljs) {
@@ -22030,7 +22879,7 @@ function(hljs) {
 },{name:"tex",create:/*
 Language: TeX
 Author: Vladimir Moskva <vladmos@gmail.com>
-Website: http://fulc.ru/
+Website: https://www.latex-project.org
 Category: markup
 */
 
@@ -22099,6 +22948,7 @@ function(hljs) {
 Language: Thrift
 Author: Oleg Efimov <efimovov@gmail.com>
 Description: Thrift message definition format
+Website: https://thrift.apache.org
 Category: protocols
 */
 
@@ -22231,6 +23081,7 @@ Language: Twig
 Requires: xml.js
 Author: Luke Holder <lukemh@gmail.com>
 Description: Twig is a templating language for PHP
+Website: https://twig.symfony.com
 Category: template
 */
 
@@ -22255,17 +23106,17 @@ function(hljs) {
   var FILTER = {
     begin: /\|[A-Za-z_]+:?/,
     keywords:
-      'abs batch capitalize convert_encoding date date_modify default ' +
-      'escape first format join json_encode keys last length lower ' +
-      'merge nl2br number_format raw replace reverse round slice sort split ' +
-      'striptags title trim upper url_encode',
+      'abs batch capitalize column convert_encoding date date_modify default ' +
+      'escape filter first format inky_to_html inline_css join json_encode keys last ' +
+      'length lower map markdown merge nl2br number_format raw reduce replace ' +
+      'reverse round slice sort spaceless split striptags title trim upper url_encode',
     contains: [
       FUNCTIONS
     ]
   };
 
-  var TAGS = 'autoescape block do embed extends filter flush for ' +
-    'if import include macro sandbox set spaceless use verbatim';
+  var TAGS = 'apply autoescape block deprecated do embed extends filter flush for from ' +
+    'if import include macro sandbox set use verbatim with';
 
   TAGS = TAGS + ' ' + TAGS.split(' ').map(function(t){return 'end' + t}).join(' ');
 
@@ -22304,7 +23155,8 @@ Language: TypeScript
 Author: Panu Horsmalahti <panu.horsmalahti@iki.fi>
 Contributors: Ike Ku <dempfi@yahoo.com>
 Description: TypeScript is a strict superset of JavaScript
-Category: scripting
+Website: https://www.typescriptlang.org
+Category: common, scripting
 */
 
 function(hljs) {
@@ -22362,9 +23214,9 @@ function(hljs) {
   var NUMBER = {
     className: 'number',
     variants: [
-      { begin: '\\b(0[bB][01]+)' },
-      { begin: '\\b(0[oO][0-7]+)' },
-      { begin: hljs.C_NUMBER_RE }
+      { begin: '\\b(0[bB][01]+)n?' },
+      { begin: '\\b(0[oO][0-7]+)n?' },
+      { begin: hljs.C_NUMBER_RE + 'n?' }
     ],
     relevance: 0
   };
@@ -22472,7 +23324,7 @@ function(hljs) {
       },
       {
         className: 'function',
-        begin: 'function', end: /[\{;]/, excludeEnd: true,
+        beginKeywords: 'function', end: /[\{;]/, excludeEnd: true,
         keywords: KEYWORDS,
         contains: [
           'self',
@@ -22483,7 +23335,7 @@ function(hljs) {
         relevance: 0 // () => {} is more typical in TypeScript
       },
       {
-        beginKeywords: 'constructor', end: /\{/, excludeEnd: true,
+        beginKeywords: 'constructor', end: /[\{;]/, excludeEnd: true,
         contains: [
           'self',
           PARAMS
@@ -22516,6 +23368,7 @@ function(hljs) {
 Language: Vala
 Author: Antono Vasiljev <antono.vasiljev@gmail.com>
 Description: Vala is a new programming language that aims to bring modern programming language features to GNOME developers without imposing any additional runtime requirements and without using a different ABI compared to applications and libraries written in C.
+Website: https://wiki.gnome.org/Projects/Vala
 */
 
 function(hljs) {
@@ -22569,7 +23422,9 @@ function(hljs) {
 }
 },{name:"vbnet",create:/*
 Language: VB.NET
+Description: Visual Basic .NET (VB.NET) is a multi-paradigm, object-oriented programming language, implemented on the .NET Framework.
 Author: Poren Chiang <ren.chiang@gmail.com>
+Website: https://docs.microsoft.com/en-us/dotnet/visual-basic/getting-started/
 */
 
 function(hljs) {
@@ -22578,17 +23433,17 @@ function(hljs) {
     case_insensitive: true,
     keywords: {
       keyword:
-        'addhandler addressof alias and andalso aggregate ansi as assembly auto binary by byref byval ' + /* a-b */
+        'addhandler addressof alias and andalso aggregate ansi as async assembly auto await binary by byref byval ' + /* a-b */
         'call case catch class compare const continue custom declare default delegate dim distinct do ' + /* c-d */
         'each equals else elseif end enum erase error event exit explicit finally for friend from function ' + /* e-f */
-        'get global goto group handles if implements imports in inherits interface into is isfalse isnot istrue ' + /* g-i */
+        'get global goto group handles if implements imports in inherits interface into is isfalse isnot istrue iterator ' + /* g-i */
         'join key let lib like loop me mid mod module mustinherit mustoverride mybase myclass ' + /* j-m */
-        'namespace narrowing new next not notinheritable notoverridable ' + /* n */
+        'nameof namespace narrowing new next not notinheritable notoverridable ' + /* n */
         'of off on operator option optional or order orelse overloads overridable overrides ' + /* o */
         'paramarray partial preserve private property protected public ' + /* p */
         'raiseevent readonly redim rem removehandler resume return ' + /* r */
         'select set shadows shared skip static step stop structure strict sub synclock ' + /* s */
-        'take text then throw to try unicode until using when where while widening with withevents writeonly xor', /* t-x */
+        'take text then throw to try unicode until using when where while widening with withevents writeonly xor yield', /* t-y */
       built_in:
         'boolean byte cbool cbyte cchar cdate cdec cdbl char cint clng cobj csbyte cshort csng cstr ctype ' +  /* b-c */
         'date decimal directcast double gettype getxmlnamespace iif integer long object ' + /* d-o */
@@ -22632,6 +23487,7 @@ Language: VBScript in HTML
 Requires: xml.js, vbscript.js
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
 Description: "Bridge" language defining fragments of VBScript in HTML within <% .. %>
+Website: https://en.wikipedia.org/wiki/VBScript
 Category: scripting
 */
 
@@ -22648,8 +23504,10 @@ function(hljs) {
 }
 },{name:"vbscript",create:/*
 Language: VBScript
+Description: VBScript ("Microsoft Visual Basic Scripting Edition") is an Active Scripting language developed by Microsoft that is modeled on Visual Basic.
 Author: Nikita Ledyaev <lenikita@yandex.ru>
 Contributors: Michal Gabrukiewicz <mgabru@gmail.com>
+Website: https://en.wikipedia.org/wiki/VBScript
 Category: scripting
 */
 
@@ -22696,6 +23554,7 @@ Language: Verilog
 Author: Jon Evans <jon@craftyjon.com>
 Contributors: Boone Severson <boone.severson@gmail.com>
 Description: Verilog is a hardware description language used in electronic design automation to describe digital and mixed-signal systems. This highlighter supports Verilog and SystemVerilog through IEEE 1800-2012.
+Website: http://www.verilog.com
 */
 
 function(hljs) {
@@ -22801,6 +23660,7 @@ Language: VHDL
 Author: Igor Kalnitsky <igor@kalnitsky.org>
 Contributors: Daniel C.K. Kho <daniel.kho@tauhop.com>, Guillaume Savaton <guillaume.savaton@eseo.fr>
 Description: VHDL is a hardware description language used in electronic design automation to describe digital and mixed-signal systems.
+Website: https://en.wikipedia.org/wiki/VHDL
 */
 
 function(hljs) {
@@ -22867,6 +23727,7 @@ function(hljs) {
 Language: Vim Script
 Author: Jun Yang <yangjvn@126.com>
 Description: full keyword and built-in from http://vimdoc.sourceforge.net/htmldoc/
+Website: https://www.vim.org
 Category: scripting
 */
 
@@ -22983,6 +23844,7 @@ function(hljs) {
 Language: Intel x86 Assembly
 Author: innocenat <innocenat@gmail.com>
 Description: x86 assembly language using Intel's mnemonic and NASM syntax
+Website: https://en.wikipedia.org/wiki/X86_assembly_language
 Category: assembler
 */
 
@@ -23124,7 +23986,8 @@ function(hljs) {
 },{name:"xl",create:/*
 Language: XL
 Author: Christophe de Dinechin <christophe@taodyne.com>
-Description: An extensible programming language, based on parse tree rewriting (http://xlr.sf.net)
+Description: An extensible programming language, based on parse tree rewriting
+Website: http://xlr.sf.net
 */
 
 function(hljs) {
@@ -23201,11 +24064,29 @@ function(hljs) {
 }
 },{name:"xml",create:/*
 Language: HTML, XML
+Website: https://www.w3.org/XML/
 Category: common
 */
 
 function(hljs) {
   var XML_IDENT_RE = '[A-Za-z0-9\\._:-]+';
+  var XML_ENTITIES = {
+    className: 'symbol',
+    begin: '&[a-z]+;|&#[0-9]+;|&#x[a-f0-9]+;'
+  };
+  var XML_META_KEYWORDS = {
+	  begin: '\\s',
+	  contains:[
+	    {
+	      className: 'meta-keyword',
+	      begin: '#?[a-z_][a-z1-9_-]+',
+	      illegal: '\\n',
+      }
+	  ]
+  };
+  var XML_META_PAR_KEYWORDS = hljs.inherit(XML_META_KEYWORDS, {begin: '\\(', end: '\\)'});
+  var APOS_META_STRING_MODE = hljs.inherit(hljs.APOS_STRING_MODE, {className: 'meta-string'});
+  var QUOTE_META_STRING_MODE = hljs.inherit(hljs.QUOTE_STRING_MODE, {className: 'meta-string'});
   var TAG_INTERNALS = {
     endsWithParent: true,
     illegal: /</,
@@ -23224,8 +24105,8 @@ function(hljs) {
             className: 'string',
             endsParent: true,
             variants: [
-              {begin: /"/, end: /"/},
-              {begin: /'/, end: /'/},
+              {begin: /"/, end: /"/, contains: [XML_ENTITIES]},
+              {begin: /'/, end: /'/, contains: [XML_ENTITIES]},
               {begin: /[^\s"'=<>`]+/}
             ]
           }
@@ -23234,14 +24115,34 @@ function(hljs) {
     ]
   };
   return {
-    aliases: ['html', 'xhtml', 'rss', 'atom', 'xjb', 'xsd', 'xsl', 'plist', 'wsf'],
+    aliases: ['html', 'xhtml', 'rss', 'atom', 'xjb', 'xsd', 'xsl', 'plist', 'wsf', 'svg'],
     case_insensitive: true,
     contains: [
       {
         className: 'meta',
-        begin: '<!DOCTYPE', end: '>',
+        begin: '<![a-z]', end: '>',
         relevance: 10,
-        contains: [{begin: '\\[', end: '\\]'}]
+        contains: [
+				  XML_META_KEYWORDS,
+				  QUOTE_META_STRING_MODE,
+				  APOS_META_STRING_MODE,
+					XML_META_PAR_KEYWORDS,
+					{
+					  begin: '\\[', end: '\\]',
+					  contains:[
+						  {
+					      className: 'meta',
+					      begin: '<![a-z]', end: '>',
+					      contains: [
+					        XML_META_KEYWORDS,
+					        XML_META_PAR_KEYWORDS,
+					        QUOTE_META_STRING_MODE,
+					        APOS_META_STRING_MODE
+						    ]
+			        }
+					  ]
+				  }
+				]
       },
       hljs.COMMENT(
         '<!--',
@@ -23254,6 +24155,7 @@ function(hljs) {
         begin: '<\\!\\[CDATA\\[', end: '\\]\\]>',
         relevance: 10
       },
+      XML_ENTITIES,
       {
         className: 'meta',
         begin: /<\?xml/, end: /\?>/, relevance: 10
@@ -23279,7 +24181,7 @@ function(hljs) {
         ending braket. The '$' is needed for the lexeme to be recognized
         by hljs.subMode() that tests lexemes outside the stream.
         */
-        begin: '<style(?=\\s|>|$)', end: '>',
+        begin: '<style(?=\\s|>)', end: '>',
         keywords: {name: 'style'},
         contains: [TAG_INTERNALS],
         starts: {
@@ -23290,12 +24192,12 @@ function(hljs) {
       {
         className: 'tag',
         // See the comment in the <style tag about the lookahead pattern
-        begin: '<script(?=\\s|>|$)', end: '>',
+        begin: '<script(?=\\s|>)', end: '>',
         keywords: {name: 'script'},
         contains: [TAG_INTERNALS],
         starts: {
           end: '\<\/script\>', returnEnd: true,
-          subLanguage: ['actionscript', 'javascript', 'handlebars', 'xml', 'vbscript']
+          subLanguage: ['actionscript', 'javascript', 'handlebars', 'xml']
         }
       },
       {
@@ -23317,6 +24219,7 @@ Author: Dirk Kirsten <dk@basex.org>
 Contributor: Duncan Paterson
 Description: Supports XQuery 3.1 including XQuery Update 3, so also XPath (as it is a superset)
 Refactored to process xml constructor syntax and function-bodies. Added missing data-types, xpath operands, inbuilt functions, and query prologs
+Website: https://www.w3.org/XML/Query/
 Category: functional
 */
 
@@ -23491,22 +24394,26 @@ function(hljs) {
 }
 },{name:"yaml",create:/*
 Language: YAML
+Description: Yet Another Markdown Language
 Author: Stefan Wienert <stwienert@gmail.com>
+Contributors: Carl Baxter <carl@cbax.tech>
 Requires: ruby.js
-Description: YAML (Yet Another Markdown Language)
+Website: https://yaml.org
 Category: common, config
 */
 function(hljs) {
   var LITERALS = 'true false yes no null';
 
-  var keyPrefix = '^[ \\-]*';
-  var keyName =  '[a-zA-Z_][\\w\\-]*';
+  // Define keys as starting with a word character
+  // ...containing word chars, spaces, colons, forward-slashes, hyphens and periods
+  // ...and ending with a colon followed immediately by a space, tab or newline.
+  // The YAML spec allows for much more than this, but this covers most use-cases.
   var KEY = {
     className: 'attr',
     variants: [
-      { begin: keyPrefix + keyName + ":"},
-      { begin: keyPrefix + '"' + keyName + '"' + ":"},
-      { begin: keyPrefix + "'" + keyName + "'" + ":"}
+      { begin: '\\w[\\w :\\/.-]*:(?=[ \t]|$)' },
+      { begin: '"\\w[\\w :\\/.-]*":(?=[ \t]|$)' }, //double quoted keys
+      { begin: '\'\\w[\\w :\\/.-]*\':(?=[ \t]|$)' } //single quoted keys
     ]
   };
 
@@ -23542,12 +24449,12 @@ function(hljs) {
         relevance: 10
       },
       { // multi line string
+        // Blocks start with a | or > followed by a newline
+        //
+        // Indentation of subsequent lines must be the same to
+        // be considered part of the block
         className: 'string',
-        begin: '[\\|>] *$',
-        returnEnd: true,
-        contains: STRING.contains,
-        // very simple termination: next hash key
-        end: KEY.variants[0].begin
+        begin: '[\\|>]([0-9]?[+-])?[ ]*\\n( *)[\\S ]+\\n(\\2[\\S ]+\\n?)*',
       },
       { // Ruby/Rails erb
         begin: '<%[%=-]?', end: '[%-]?%>',
@@ -23574,7 +24481,8 @@ function(hljs) {
       },
       { // array listing
         className: 'bullet',
-        begin: '^ *-',
+      // TODO: remove |$ hack when we have proper look-ahead support
+      begin: '\\-(?=[ ]|$)',
         relevance: 0
       },
       hljs.HASH_COMMENT_MODE,
@@ -23582,14 +24490,21 @@ function(hljs) {
         beginKeywords: LITERALS,
         keywords: {literal: LITERALS}
       },
-      hljs.C_NUMBER_MODE,
+      // numbers are any valid C-style number that
+      // sit isolated from other words
+      {
+        className: 'number',
+        begin: hljs.C_NUMBER_RE + '\\b'
+      },
       STRING
     ]
   };
 }
 },{name:"zephir",create:/*
  Language: Zephir
+ Description: Zephir, an open source, high-level language designed to ease the creation and maintainability of extensions for PHP with a focus on type and memory safety.
  Author: Oleg Efimov <efimovov@gmail.com>
+ Website: https://zephir-lang.com/en
  */
 
 function(hljs) {
@@ -23706,6 +24621,6 @@ for (var i = 0; i < languages.length; ++i) {
 }
 
 module.exports = {
-  styles: {"a11y-dark":".hljs-a11y-dark .hljs-comment,.hljs-a11y-dark .hljs-quote{color:#d4d0ab}.hljs-a11y-dark .hljs-variable,.hljs-a11y-dark .hljs-template-variable,.hljs-a11y-dark .hljs-tag,.hljs-a11y-dark .hljs-name,.hljs-a11y-dark .hljs-selector-id,.hljs-a11y-dark .hljs-selector-class,.hljs-a11y-dark .hljs-regexp,.hljs-a11y-dark .hljs-deletion{color:#ffa07a}.hljs-a11y-dark .hljs-number,.hljs-a11y-dark .hljs-built_in,.hljs-a11y-dark .hljs-builtin-name,.hljs-a11y-dark .hljs-literal,.hljs-a11y-dark .hljs-type,.hljs-a11y-dark .hljs-params,.hljs-a11y-dark .hljs-meta,.hljs-a11y-dark .hljs-link{color:#f5ab35}.hljs-a11y-dark .hljs-attribute{color:#ffd700}.hljs-a11y-dark .hljs-string,.hljs-a11y-dark .hljs-symbol,.hljs-a11y-dark .hljs-bullet,.hljs-a11y-dark .hljs-addition{color:#abe338}.hljs-a11y-dark .hljs-title,.hljs-a11y-dark .hljs-section{color:#00e0e0}.hljs-a11y-dark .hljs-keyword,.hljs-a11y-dark .hljs-selector-tag{color:#dcc6e0}.hljs-a11y-dark .hljs{display:block;overflow-x:auto;background:#2b2b2b;color:#f8f8f2;padding:.5em}.hljs-a11y-dark .hljs-emphasis{font-style:italic}.hljs-a11y-dark .hljs-strong{font-weight:bold}@media screen and (-ms-high-contrast:active){.hljs-a11y-dark .hljs-addition,.hljs-a11y-dark .hljs-attribute,.hljs-a11y-dark .hljs-built_in,.hljs-a11y-dark .hljs-builtin-name,.hljs-a11y-dark .hljs-bullet,.hljs-a11y-dark .hljs-comment,.hljs-a11y-dark .hljs-link,.hljs-a11y-dark .hljs-literal,.hljs-a11y-dark .hljs-meta,.hljs-a11y-dark .hljs-number,.hljs-a11y-dark .hljs-params,.hljs-a11y-dark .hljs-string,.hljs-a11y-dark .hljs-symbol,.hljs-a11y-dark .hljs-type,.hljs-a11y-dark .hljs-quote{color:highlight}.hljs-a11y-dark .hljs-keyword,.hljs-a11y-dark .hljs-selector-tag{font-weight:bold}}","a11y-light":".hljs-a11y-light .hljs-comment,.hljs-a11y-light .hljs-quote{color:#696969}.hljs-a11y-light .hljs-variable,.hljs-a11y-light .hljs-template-variable,.hljs-a11y-light .hljs-tag,.hljs-a11y-light .hljs-name,.hljs-a11y-light .hljs-selector-id,.hljs-a11y-light .hljs-selector-class,.hljs-a11y-light .hljs-regexp,.hljs-a11y-light .hljs-deletion{color:#d91e18}.hljs-a11y-light .hljs-number,.hljs-a11y-light .hljs-built_in,.hljs-a11y-light .hljs-builtin-name,.hljs-a11y-light .hljs-literal,.hljs-a11y-light .hljs-type,.hljs-a11y-light .hljs-params,.hljs-a11y-light .hljs-meta,.hljs-a11y-light .hljs-link{color:#aa5d00}.hljs-a11y-light .hljs-attribute{color:#aa5d00}.hljs-a11y-light .hljs-string,.hljs-a11y-light .hljs-symbol,.hljs-a11y-light .hljs-bullet,.hljs-a11y-light .hljs-addition{color:#008000}.hljs-a11y-light .hljs-title,.hljs-a11y-light .hljs-section{color:#007faa}.hljs-a11y-light .hljs-keyword,.hljs-a11y-light .hljs-selector-tag{color:#7928a1}.hljs-a11y-light .hljs{display:block;overflow-x:auto;background:#fefefe;color:#545454;padding:.5em}.hljs-a11y-light .hljs-emphasis{font-style:italic}.hljs-a11y-light .hljs-strong{font-weight:bold}@media screen and (-ms-high-contrast:active){.hljs-a11y-light .hljs-addition,.hljs-a11y-light .hljs-attribute,.hljs-a11y-light .hljs-built_in,.hljs-a11y-light .hljs-builtin-name,.hljs-a11y-light .hljs-bullet,.hljs-a11y-light .hljs-comment,.hljs-a11y-light .hljs-link,.hljs-a11y-light .hljs-literal,.hljs-a11y-light .hljs-meta,.hljs-a11y-light .hljs-number,.hljs-a11y-light .hljs-params,.hljs-a11y-light .hljs-string,.hljs-a11y-light .hljs-symbol,.hljs-a11y-light .hljs-type,.hljs-a11y-light .hljs-quote{color:highlight}.hljs-a11y-light .hljs-keyword,.hljs-a11y-light .hljs-selector-tag{font-weight:bold}}","agate":".hljs-agate{/*! * Agate by Taufik Nurrohman <https://github.com/tovic> * ---------------------------------------------------- * * #ade5fc * #a2fca2 * #c6b4f0 * #d36363 * #fcc28c * #fc9b9b * #ffa * #fff * #333 * #62c8f3 * #888 * */}.hljs-agate .hljs{display:block;overflow-x:auto;padding:.5em;background:#333;color:white}.hljs-agate .hljs-name,.hljs-agate .hljs-strong{font-weight:bold}.hljs-agate .hljs-code,.hljs-agate .hljs-emphasis{font-style:italic}.hljs-agate .hljs-tag{color:#62c8f3}.hljs-agate .hljs-variable,.hljs-agate .hljs-template-variable,.hljs-agate .hljs-selector-id,.hljs-agate .hljs-selector-class{color:#ade5fc}.hljs-agate .hljs-string,.hljs-agate .hljs-bullet{color:#a2fca2}.hljs-agate .hljs-type,.hljs-agate .hljs-title,.hljs-agate .hljs-section,.hljs-agate .hljs-attribute,.hljs-agate .hljs-quote,.hljs-agate .hljs-built_in,.hljs-agate .hljs-builtin-name{color:#ffa}.hljs-agate .hljs-number,.hljs-agate .hljs-symbol,.hljs-agate .hljs-bullet{color:#d36363}.hljs-agate .hljs-keyword,.hljs-agate .hljs-selector-tag,.hljs-agate .hljs-literal{color:#fcc28c}.hljs-agate .hljs-comment,.hljs-agate .hljs-deletion,.hljs-agate .hljs-code{color:#888}.hljs-agate .hljs-regexp,.hljs-agate .hljs-link{color:#c6b4f0}.hljs-agate .hljs-meta{color:#fc9b9b}.hljs-agate .hljs-deletion{background-color:#fc9b9b;color:#333}.hljs-agate .hljs-addition{background-color:#a2fca2;color:#333}.hljs-agate .hljs a{color:inherit}.hljs-agate .hljs a:focus,.hljs-agate .hljs a:hover{color:inherit;text-decoration:underline}","an-old-hope":".hljs-an-old-hope .hljs-comment,.hljs-an-old-hope .hljs-quote{color:#B6B18B}.hljs-an-old-hope .hljs-variable,.hljs-an-old-hope .hljs-template-variable,.hljs-an-old-hope .hljs-tag,.hljs-an-old-hope .hljs-name,.hljs-an-old-hope .hljs-selector-id,.hljs-an-old-hope .hljs-selector-class,.hljs-an-old-hope .hljs-regexp,.hljs-an-old-hope .hljs-deletion{color:#EB3C54}.hljs-an-old-hope .hljs-number,.hljs-an-old-hope .hljs-built_in,.hljs-an-old-hope .hljs-builtin-name,.hljs-an-old-hope .hljs-literal,.hljs-an-old-hope .hljs-type,.hljs-an-old-hope .hljs-params,.hljs-an-old-hope .hljs-meta,.hljs-an-old-hope .hljs-link{color:#E7CE56}.hljs-an-old-hope .hljs-attribute{color:#EE7C2B}.hljs-an-old-hope .hljs-string,.hljs-an-old-hope .hljs-symbol,.hljs-an-old-hope .hljs-bullet,.hljs-an-old-hope .hljs-addition{color:#4FB4D7}.hljs-an-old-hope .hljs-title,.hljs-an-old-hope .hljs-section{color:#78BB65}.hljs-an-old-hope .hljs-keyword,.hljs-an-old-hope .hljs-selector-tag{color:#B45EA4}.hljs-an-old-hope .hljs{display:block;overflow-x:auto;background:#1C1D21;color:#c0c5ce;padding:.5em}.hljs-an-old-hope .hljs-emphasis{font-style:italic}.hljs-an-old-hope .hljs-strong{font-weight:bold}","androidstudio":".hljs-androidstudio .hljs{color:#a9b7c6;background:#282b2e;display:block;overflow-x:auto;padding:.5em}.hljs-androidstudio .hljs-number,.hljs-androidstudio .hljs-literal,.hljs-androidstudio .hljs-symbol,.hljs-androidstudio .hljs-bullet{color:#6897BB}.hljs-androidstudio .hljs-keyword,.hljs-androidstudio .hljs-selector-tag,.hljs-androidstudio .hljs-deletion{color:#cc7832}.hljs-androidstudio .hljs-variable,.hljs-androidstudio .hljs-template-variable,.hljs-androidstudio .hljs-link{color:#629755}.hljs-androidstudio .hljs-comment,.hljs-androidstudio .hljs-quote{color:#808080}.hljs-androidstudio .hljs-meta{color:#bbb529}.hljs-androidstudio .hljs-string,.hljs-androidstudio .hljs-attribute,.hljs-androidstudio .hljs-addition{color:#6A8759}.hljs-androidstudio .hljs-section,.hljs-androidstudio .hljs-title,.hljs-androidstudio .hljs-type{color:#ffc66d}.hljs-androidstudio .hljs-name,.hljs-androidstudio .hljs-selector-id,.hljs-androidstudio .hljs-selector-class{color:#e8bf6a}.hljs-androidstudio .hljs-emphasis{font-style:italic}.hljs-androidstudio .hljs-strong{font-weight:bold}","arduino-light":".hljs-arduino-light .hljs{display:block;overflow-x:auto;padding:.5em;background:#FFFFFF}.hljs-arduino-light .hljs,.hljs-arduino-light .hljs-subst{color:#434f54}.hljs-arduino-light .hljs-keyword,.hljs-arduino-light .hljs-attribute,.hljs-arduino-light .hljs-selector-tag,.hljs-arduino-light .hljs-doctag,.hljs-arduino-light .hljs-name{color:#00979D}.hljs-arduino-light .hljs-built_in,.hljs-arduino-light .hljs-literal,.hljs-arduino-light .hljs-bullet,.hljs-arduino-light .hljs-code,.hljs-arduino-light .hljs-addition{color:#D35400}.hljs-arduino-light .hljs-regexp,.hljs-arduino-light .hljs-symbol,.hljs-arduino-light .hljs-variable,.hljs-arduino-light .hljs-template-variable,.hljs-arduino-light .hljs-link,.hljs-arduino-light .hljs-selector-attr,.hljs-arduino-light .hljs-selector-pseudo{color:#00979D}.hljs-arduino-light .hljs-type,.hljs-arduino-light .hljs-string,.hljs-arduino-light .hljs-selector-id,.hljs-arduino-light .hljs-selector-class,.hljs-arduino-light .hljs-quote,.hljs-arduino-light .hljs-template-tag,.hljs-arduino-light .hljs-deletion{color:#005C5F}.hljs-arduino-light .hljs-title,.hljs-arduino-light .hljs-section{color:#880000;font-weight:bold}.hljs-arduino-light .hljs-comment{color:rgba(149,165,166,0.8)}.hljs-arduino-light .hljs-meta-keyword{color:#728E00}.hljs-arduino-light .hljs-meta{color:#728E00;color:#434f54}.hljs-arduino-light .hljs-emphasis{font-style:italic}.hljs-arduino-light .hljs-strong{font-weight:bold}.hljs-arduino-light .hljs-function{color:#728E00}.hljs-arduino-light .hljs-number{color:#8A7B52}","arta":".hljs-arta .hljs{display:block;overflow-x:auto;padding:.5em;background:#222}.hljs-arta .hljs,.hljs-arta .hljs-subst{color:#aaa}.hljs-arta .hljs-section{color:#fff}.hljs-arta .hljs-comment,.hljs-arta .hljs-quote,.hljs-arta .hljs-meta{color:#444}.hljs-arta .hljs-string,.hljs-arta .hljs-symbol,.hljs-arta .hljs-bullet,.hljs-arta .hljs-regexp{color:#ffcc33}.hljs-arta .hljs-number,.hljs-arta .hljs-addition{color:#00cc66}.hljs-arta .hljs-built_in,.hljs-arta .hljs-builtin-name,.hljs-arta .hljs-literal,.hljs-arta .hljs-type,.hljs-arta .hljs-template-variable,.hljs-arta .hljs-attribute,.hljs-arta .hljs-link{color:#32aaee}.hljs-arta .hljs-keyword,.hljs-arta .hljs-selector-tag,.hljs-arta .hljs-name,.hljs-arta .hljs-selector-id,.hljs-arta .hljs-selector-class{color:#6644aa}.hljs-arta .hljs-title,.hljs-arta .hljs-variable,.hljs-arta .hljs-deletion,.hljs-arta .hljs-template-tag{color:#bb1166}.hljs-arta .hljs-section,.hljs-arta .hljs-doctag,.hljs-arta .hljs-strong{font-weight:bold}.hljs-arta .hljs-emphasis{font-style:italic}","ascetic":".hljs-ascetic .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-ascetic .hljs-string,.hljs-ascetic .hljs-variable,.hljs-ascetic .hljs-template-variable,.hljs-ascetic .hljs-symbol,.hljs-ascetic .hljs-bullet,.hljs-ascetic .hljs-section,.hljs-ascetic .hljs-addition,.hljs-ascetic .hljs-attribute,.hljs-ascetic .hljs-link{color:#888}.hljs-ascetic .hljs-comment,.hljs-ascetic .hljs-quote,.hljs-ascetic .hljs-meta,.hljs-ascetic .hljs-deletion{color:#ccc}.hljs-ascetic .hljs-keyword,.hljs-ascetic .hljs-selector-tag,.hljs-ascetic .hljs-section,.hljs-ascetic .hljs-name,.hljs-ascetic .hljs-type,.hljs-ascetic .hljs-strong{font-weight:bold}.hljs-ascetic .hljs-emphasis{font-style:italic}","atelier-cave-dark":".hljs-atelier-cave-dark .hljs-comment,.hljs-atelier-cave-dark .hljs-quote{color:#7e7887}.hljs-atelier-cave-dark .hljs-variable,.hljs-atelier-cave-dark .hljs-template-variable,.hljs-atelier-cave-dark .hljs-attribute,.hljs-atelier-cave-dark .hljs-regexp,.hljs-atelier-cave-dark .hljs-link,.hljs-atelier-cave-dark .hljs-tag,.hljs-atelier-cave-dark .hljs-name,.hljs-atelier-cave-dark .hljs-selector-id,.hljs-atelier-cave-dark .hljs-selector-class{color:#be4678}.hljs-atelier-cave-dark .hljs-number,.hljs-atelier-cave-dark .hljs-meta,.hljs-atelier-cave-dark .hljs-built_in,.hljs-atelier-cave-dark .hljs-builtin-name,.hljs-atelier-cave-dark .hljs-literal,.hljs-atelier-cave-dark .hljs-type,.hljs-atelier-cave-dark .hljs-params{color:#aa573c}.hljs-atelier-cave-dark .hljs-string,.hljs-atelier-cave-dark .hljs-symbol,.hljs-atelier-cave-dark .hljs-bullet{color:#2a9292}.hljs-atelier-cave-dark .hljs-title,.hljs-atelier-cave-dark .hljs-section{color:#576ddb}.hljs-atelier-cave-dark .hljs-keyword,.hljs-atelier-cave-dark .hljs-selector-tag{color:#955ae7}.hljs-atelier-cave-dark .hljs-deletion,.hljs-atelier-cave-dark .hljs-addition{color:#19171c;display:inline-block;width:100%}.hljs-atelier-cave-dark .hljs-deletion{background-color:#be4678}.hljs-atelier-cave-dark .hljs-addition{background-color:#2a9292}.hljs-atelier-cave-dark .hljs{display:block;overflow-x:auto;background:#19171c;color:#8b8792;padding:.5em}.hljs-atelier-cave-dark .hljs-emphasis{font-style:italic}.hljs-atelier-cave-dark .hljs-strong{font-weight:bold}","atelier-cave-light":".hljs-atelier-cave-light .hljs-comment,.hljs-atelier-cave-light .hljs-quote{color:#655f6d}.hljs-atelier-cave-light .hljs-variable,.hljs-atelier-cave-light .hljs-template-variable,.hljs-atelier-cave-light .hljs-attribute,.hljs-atelier-cave-light .hljs-tag,.hljs-atelier-cave-light .hljs-name,.hljs-atelier-cave-light .hljs-regexp,.hljs-atelier-cave-light .hljs-link,.hljs-atelier-cave-light .hljs-name,.hljs-atelier-cave-light .hljs-name,.hljs-atelier-cave-light .hljs-selector-id,.hljs-atelier-cave-light .hljs-selector-class{color:#be4678}.hljs-atelier-cave-light .hljs-number,.hljs-atelier-cave-light .hljs-meta,.hljs-atelier-cave-light .hljs-built_in,.hljs-atelier-cave-light .hljs-builtin-name,.hljs-atelier-cave-light .hljs-literal,.hljs-atelier-cave-light .hljs-type,.hljs-atelier-cave-light .hljs-params{color:#aa573c}.hljs-atelier-cave-light .hljs-string,.hljs-atelier-cave-light .hljs-symbol,.hljs-atelier-cave-light .hljs-bullet{color:#2a9292}.hljs-atelier-cave-light .hljs-title,.hljs-atelier-cave-light .hljs-section{color:#576ddb}.hljs-atelier-cave-light .hljs-keyword,.hljs-atelier-cave-light .hljs-selector-tag{color:#955ae7}.hljs-atelier-cave-light .hljs-deletion,.hljs-atelier-cave-light .hljs-addition{color:#19171c;display:inline-block;width:100%}.hljs-atelier-cave-light .hljs-deletion{background-color:#be4678}.hljs-atelier-cave-light .hljs-addition{background-color:#2a9292}.hljs-atelier-cave-light .hljs{display:block;overflow-x:auto;background:#efecf4;color:#585260;padding:.5em}.hljs-atelier-cave-light .hljs-emphasis{font-style:italic}.hljs-atelier-cave-light .hljs-strong{font-weight:bold}","atelier-dune-dark":".hljs-atelier-dune-dark .hljs-comment,.hljs-atelier-dune-dark .hljs-quote{color:#999580}.hljs-atelier-dune-dark .hljs-variable,.hljs-atelier-dune-dark .hljs-template-variable,.hljs-atelier-dune-dark .hljs-attribute,.hljs-atelier-dune-dark .hljs-tag,.hljs-atelier-dune-dark .hljs-name,.hljs-atelier-dune-dark .hljs-regexp,.hljs-atelier-dune-dark .hljs-link,.hljs-atelier-dune-dark .hljs-name,.hljs-atelier-dune-dark .hljs-selector-id,.hljs-atelier-dune-dark .hljs-selector-class{color:#d73737}.hljs-atelier-dune-dark .hljs-number,.hljs-atelier-dune-dark .hljs-meta,.hljs-atelier-dune-dark .hljs-built_in,.hljs-atelier-dune-dark .hljs-builtin-name,.hljs-atelier-dune-dark .hljs-literal,.hljs-atelier-dune-dark .hljs-type,.hljs-atelier-dune-dark .hljs-params{color:#b65611}.hljs-atelier-dune-dark .hljs-string,.hljs-atelier-dune-dark .hljs-symbol,.hljs-atelier-dune-dark .hljs-bullet{color:#60ac39}.hljs-atelier-dune-dark .hljs-title,.hljs-atelier-dune-dark .hljs-section{color:#6684e1}.hljs-atelier-dune-dark .hljs-keyword,.hljs-atelier-dune-dark .hljs-selector-tag{color:#b854d4}.hljs-atelier-dune-dark .hljs{display:block;overflow-x:auto;background:#20201d;color:#a6a28c;padding:.5em}.hljs-atelier-dune-dark .hljs-emphasis{font-style:italic}.hljs-atelier-dune-dark .hljs-strong{font-weight:bold}","atelier-dune-light":".hljs-atelier-dune-light .hljs-comment,.hljs-atelier-dune-light .hljs-quote{color:#7d7a68}.hljs-atelier-dune-light .hljs-variable,.hljs-atelier-dune-light .hljs-template-variable,.hljs-atelier-dune-light .hljs-attribute,.hljs-atelier-dune-light .hljs-tag,.hljs-atelier-dune-light .hljs-name,.hljs-atelier-dune-light .hljs-regexp,.hljs-atelier-dune-light .hljs-link,.hljs-atelier-dune-light .hljs-name,.hljs-atelier-dune-light .hljs-selector-id,.hljs-atelier-dune-light .hljs-selector-class{color:#d73737}.hljs-atelier-dune-light .hljs-number,.hljs-atelier-dune-light .hljs-meta,.hljs-atelier-dune-light .hljs-built_in,.hljs-atelier-dune-light .hljs-builtin-name,.hljs-atelier-dune-light .hljs-literal,.hljs-atelier-dune-light .hljs-type,.hljs-atelier-dune-light .hljs-params{color:#b65611}.hljs-atelier-dune-light .hljs-string,.hljs-atelier-dune-light .hljs-symbol,.hljs-atelier-dune-light .hljs-bullet{color:#60ac39}.hljs-atelier-dune-light .hljs-title,.hljs-atelier-dune-light .hljs-section{color:#6684e1}.hljs-atelier-dune-light .hljs-keyword,.hljs-atelier-dune-light .hljs-selector-tag{color:#b854d4}.hljs-atelier-dune-light .hljs{display:block;overflow-x:auto;background:#fefbec;color:#6e6b5e;padding:.5em}.hljs-atelier-dune-light .hljs-emphasis{font-style:italic}.hljs-atelier-dune-light .hljs-strong{font-weight:bold}","atelier-estuary-dark":".hljs-atelier-estuary-dark .hljs-comment,.hljs-atelier-estuary-dark .hljs-quote{color:#878573}.hljs-atelier-estuary-dark .hljs-variable,.hljs-atelier-estuary-dark .hljs-template-variable,.hljs-atelier-estuary-dark .hljs-attribute,.hljs-atelier-estuary-dark .hljs-tag,.hljs-atelier-estuary-dark .hljs-name,.hljs-atelier-estuary-dark .hljs-regexp,.hljs-atelier-estuary-dark .hljs-link,.hljs-atelier-estuary-dark .hljs-name,.hljs-atelier-estuary-dark .hljs-selector-id,.hljs-atelier-estuary-dark .hljs-selector-class{color:#ba6236}.hljs-atelier-estuary-dark .hljs-number,.hljs-atelier-estuary-dark .hljs-meta,.hljs-atelier-estuary-dark .hljs-built_in,.hljs-atelier-estuary-dark .hljs-builtin-name,.hljs-atelier-estuary-dark .hljs-literal,.hljs-atelier-estuary-dark .hljs-type,.hljs-atelier-estuary-dark .hljs-params{color:#ae7313}.hljs-atelier-estuary-dark .hljs-string,.hljs-atelier-estuary-dark .hljs-symbol,.hljs-atelier-estuary-dark .hljs-bullet{color:#7d9726}.hljs-atelier-estuary-dark .hljs-title,.hljs-atelier-estuary-dark .hljs-section{color:#36a166}.hljs-atelier-estuary-dark .hljs-keyword,.hljs-atelier-estuary-dark .hljs-selector-tag{color:#5f9182}.hljs-atelier-estuary-dark .hljs-deletion,.hljs-atelier-estuary-dark .hljs-addition{color:#22221b;display:inline-block;width:100%}.hljs-atelier-estuary-dark .hljs-deletion{background-color:#ba6236}.hljs-atelier-estuary-dark .hljs-addition{background-color:#7d9726}.hljs-atelier-estuary-dark .hljs{display:block;overflow-x:auto;background:#22221b;color:#929181;padding:.5em}.hljs-atelier-estuary-dark .hljs-emphasis{font-style:italic}.hljs-atelier-estuary-dark .hljs-strong{font-weight:bold}","atelier-estuary-light":".hljs-atelier-estuary-light .hljs-comment,.hljs-atelier-estuary-light .hljs-quote{color:#6c6b5a}.hljs-atelier-estuary-light .hljs-variable,.hljs-atelier-estuary-light .hljs-template-variable,.hljs-atelier-estuary-light .hljs-attribute,.hljs-atelier-estuary-light .hljs-tag,.hljs-atelier-estuary-light .hljs-name,.hljs-atelier-estuary-light .hljs-regexp,.hljs-atelier-estuary-light .hljs-link,.hljs-atelier-estuary-light .hljs-name,.hljs-atelier-estuary-light .hljs-selector-id,.hljs-atelier-estuary-light .hljs-selector-class{color:#ba6236}.hljs-atelier-estuary-light .hljs-number,.hljs-atelier-estuary-light .hljs-meta,.hljs-atelier-estuary-light .hljs-built_in,.hljs-atelier-estuary-light .hljs-builtin-name,.hljs-atelier-estuary-light .hljs-literal,.hljs-atelier-estuary-light .hljs-type,.hljs-atelier-estuary-light .hljs-params{color:#ae7313}.hljs-atelier-estuary-light .hljs-string,.hljs-atelier-estuary-light .hljs-symbol,.hljs-atelier-estuary-light .hljs-bullet{color:#7d9726}.hljs-atelier-estuary-light .hljs-title,.hljs-atelier-estuary-light .hljs-section{color:#36a166}.hljs-atelier-estuary-light .hljs-keyword,.hljs-atelier-estuary-light .hljs-selector-tag{color:#5f9182}.hljs-atelier-estuary-light .hljs-deletion,.hljs-atelier-estuary-light .hljs-addition{color:#22221b;display:inline-block;width:100%}.hljs-atelier-estuary-light .hljs-deletion{background-color:#ba6236}.hljs-atelier-estuary-light .hljs-addition{background-color:#7d9726}.hljs-atelier-estuary-light .hljs{display:block;overflow-x:auto;background:#f4f3ec;color:#5f5e4e;padding:.5em}.hljs-atelier-estuary-light .hljs-emphasis{font-style:italic}.hljs-atelier-estuary-light .hljs-strong{font-weight:bold}","atelier-forest-dark":".hljs-atelier-forest-dark .hljs-comment,.hljs-atelier-forest-dark .hljs-quote{color:#9c9491}.hljs-atelier-forest-dark .hljs-variable,.hljs-atelier-forest-dark .hljs-template-variable,.hljs-atelier-forest-dark .hljs-attribute,.hljs-atelier-forest-dark .hljs-tag,.hljs-atelier-forest-dark .hljs-name,.hljs-atelier-forest-dark .hljs-regexp,.hljs-atelier-forest-dark .hljs-link,.hljs-atelier-forest-dark .hljs-name,.hljs-atelier-forest-dark .hljs-selector-id,.hljs-atelier-forest-dark .hljs-selector-class{color:#f22c40}.hljs-atelier-forest-dark .hljs-number,.hljs-atelier-forest-dark .hljs-meta,.hljs-atelier-forest-dark .hljs-built_in,.hljs-atelier-forest-dark .hljs-builtin-name,.hljs-atelier-forest-dark .hljs-literal,.hljs-atelier-forest-dark .hljs-type,.hljs-atelier-forest-dark .hljs-params{color:#df5320}.hljs-atelier-forest-dark .hljs-string,.hljs-atelier-forest-dark .hljs-symbol,.hljs-atelier-forest-dark .hljs-bullet{color:#7b9726}.hljs-atelier-forest-dark .hljs-title,.hljs-atelier-forest-dark .hljs-section{color:#407ee7}.hljs-atelier-forest-dark .hljs-keyword,.hljs-atelier-forest-dark .hljs-selector-tag{color:#6666ea}.hljs-atelier-forest-dark .hljs{display:block;overflow-x:auto;background:#1b1918;color:#a8a19f;padding:.5em}.hljs-atelier-forest-dark .hljs-emphasis{font-style:italic}.hljs-atelier-forest-dark .hljs-strong{font-weight:bold}","atelier-forest-light":".hljs-atelier-forest-light .hljs-comment,.hljs-atelier-forest-light .hljs-quote{color:#766e6b}.hljs-atelier-forest-light .hljs-variable,.hljs-atelier-forest-light .hljs-template-variable,.hljs-atelier-forest-light .hljs-attribute,.hljs-atelier-forest-light .hljs-tag,.hljs-atelier-forest-light .hljs-name,.hljs-atelier-forest-light .hljs-regexp,.hljs-atelier-forest-light .hljs-link,.hljs-atelier-forest-light .hljs-name,.hljs-atelier-forest-light .hljs-selector-id,.hljs-atelier-forest-light .hljs-selector-class{color:#f22c40}.hljs-atelier-forest-light .hljs-number,.hljs-atelier-forest-light .hljs-meta,.hljs-atelier-forest-light .hljs-built_in,.hljs-atelier-forest-light .hljs-builtin-name,.hljs-atelier-forest-light .hljs-literal,.hljs-atelier-forest-light .hljs-type,.hljs-atelier-forest-light .hljs-params{color:#df5320}.hljs-atelier-forest-light .hljs-string,.hljs-atelier-forest-light .hljs-symbol,.hljs-atelier-forest-light .hljs-bullet{color:#7b9726}.hljs-atelier-forest-light .hljs-title,.hljs-atelier-forest-light .hljs-section{color:#407ee7}.hljs-atelier-forest-light .hljs-keyword,.hljs-atelier-forest-light .hljs-selector-tag{color:#6666ea}.hljs-atelier-forest-light .hljs{display:block;overflow-x:auto;background:#f1efee;color:#68615e;padding:.5em}.hljs-atelier-forest-light .hljs-emphasis{font-style:italic}.hljs-atelier-forest-light .hljs-strong{font-weight:bold}","atelier-heath-dark":".hljs-atelier-heath-dark .hljs-comment,.hljs-atelier-heath-dark .hljs-quote{color:#9e8f9e}.hljs-atelier-heath-dark .hljs-variable,.hljs-atelier-heath-dark .hljs-template-variable,.hljs-atelier-heath-dark .hljs-attribute,.hljs-atelier-heath-dark .hljs-tag,.hljs-atelier-heath-dark .hljs-name,.hljs-atelier-heath-dark .hljs-regexp,.hljs-atelier-heath-dark .hljs-link,.hljs-atelier-heath-dark .hljs-name,.hljs-atelier-heath-dark .hljs-selector-id,.hljs-atelier-heath-dark .hljs-selector-class{color:#ca402b}.hljs-atelier-heath-dark .hljs-number,.hljs-atelier-heath-dark .hljs-meta,.hljs-atelier-heath-dark .hljs-built_in,.hljs-atelier-heath-dark .hljs-builtin-name,.hljs-atelier-heath-dark .hljs-literal,.hljs-atelier-heath-dark .hljs-type,.hljs-atelier-heath-dark .hljs-params{color:#a65926}.hljs-atelier-heath-dark .hljs-string,.hljs-atelier-heath-dark .hljs-symbol,.hljs-atelier-heath-dark .hljs-bullet{color:#918b3b}.hljs-atelier-heath-dark .hljs-title,.hljs-atelier-heath-dark .hljs-section{color:#516aec}.hljs-atelier-heath-dark .hljs-keyword,.hljs-atelier-heath-dark .hljs-selector-tag{color:#7b59c0}.hljs-atelier-heath-dark .hljs{display:block;overflow-x:auto;background:#1b181b;color:#ab9bab;padding:.5em}.hljs-atelier-heath-dark .hljs-emphasis{font-style:italic}.hljs-atelier-heath-dark .hljs-strong{font-weight:bold}","atelier-heath-light":".hljs-atelier-heath-light .hljs-comment,.hljs-atelier-heath-light .hljs-quote{color:#776977}.hljs-atelier-heath-light .hljs-variable,.hljs-atelier-heath-light .hljs-template-variable,.hljs-atelier-heath-light .hljs-attribute,.hljs-atelier-heath-light .hljs-tag,.hljs-atelier-heath-light .hljs-name,.hljs-atelier-heath-light .hljs-regexp,.hljs-atelier-heath-light .hljs-link,.hljs-atelier-heath-light .hljs-name,.hljs-atelier-heath-light .hljs-selector-id,.hljs-atelier-heath-light .hljs-selector-class{color:#ca402b}.hljs-atelier-heath-light .hljs-number,.hljs-atelier-heath-light .hljs-meta,.hljs-atelier-heath-light .hljs-built_in,.hljs-atelier-heath-light .hljs-builtin-name,.hljs-atelier-heath-light .hljs-literal,.hljs-atelier-heath-light .hljs-type,.hljs-atelier-heath-light .hljs-params{color:#a65926}.hljs-atelier-heath-light .hljs-string,.hljs-atelier-heath-light .hljs-symbol,.hljs-atelier-heath-light .hljs-bullet{color:#918b3b}.hljs-atelier-heath-light .hljs-title,.hljs-atelier-heath-light .hljs-section{color:#516aec}.hljs-atelier-heath-light .hljs-keyword,.hljs-atelier-heath-light .hljs-selector-tag{color:#7b59c0}.hljs-atelier-heath-light .hljs{display:block;overflow-x:auto;background:#f7f3f7;color:#695d69;padding:.5em}.hljs-atelier-heath-light .hljs-emphasis{font-style:italic}.hljs-atelier-heath-light .hljs-strong{font-weight:bold}","atelier-lakeside-dark":".hljs-atelier-lakeside-dark .hljs-comment,.hljs-atelier-lakeside-dark .hljs-quote{color:#7195a8}.hljs-atelier-lakeside-dark .hljs-variable,.hljs-atelier-lakeside-dark .hljs-template-variable,.hljs-atelier-lakeside-dark .hljs-attribute,.hljs-atelier-lakeside-dark .hljs-tag,.hljs-atelier-lakeside-dark .hljs-name,.hljs-atelier-lakeside-dark .hljs-regexp,.hljs-atelier-lakeside-dark .hljs-link,.hljs-atelier-lakeside-dark .hljs-name,.hljs-atelier-lakeside-dark .hljs-selector-id,.hljs-atelier-lakeside-dark .hljs-selector-class{color:#d22d72}.hljs-atelier-lakeside-dark .hljs-number,.hljs-atelier-lakeside-dark .hljs-meta,.hljs-atelier-lakeside-dark .hljs-built_in,.hljs-atelier-lakeside-dark .hljs-builtin-name,.hljs-atelier-lakeside-dark .hljs-literal,.hljs-atelier-lakeside-dark .hljs-type,.hljs-atelier-lakeside-dark .hljs-params{color:#935c25}.hljs-atelier-lakeside-dark .hljs-string,.hljs-atelier-lakeside-dark .hljs-symbol,.hljs-atelier-lakeside-dark .hljs-bullet{color:#568c3b}.hljs-atelier-lakeside-dark .hljs-title,.hljs-atelier-lakeside-dark .hljs-section{color:#257fad}.hljs-atelier-lakeside-dark .hljs-keyword,.hljs-atelier-lakeside-dark .hljs-selector-tag{color:#6b6bb8}.hljs-atelier-lakeside-dark .hljs{display:block;overflow-x:auto;background:#161b1d;color:#7ea2b4;padding:.5em}.hljs-atelier-lakeside-dark .hljs-emphasis{font-style:italic}.hljs-atelier-lakeside-dark .hljs-strong{font-weight:bold}","atelier-lakeside-light":".hljs-atelier-lakeside-light .hljs-comment,.hljs-atelier-lakeside-light .hljs-quote{color:#5a7b8c}.hljs-atelier-lakeside-light .hljs-variable,.hljs-atelier-lakeside-light .hljs-template-variable,.hljs-atelier-lakeside-light .hljs-attribute,.hljs-atelier-lakeside-light .hljs-tag,.hljs-atelier-lakeside-light .hljs-name,.hljs-atelier-lakeside-light .hljs-regexp,.hljs-atelier-lakeside-light .hljs-link,.hljs-atelier-lakeside-light .hljs-name,.hljs-atelier-lakeside-light .hljs-selector-id,.hljs-atelier-lakeside-light .hljs-selector-class{color:#d22d72}.hljs-atelier-lakeside-light .hljs-number,.hljs-atelier-lakeside-light .hljs-meta,.hljs-atelier-lakeside-light .hljs-built_in,.hljs-atelier-lakeside-light .hljs-builtin-name,.hljs-atelier-lakeside-light .hljs-literal,.hljs-atelier-lakeside-light .hljs-type,.hljs-atelier-lakeside-light .hljs-params{color:#935c25}.hljs-atelier-lakeside-light .hljs-string,.hljs-atelier-lakeside-light .hljs-symbol,.hljs-atelier-lakeside-light .hljs-bullet{color:#568c3b}.hljs-atelier-lakeside-light .hljs-title,.hljs-atelier-lakeside-light .hljs-section{color:#257fad}.hljs-atelier-lakeside-light .hljs-keyword,.hljs-atelier-lakeside-light .hljs-selector-tag{color:#6b6bb8}.hljs-atelier-lakeside-light .hljs{display:block;overflow-x:auto;background:#ebf8ff;color:#516d7b;padding:.5em}.hljs-atelier-lakeside-light .hljs-emphasis{font-style:italic}.hljs-atelier-lakeside-light .hljs-strong{font-weight:bold}","atelier-plateau-dark":".hljs-atelier-plateau-dark .hljs-comment,.hljs-atelier-plateau-dark .hljs-quote{color:#7e7777}.hljs-atelier-plateau-dark .hljs-variable,.hljs-atelier-plateau-dark .hljs-template-variable,.hljs-atelier-plateau-dark .hljs-attribute,.hljs-atelier-plateau-dark .hljs-tag,.hljs-atelier-plateau-dark .hljs-name,.hljs-atelier-plateau-dark .hljs-regexp,.hljs-atelier-plateau-dark .hljs-link,.hljs-atelier-plateau-dark .hljs-name,.hljs-atelier-plateau-dark .hljs-selector-id,.hljs-atelier-plateau-dark .hljs-selector-class{color:#ca4949}.hljs-atelier-plateau-dark .hljs-number,.hljs-atelier-plateau-dark .hljs-meta,.hljs-atelier-plateau-dark .hljs-built_in,.hljs-atelier-plateau-dark .hljs-builtin-name,.hljs-atelier-plateau-dark .hljs-literal,.hljs-atelier-plateau-dark .hljs-type,.hljs-atelier-plateau-dark .hljs-params{color:#b45a3c}.hljs-atelier-plateau-dark .hljs-string,.hljs-atelier-plateau-dark .hljs-symbol,.hljs-atelier-plateau-dark .hljs-bullet{color:#4b8b8b}.hljs-atelier-plateau-dark .hljs-title,.hljs-atelier-plateau-dark .hljs-section{color:#7272ca}.hljs-atelier-plateau-dark .hljs-keyword,.hljs-atelier-plateau-dark .hljs-selector-tag{color:#8464c4}.hljs-atelier-plateau-dark .hljs-deletion,.hljs-atelier-plateau-dark .hljs-addition{color:#1b1818;display:inline-block;width:100%}.hljs-atelier-plateau-dark .hljs-deletion{background-color:#ca4949}.hljs-atelier-plateau-dark .hljs-addition{background-color:#4b8b8b}.hljs-atelier-plateau-dark .hljs{display:block;overflow-x:auto;background:#1b1818;color:#8a8585;padding:.5em}.hljs-atelier-plateau-dark .hljs-emphasis{font-style:italic}.hljs-atelier-plateau-dark .hljs-strong{font-weight:bold}","atelier-plateau-light":".hljs-atelier-plateau-light .hljs-comment,.hljs-atelier-plateau-light .hljs-quote{color:#655d5d}.hljs-atelier-plateau-light .hljs-variable,.hljs-atelier-plateau-light .hljs-template-variable,.hljs-atelier-plateau-light .hljs-attribute,.hljs-atelier-plateau-light .hljs-tag,.hljs-atelier-plateau-light .hljs-name,.hljs-atelier-plateau-light .hljs-regexp,.hljs-atelier-plateau-light .hljs-link,.hljs-atelier-plateau-light .hljs-name,.hljs-atelier-plateau-light .hljs-selector-id,.hljs-atelier-plateau-light .hljs-selector-class{color:#ca4949}.hljs-atelier-plateau-light .hljs-number,.hljs-atelier-plateau-light .hljs-meta,.hljs-atelier-plateau-light .hljs-built_in,.hljs-atelier-plateau-light .hljs-builtin-name,.hljs-atelier-plateau-light .hljs-literal,.hljs-atelier-plateau-light .hljs-type,.hljs-atelier-plateau-light .hljs-params{color:#b45a3c}.hljs-atelier-plateau-light .hljs-string,.hljs-atelier-plateau-light .hljs-symbol,.hljs-atelier-plateau-light .hljs-bullet{color:#4b8b8b}.hljs-atelier-plateau-light .hljs-title,.hljs-atelier-plateau-light .hljs-section{color:#7272ca}.hljs-atelier-plateau-light .hljs-keyword,.hljs-atelier-plateau-light .hljs-selector-tag{color:#8464c4}.hljs-atelier-plateau-light .hljs-deletion,.hljs-atelier-plateau-light .hljs-addition{color:#1b1818;display:inline-block;width:100%}.hljs-atelier-plateau-light .hljs-deletion{background-color:#ca4949}.hljs-atelier-plateau-light .hljs-addition{background-color:#4b8b8b}.hljs-atelier-plateau-light .hljs{display:block;overflow-x:auto;background:#f4ecec;color:#585050;padding:.5em}.hljs-atelier-plateau-light .hljs-emphasis{font-style:italic}.hljs-atelier-plateau-light .hljs-strong{font-weight:bold}","atelier-savanna-dark":".hljs-atelier-savanna-dark .hljs-comment,.hljs-atelier-savanna-dark .hljs-quote{color:#78877d}.hljs-atelier-savanna-dark .hljs-variable,.hljs-atelier-savanna-dark .hljs-template-variable,.hljs-atelier-savanna-dark .hljs-attribute,.hljs-atelier-savanna-dark .hljs-tag,.hljs-atelier-savanna-dark .hljs-name,.hljs-atelier-savanna-dark .hljs-regexp,.hljs-atelier-savanna-dark .hljs-link,.hljs-atelier-savanna-dark .hljs-name,.hljs-atelier-savanna-dark .hljs-selector-id,.hljs-atelier-savanna-dark .hljs-selector-class{color:#b16139}.hljs-atelier-savanna-dark .hljs-number,.hljs-atelier-savanna-dark .hljs-meta,.hljs-atelier-savanna-dark .hljs-built_in,.hljs-atelier-savanna-dark .hljs-builtin-name,.hljs-atelier-savanna-dark .hljs-literal,.hljs-atelier-savanna-dark .hljs-type,.hljs-atelier-savanna-dark .hljs-params{color:#9f713c}.hljs-atelier-savanna-dark .hljs-string,.hljs-atelier-savanna-dark .hljs-symbol,.hljs-atelier-savanna-dark .hljs-bullet{color:#489963}.hljs-atelier-savanna-dark .hljs-title,.hljs-atelier-savanna-dark .hljs-section{color:#478c90}.hljs-atelier-savanna-dark .hljs-keyword,.hljs-atelier-savanna-dark .hljs-selector-tag{color:#55859b}.hljs-atelier-savanna-dark .hljs-deletion,.hljs-atelier-savanna-dark .hljs-addition{color:#171c19;display:inline-block;width:100%}.hljs-atelier-savanna-dark .hljs-deletion{background-color:#b16139}.hljs-atelier-savanna-dark .hljs-addition{background-color:#489963}.hljs-atelier-savanna-dark .hljs{display:block;overflow-x:auto;background:#171c19;color:#87928a;padding:.5em}.hljs-atelier-savanna-dark .hljs-emphasis{font-style:italic}.hljs-atelier-savanna-dark .hljs-strong{font-weight:bold}","atelier-savanna-light":".hljs-atelier-savanna-light .hljs-comment,.hljs-atelier-savanna-light .hljs-quote{color:#5f6d64}.hljs-atelier-savanna-light .hljs-variable,.hljs-atelier-savanna-light .hljs-template-variable,.hljs-atelier-savanna-light .hljs-attribute,.hljs-atelier-savanna-light .hljs-tag,.hljs-atelier-savanna-light .hljs-name,.hljs-atelier-savanna-light .hljs-regexp,.hljs-atelier-savanna-light .hljs-link,.hljs-atelier-savanna-light .hljs-name,.hljs-atelier-savanna-light .hljs-selector-id,.hljs-atelier-savanna-light .hljs-selector-class{color:#b16139}.hljs-atelier-savanna-light .hljs-number,.hljs-atelier-savanna-light .hljs-meta,.hljs-atelier-savanna-light .hljs-built_in,.hljs-atelier-savanna-light .hljs-builtin-name,.hljs-atelier-savanna-light .hljs-literal,.hljs-atelier-savanna-light .hljs-type,.hljs-atelier-savanna-light .hljs-params{color:#9f713c}.hljs-atelier-savanna-light .hljs-string,.hljs-atelier-savanna-light .hljs-symbol,.hljs-atelier-savanna-light .hljs-bullet{color:#489963}.hljs-atelier-savanna-light .hljs-title,.hljs-atelier-savanna-light .hljs-section{color:#478c90}.hljs-atelier-savanna-light .hljs-keyword,.hljs-atelier-savanna-light .hljs-selector-tag{color:#55859b}.hljs-atelier-savanna-light .hljs-deletion,.hljs-atelier-savanna-light .hljs-addition{color:#171c19;display:inline-block;width:100%}.hljs-atelier-savanna-light .hljs-deletion{background-color:#b16139}.hljs-atelier-savanna-light .hljs-addition{background-color:#489963}.hljs-atelier-savanna-light .hljs{display:block;overflow-x:auto;background:#ecf4ee;color:#526057;padding:.5em}.hljs-atelier-savanna-light .hljs-emphasis{font-style:italic}.hljs-atelier-savanna-light .hljs-strong{font-weight:bold}","atelier-seaside-dark":".hljs-atelier-seaside-dark .hljs-comment,.hljs-atelier-seaside-dark .hljs-quote{color:#809980}.hljs-atelier-seaside-dark .hljs-variable,.hljs-atelier-seaside-dark .hljs-template-variable,.hljs-atelier-seaside-dark .hljs-attribute,.hljs-atelier-seaside-dark .hljs-tag,.hljs-atelier-seaside-dark .hljs-name,.hljs-atelier-seaside-dark .hljs-regexp,.hljs-atelier-seaside-dark .hljs-link,.hljs-atelier-seaside-dark .hljs-name,.hljs-atelier-seaside-dark .hljs-selector-id,.hljs-atelier-seaside-dark .hljs-selector-class{color:#e6193c}.hljs-atelier-seaside-dark .hljs-number,.hljs-atelier-seaside-dark .hljs-meta,.hljs-atelier-seaside-dark .hljs-built_in,.hljs-atelier-seaside-dark .hljs-builtin-name,.hljs-atelier-seaside-dark .hljs-literal,.hljs-atelier-seaside-dark .hljs-type,.hljs-atelier-seaside-dark .hljs-params{color:#87711d}.hljs-atelier-seaside-dark .hljs-string,.hljs-atelier-seaside-dark .hljs-symbol,.hljs-atelier-seaside-dark .hljs-bullet{color:#29a329}.hljs-atelier-seaside-dark .hljs-title,.hljs-atelier-seaside-dark .hljs-section{color:#3d62f5}.hljs-atelier-seaside-dark .hljs-keyword,.hljs-atelier-seaside-dark .hljs-selector-tag{color:#ad2bee}.hljs-atelier-seaside-dark .hljs{display:block;overflow-x:auto;background:#131513;color:#8ca68c;padding:.5em}.hljs-atelier-seaside-dark .hljs-emphasis{font-style:italic}.hljs-atelier-seaside-dark .hljs-strong{font-weight:bold}","atelier-seaside-light":".hljs-atelier-seaside-light .hljs-comment,.hljs-atelier-seaside-light .hljs-quote{color:#687d68}.hljs-atelier-seaside-light .hljs-variable,.hljs-atelier-seaside-light .hljs-template-variable,.hljs-atelier-seaside-light .hljs-attribute,.hljs-atelier-seaside-light .hljs-tag,.hljs-atelier-seaside-light .hljs-name,.hljs-atelier-seaside-light .hljs-regexp,.hljs-atelier-seaside-light .hljs-link,.hljs-atelier-seaside-light .hljs-name,.hljs-atelier-seaside-light .hljs-selector-id,.hljs-atelier-seaside-light .hljs-selector-class{color:#e6193c}.hljs-atelier-seaside-light .hljs-number,.hljs-atelier-seaside-light .hljs-meta,.hljs-atelier-seaside-light .hljs-built_in,.hljs-atelier-seaside-light .hljs-builtin-name,.hljs-atelier-seaside-light .hljs-literal,.hljs-atelier-seaside-light .hljs-type,.hljs-atelier-seaside-light .hljs-params{color:#87711d}.hljs-atelier-seaside-light .hljs-string,.hljs-atelier-seaside-light .hljs-symbol,.hljs-atelier-seaside-light .hljs-bullet{color:#29a329}.hljs-atelier-seaside-light .hljs-title,.hljs-atelier-seaside-light .hljs-section{color:#3d62f5}.hljs-atelier-seaside-light .hljs-keyword,.hljs-atelier-seaside-light .hljs-selector-tag{color:#ad2bee}.hljs-atelier-seaside-light .hljs{display:block;overflow-x:auto;background:#f4fbf4;color:#5e6e5e;padding:.5em}.hljs-atelier-seaside-light .hljs-emphasis{font-style:italic}.hljs-atelier-seaside-light .hljs-strong{font-weight:bold}","atelier-sulphurpool-dark":".hljs-atelier-sulphurpool-dark .hljs-comment,.hljs-atelier-sulphurpool-dark .hljs-quote{color:#898ea4}.hljs-atelier-sulphurpool-dark .hljs-variable,.hljs-atelier-sulphurpool-dark .hljs-template-variable,.hljs-atelier-sulphurpool-dark .hljs-attribute,.hljs-atelier-sulphurpool-dark .hljs-tag,.hljs-atelier-sulphurpool-dark .hljs-name,.hljs-atelier-sulphurpool-dark .hljs-regexp,.hljs-atelier-sulphurpool-dark .hljs-link,.hljs-atelier-sulphurpool-dark .hljs-name,.hljs-atelier-sulphurpool-dark .hljs-selector-id,.hljs-atelier-sulphurpool-dark .hljs-selector-class{color:#c94922}.hljs-atelier-sulphurpool-dark .hljs-number,.hljs-atelier-sulphurpool-dark .hljs-meta,.hljs-atelier-sulphurpool-dark .hljs-built_in,.hljs-atelier-sulphurpool-dark .hljs-builtin-name,.hljs-atelier-sulphurpool-dark .hljs-literal,.hljs-atelier-sulphurpool-dark .hljs-type,.hljs-atelier-sulphurpool-dark .hljs-params{color:#c76b29}.hljs-atelier-sulphurpool-dark .hljs-string,.hljs-atelier-sulphurpool-dark .hljs-symbol,.hljs-atelier-sulphurpool-dark .hljs-bullet{color:#ac9739}.hljs-atelier-sulphurpool-dark .hljs-title,.hljs-atelier-sulphurpool-dark .hljs-section{color:#3d8fd1}.hljs-atelier-sulphurpool-dark .hljs-keyword,.hljs-atelier-sulphurpool-dark .hljs-selector-tag{color:#6679cc}.hljs-atelier-sulphurpool-dark .hljs{display:block;overflow-x:auto;background:#202746;color:#979db4;padding:.5em}.hljs-atelier-sulphurpool-dark .hljs-emphasis{font-style:italic}.hljs-atelier-sulphurpool-dark .hljs-strong{font-weight:bold}","atelier-sulphurpool-light":".hljs-atelier-sulphurpool-light .hljs-comment,.hljs-atelier-sulphurpool-light .hljs-quote{color:#6b7394}.hljs-atelier-sulphurpool-light .hljs-variable,.hljs-atelier-sulphurpool-light .hljs-template-variable,.hljs-atelier-sulphurpool-light .hljs-attribute,.hljs-atelier-sulphurpool-light .hljs-tag,.hljs-atelier-sulphurpool-light .hljs-name,.hljs-atelier-sulphurpool-light .hljs-regexp,.hljs-atelier-sulphurpool-light .hljs-link,.hljs-atelier-sulphurpool-light .hljs-name,.hljs-atelier-sulphurpool-light .hljs-selector-id,.hljs-atelier-sulphurpool-light .hljs-selector-class{color:#c94922}.hljs-atelier-sulphurpool-light .hljs-number,.hljs-atelier-sulphurpool-light .hljs-meta,.hljs-atelier-sulphurpool-light .hljs-built_in,.hljs-atelier-sulphurpool-light .hljs-builtin-name,.hljs-atelier-sulphurpool-light .hljs-literal,.hljs-atelier-sulphurpool-light .hljs-type,.hljs-atelier-sulphurpool-light .hljs-params{color:#c76b29}.hljs-atelier-sulphurpool-light .hljs-string,.hljs-atelier-sulphurpool-light .hljs-symbol,.hljs-atelier-sulphurpool-light .hljs-bullet{color:#ac9739}.hljs-atelier-sulphurpool-light .hljs-title,.hljs-atelier-sulphurpool-light .hljs-section{color:#3d8fd1}.hljs-atelier-sulphurpool-light .hljs-keyword,.hljs-atelier-sulphurpool-light .hljs-selector-tag{color:#6679cc}.hljs-atelier-sulphurpool-light .hljs{display:block;overflow-x:auto;background:#f5f7ff;color:#5e6687;padding:.5em}.hljs-atelier-sulphurpool-light .hljs-emphasis{font-style:italic}.hljs-atelier-sulphurpool-light .hljs-strong{font-weight:bold}","atom-one-dark-reasonable":".hljs-atom-one-dark-reasonable .hljs{display:block;overflow-x:auto;padding:.5em;line-height:1.3em;color:#abb2bf;background:#282c34;border-radius:5px}.hljs-atom-one-dark-reasonable .hljs-keyword,.hljs-atom-one-dark-reasonable .hljs-operator{color:#F92672}.hljs-atom-one-dark-reasonable .hljs-pattern-match{color:#F92672}.hljs-atom-one-dark-reasonable .hljs-pattern-match .hljs-constructor{color:#61aeee}.hljs-atom-one-dark-reasonable .hljs-function{color:#61aeee}.hljs-atom-one-dark-reasonable .hljs-function .hljs-params{color:#A6E22E}.hljs-atom-one-dark-reasonable .hljs-function .hljs-params .hljs-typing{color:#FD971F}.hljs-atom-one-dark-reasonable .hljs-module-access .hljs-module{color:#7e57c2}.hljs-atom-one-dark-reasonable .hljs-constructor{color:#e2b93d}.hljs-atom-one-dark-reasonable .hljs-constructor .hljs-string{color:#9CCC65}.hljs-atom-one-dark-reasonable .hljs-comment,.hljs-atom-one-dark-reasonable .hljs-quote{color:#b18eb1;font-style:italic}.hljs-atom-one-dark-reasonable .hljs-doctag,.hljs-atom-one-dark-reasonable .hljs-formula{color:#c678dd}.hljs-atom-one-dark-reasonable .hljs-section,.hljs-atom-one-dark-reasonable .hljs-name,.hljs-atom-one-dark-reasonable .hljs-selector-tag,.hljs-atom-one-dark-reasonable .hljs-deletion,.hljs-atom-one-dark-reasonable .hljs-subst{color:#e06c75}.hljs-atom-one-dark-reasonable .hljs-literal{color:#56b6c2}.hljs-atom-one-dark-reasonable .hljs-string,.hljs-atom-one-dark-reasonable .hljs-regexp,.hljs-atom-one-dark-reasonable .hljs-addition,.hljs-atom-one-dark-reasonable .hljs-attribute,.hljs-atom-one-dark-reasonable .hljs-meta-string{color:#98c379}.hljs-atom-one-dark-reasonable .hljs-built_in,.hljs-atom-one-dark-reasonable .hljs-class .hljs-title{color:#e6c07b}.hljs-atom-one-dark-reasonable .hljs-attr,.hljs-atom-one-dark-reasonable .hljs-variable,.hljs-atom-one-dark-reasonable .hljs-template-variable,.hljs-atom-one-dark-reasonable .hljs-type,.hljs-atom-one-dark-reasonable .hljs-selector-class,.hljs-atom-one-dark-reasonable .hljs-selector-attr,.hljs-atom-one-dark-reasonable .hljs-selector-pseudo,.hljs-atom-one-dark-reasonable .hljs-number{color:#d19a66}.hljs-atom-one-dark-reasonable .hljs-symbol,.hljs-atom-one-dark-reasonable .hljs-bullet,.hljs-atom-one-dark-reasonable .hljs-link,.hljs-atom-one-dark-reasonable .hljs-meta,.hljs-atom-one-dark-reasonable .hljs-selector-id,.hljs-atom-one-dark-reasonable .hljs-title{color:#61aeee}.hljs-atom-one-dark-reasonable .hljs-emphasis{font-style:italic}.hljs-atom-one-dark-reasonable .hljs-strong{font-weight:bold}.hljs-atom-one-dark-reasonable .hljs-link{text-decoration:underline}","atom-one-dark":".hljs-atom-one-dark .hljs{display:block;overflow-x:auto;padding:.5em;color:#abb2bf;background:#282c34}.hljs-atom-one-dark .hljs-comment,.hljs-atom-one-dark .hljs-quote{color:#5c6370;font-style:italic}.hljs-atom-one-dark .hljs-doctag,.hljs-atom-one-dark .hljs-keyword,.hljs-atom-one-dark .hljs-formula{color:#c678dd}.hljs-atom-one-dark .hljs-section,.hljs-atom-one-dark .hljs-name,.hljs-atom-one-dark .hljs-selector-tag,.hljs-atom-one-dark .hljs-deletion,.hljs-atom-one-dark .hljs-subst{color:#e06c75}.hljs-atom-one-dark .hljs-literal{color:#56b6c2}.hljs-atom-one-dark .hljs-string,.hljs-atom-one-dark .hljs-regexp,.hljs-atom-one-dark .hljs-addition,.hljs-atom-one-dark .hljs-attribute,.hljs-atom-one-dark .hljs-meta-string{color:#98c379}.hljs-atom-one-dark .hljs-built_in,.hljs-atom-one-dark .hljs-class .hljs-title{color:#e6c07b}.hljs-atom-one-dark .hljs-attr,.hljs-atom-one-dark .hljs-variable,.hljs-atom-one-dark .hljs-template-variable,.hljs-atom-one-dark .hljs-type,.hljs-atom-one-dark .hljs-selector-class,.hljs-atom-one-dark .hljs-selector-attr,.hljs-atom-one-dark .hljs-selector-pseudo,.hljs-atom-one-dark .hljs-number{color:#d19a66}.hljs-atom-one-dark .hljs-symbol,.hljs-atom-one-dark .hljs-bullet,.hljs-atom-one-dark .hljs-link,.hljs-atom-one-dark .hljs-meta,.hljs-atom-one-dark .hljs-selector-id,.hljs-atom-one-dark .hljs-title{color:#61aeee}.hljs-atom-one-dark .hljs-emphasis{font-style:italic}.hljs-atom-one-dark .hljs-strong{font-weight:bold}.hljs-atom-one-dark .hljs-link{text-decoration:underline}","atom-one-light":".hljs-atom-one-light .hljs{display:block;overflow-x:auto;padding:.5em;color:#383a42;background:#fafafa}.hljs-atom-one-light .hljs-comment,.hljs-atom-one-light .hljs-quote{color:#a0a1a7;font-style:italic}.hljs-atom-one-light .hljs-doctag,.hljs-atom-one-light .hljs-keyword,.hljs-atom-one-light .hljs-formula{color:#a626a4}.hljs-atom-one-light .hljs-section,.hljs-atom-one-light .hljs-name,.hljs-atom-one-light .hljs-selector-tag,.hljs-atom-one-light .hljs-deletion,.hljs-atom-one-light .hljs-subst{color:#e45649}.hljs-atom-one-light .hljs-literal{color:#0184bb}.hljs-atom-one-light .hljs-string,.hljs-atom-one-light .hljs-regexp,.hljs-atom-one-light .hljs-addition,.hljs-atom-one-light .hljs-attribute,.hljs-atom-one-light .hljs-meta-string{color:#50a14f}.hljs-atom-one-light .hljs-built_in,.hljs-atom-one-light .hljs-class .hljs-title{color:#c18401}.hljs-atom-one-light .hljs-attr,.hljs-atom-one-light .hljs-variable,.hljs-atom-one-light .hljs-template-variable,.hljs-atom-one-light .hljs-type,.hljs-atom-one-light .hljs-selector-class,.hljs-atom-one-light .hljs-selector-attr,.hljs-atom-one-light .hljs-selector-pseudo,.hljs-atom-one-light .hljs-number{color:#986801}.hljs-atom-one-light .hljs-symbol,.hljs-atom-one-light .hljs-bullet,.hljs-atom-one-light .hljs-link,.hljs-atom-one-light .hljs-meta,.hljs-atom-one-light .hljs-selector-id,.hljs-atom-one-light .hljs-title{color:#4078f2}.hljs-atom-one-light .hljs-emphasis{font-style:italic}.hljs-atom-one-light .hljs-strong{font-weight:bold}.hljs-atom-one-light .hljs-link{text-decoration:underline}","brown-paper":".hljs-brown-paper .hljs{display:block;overflow-x:auto;padding:.5em;background:#b7a68e url(./brown-papersq.png)}.hljs-brown-paper .hljs-keyword,.hljs-brown-paper .hljs-selector-tag,.hljs-brown-paper .hljs-literal{color:#005599;font-weight:bold}.hljs-brown-paper .hljs,.hljs-brown-paper .hljs-subst{color:#363c69}.hljs-brown-paper .hljs-string,.hljs-brown-paper .hljs-title,.hljs-brown-paper .hljs-section,.hljs-brown-paper .hljs-type,.hljs-brown-paper .hljs-attribute,.hljs-brown-paper .hljs-symbol,.hljs-brown-paper .hljs-bullet,.hljs-brown-paper .hljs-built_in,.hljs-brown-paper .hljs-addition,.hljs-brown-paper .hljs-variable,.hljs-brown-paper .hljs-template-tag,.hljs-brown-paper .hljs-template-variable,.hljs-brown-paper .hljs-link,.hljs-brown-paper .hljs-name{color:#2c009f}.hljs-brown-paper .hljs-comment,.hljs-brown-paper .hljs-quote,.hljs-brown-paper .hljs-meta,.hljs-brown-paper .hljs-deletion{color:#802022}.hljs-brown-paper .hljs-keyword,.hljs-brown-paper .hljs-selector-tag,.hljs-brown-paper .hljs-literal,.hljs-brown-paper .hljs-doctag,.hljs-brown-paper .hljs-title,.hljs-brown-paper .hljs-section,.hljs-brown-paper .hljs-type,.hljs-brown-paper .hljs-name,.hljs-brown-paper .hljs-strong{font-weight:bold}.hljs-brown-paper .hljs-emphasis{font-style:italic}","codepen-embed":".hljs-codepen-embed .hljs{display:block;overflow-x:auto;padding:.5em;background:#222;color:#fff}.hljs-codepen-embed .hljs-comment,.hljs-codepen-embed .hljs-quote{color:#777}.hljs-codepen-embed .hljs-variable,.hljs-codepen-embed .hljs-template-variable,.hljs-codepen-embed .hljs-tag,.hljs-codepen-embed .hljs-regexp,.hljs-codepen-embed .hljs-meta,.hljs-codepen-embed .hljs-number,.hljs-codepen-embed .hljs-built_in,.hljs-codepen-embed .hljs-builtin-name,.hljs-codepen-embed .hljs-literal,.hljs-codepen-embed .hljs-params,.hljs-codepen-embed .hljs-symbol,.hljs-codepen-embed .hljs-bullet,.hljs-codepen-embed .hljs-link,.hljs-codepen-embed .hljs-deletion{color:#ab875d}.hljs-codepen-embed .hljs-section,.hljs-codepen-embed .hljs-title,.hljs-codepen-embed .hljs-name,.hljs-codepen-embed .hljs-selector-id,.hljs-codepen-embed .hljs-selector-class,.hljs-codepen-embed .hljs-type,.hljs-codepen-embed .hljs-attribute{color:#9b869b}.hljs-codepen-embed .hljs-string,.hljs-codepen-embed .hljs-keyword,.hljs-codepen-embed .hljs-selector-tag,.hljs-codepen-embed .hljs-addition{color:#8f9c6c}.hljs-codepen-embed .hljs-emphasis{font-style:italic}.hljs-codepen-embed .hljs-strong{font-weight:bold}","color-brewer":".hljs-color-brewer .hljs{display:block;overflow-x:auto;padding:.5em;background:#fff}.hljs-color-brewer .hljs,.hljs-color-brewer .hljs-subst{color:#000}.hljs-color-brewer .hljs-string,.hljs-color-brewer .hljs-meta,.hljs-color-brewer .hljs-symbol,.hljs-color-brewer .hljs-template-tag,.hljs-color-brewer .hljs-template-variable,.hljs-color-brewer .hljs-addition{color:#756bb1}.hljs-color-brewer .hljs-comment,.hljs-color-brewer .hljs-quote{color:#636363}.hljs-color-brewer .hljs-number,.hljs-color-brewer .hljs-regexp,.hljs-color-brewer .hljs-literal,.hljs-color-brewer .hljs-bullet,.hljs-color-brewer .hljs-link{color:#31a354}.hljs-color-brewer .hljs-deletion,.hljs-color-brewer .hljs-variable{color:#88f}.hljs-color-brewer .hljs-keyword,.hljs-color-brewer .hljs-selector-tag,.hljs-color-brewer .hljs-title,.hljs-color-brewer .hljs-section,.hljs-color-brewer .hljs-built_in,.hljs-color-brewer .hljs-doctag,.hljs-color-brewer .hljs-type,.hljs-color-brewer .hljs-tag,.hljs-color-brewer .hljs-name,.hljs-color-brewer .hljs-selector-id,.hljs-color-brewer .hljs-selector-class,.hljs-color-brewer .hljs-strong{color:#3182bd}.hljs-color-brewer .hljs-emphasis{font-style:italic}.hljs-color-brewer .hljs-attribute{color:#e6550d}","darcula":".hljs-darcula .hljs{display:block;overflow-x:auto;padding:.5em;background:#2b2b2b}.hljs-darcula .hljs{color:#bababa}.hljs-darcula .hljs-strong,.hljs-darcula .hljs-emphasis{color:#a8a8a2}.hljs-darcula .hljs-bullet,.hljs-darcula .hljs-quote,.hljs-darcula .hljs-link,.hljs-darcula .hljs-number,.hljs-darcula .hljs-regexp,.hljs-darcula .hljs-literal{color:#6896ba}.hljs-darcula .hljs-code,.hljs-darcula .hljs-selector-class{color:#a6e22e}.hljs-darcula .hljs-emphasis{font-style:italic}.hljs-darcula .hljs-keyword,.hljs-darcula .hljs-selector-tag,.hljs-darcula .hljs-section,.hljs-darcula .hljs-attribute,.hljs-darcula .hljs-name,.hljs-darcula .hljs-variable{color:#cb7832}.hljs-darcula .hljs-params{color:#b9b9b9}.hljs-darcula .hljs-string{color:#6a8759}.hljs-darcula .hljs-subst,.hljs-darcula .hljs-type,.hljs-darcula .hljs-built_in,.hljs-darcula .hljs-builtin-name,.hljs-darcula .hljs-symbol,.hljs-darcula .hljs-selector-id,.hljs-darcula .hljs-selector-attr,.hljs-darcula .hljs-selector-pseudo,.hljs-darcula .hljs-template-tag,.hljs-darcula .hljs-template-variable,.hljs-darcula .hljs-addition{color:#e0c46c}.hljs-darcula .hljs-comment,.hljs-darcula .hljs-deletion,.hljs-darcula .hljs-meta{color:#7f7f7f}","dark":".hljs-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#444}.hljs-dark .hljs-keyword,.hljs-dark .hljs-selector-tag,.hljs-dark .hljs-literal,.hljs-dark .hljs-section,.hljs-dark .hljs-link{color:white}.hljs-dark .hljs,.hljs-dark .hljs-subst{color:#ddd}.hljs-dark .hljs-string,.hljs-dark .hljs-title,.hljs-dark .hljs-name,.hljs-dark .hljs-type,.hljs-dark .hljs-attribute,.hljs-dark .hljs-symbol,.hljs-dark .hljs-bullet,.hljs-dark .hljs-built_in,.hljs-dark .hljs-addition,.hljs-dark .hljs-variable,.hljs-dark .hljs-template-tag,.hljs-dark .hljs-template-variable{color:#d88}.hljs-dark .hljs-comment,.hljs-dark .hljs-quote,.hljs-dark .hljs-deletion,.hljs-dark .hljs-meta{color:#777}.hljs-dark .hljs-keyword,.hljs-dark .hljs-selector-tag,.hljs-dark .hljs-literal,.hljs-dark .hljs-title,.hljs-dark .hljs-section,.hljs-dark .hljs-doctag,.hljs-dark .hljs-type,.hljs-dark .hljs-name,.hljs-dark .hljs-strong{font-weight:bold}.hljs-dark .hljs-emphasis{font-style:italic}","darkula":".hljs-darkula{@import url('darcula.css');}","default":".hljs-default .hljs{display:block;overflow-x:auto;padding:.5em;background:#F0F0F0}.hljs-default .hljs,.hljs-default .hljs-subst{color:#444}.hljs-default .hljs-comment{color:#888888}.hljs-default .hljs-keyword,.hljs-default .hljs-attribute,.hljs-default .hljs-selector-tag,.hljs-default .hljs-meta-keyword,.hljs-default .hljs-doctag,.hljs-default .hljs-name{font-weight:bold}.hljs-default .hljs-type,.hljs-default .hljs-string,.hljs-default .hljs-number,.hljs-default .hljs-selector-id,.hljs-default .hljs-selector-class,.hljs-default .hljs-quote,.hljs-default .hljs-template-tag,.hljs-default .hljs-deletion{color:#880000}.hljs-default .hljs-title,.hljs-default .hljs-section{color:#880000;font-weight:bold}.hljs-default .hljs-regexp,.hljs-default .hljs-symbol,.hljs-default .hljs-variable,.hljs-default .hljs-template-variable,.hljs-default .hljs-link,.hljs-default .hljs-selector-attr,.hljs-default .hljs-selector-pseudo{color:#BC6060}.hljs-default .hljs-literal{color:#78A960}.hljs-default .hljs-built_in,.hljs-default .hljs-bullet,.hljs-default .hljs-code,.hljs-default .hljs-addition{color:#397300}.hljs-default .hljs-meta{color:#1f7199}.hljs-default .hljs-meta-string{color:#4d99bf}.hljs-default .hljs-emphasis{font-style:italic}.hljs-default .hljs-strong{font-weight:bold}","docco":".hljs-docco .hljs{display:block;overflow-x:auto;padding:.5em;color:#000;background:#f8f8ff}.hljs-docco .hljs-comment,.hljs-docco .hljs-quote{color:#408080;font-style:italic}.hljs-docco .hljs-keyword,.hljs-docco .hljs-selector-tag,.hljs-docco .hljs-literal,.hljs-docco .hljs-subst{color:#954121}.hljs-docco .hljs-number{color:#40a070}.hljs-docco .hljs-string,.hljs-docco .hljs-doctag{color:#219161}.hljs-docco .hljs-selector-id,.hljs-docco .hljs-selector-class,.hljs-docco .hljs-section,.hljs-docco .hljs-type{color:#19469d}.hljs-docco .hljs-params{color:#00f}.hljs-docco .hljs-title{color:#458;font-weight:bold}.hljs-docco .hljs-tag,.hljs-docco .hljs-name,.hljs-docco .hljs-attribute{color:#000080;font-weight:normal}.hljs-docco .hljs-variable,.hljs-docco .hljs-template-variable{color:#008080}.hljs-docco .hljs-regexp,.hljs-docco .hljs-link{color:#b68}.hljs-docco .hljs-symbol,.hljs-docco .hljs-bullet{color:#990073}.hljs-docco .hljs-built_in,.hljs-docco .hljs-builtin-name{color:#0086b3}.hljs-docco .hljs-meta{color:#999;font-weight:bold}.hljs-docco .hljs-deletion{background:#fdd}.hljs-docco .hljs-addition{background:#dfd}.hljs-docco .hljs-emphasis{font-style:italic}.hljs-docco .hljs-strong{font-weight:bold}","dracula":".hljs-dracula .hljs{display:block;overflow-x:auto;padding:.5em;background:#282a36}.hljs-dracula .hljs-keyword,.hljs-dracula .hljs-selector-tag,.hljs-dracula .hljs-literal,.hljs-dracula .hljs-section,.hljs-dracula .hljs-link{color:#8be9fd}.hljs-dracula .hljs-function .hljs-keyword{color:#ff79c6}.hljs-dracula .hljs,.hljs-dracula .hljs-subst{color:#f8f8f2}.hljs-dracula .hljs-string,.hljs-dracula .hljs-title,.hljs-dracula .hljs-name,.hljs-dracula .hljs-type,.hljs-dracula .hljs-attribute,.hljs-dracula .hljs-symbol,.hljs-dracula .hljs-bullet,.hljs-dracula .hljs-addition,.hljs-dracula .hljs-variable,.hljs-dracula .hljs-template-tag,.hljs-dracula .hljs-template-variable{color:#f1fa8c}.hljs-dracula .hljs-comment,.hljs-dracula .hljs-quote,.hljs-dracula .hljs-deletion,.hljs-dracula .hljs-meta{color:#6272a4}.hljs-dracula .hljs-keyword,.hljs-dracula .hljs-selector-tag,.hljs-dracula .hljs-literal,.hljs-dracula .hljs-title,.hljs-dracula .hljs-section,.hljs-dracula .hljs-doctag,.hljs-dracula .hljs-type,.hljs-dracula .hljs-name,.hljs-dracula .hljs-strong{font-weight:bold}.hljs-dracula .hljs-emphasis{font-style:italic}","far":".hljs-far .hljs{display:block;overflow-x:auto;padding:.5em;background:#000080}.hljs-far .hljs,.hljs-far .hljs-subst{color:#0ff}.hljs-far .hljs-string,.hljs-far .hljs-attribute,.hljs-far .hljs-symbol,.hljs-far .hljs-bullet,.hljs-far .hljs-built_in,.hljs-far .hljs-builtin-name,.hljs-far .hljs-template-tag,.hljs-far .hljs-template-variable,.hljs-far .hljs-addition{color:#ff0}.hljs-far .hljs-keyword,.hljs-far .hljs-selector-tag,.hljs-far .hljs-section,.hljs-far .hljs-type,.hljs-far .hljs-name,.hljs-far .hljs-selector-id,.hljs-far .hljs-selector-class,.hljs-far .hljs-variable{color:#fff}.hljs-far .hljs-comment,.hljs-far .hljs-quote,.hljs-far .hljs-doctag,.hljs-far .hljs-deletion{color:#888}.hljs-far .hljs-number,.hljs-far .hljs-regexp,.hljs-far .hljs-literal,.hljs-far .hljs-link{color:#0f0}.hljs-far .hljs-meta{color:#008080}.hljs-far .hljs-keyword,.hljs-far .hljs-selector-tag,.hljs-far .hljs-title,.hljs-far .hljs-section,.hljs-far .hljs-name,.hljs-far .hljs-strong{font-weight:bold}.hljs-far .hljs-emphasis{font-style:italic}","foundation":".hljs-foundation .hljs{display:block;overflow-x:auto;padding:.5em;background:#eee;color:black}.hljs-foundation .hljs-link,.hljs-foundation .hljs-emphasis,.hljs-foundation .hljs-attribute,.hljs-foundation .hljs-addition{color:#070}.hljs-foundation .hljs-emphasis{font-style:italic}.hljs-foundation .hljs-strong,.hljs-foundation .hljs-string,.hljs-foundation .hljs-deletion{color:#d14}.hljs-foundation .hljs-strong{font-weight:bold}.hljs-foundation .hljs-quote,.hljs-foundation .hljs-comment{color:#998;font-style:italic}.hljs-foundation .hljs-section,.hljs-foundation .hljs-title{color:#900}.hljs-foundation .hljs-class .hljs-title,.hljs-foundation .hljs-type{color:#458}.hljs-foundation .hljs-variable,.hljs-foundation .hljs-template-variable{color:#336699}.hljs-foundation .hljs-bullet{color:#997700}.hljs-foundation .hljs-meta{color:#3344bb}.hljs-foundation .hljs-code,.hljs-foundation .hljs-number,.hljs-foundation .hljs-literal,.hljs-foundation .hljs-keyword,.hljs-foundation .hljs-selector-tag{color:#099}.hljs-foundation .hljs-regexp{background-color:#fff0ff;color:#880088}.hljs-foundation .hljs-symbol{color:#990073}.hljs-foundation .hljs-tag,.hljs-foundation .hljs-name,.hljs-foundation .hljs-selector-id,.hljs-foundation .hljs-selector-class{color:#007700}","github-gist":".hljs-github-gist .hljs{display:block;background:white;padding:.5em;color:#333333;overflow-x:auto}.hljs-github-gist .hljs-comment,.hljs-github-gist .hljs-meta{color:#969896}.hljs-github-gist .hljs-variable,.hljs-github-gist .hljs-template-variable,.hljs-github-gist .hljs-strong,.hljs-github-gist .hljs-emphasis,.hljs-github-gist .hljs-quote{color:#df5000}.hljs-github-gist .hljs-keyword,.hljs-github-gist .hljs-selector-tag,.hljs-github-gist .hljs-type{color:#d73a49}.hljs-github-gist .hljs-literal,.hljs-github-gist .hljs-symbol,.hljs-github-gist .hljs-bullet,.hljs-github-gist .hljs-attribute{color:#0086b3}.hljs-github-gist .hljs-section,.hljs-github-gist .hljs-name{color:#63a35c}.hljs-github-gist .hljs-tag{color:#333333}.hljs-github-gist .hljs-title,.hljs-github-gist .hljs-attr,.hljs-github-gist .hljs-selector-id,.hljs-github-gist .hljs-selector-class,.hljs-github-gist .hljs-selector-attr,.hljs-github-gist .hljs-selector-pseudo{color:#6f42c1}.hljs-github-gist .hljs-addition{color:#55a532;background-color:#eaffea}.hljs-github-gist .hljs-deletion{color:#bd2c00;background-color:#ffecec}.hljs-github-gist .hljs-link{text-decoration:underline}.hljs-github-gist .hljs-number{color:#005cc5}.hljs-github-gist .hljs-string{color:#032f62}","github":".hljs-github .hljs{display:block;overflow-x:auto;padding:.5em;color:#333;background:#f8f8f8}.hljs-github .hljs-comment,.hljs-github .hljs-quote{color:#998;font-style:italic}.hljs-github .hljs-keyword,.hljs-github .hljs-selector-tag,.hljs-github .hljs-subst{color:#333;font-weight:bold}.hljs-github .hljs-number,.hljs-github .hljs-literal,.hljs-github .hljs-variable,.hljs-github .hljs-template-variable,.hljs-github .hljs-tag .hljs-attr{color:#008080}.hljs-github .hljs-string,.hljs-github .hljs-doctag{color:#d14}.hljs-github .hljs-title,.hljs-github .hljs-section,.hljs-github .hljs-selector-id{color:#900;font-weight:bold}.hljs-github .hljs-subst{font-weight:normal}.hljs-github .hljs-type,.hljs-github .hljs-class .hljs-title{color:#458;font-weight:bold}.hljs-github .hljs-tag,.hljs-github .hljs-name,.hljs-github .hljs-attribute{color:#000080;font-weight:normal}.hljs-github .hljs-regexp,.hljs-github .hljs-link{color:#009926}.hljs-github .hljs-symbol,.hljs-github .hljs-bullet{color:#990073}.hljs-github .hljs-built_in,.hljs-github .hljs-builtin-name{color:#0086b3}.hljs-github .hljs-meta{color:#999;font-weight:bold}.hljs-github .hljs-deletion{background:#fdd}.hljs-github .hljs-addition{background:#dfd}.hljs-github .hljs-emphasis{font-style:italic}.hljs-github .hljs-strong{font-weight:bold}","gml":".hljs-gml .hljs{display:block;overflow-x:auto;padding:.5em;background:#222222;color:#C0C0C0}.hljs-gml .hljs-keywords{color:#FFB871;font-weight:bold}.hljs-gml .hljs-built_in{color:#FFB871}.hljs-gml .hljs-literal{color:#FF8080}.hljs-gml .hljs-symbol{color:#58E55A}.hljs-gml .hljs-comment{color:#5B995B}.hljs-gml .hljs-string{color:#FFFF00}.hljs-gml .hljs-number{color:#FF8080}.hljs-gml .hljs-attribute,.hljs-gml .hljs-selector-tag,.hljs-gml .hljs-doctag,.hljs-gml .hljs-name,.hljs-gml .hljs-bullet,.hljs-gml .hljs-code,.hljs-gml .hljs-addition,.hljs-gml .hljs-regexp,.hljs-gml .hljs-variable,.hljs-gml .hljs-template-variable,.hljs-gml .hljs-link,.hljs-gml .hljs-selector-attr,.hljs-gml .hljs-selector-pseudo,.hljs-gml .hljs-type,.hljs-gml .hljs-selector-id,.hljs-gml .hljs-selector-class,.hljs-gml .hljs-quote,.hljs-gml .hljs-template-tag,.hljs-gml .hljs-deletion,.hljs-gml .hljs-title,.hljs-gml .hljs-section,.hljs-gml .hljs-function,.hljs-gml .hljs-meta-keyword,.hljs-gml .hljs-meta,.hljs-gml .hljs-subst{color:#C0C0C0}.hljs-gml .hljs-emphasis{font-style:italic}.hljs-gml .hljs-strong{font-weight:bold}","googlecode":".hljs-googlecode .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-googlecode .hljs-comment,.hljs-googlecode .hljs-quote{color:#800}.hljs-googlecode .hljs-keyword,.hljs-googlecode .hljs-selector-tag,.hljs-googlecode .hljs-section,.hljs-googlecode .hljs-title,.hljs-googlecode .hljs-name{color:#008}.hljs-googlecode .hljs-variable,.hljs-googlecode .hljs-template-variable{color:#660}.hljs-googlecode .hljs-string,.hljs-googlecode .hljs-selector-attr,.hljs-googlecode .hljs-selector-pseudo,.hljs-googlecode .hljs-regexp{color:#080}.hljs-googlecode .hljs-literal,.hljs-googlecode .hljs-symbol,.hljs-googlecode .hljs-bullet,.hljs-googlecode .hljs-meta,.hljs-googlecode .hljs-number,.hljs-googlecode .hljs-link{color:#066}.hljs-googlecode .hljs-title,.hljs-googlecode .hljs-doctag,.hljs-googlecode .hljs-type,.hljs-googlecode .hljs-attr,.hljs-googlecode .hljs-built_in,.hljs-googlecode .hljs-builtin-name,.hljs-googlecode .hljs-params{color:#606}.hljs-googlecode .hljs-attribute,.hljs-googlecode .hljs-subst{color:#000}.hljs-googlecode .hljs-formula{background-color:#eee;font-style:italic}.hljs-googlecode .hljs-selector-id,.hljs-googlecode .hljs-selector-class{color:#9B703F}.hljs-googlecode .hljs-addition{background-color:#baeeba}.hljs-googlecode .hljs-deletion{background-color:#ffc8bd}.hljs-googlecode .hljs-doctag,.hljs-googlecode .hljs-strong{font-weight:bold}.hljs-googlecode .hljs-emphasis{font-style:italic}","grayscale":".hljs-grayscale .hljs{display:block;overflow-x:auto;padding:.5em;color:#333;background:#fff}.hljs-grayscale .hljs-comment,.hljs-grayscale .hljs-quote{color:#777;font-style:italic}.hljs-grayscale .hljs-keyword,.hljs-grayscale .hljs-selector-tag,.hljs-grayscale .hljs-subst{color:#333;font-weight:bold}.hljs-grayscale .hljs-number,.hljs-grayscale .hljs-literal{color:#777}.hljs-grayscale .hljs-string,.hljs-grayscale .hljs-doctag,.hljs-grayscale .hljs-formula{color:#333;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJ0lEQVQIW2O8e/fufwYGBgZBQUEQxcCIIfDu3Tuwivfv30NUoAsAALHpFMMLqZlPAAAAAElFTkSuQmCC) repeat}.hljs-grayscale .hljs-title,.hljs-grayscale .hljs-section,.hljs-grayscale .hljs-selector-id{color:#000;font-weight:bold}.hljs-grayscale .hljs-subst{font-weight:normal}.hljs-grayscale .hljs-class .hljs-title,.hljs-grayscale .hljs-type,.hljs-grayscale .hljs-name{color:#333;font-weight:bold}.hljs-grayscale .hljs-tag{color:#333}.hljs-grayscale .hljs-regexp{color:#333;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAAPUlEQVQYV2NkQAN37979r6yszIgujiIAU4RNMVwhuiQ6H6wQl3XI4oy4FMHcCJPHcDS6J2A2EqUQpJhohQDexSef15DBCwAAAABJRU5ErkJggg==) repeat}.hljs-grayscale .hljs-symbol,.hljs-grayscale .hljs-bullet,.hljs-grayscale .hljs-link{color:#000;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAKElEQVQIW2NkQAO7d+/+z4gsBhJwdXVlhAvCBECKwIIwAbhKZBUwBQA6hBpm5efZsgAAAABJRU5ErkJggg==) repeat}.hljs-grayscale .hljs-built_in,.hljs-grayscale .hljs-builtin-name{color:#000;text-decoration:underline}.hljs-grayscale .hljs-meta{color:#999;font-weight:bold}.hljs-grayscale .hljs-deletion{color:#fff;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAYAAABS3WWCAAAAE0lEQVQIW2MMDQ39zzhz5kwIAQAyxweWgUHd1AAAAABJRU5ErkJggg==) repeat}.hljs-grayscale .hljs-addition{color:#000;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAALUlEQVQYV2N89+7dfwYk8P79ewZBQUFkIQZGOiu6e/cuiptQHAPl0NtNxAQBAM97Oejj3Dg7AAAAAElFTkSuQmCC) repeat}.hljs-grayscale .hljs-emphasis{font-style:italic}.hljs-grayscale .hljs-strong{font-weight:bold}","gruvbox-dark":".hljs-gruvbox-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#282828}.hljs-gruvbox-dark .hljs,.hljs-gruvbox-dark .hljs-subst{color:#ebdbb2}.hljs-gruvbox-dark .hljs-deletion,.hljs-gruvbox-dark .hljs-formula,.hljs-gruvbox-dark .hljs-keyword,.hljs-gruvbox-dark .hljs-link,.hljs-gruvbox-dark .hljs-selector-tag{color:#fb4934}.hljs-gruvbox-dark .hljs-built_in,.hljs-gruvbox-dark .hljs-emphasis,.hljs-gruvbox-dark .hljs-name,.hljs-gruvbox-dark .hljs-quote,.hljs-gruvbox-dark .hljs-strong,.hljs-gruvbox-dark .hljs-title,.hljs-gruvbox-dark .hljs-variable{color:#83a598}.hljs-gruvbox-dark .hljs-attr,.hljs-gruvbox-dark .hljs-params,.hljs-gruvbox-dark .hljs-template-tag,.hljs-gruvbox-dark .hljs-type{color:#fabd2f}.hljs-gruvbox-dark .hljs-builtin-name,.hljs-gruvbox-dark .hljs-doctag,.hljs-gruvbox-dark .hljs-literal,.hljs-gruvbox-dark .hljs-number{color:#8f3f71}.hljs-gruvbox-dark .hljs-code,.hljs-gruvbox-dark .hljs-meta,.hljs-gruvbox-dark .hljs-regexp,.hljs-gruvbox-dark .hljs-selector-id,.hljs-gruvbox-dark .hljs-template-variable{color:#fe8019}.hljs-gruvbox-dark .hljs-addition,.hljs-gruvbox-dark .hljs-meta-string,.hljs-gruvbox-dark .hljs-section,.hljs-gruvbox-dark .hljs-selector-attr,.hljs-gruvbox-dark .hljs-selector-class,.hljs-gruvbox-dark .hljs-string,.hljs-gruvbox-dark .hljs-symbol{color:#b8bb26}.hljs-gruvbox-dark .hljs-attribute,.hljs-gruvbox-dark .hljs-bullet,.hljs-gruvbox-dark .hljs-class,.hljs-gruvbox-dark .hljs-function,.hljs-gruvbox-dark .hljs-function .hljs-keyword,.hljs-gruvbox-dark .hljs-meta-keyword,.hljs-gruvbox-dark .hljs-selector-pseudo,.hljs-gruvbox-dark .hljs-tag{color:#8ec07c}.hljs-gruvbox-dark .hljs-comment{color:#928374}.hljs-gruvbox-dark .hljs-link_label,.hljs-gruvbox-dark .hljs-literal,.hljs-gruvbox-dark .hljs-number{color:#d3869b}.hljs-gruvbox-dark .hljs-comment,.hljs-gruvbox-dark .hljs-emphasis{font-style:italic}.hljs-gruvbox-dark .hljs-section,.hljs-gruvbox-dark .hljs-strong,.hljs-gruvbox-dark .hljs-tag{font-weight:bold}","gruvbox-light":".hljs-gruvbox-light .hljs{display:block;overflow-x:auto;padding:.5em;background:#fbf1c7}.hljs-gruvbox-light .hljs,.hljs-gruvbox-light .hljs-subst{color:#3c3836}.hljs-gruvbox-light .hljs-deletion,.hljs-gruvbox-light .hljs-formula,.hljs-gruvbox-light .hljs-keyword,.hljs-gruvbox-light .hljs-link,.hljs-gruvbox-light .hljs-selector-tag{color:#9d0006}.hljs-gruvbox-light .hljs-built_in,.hljs-gruvbox-light .hljs-emphasis,.hljs-gruvbox-light .hljs-name,.hljs-gruvbox-light .hljs-quote,.hljs-gruvbox-light .hljs-strong,.hljs-gruvbox-light .hljs-title,.hljs-gruvbox-light .hljs-variable{color:#076678}.hljs-gruvbox-light .hljs-attr,.hljs-gruvbox-light .hljs-params,.hljs-gruvbox-light .hljs-template-tag,.hljs-gruvbox-light .hljs-type{color:#b57614}.hljs-gruvbox-light .hljs-builtin-name,.hljs-gruvbox-light .hljs-doctag,.hljs-gruvbox-light .hljs-literal,.hljs-gruvbox-light .hljs-number{color:#8f3f71}.hljs-gruvbox-light .hljs-code,.hljs-gruvbox-light .hljs-meta,.hljs-gruvbox-light .hljs-regexp,.hljs-gruvbox-light .hljs-selector-id,.hljs-gruvbox-light .hljs-template-variable{color:#af3a03}.hljs-gruvbox-light .hljs-addition,.hljs-gruvbox-light .hljs-meta-string,.hljs-gruvbox-light .hljs-section,.hljs-gruvbox-light .hljs-selector-attr,.hljs-gruvbox-light .hljs-selector-class,.hljs-gruvbox-light .hljs-string,.hljs-gruvbox-light .hljs-symbol{color:#79740e}.hljs-gruvbox-light .hljs-attribute,.hljs-gruvbox-light .hljs-bullet,.hljs-gruvbox-light .hljs-class,.hljs-gruvbox-light .hljs-function,.hljs-gruvbox-light .hljs-function .hljs-keyword,.hljs-gruvbox-light .hljs-meta-keyword,.hljs-gruvbox-light .hljs-selector-pseudo,.hljs-gruvbox-light .hljs-tag{color:#427b58}.hljs-gruvbox-light .hljs-comment{color:#928374}.hljs-gruvbox-light .hljs-link_label,.hljs-gruvbox-light .hljs-literal,.hljs-gruvbox-light .hljs-number{color:#8f3f71}.hljs-gruvbox-light .hljs-comment,.hljs-gruvbox-light .hljs-emphasis{font-style:italic}.hljs-gruvbox-light .hljs-section,.hljs-gruvbox-light .hljs-strong,.hljs-gruvbox-light .hljs-tag{font-weight:bold}","hopscotch":".hljs-hopscotch .hljs-comment,.hljs-hopscotch .hljs-quote{color:#989498}.hljs-hopscotch .hljs-variable,.hljs-hopscotch .hljs-template-variable,.hljs-hopscotch .hljs-attribute,.hljs-hopscotch .hljs-tag,.hljs-hopscotch .hljs-name,.hljs-hopscotch .hljs-selector-id,.hljs-hopscotch .hljs-selector-class,.hljs-hopscotch .hljs-regexp,.hljs-hopscotch .hljs-link,.hljs-hopscotch .hljs-deletion{color:#dd464c}.hljs-hopscotch .hljs-number,.hljs-hopscotch .hljs-built_in,.hljs-hopscotch .hljs-builtin-name,.hljs-hopscotch .hljs-literal,.hljs-hopscotch .hljs-type,.hljs-hopscotch .hljs-params{color:#fd8b19}.hljs-hopscotch .hljs-class .hljs-title{color:#fdcc59}.hljs-hopscotch .hljs-string,.hljs-hopscotch .hljs-symbol,.hljs-hopscotch .hljs-bullet,.hljs-hopscotch .hljs-addition{color:#8fc13e}.hljs-hopscotch .hljs-meta{color:#149b93}.hljs-hopscotch .hljs-function,.hljs-hopscotch .hljs-section,.hljs-hopscotch .hljs-title{color:#1290bf}.hljs-hopscotch .hljs-keyword,.hljs-hopscotch .hljs-selector-tag{color:#c85e7c}.hljs-hopscotch .hljs{display:block;background:#322931;color:#b9b5b8;padding:.5em}.hljs-hopscotch .hljs-emphasis{font-style:italic}.hljs-hopscotch .hljs-strong{font-weight:bold}","hybrid":".hljs-hybrid .hljs{display:block;overflow-x:auto;padding:.5em;background:#1d1f21}.hljs-hybrid .hljs::selection,.hljs-hybrid .hljs span::selection{background:#373b41}.hljs-hybrid .hljs::-moz-selection,.hljs-hybrid .hljs span::-moz-selection{background:#373b41}.hljs-hybrid .hljs{color:#c5c8c6}.hljs-hybrid .hljs-title,.hljs-hybrid .hljs-name{color:#f0c674}.hljs-hybrid .hljs-comment,.hljs-hybrid .hljs-meta,.hljs-hybrid .hljs-meta .hljs-keyword{color:#707880}.hljs-hybrid .hljs-number,.hljs-hybrid .hljs-symbol,.hljs-hybrid .hljs-literal,.hljs-hybrid .hljs-deletion,.hljs-hybrid .hljs-link{color:#cc6666}.hljs-hybrid .hljs-string,.hljs-hybrid .hljs-doctag,.hljs-hybrid .hljs-addition,.hljs-hybrid .hljs-regexp,.hljs-hybrid .hljs-selector-attr,.hljs-hybrid .hljs-selector-pseudo{color:#b5bd68}.hljs-hybrid .hljs-attribute,.hljs-hybrid .hljs-code,.hljs-hybrid .hljs-selector-id{color:#b294bb}.hljs-hybrid .hljs-keyword,.hljs-hybrid .hljs-selector-tag,.hljs-hybrid .hljs-bullet,.hljs-hybrid .hljs-tag{color:#81a2be}.hljs-hybrid .hljs-subst,.hljs-hybrid .hljs-variable,.hljs-hybrid .hljs-template-tag,.hljs-hybrid .hljs-template-variable{color:#8abeb7}.hljs-hybrid .hljs-type,.hljs-hybrid .hljs-built_in,.hljs-hybrid .hljs-builtin-name,.hljs-hybrid .hljs-quote,.hljs-hybrid .hljs-section,.hljs-hybrid .hljs-selector-class{color:#de935f}.hljs-hybrid .hljs-emphasis{font-style:italic}.hljs-hybrid .hljs-strong{font-weight:bold}","idea":".hljs-idea .hljs{display:block;overflow-x:auto;padding:.5em;color:#000;background:#fff}.hljs-idea .hljs-subst,.hljs-idea .hljs-title{font-weight:normal;color:#000}.hljs-idea .hljs-comment,.hljs-idea .hljs-quote{color:#808080;font-style:italic}.hljs-idea .hljs-meta{color:#808000}.hljs-idea .hljs-tag{background:#efefef}.hljs-idea .hljs-section,.hljs-idea .hljs-name,.hljs-idea .hljs-literal,.hljs-idea .hljs-keyword,.hljs-idea .hljs-selector-tag,.hljs-idea .hljs-type,.hljs-idea .hljs-selector-id,.hljs-idea .hljs-selector-class{font-weight:bold;color:#000080}.hljs-idea .hljs-attribute,.hljs-idea .hljs-number,.hljs-idea .hljs-regexp,.hljs-idea .hljs-link{font-weight:bold;color:#0000ff}.hljs-idea .hljs-number,.hljs-idea .hljs-regexp,.hljs-idea .hljs-link{font-weight:normal}.hljs-idea .hljs-string{color:#008000;font-weight:bold}.hljs-idea .hljs-symbol,.hljs-idea .hljs-bullet,.hljs-idea .hljs-formula{color:#000;background:#d0eded;font-style:italic}.hljs-idea .hljs-doctag{text-decoration:underline}.hljs-idea .hljs-variable,.hljs-idea .hljs-template-variable{color:#660e7a}.hljs-idea .hljs-addition{background:#baeeba}.hljs-idea .hljs-deletion{background:#ffc8bd}.hljs-idea .hljs-emphasis{font-style:italic}.hljs-idea .hljs-strong{font-weight:bold}","ir-black":".hljs-ir-black .hljs{display:block;overflow-x:auto;padding:.5em;background:#000;color:#f8f8f8}.hljs-ir-black .hljs-comment,.hljs-ir-black .hljs-quote,.hljs-ir-black .hljs-meta{color:#7c7c7c}.hljs-ir-black .hljs-keyword,.hljs-ir-black .hljs-selector-tag,.hljs-ir-black .hljs-tag,.hljs-ir-black .hljs-name{color:#96cbfe}.hljs-ir-black .hljs-attribute,.hljs-ir-black .hljs-selector-id{color:#ffffb6}.hljs-ir-black .hljs-string,.hljs-ir-black .hljs-selector-attr,.hljs-ir-black .hljs-selector-pseudo,.hljs-ir-black .hljs-addition{color:#a8ff60}.hljs-ir-black .hljs-subst{color:#daefa3}.hljs-ir-black .hljs-regexp,.hljs-ir-black .hljs-link{color:#e9c062}.hljs-ir-black .hljs-title,.hljs-ir-black .hljs-section,.hljs-ir-black .hljs-type,.hljs-ir-black .hljs-doctag{color:#ffffb6}.hljs-ir-black .hljs-symbol,.hljs-ir-black .hljs-bullet,.hljs-ir-black .hljs-variable,.hljs-ir-black .hljs-template-variable,.hljs-ir-black .hljs-literal{color:#c6c5fe}.hljs-ir-black .hljs-number,.hljs-ir-black .hljs-deletion{color:#ff73fd}.hljs-ir-black .hljs-emphasis{font-style:italic}.hljs-ir-black .hljs-strong{font-weight:bold}","isbl-editor-dark":".hljs-isbl-editor-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#404040;color:#f0f0f0}.hljs-isbl-editor-dark .hljs,.hljs-isbl-editor-dark .hljs-subst{color:#f0f0f0}.hljs-isbl-editor-dark .hljs-comment{color:#b5b5b5;font-style:italic}.hljs-isbl-editor-dark .hljs-keyword,.hljs-isbl-editor-dark .hljs-attribute,.hljs-isbl-editor-dark .hljs-selector-tag,.hljs-isbl-editor-dark .hljs-meta-keyword,.hljs-isbl-editor-dark .hljs-doctag,.hljs-isbl-editor-dark .hljs-name{color:#f0f0f0;font-weight:bold}.hljs-isbl-editor-dark .hljs-string{color:#97bf0d}.hljs-isbl-editor-dark .hljs-type,.hljs-isbl-editor-dark .hljs-number,.hljs-isbl-editor-dark .hljs-selector-id,.hljs-isbl-editor-dark .hljs-selector-class,.hljs-isbl-editor-dark .hljs-quote,.hljs-isbl-editor-dark .hljs-template-tag,.hljs-isbl-editor-dark .hljs-deletion{color:#f0f0f0}.hljs-isbl-editor-dark .hljs-title,.hljs-isbl-editor-dark .hljs-section{color:#df471e}.hljs-isbl-editor-dark .hljs-title>.hljs-built_in{color:#81bce9;font-weight:normal}.hljs-isbl-editor-dark .hljs-regexp,.hljs-isbl-editor-dark .hljs-symbol,.hljs-isbl-editor-dark .hljs-variable,.hljs-isbl-editor-dark .hljs-template-variable,.hljs-isbl-editor-dark .hljs-link,.hljs-isbl-editor-dark .hljs-selector-attr,.hljs-isbl-editor-dark .hljs-selector-pseudo{color:#e2c696}.hljs-isbl-editor-dark .hljs-built_in,.hljs-isbl-editor-dark .hljs-literal{color:#97bf0d;font-weight:bold}.hljs-isbl-editor-dark .hljs-bullet,.hljs-isbl-editor-dark .hljs-code,.hljs-isbl-editor-dark .hljs-addition{color:#397300}.hljs-isbl-editor-dark .hljs-class{color:#ce9d4d;font-weight:bold}.hljs-isbl-editor-dark .hljs-meta{color:#1f7199}.hljs-isbl-editor-dark .hljs-meta-string{color:#4d99bf}.hljs-isbl-editor-dark .hljs-emphasis{font-style:italic}.hljs-isbl-editor-dark .hljs-strong{font-weight:bold}","isbl-editor-light":".hljs-isbl-editor-light .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-isbl-editor-light .hljs,.hljs-isbl-editor-light .hljs-subst{color:#000000}.hljs-isbl-editor-light .hljs-comment{color:#555555;font-style:italic}.hljs-isbl-editor-light .hljs-keyword,.hljs-isbl-editor-light .hljs-attribute,.hljs-isbl-editor-light .hljs-selector-tag,.hljs-isbl-editor-light .hljs-meta-keyword,.hljs-isbl-editor-light .hljs-doctag,.hljs-isbl-editor-light .hljs-name{color:#000000;font-weight:bold}.hljs-isbl-editor-light .hljs-string{color:#000080}.hljs-isbl-editor-light .hljs-type,.hljs-isbl-editor-light .hljs-number,.hljs-isbl-editor-light .hljs-selector-id,.hljs-isbl-editor-light .hljs-selector-class,.hljs-isbl-editor-light .hljs-quote,.hljs-isbl-editor-light .hljs-template-tag,.hljs-isbl-editor-light .hljs-deletion{color:#000000}.hljs-isbl-editor-light .hljs-title,.hljs-isbl-editor-light .hljs-section{color:#fb2c00}.hljs-isbl-editor-light .hljs-title>.hljs-built_in{color:#008080;font-weight:normal}.hljs-isbl-editor-light .hljs-regexp,.hljs-isbl-editor-light .hljs-symbol,.hljs-isbl-editor-light .hljs-variable,.hljs-isbl-editor-light .hljs-template-variable,.hljs-isbl-editor-light .hljs-link,.hljs-isbl-editor-light .hljs-selector-attr,.hljs-isbl-editor-light .hljs-selector-pseudo{color:#5e1700}.hljs-isbl-editor-light .hljs-built_in,.hljs-isbl-editor-light .hljs-literal{color:#000080;font-weight:bold}.hljs-isbl-editor-light .hljs-bullet,.hljs-isbl-editor-light .hljs-code,.hljs-isbl-editor-light .hljs-addition{color:#397300}.hljs-isbl-editor-light .hljs-class{color:#6f1C00;font-weight:bold}.hljs-isbl-editor-light .hljs-meta{color:#1f7199}.hljs-isbl-editor-light .hljs-meta-string{color:#4d99bf}.hljs-isbl-editor-light .hljs-emphasis{font-style:italic}.hljs-isbl-editor-light .hljs-strong{font-weight:bold}","kimbie.dark":".hljs-kimbie.dark .hljs-comment,.hljs-kimbie.dark .hljs-quote{color:#d6baad}.hljs-kimbie.dark .hljs-variable,.hljs-kimbie.dark .hljs-template-variable,.hljs-kimbie.dark .hljs-tag,.hljs-kimbie.dark .hljs-name,.hljs-kimbie.dark .hljs-selector-id,.hljs-kimbie.dark .hljs-selector-class,.hljs-kimbie.dark .hljs-regexp,.hljs-kimbie.dark .hljs-meta{color:#dc3958}.hljs-kimbie.dark .hljs-number,.hljs-kimbie.dark .hljs-built_in,.hljs-kimbie.dark .hljs-builtin-name,.hljs-kimbie.dark .hljs-literal,.hljs-kimbie.dark .hljs-type,.hljs-kimbie.dark .hljs-params,.hljs-kimbie.dark .hljs-deletion,.hljs-kimbie.dark .hljs-link{color:#f79a32}.hljs-kimbie.dark .hljs-title,.hljs-kimbie.dark .hljs-section,.hljs-kimbie.dark .hljs-attribute{color:#f06431}.hljs-kimbie.dark .hljs-string,.hljs-kimbie.dark .hljs-symbol,.hljs-kimbie.dark .hljs-bullet,.hljs-kimbie.dark .hljs-addition{color:#889b4a}.hljs-kimbie.dark .hljs-keyword,.hljs-kimbie.dark .hljs-selector-tag,.hljs-kimbie.dark .hljs-function{color:#98676a}.hljs-kimbie.dark .hljs{display:block;overflow-x:auto;background:#221a0f;color:#d3af86;padding:.5em}.hljs-kimbie.dark .hljs-emphasis{font-style:italic}.hljs-kimbie.dark .hljs-strong{font-weight:bold}","kimbie.light":".hljs-kimbie.light .hljs-comment,.hljs-kimbie.light .hljs-quote{color:#a57a4c}.hljs-kimbie.light .hljs-variable,.hljs-kimbie.light .hljs-template-variable,.hljs-kimbie.light .hljs-tag,.hljs-kimbie.light .hljs-name,.hljs-kimbie.light .hljs-selector-id,.hljs-kimbie.light .hljs-selector-class,.hljs-kimbie.light .hljs-regexp,.hljs-kimbie.light .hljs-meta{color:#dc3958}.hljs-kimbie.light .hljs-number,.hljs-kimbie.light .hljs-built_in,.hljs-kimbie.light .hljs-builtin-name,.hljs-kimbie.light .hljs-literal,.hljs-kimbie.light .hljs-type,.hljs-kimbie.light .hljs-params,.hljs-kimbie.light .hljs-deletion,.hljs-kimbie.light .hljs-link{color:#f79a32}.hljs-kimbie.light .hljs-title,.hljs-kimbie.light .hljs-section,.hljs-kimbie.light .hljs-attribute{color:#f06431}.hljs-kimbie.light .hljs-string,.hljs-kimbie.light .hljs-symbol,.hljs-kimbie.light .hljs-bullet,.hljs-kimbie.light .hljs-addition{color:#889b4a}.hljs-kimbie.light .hljs-keyword,.hljs-kimbie.light .hljs-selector-tag,.hljs-kimbie.light .hljs-function{color:#98676a}.hljs-kimbie.light .hljs{display:block;overflow-x:auto;background:#fbebd4;color:#84613d;padding:.5em}.hljs-kimbie.light .hljs-emphasis{font-style:italic}.hljs-kimbie.light .hljs-strong{font-weight:bold}","lightfair":".hljs-lightfair .hljs{display:block;overflow-x:auto;padding:.5em}.hljs-lightfair .hljs-name{color:#01a3a3}.hljs-lightfair .hljs-tag,.hljs-lightfair .hljs-meta{color:#778899}.hljs-lightfair .hljs,.hljs-lightfair .hljs-subst{color:#444}.hljs-lightfair .hljs-comment{color:#888888}.hljs-lightfair .hljs-keyword,.hljs-lightfair .hljs-attribute,.hljs-lightfair .hljs-selector-tag,.hljs-lightfair .hljs-meta-keyword,.hljs-lightfair .hljs-doctag,.hljs-lightfair .hljs-name{font-weight:bold}.hljs-lightfair .hljs-type,.hljs-lightfair .hljs-string,.hljs-lightfair .hljs-number,.hljs-lightfair .hljs-selector-id,.hljs-lightfair .hljs-selector-class,.hljs-lightfair .hljs-quote,.hljs-lightfair .hljs-template-tag,.hljs-lightfair .hljs-deletion{color:#4286f4}.hljs-lightfair .hljs-title,.hljs-lightfair .hljs-section{color:#4286f4;font-weight:bold}.hljs-lightfair .hljs-regexp,.hljs-lightfair .hljs-symbol,.hljs-lightfair .hljs-variable,.hljs-lightfair .hljs-template-variable,.hljs-lightfair .hljs-link,.hljs-lightfair .hljs-selector-attr,.hljs-lightfair .hljs-selector-pseudo{color:#BC6060}.hljs-lightfair .hljs-literal{color:#62bcbc}.hljs-lightfair .hljs-built_in,.hljs-lightfair .hljs-bullet,.hljs-lightfair .hljs-code,.hljs-lightfair .hljs-addition{color:#25c6c6}.hljs-lightfair .hljs-meta-string{color:#4d99bf}.hljs-lightfair .hljs-emphasis{font-style:italic}.hljs-lightfair .hljs-strong{font-weight:bold}","magula":".hljs-magula .hljs{display:block;overflow-x:auto;padding:.5em;background-color:#f4f4f4}.hljs-magula .hljs,.hljs-magula .hljs-subst{color:black}.hljs-magula .hljs-string,.hljs-magula .hljs-title,.hljs-magula .hljs-symbol,.hljs-magula .hljs-bullet,.hljs-magula .hljs-attribute,.hljs-magula .hljs-addition,.hljs-magula .hljs-variable,.hljs-magula .hljs-template-tag,.hljs-magula .hljs-template-variable{color:#050}.hljs-magula .hljs-comment,.hljs-magula .hljs-quote{color:#777}.hljs-magula .hljs-number,.hljs-magula .hljs-regexp,.hljs-magula .hljs-literal,.hljs-magula .hljs-type,.hljs-magula .hljs-link{color:#800}.hljs-magula .hljs-deletion,.hljs-magula .hljs-meta{color:#00e}.hljs-magula .hljs-keyword,.hljs-magula .hljs-selector-tag,.hljs-magula .hljs-doctag,.hljs-magula .hljs-title,.hljs-magula .hljs-section,.hljs-magula .hljs-built_in,.hljs-magula .hljs-tag,.hljs-magula .hljs-name{font-weight:bold;color:navy}.hljs-magula .hljs-emphasis{font-style:italic}.hljs-magula .hljs-strong{font-weight:bold}","mono-blue":".hljs-mono-blue .hljs{display:block;overflow-x:auto;padding:.5em;background:#eaeef3}.hljs-mono-blue .hljs{color:#00193a}.hljs-mono-blue .hljs-keyword,.hljs-mono-blue .hljs-selector-tag,.hljs-mono-blue .hljs-title,.hljs-mono-blue .hljs-section,.hljs-mono-blue .hljs-doctag,.hljs-mono-blue .hljs-name,.hljs-mono-blue .hljs-strong{font-weight:bold}.hljs-mono-blue .hljs-comment{color:#738191}.hljs-mono-blue .hljs-string,.hljs-mono-blue .hljs-title,.hljs-mono-blue .hljs-section,.hljs-mono-blue .hljs-built_in,.hljs-mono-blue .hljs-literal,.hljs-mono-blue .hljs-type,.hljs-mono-blue .hljs-addition,.hljs-mono-blue .hljs-tag,.hljs-mono-blue .hljs-quote,.hljs-mono-blue .hljs-name,.hljs-mono-blue .hljs-selector-id,.hljs-mono-blue .hljs-selector-class{color:#0048ab}.hljs-mono-blue .hljs-meta,.hljs-mono-blue .hljs-subst,.hljs-mono-blue .hljs-symbol,.hljs-mono-blue .hljs-regexp,.hljs-mono-blue .hljs-attribute,.hljs-mono-blue .hljs-deletion,.hljs-mono-blue .hljs-variable,.hljs-mono-blue .hljs-template-variable,.hljs-mono-blue .hljs-link,.hljs-mono-blue .hljs-bullet{color:#4c81c9}.hljs-mono-blue .hljs-emphasis{font-style:italic}","monokai-sublime":".hljs-monokai-sublime .hljs{display:block;overflow-x:auto;padding:.5em;background:#23241f}.hljs-monokai-sublime .hljs,.hljs-monokai-sublime .hljs-tag,.hljs-monokai-sublime .hljs-subst{color:#f8f8f2}.hljs-monokai-sublime .hljs-strong,.hljs-monokai-sublime .hljs-emphasis{color:#a8a8a2}.hljs-monokai-sublime .hljs-bullet,.hljs-monokai-sublime .hljs-quote,.hljs-monokai-sublime .hljs-number,.hljs-monokai-sublime .hljs-regexp,.hljs-monokai-sublime .hljs-literal,.hljs-monokai-sublime .hljs-link{color:#ae81ff}.hljs-monokai-sublime .hljs-code,.hljs-monokai-sublime .hljs-title,.hljs-monokai-sublime .hljs-section,.hljs-monokai-sublime .hljs-selector-class{color:#a6e22e}.hljs-monokai-sublime .hljs-strong{font-weight:bold}.hljs-monokai-sublime .hljs-emphasis{font-style:italic}.hljs-monokai-sublime .hljs-keyword,.hljs-monokai-sublime .hljs-selector-tag,.hljs-monokai-sublime .hljs-name,.hljs-monokai-sublime .hljs-attr{color:#f92672}.hljs-monokai-sublime .hljs-symbol,.hljs-monokai-sublime .hljs-attribute{color:#66d9ef}.hljs-monokai-sublime .hljs-params,.hljs-monokai-sublime .hljs-class .hljs-title{color:#f8f8f2}.hljs-monokai-sublime .hljs-string,.hljs-monokai-sublime .hljs-type,.hljs-monokai-sublime .hljs-built_in,.hljs-monokai-sublime .hljs-builtin-name,.hljs-monokai-sublime .hljs-selector-id,.hljs-monokai-sublime .hljs-selector-attr,.hljs-monokai-sublime .hljs-selector-pseudo,.hljs-monokai-sublime .hljs-addition,.hljs-monokai-sublime .hljs-variable,.hljs-monokai-sublime .hljs-template-variable{color:#e6db74}.hljs-monokai-sublime .hljs-comment,.hljs-monokai-sublime .hljs-deletion,.hljs-monokai-sublime .hljs-meta{color:#75715e}","monokai":".hljs-monokai .hljs{display:block;overflow-x:auto;padding:.5em;background:#272822;color:#ddd}.hljs-monokai .hljs-tag,.hljs-monokai .hljs-keyword,.hljs-monokai .hljs-selector-tag,.hljs-monokai .hljs-literal,.hljs-monokai .hljs-strong,.hljs-monokai .hljs-name{color:#f92672}.hljs-monokai .hljs-code{color:#66d9ef}.hljs-monokai .hljs-class .hljs-title{color:white}.hljs-monokai .hljs-attribute,.hljs-monokai .hljs-symbol,.hljs-monokai .hljs-regexp,.hljs-monokai .hljs-link{color:#bf79db}.hljs-monokai .hljs-string,.hljs-monokai .hljs-bullet,.hljs-monokai .hljs-subst,.hljs-monokai .hljs-title,.hljs-monokai .hljs-section,.hljs-monokai .hljs-emphasis,.hljs-monokai .hljs-type,.hljs-monokai .hljs-built_in,.hljs-monokai .hljs-builtin-name,.hljs-monokai .hljs-selector-attr,.hljs-monokai .hljs-selector-pseudo,.hljs-monokai .hljs-addition,.hljs-monokai .hljs-variable,.hljs-monokai .hljs-template-tag,.hljs-monokai .hljs-template-variable{color:#a6e22e}.hljs-monokai .hljs-comment,.hljs-monokai .hljs-quote,.hljs-monokai .hljs-deletion,.hljs-monokai .hljs-meta{color:#75715e}.hljs-monokai .hljs-keyword,.hljs-monokai .hljs-selector-tag,.hljs-monokai .hljs-literal,.hljs-monokai .hljs-doctag,.hljs-monokai .hljs-title,.hljs-monokai .hljs-section,.hljs-monokai .hljs-type,.hljs-monokai .hljs-selector-id{font-weight:bold}","nord":".hljs-nord .hljs{display:block;overflow-x:auto;padding:.5em;background:#2E3440}.hljs-nord .hljs,.hljs-nord .hljs-subst{color:#D8DEE9}.hljs-nord .hljs-selector-tag{color:#81A1C1}.hljs-nord .hljs-selector-id{color:#8FBCBB;font-weight:bold}.hljs-nord .hljs-selector-class{color:#8FBCBB}.hljs-nord .hljs-selector-attr{color:#8FBCBB}.hljs-nord .hljs-selector-pseudo{color:#88C0D0}.hljs-nord .hljs-addition{background-color:rgba(163,190,140,0.5)}.hljs-nord .hljs-deletion{background-color:rgba(191,97,106,0.5)}.hljs-nord .hljs-built_in,.hljs-nord .hljs-type{color:#8FBCBB}.hljs-nord .hljs-class{color:#8FBCBB}.hljs-nord .hljs-function{color:#88C0D0}.hljs-nord .hljs-function>.hljs-title{color:#88C0D0}.hljs-nord .hljs-keyword,.hljs-nord .hljs-literal,.hljs-nord .hljs-symbol{color:#81A1C1}.hljs-nord .hljs-number{color:#B48EAD}.hljs-nord .hljs-regexp{color:#EBCB8B}.hljs-nord .hljs-string{color:#A3BE8C}.hljs-nord .hljs-title{color:#8FBCBB}.hljs-nord .hljs-params{color:#D8DEE9}.hljs-nord .hljs-bullet{color:#81A1C1}.hljs-nord .hljs-code{color:#8FBCBB}.hljs-nord .hljs-emphasis{font-style:italic}.hljs-nord .hljs-formula{color:#8FBCBB}.hljs-nord .hljs-strong{font-weight:bold}.hljs-nord .hljs-link:hover{text-decoration:underline}.hljs-nord .hljs-quote{color:#4C566A}.hljs-nord .hljs-comment{color:#4C566A}.hljs-nord .hljs-doctag{color:#8FBCBB}.hljs-nord .hljs-meta,.hljs-nord .hljs-meta-keyword{color:#5E81AC}.hljs-nord .hljs-meta-string{color:#A3BE8C}.hljs-nord .hljs-attr{color:#8FBCBB}.hljs-nord .hljs-attribute{color:#D8DEE9}.hljs-nord .hljs-builtin-name{color:#81A1C1}.hljs-nord .hljs-name{color:#81A1C1}.hljs-nord .hljs-section{color:#88C0D0}.hljs-nord .hljs-tag{color:#81A1C1}.hljs-nord .hljs-variable{color:#D8DEE9}.hljs-nord .hljs-template-variable{color:#D8DEE9}.hljs-nord .hljs-template-tag{color:#5E81AC}.hljs-nord .abnf .hljs-attribute{color:#88C0D0}.hljs-nord .abnf .hljs-symbol{color:#EBCB8B}.hljs-nord .apache .hljs-attribute{color:#88C0D0}.hljs-nord .apache .hljs-section{color:#81A1C1}.hljs-nord .arduino .hljs-built_in{color:#88C0D0}.hljs-nord .aspectj .hljs-meta{color:#D08770}.hljs-nord .aspectj>.hljs-title{color:#88C0D0}.hljs-nord .bnf .hljs-attribute{color:#8FBCBB}.hljs-nord .clojure .hljs-name{color:#88C0D0}.hljs-nord .clojure .hljs-symbol{color:#EBCB8B}.hljs-nord .coq .hljs-built_in{color:#88C0D0}.hljs-nord .cpp .hljs-meta-string{color:#8FBCBB}.hljs-nord .css .hljs-built_in{color:#88C0D0}.hljs-nord .css .hljs-keyword{color:#D08770}.hljs-nord .diff .hljs-meta{color:#8FBCBB}.hljs-nord .ebnf .hljs-attribute{color:#8FBCBB}.hljs-nord .glsl .hljs-built_in{color:#88C0D0}.hljs-nord .groovy .hljs-meta:not(:first-child){color:#D08770}.hljs-nord .haxe .hljs-meta{color:#D08770}.hljs-nord .java .hljs-meta{color:#D08770}.hljs-nord .ldif .hljs-attribute{color:#8FBCBB}.hljs-nord .lisp .hljs-name{color:#88C0D0}.hljs-nord .lua .hljs-built_in{color:#88C0D0}.hljs-nord .moonscript .hljs-built_in{color:#88C0D0}.hljs-nord .nginx .hljs-attribute{color:#88C0D0}.hljs-nord .nginx .hljs-section{color:#5E81AC}.hljs-nord .pf .hljs-built_in{color:#88C0D0}.hljs-nord .processing .hljs-built_in{color:#88C0D0}.hljs-nord .scss .hljs-keyword{color:#81A1C1}.hljs-nord .stylus .hljs-keyword{color:#81A1C1}.hljs-nord .swift .hljs-meta{color:#D08770}.hljs-nord .vim .hljs-built_in{color:#88C0D0;font-style:italic}.hljs-nord .yaml .hljs-meta{color:#D08770}","obsidian":".hljs-obsidian .hljs{display:block;overflow-x:auto;padding:.5em;background:#282b2e}.hljs-obsidian .hljs-keyword,.hljs-obsidian .hljs-selector-tag,.hljs-obsidian .hljs-literal,.hljs-obsidian .hljs-selector-id{color:#93c763}.hljs-obsidian .hljs-number{color:#ffcd22}.hljs-obsidian .hljs{color:#e0e2e4}.hljs-obsidian .hljs-attribute{color:#668bb0}.hljs-obsidian .hljs-code,.hljs-obsidian .hljs-class .hljs-title,.hljs-obsidian .hljs-section{color:white}.hljs-obsidian .hljs-regexp,.hljs-obsidian .hljs-link{color:#d39745}.hljs-obsidian .hljs-meta{color:#557182}.hljs-obsidian .hljs-tag,.hljs-obsidian .hljs-name,.hljs-obsidian .hljs-bullet,.hljs-obsidian .hljs-subst,.hljs-obsidian .hljs-emphasis,.hljs-obsidian .hljs-type,.hljs-obsidian .hljs-built_in,.hljs-obsidian .hljs-selector-attr,.hljs-obsidian .hljs-selector-pseudo,.hljs-obsidian .hljs-addition,.hljs-obsidian .hljs-variable,.hljs-obsidian .hljs-template-tag,.hljs-obsidian .hljs-template-variable{color:#8cbbad}.hljs-obsidian .hljs-string,.hljs-obsidian .hljs-symbol{color:#ec7600}.hljs-obsidian .hljs-comment,.hljs-obsidian .hljs-quote,.hljs-obsidian .hljs-deletion{color:#818e96}.hljs-obsidian .hljs-selector-class{color:#A082BD}.hljs-obsidian .hljs-keyword,.hljs-obsidian .hljs-selector-tag,.hljs-obsidian .hljs-literal,.hljs-obsidian .hljs-doctag,.hljs-obsidian .hljs-title,.hljs-obsidian .hljs-section,.hljs-obsidian .hljs-type,.hljs-obsidian .hljs-name,.hljs-obsidian .hljs-strong{font-weight:bold}","ocean":".hljs-ocean .hljs-comment,.hljs-ocean .hljs-quote{color:#65737e}.hljs-ocean .hljs-variable,.hljs-ocean .hljs-template-variable,.hljs-ocean .hljs-tag,.hljs-ocean .hljs-name,.hljs-ocean .hljs-selector-id,.hljs-ocean .hljs-selector-class,.hljs-ocean .hljs-regexp,.hljs-ocean .hljs-deletion{color:#bf616a}.hljs-ocean .hljs-number,.hljs-ocean .hljs-built_in,.hljs-ocean .hljs-builtin-name,.hljs-ocean .hljs-literal,.hljs-ocean .hljs-type,.hljs-ocean .hljs-params,.hljs-ocean .hljs-meta,.hljs-ocean .hljs-link{color:#d08770}.hljs-ocean .hljs-attribute{color:#ebcb8b}.hljs-ocean .hljs-string,.hljs-ocean .hljs-symbol,.hljs-ocean .hljs-bullet,.hljs-ocean .hljs-addition{color:#a3be8c}.hljs-ocean .hljs-title,.hljs-ocean .hljs-section{color:#8fa1b3}.hljs-ocean .hljs-keyword,.hljs-ocean .hljs-selector-tag{color:#b48ead}.hljs-ocean .hljs{display:block;overflow-x:auto;background:#2b303b;color:#c0c5ce;padding:.5em}.hljs-ocean .hljs-emphasis{font-style:italic}.hljs-ocean .hljs-strong{font-weight:bold}","paraiso-dark":".hljs-paraiso-dark .hljs-comment,.hljs-paraiso-dark .hljs-quote{color:#8d8687}.hljs-paraiso-dark .hljs-variable,.hljs-paraiso-dark .hljs-template-variable,.hljs-paraiso-dark .hljs-tag,.hljs-paraiso-dark .hljs-name,.hljs-paraiso-dark .hljs-selector-id,.hljs-paraiso-dark .hljs-selector-class,.hljs-paraiso-dark .hljs-regexp,.hljs-paraiso-dark .hljs-link,.hljs-paraiso-dark .hljs-meta{color:#ef6155}.hljs-paraiso-dark .hljs-number,.hljs-paraiso-dark .hljs-built_in,.hljs-paraiso-dark .hljs-builtin-name,.hljs-paraiso-dark .hljs-literal,.hljs-paraiso-dark .hljs-type,.hljs-paraiso-dark .hljs-params,.hljs-paraiso-dark .hljs-deletion{color:#f99b15}.hljs-paraiso-dark .hljs-title,.hljs-paraiso-dark .hljs-section,.hljs-paraiso-dark .hljs-attribute{color:#fec418}.hljs-paraiso-dark .hljs-string,.hljs-paraiso-dark .hljs-symbol,.hljs-paraiso-dark .hljs-bullet,.hljs-paraiso-dark .hljs-addition{color:#48b685}.hljs-paraiso-dark .hljs-keyword,.hljs-paraiso-dark .hljs-selector-tag{color:#815ba4}.hljs-paraiso-dark .hljs{display:block;overflow-x:auto;background:#2f1e2e;color:#a39e9b;padding:.5em}.hljs-paraiso-dark .hljs-emphasis{font-style:italic}.hljs-paraiso-dark .hljs-strong{font-weight:bold}","paraiso-light":".hljs-paraiso-light .hljs-comment,.hljs-paraiso-light .hljs-quote{color:#776e71}.hljs-paraiso-light .hljs-variable,.hljs-paraiso-light .hljs-template-variable,.hljs-paraiso-light .hljs-tag,.hljs-paraiso-light .hljs-name,.hljs-paraiso-light .hljs-selector-id,.hljs-paraiso-light .hljs-selector-class,.hljs-paraiso-light .hljs-regexp,.hljs-paraiso-light .hljs-link,.hljs-paraiso-light .hljs-meta{color:#ef6155}.hljs-paraiso-light .hljs-number,.hljs-paraiso-light .hljs-built_in,.hljs-paraiso-light .hljs-builtin-name,.hljs-paraiso-light .hljs-literal,.hljs-paraiso-light .hljs-type,.hljs-paraiso-light .hljs-params,.hljs-paraiso-light .hljs-deletion{color:#f99b15}.hljs-paraiso-light .hljs-title,.hljs-paraiso-light .hljs-section,.hljs-paraiso-light .hljs-attribute{color:#fec418}.hljs-paraiso-light .hljs-string,.hljs-paraiso-light .hljs-symbol,.hljs-paraiso-light .hljs-bullet,.hljs-paraiso-light .hljs-addition{color:#48b685}.hljs-paraiso-light .hljs-keyword,.hljs-paraiso-light .hljs-selector-tag{color:#815ba4}.hljs-paraiso-light .hljs{display:block;overflow-x:auto;background:#e7e9db;color:#4f424c;padding:.5em}.hljs-paraiso-light .hljs-emphasis{font-style:italic}.hljs-paraiso-light .hljs-strong{font-weight:bold}","purebasic":".hljs-purebasic .hljs{display:block;overflow-x:auto;padding:.5em;background:#FFFFDF}.hljs-purebasic .hljs,.hljs-purebasic .hljs-type,.hljs-purebasic .hljs-function,.hljs-purebasic .hljs-name,.hljs-purebasic .hljs-number,.hljs-purebasic .hljs-attr,.hljs-purebasic .hljs-params,.hljs-purebasic .hljs-subst{color:#000000}.hljs-purebasic .hljs-comment,.hljs-purebasic .hljs-regexp,.hljs-purebasic .hljs-section,.hljs-purebasic .hljs-selector-pseudo,.hljs-purebasic .hljs-addition{color:#00AAAA}.hljs-purebasic .hljs-title,.hljs-purebasic .hljs-tag,.hljs-purebasic .hljs-variable,.hljs-purebasic .hljs-code{color:#006666}.hljs-purebasic .hljs-keyword,.hljs-purebasic .hljs-class,.hljs-purebasic .hljs-meta-keyword,.hljs-purebasic .hljs-selector-class,.hljs-purebasic .hljs-built_in,.hljs-purebasic .hljs-builtin-name{color:#006666;font-weight:bold}.hljs-purebasic .hljs-string,.hljs-purebasic .hljs-selector-attr{color:#0080FF}.hljs-purebasic .hljs-symbol,.hljs-purebasic .hljs-link,.hljs-purebasic .hljs-deletion,.hljs-purebasic .hljs-attribute{color:#924B72}.hljs-purebasic .hljs-meta,.hljs-purebasic .hljs-literal,.hljs-purebasic .hljs-selector-id{color:#924B72;font-weight:bold}.hljs-purebasic .hljs-strong,.hljs-purebasic .hljs-name{font-weight:bold}.hljs-purebasic .hljs-emphasis{font-style:italic}","qtcreator_dark":".hljs-qtcreator_dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#000000}.hljs-qtcreator_dark .hljs,.hljs-qtcreator_dark .hljs-subst,.hljs-qtcreator_dark .hljs-tag,.hljs-qtcreator_dark .hljs-title{color:#aaaaaa}.hljs-qtcreator_dark .hljs-strong,.hljs-qtcreator_dark .hljs-emphasis{color:#a8a8a2}.hljs-qtcreator_dark .hljs-bullet,.hljs-qtcreator_dark .hljs-quote,.hljs-qtcreator_dark .hljs-number,.hljs-qtcreator_dark .hljs-regexp,.hljs-qtcreator_dark .hljs-literal{color:#ff55ff}.hljs-qtcreator_dark .hljs-code .hljs-selector-class{color:#aaaaff}.hljs-qtcreator_dark .hljs-emphasis,.hljs-qtcreator_dark .hljs-stronge,.hljs-qtcreator_dark .hljs-type{font-style:italic}.hljs-qtcreator_dark .hljs-keyword,.hljs-qtcreator_dark .hljs-selector-tag,.hljs-qtcreator_dark .hljs-function,.hljs-qtcreator_dark .hljs-section,.hljs-qtcreator_dark .hljs-symbol,.hljs-qtcreator_dark .hljs-name{color:#ffff55}.hljs-qtcreator_dark .hljs-attribute{color:#ff5555}.hljs-qtcreator_dark .hljs-variable,.hljs-qtcreator_dark .hljs-params,.hljs-qtcreator_dark .hljs-class .hljs-title{color:#8888ff}.hljs-qtcreator_dark .hljs-string,.hljs-qtcreator_dark .hljs-selector-id,.hljs-qtcreator_dark .hljs-selector-attr,.hljs-qtcreator_dark .hljs-selector-pseudo,.hljs-qtcreator_dark .hljs-type,.hljs-qtcreator_dark .hljs-built_in,.hljs-qtcreator_dark .hljs-builtin-name,.hljs-qtcreator_dark .hljs-template-tag,.hljs-qtcreator_dark .hljs-template-variable,.hljs-qtcreator_dark .hljs-addition,.hljs-qtcreator_dark .hljs-link{color:#ff55ff}.hljs-qtcreator_dark .hljs-comment,.hljs-qtcreator_dark .hljs-meta,.hljs-qtcreator_dark .hljs-deletion{color:#55ffff}","qtcreator_light":".hljs-qtcreator_light .hljs{display:block;overflow-x:auto;padding:.5em;background:#ffffff}.hljs-qtcreator_light .hljs,.hljs-qtcreator_light .hljs-subst,.hljs-qtcreator_light .hljs-tag,.hljs-qtcreator_light .hljs-title{color:#000000}.hljs-qtcreator_light .hljs-strong,.hljs-qtcreator_light .hljs-emphasis{color:#000000}.hljs-qtcreator_light .hljs-bullet,.hljs-qtcreator_light .hljs-quote,.hljs-qtcreator_light .hljs-number,.hljs-qtcreator_light .hljs-regexp,.hljs-qtcreator_light .hljs-literal{color:#000080}.hljs-qtcreator_light .hljs-code .hljs-selector-class{color:#800080}.hljs-qtcreator_light .hljs-emphasis,.hljs-qtcreator_light .hljs-stronge,.hljs-qtcreator_light .hljs-type{font-style:italic}.hljs-qtcreator_light .hljs-keyword,.hljs-qtcreator_light .hljs-selector-tag,.hljs-qtcreator_light .hljs-function,.hljs-qtcreator_light .hljs-section,.hljs-qtcreator_light .hljs-symbol,.hljs-qtcreator_light .hljs-name{color:#808000}.hljs-qtcreator_light .hljs-attribute{color:#800000}.hljs-qtcreator_light .hljs-variable,.hljs-qtcreator_light .hljs-params,.hljs-qtcreator_light .hljs-class .hljs-title{color:#0055AF}.hljs-qtcreator_light .hljs-string,.hljs-qtcreator_light .hljs-selector-id,.hljs-qtcreator_light .hljs-selector-attr,.hljs-qtcreator_light .hljs-selector-pseudo,.hljs-qtcreator_light .hljs-type,.hljs-qtcreator_light .hljs-built_in,.hljs-qtcreator_light .hljs-builtin-name,.hljs-qtcreator_light .hljs-template-tag,.hljs-qtcreator_light .hljs-template-variable,.hljs-qtcreator_light .hljs-addition,.hljs-qtcreator_light .hljs-link{color:#008000}.hljs-qtcreator_light .hljs-comment,.hljs-qtcreator_light .hljs-meta,.hljs-qtcreator_light .hljs-deletion{color:#008000}","railscasts":".hljs-railscasts .hljs{display:block;overflow-x:auto;padding:.5em;background:#232323;color:#e6e1dc}.hljs-railscasts .hljs-comment,.hljs-railscasts .hljs-quote{color:#bc9458;font-style:italic}.hljs-railscasts .hljs-keyword,.hljs-railscasts .hljs-selector-tag{color:#c26230}.hljs-railscasts .hljs-string,.hljs-railscasts .hljs-number,.hljs-railscasts .hljs-regexp,.hljs-railscasts .hljs-variable,.hljs-railscasts .hljs-template-variable{color:#a5c261}.hljs-railscasts .hljs-subst{color:#519f50}.hljs-railscasts .hljs-tag,.hljs-railscasts .hljs-name{color:#e8bf6a}.hljs-railscasts .hljs-type{color:#da4939}.hljs-railscasts .hljs-symbol,.hljs-railscasts .hljs-bullet,.hljs-railscasts .hljs-built_in,.hljs-railscasts .hljs-builtin-name,.hljs-railscasts .hljs-attr,.hljs-railscasts .hljs-link{color:#6d9cbe}.hljs-railscasts .hljs-params{color:#d0d0ff}.hljs-railscasts .hljs-attribute{color:#cda869}.hljs-railscasts .hljs-meta{color:#9b859d}.hljs-railscasts .hljs-title,.hljs-railscasts .hljs-section{color:#ffc66d}.hljs-railscasts .hljs-addition{background-color:#144212;color:#e6e1dc;display:inline-block;width:100%}.hljs-railscasts .hljs-deletion{background-color:#600;color:#e6e1dc;display:inline-block;width:100%}.hljs-railscasts .hljs-selector-class{color:#9b703f}.hljs-railscasts .hljs-selector-id{color:#8b98ab}.hljs-railscasts .hljs-emphasis{font-style:italic}.hljs-railscasts .hljs-strong{font-weight:bold}.hljs-railscasts .hljs-link{text-decoration:underline}","rainbow":".hljs-rainbow .hljs{display:block;overflow-x:auto;padding:.5em;background:#474949;color:#d1d9e1}.hljs-rainbow .hljs-comment,.hljs-rainbow .hljs-quote{color:#969896;font-style:italic}.hljs-rainbow .hljs-keyword,.hljs-rainbow .hljs-selector-tag,.hljs-rainbow .hljs-literal,.hljs-rainbow .hljs-type,.hljs-rainbow .hljs-addition{color:#cc99cc}.hljs-rainbow .hljs-number,.hljs-rainbow .hljs-selector-attr,.hljs-rainbow .hljs-selector-pseudo{color:#f99157}.hljs-rainbow .hljs-string,.hljs-rainbow .hljs-doctag,.hljs-rainbow .hljs-regexp{color:#8abeb7}.hljs-rainbow .hljs-title,.hljs-rainbow .hljs-name,.hljs-rainbow .hljs-section,.hljs-rainbow .hljs-built_in{color:#b5bd68}.hljs-rainbow .hljs-variable,.hljs-rainbow .hljs-template-variable,.hljs-rainbow .hljs-selector-id,.hljs-rainbow .hljs-class .hljs-title{color:#ffcc66}.hljs-rainbow .hljs-section,.hljs-rainbow .hljs-name,.hljs-rainbow .hljs-strong{font-weight:bold}.hljs-rainbow .hljs-symbol,.hljs-rainbow .hljs-bullet,.hljs-rainbow .hljs-subst,.hljs-rainbow .hljs-meta,.hljs-rainbow .hljs-link{color:#f99157}.hljs-rainbow .hljs-deletion{color:#dc322f}.hljs-rainbow .hljs-formula{background:#eee8d5}.hljs-rainbow .hljs-attr,.hljs-rainbow .hljs-attribute{color:#81a2be}.hljs-rainbow .hljs-emphasis{font-style:italic}","routeros":".hljs-routeros .hljs{display:block;overflow-x:auto;padding:.5em;background:#F0F0F0}.hljs-routeros .hljs,.hljs-routeros .hljs-subst{color:#444}.hljs-routeros .hljs-comment{color:#888888}.hljs-routeros .hljs-keyword,.hljs-routeros .hljs-selector-tag,.hljs-routeros .hljs-meta-keyword,.hljs-routeros .hljs-doctag,.hljs-routeros .hljs-name{font-weight:bold}.hljs-routeros .hljs-attribute{color:#0E9A00}.hljs-routeros .hljs-function{color:#99069A}.hljs-routeros .hljs-builtin-name{color:#99069A}.hljs-routeros .hljs-type,.hljs-routeros .hljs-string,.hljs-routeros .hljs-number,.hljs-routeros .hljs-selector-id,.hljs-routeros .hljs-selector-class,.hljs-routeros .hljs-quote,.hljs-routeros .hljs-template-tag,.hljs-routeros .hljs-deletion{color:#880000}.hljs-routeros .hljs-title,.hljs-routeros .hljs-section{color:#880000;font-weight:bold}.hljs-routeros .hljs-regexp,.hljs-routeros .hljs-symbol,.hljs-routeros .hljs-variable,.hljs-routeros .hljs-template-variable,.hljs-routeros .hljs-link,.hljs-routeros .hljs-selector-attr,.hljs-routeros .hljs-selector-pseudo{color:#BC6060}.hljs-routeros .hljs-literal{color:#78A960}.hljs-routeros .hljs-built_in,.hljs-routeros .hljs-bullet,.hljs-routeros .hljs-code,.hljs-routeros .hljs-addition{color:#0C9A9A}.hljs-routeros .hljs-meta{color:#1f7199}.hljs-routeros .hljs-meta-string{color:#4d99bf}.hljs-routeros .hljs-emphasis{font-style:italic}.hljs-routeros .hljs-strong{font-weight:bold}","school-book":".hljs-school-book .hljs{display:block;overflow-x:auto;padding:15px .5em .5em 30px;font-size:11px;line-height:16px;background:#f6f6ae url(./school-book.png);border-top:solid 2px #d2e8b9;border-bottom:solid 1px #d2e8b9}.hljs-school-book .hljs-keyword,.hljs-school-book .hljs-selector-tag,.hljs-school-book .hljs-literal{color:#005599;font-weight:bold}.hljs-school-book .hljs,.hljs-school-book .hljs-subst{color:#3e5915}.hljs-school-book .hljs-string,.hljs-school-book .hljs-title,.hljs-school-book .hljs-section,.hljs-school-book .hljs-type,.hljs-school-book .hljs-symbol,.hljs-school-book .hljs-bullet,.hljs-school-book .hljs-attribute,.hljs-school-book .hljs-built_in,.hljs-school-book .hljs-builtin-name,.hljs-school-book .hljs-addition,.hljs-school-book .hljs-variable,.hljs-school-book .hljs-template-tag,.hljs-school-book .hljs-template-variable,.hljs-school-book .hljs-link{color:#2c009f}.hljs-school-book .hljs-comment,.hljs-school-book .hljs-quote,.hljs-school-book .hljs-deletion,.hljs-school-book .hljs-meta{color:#e60415}.hljs-school-book .hljs-keyword,.hljs-school-book .hljs-selector-tag,.hljs-school-book .hljs-literal,.hljs-school-book .hljs-doctag,.hljs-school-book .hljs-title,.hljs-school-book .hljs-section,.hljs-school-book .hljs-type,.hljs-school-book .hljs-name,.hljs-school-book .hljs-selector-id,.hljs-school-book .hljs-strong{font-weight:bold}.hljs-school-book .hljs-emphasis{font-style:italic}","shades-of-purple":".hljs-shades-of-purple .hljs{display:block;overflow-x:auto;line-height:1.45;padding:2rem;background:#2d2b57;font-weight:normal}.hljs-shades-of-purple .hljs-title{color:#fad000;font-weight:normal}.hljs-shades-of-purple .hljs-name{color:#a1feff}.hljs-shades-of-purple .hljs-tag{color:#ffffff}.hljs-shades-of-purple .hljs-attr{color:#f8d000;font-style:italic}.hljs-shades-of-purple .hljs-built_in,.hljs-shades-of-purple .hljs-selector-tag,.hljs-shades-of-purple .hljs-section{color:#fb9e00}.hljs-shades-of-purple .hljs-keyword{color:#fb9e00}.hljs-shades-of-purple .hljs,.hljs-shades-of-purple .hljs-subst{color:#e3dfff}.hljs-shades-of-purple .hljs-string,.hljs-shades-of-purple .hljs-attribute,.hljs-shades-of-purple .hljs-symbol,.hljs-shades-of-purple .hljs-bullet,.hljs-shades-of-purple .hljs-addition,.hljs-shades-of-purple .hljs-code,.hljs-shades-of-purple .hljs-regexp,.hljs-shades-of-purple .hljs-selector-class,.hljs-shades-of-purple .hljs-selector-attr,.hljs-shades-of-purple .hljs-selector-pseudo,.hljs-shades-of-purple .hljs-template-tag,.hljs-shades-of-purple .hljs-quote,.hljs-shades-of-purple .hljs-deletion{color:#4cd213}.hljs-shades-of-purple .hljs-meta,.hljs-shades-of-purple .hljs-meta-string{color:#fb9e00}.hljs-shades-of-purple .hljs-comment{color:#ac65ff}.hljs-shades-of-purple .hljs-keyword,.hljs-shades-of-purple .hljs-selector-tag,.hljs-shades-of-purple .hljs-literal,.hljs-shades-of-purple .hljs-name,.hljs-shades-of-purple .hljs-strong{font-weight:normal}.hljs-shades-of-purple .hljs-literal,.hljs-shades-of-purple .hljs-number{color:#fa658d}.hljs-shades-of-purple .hljs-emphasis{font-style:italic}.hljs-shades-of-purple .hljs-strong{font-weight:bold}","solarized-dark":".hljs-solarized-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#002b36;color:#839496}.hljs-solarized-dark .hljs-comment,.hljs-solarized-dark .hljs-quote{color:#586e75}.hljs-solarized-dark .hljs-keyword,.hljs-solarized-dark .hljs-selector-tag,.hljs-solarized-dark .hljs-addition{color:#859900}.hljs-solarized-dark .hljs-number,.hljs-solarized-dark .hljs-string,.hljs-solarized-dark .hljs-meta .hljs-meta-string,.hljs-solarized-dark .hljs-literal,.hljs-solarized-dark .hljs-doctag,.hljs-solarized-dark .hljs-regexp{color:#2aa198}.hljs-solarized-dark .hljs-title,.hljs-solarized-dark .hljs-section,.hljs-solarized-dark .hljs-name,.hljs-solarized-dark .hljs-selector-id,.hljs-solarized-dark .hljs-selector-class{color:#268bd2}.hljs-solarized-dark .hljs-attribute,.hljs-solarized-dark .hljs-attr,.hljs-solarized-dark .hljs-variable,.hljs-solarized-dark .hljs-template-variable,.hljs-solarized-dark .hljs-class .hljs-title,.hljs-solarized-dark .hljs-type{color:#b58900}.hljs-solarized-dark .hljs-symbol,.hljs-solarized-dark .hljs-bullet,.hljs-solarized-dark .hljs-subst,.hljs-solarized-dark .hljs-meta,.hljs-solarized-dark .hljs-meta .hljs-keyword,.hljs-solarized-dark .hljs-selector-attr,.hljs-solarized-dark .hljs-selector-pseudo,.hljs-solarized-dark .hljs-link{color:#cb4b16}.hljs-solarized-dark .hljs-built_in,.hljs-solarized-dark .hljs-deletion{color:#dc322f}.hljs-solarized-dark .hljs-formula{background:#073642}.hljs-solarized-dark .hljs-emphasis{font-style:italic}.hljs-solarized-dark .hljs-strong{font-weight:bold}","solarized-light":".hljs-solarized-light .hljs{display:block;overflow-x:auto;padding:.5em;background:#fdf6e3;color:#657b83}.hljs-solarized-light .hljs-comment,.hljs-solarized-light .hljs-quote{color:#93a1a1}.hljs-solarized-light .hljs-keyword,.hljs-solarized-light .hljs-selector-tag,.hljs-solarized-light .hljs-addition{color:#859900}.hljs-solarized-light .hljs-number,.hljs-solarized-light .hljs-string,.hljs-solarized-light .hljs-meta .hljs-meta-string,.hljs-solarized-light .hljs-literal,.hljs-solarized-light .hljs-doctag,.hljs-solarized-light .hljs-regexp{color:#2aa198}.hljs-solarized-light .hljs-title,.hljs-solarized-light .hljs-section,.hljs-solarized-light .hljs-name,.hljs-solarized-light .hljs-selector-id,.hljs-solarized-light .hljs-selector-class{color:#268bd2}.hljs-solarized-light .hljs-attribute,.hljs-solarized-light .hljs-attr,.hljs-solarized-light .hljs-variable,.hljs-solarized-light .hljs-template-variable,.hljs-solarized-light .hljs-class .hljs-title,.hljs-solarized-light .hljs-type{color:#b58900}.hljs-solarized-light .hljs-symbol,.hljs-solarized-light .hljs-bullet,.hljs-solarized-light .hljs-subst,.hljs-solarized-light .hljs-meta,.hljs-solarized-light .hljs-meta .hljs-keyword,.hljs-solarized-light .hljs-selector-attr,.hljs-solarized-light .hljs-selector-pseudo,.hljs-solarized-light .hljs-link{color:#cb4b16}.hljs-solarized-light .hljs-built_in,.hljs-solarized-light .hljs-deletion{color:#dc322f}.hljs-solarized-light .hljs-formula{background:#eee8d5}.hljs-solarized-light .hljs-emphasis{font-style:italic}.hljs-solarized-light .hljs-strong{font-weight:bold}","sunburst":".hljs-sunburst .hljs{display:block;overflow-x:auto;padding:.5em;background:#000;color:#f8f8f8}.hljs-sunburst .hljs-comment,.hljs-sunburst .hljs-quote{color:#aeaeae;font-style:italic}.hljs-sunburst .hljs-keyword,.hljs-sunburst .hljs-selector-tag,.hljs-sunburst .hljs-type{color:#e28964}.hljs-sunburst .hljs-string{color:#65b042}.hljs-sunburst .hljs-subst{color:#daefa3}.hljs-sunburst .hljs-regexp,.hljs-sunburst .hljs-link{color:#e9c062}.hljs-sunburst .hljs-title,.hljs-sunburst .hljs-section,.hljs-sunburst .hljs-tag,.hljs-sunburst .hljs-name{color:#89bdff}.hljs-sunburst .hljs-class .hljs-title,.hljs-sunburst .hljs-doctag{text-decoration:underline}.hljs-sunburst .hljs-symbol,.hljs-sunburst .hljs-bullet,.hljs-sunburst .hljs-number{color:#3387cc}.hljs-sunburst .hljs-params,.hljs-sunburst .hljs-variable,.hljs-sunburst .hljs-template-variable{color:#3e87e3}.hljs-sunburst .hljs-attribute{color:#cda869}.hljs-sunburst .hljs-meta{color:#8996a8}.hljs-sunburst .hljs-formula{background-color:#0e2231;color:#f8f8f8;font-style:italic}.hljs-sunburst .hljs-addition{background-color:#253b22;color:#f8f8f8}.hljs-sunburst .hljs-deletion{background-color:#420e09;color:#f8f8f8}.hljs-sunburst .hljs-selector-class{color:#9b703f}.hljs-sunburst .hljs-selector-id{color:#8b98ab}.hljs-sunburst .hljs-emphasis{font-style:italic}.hljs-sunburst .hljs-strong{font-weight:bold}","tomorrow-night-blue":".hljs-tomorrow-night-blue .hljs-comment,.hljs-tomorrow-night-blue .hljs-quote{color:#7285b7}.hljs-tomorrow-night-blue .hljs-variable,.hljs-tomorrow-night-blue .hljs-template-variable,.hljs-tomorrow-night-blue .hljs-tag,.hljs-tomorrow-night-blue .hljs-name,.hljs-tomorrow-night-blue .hljs-selector-id,.hljs-tomorrow-night-blue .hljs-selector-class,.hljs-tomorrow-night-blue .hljs-regexp,.hljs-tomorrow-night-blue .hljs-deletion{color:#ff9da4}.hljs-tomorrow-night-blue .hljs-number,.hljs-tomorrow-night-blue .hljs-built_in,.hljs-tomorrow-night-blue .hljs-builtin-name,.hljs-tomorrow-night-blue .hljs-literal,.hljs-tomorrow-night-blue .hljs-type,.hljs-tomorrow-night-blue .hljs-params,.hljs-tomorrow-night-blue .hljs-meta,.hljs-tomorrow-night-blue .hljs-link{color:#ffc58f}.hljs-tomorrow-night-blue .hljs-attribute{color:#ffeead}.hljs-tomorrow-night-blue .hljs-string,.hljs-tomorrow-night-blue .hljs-symbol,.hljs-tomorrow-night-blue .hljs-bullet,.hljs-tomorrow-night-blue .hljs-addition{color:#d1f1a9}.hljs-tomorrow-night-blue .hljs-title,.hljs-tomorrow-night-blue .hljs-section{color:#bbdaff}.hljs-tomorrow-night-blue .hljs-keyword,.hljs-tomorrow-night-blue .hljs-selector-tag{color:#ebbbff}.hljs-tomorrow-night-blue .hljs{display:block;overflow-x:auto;background:#002451;color:white;padding:.5em}.hljs-tomorrow-night-blue .hljs-emphasis{font-style:italic}.hljs-tomorrow-night-blue .hljs-strong{font-weight:bold}","tomorrow-night-bright":".hljs-tomorrow-night-bright .hljs-comment,.hljs-tomorrow-night-bright .hljs-quote{color:#969896}.hljs-tomorrow-night-bright .hljs-variable,.hljs-tomorrow-night-bright .hljs-template-variable,.hljs-tomorrow-night-bright .hljs-tag,.hljs-tomorrow-night-bright .hljs-name,.hljs-tomorrow-night-bright .hljs-selector-id,.hljs-tomorrow-night-bright .hljs-selector-class,.hljs-tomorrow-night-bright .hljs-regexp,.hljs-tomorrow-night-bright .hljs-deletion{color:#d54e53}.hljs-tomorrow-night-bright .hljs-number,.hljs-tomorrow-night-bright .hljs-built_in,.hljs-tomorrow-night-bright .hljs-builtin-name,.hljs-tomorrow-night-bright .hljs-literal,.hljs-tomorrow-night-bright .hljs-type,.hljs-tomorrow-night-bright .hljs-params,.hljs-tomorrow-night-bright .hljs-meta,.hljs-tomorrow-night-bright .hljs-link{color:#e78c45}.hljs-tomorrow-night-bright .hljs-attribute{color:#e7c547}.hljs-tomorrow-night-bright .hljs-string,.hljs-tomorrow-night-bright .hljs-symbol,.hljs-tomorrow-night-bright .hljs-bullet,.hljs-tomorrow-night-bright .hljs-addition{color:#b9ca4a}.hljs-tomorrow-night-bright .hljs-title,.hljs-tomorrow-night-bright .hljs-section{color:#7aa6da}.hljs-tomorrow-night-bright .hljs-keyword,.hljs-tomorrow-night-bright .hljs-selector-tag{color:#c397d8}.hljs-tomorrow-night-bright .hljs{display:block;overflow-x:auto;background:black;color:#eaeaea;padding:.5em}.hljs-tomorrow-night-bright .hljs-emphasis{font-style:italic}.hljs-tomorrow-night-bright .hljs-strong{font-weight:bold}","tomorrow-night-eighties":".hljs-tomorrow-night-eighties .hljs-comment,.hljs-tomorrow-night-eighties .hljs-quote{color:#999999}.hljs-tomorrow-night-eighties .hljs-variable,.hljs-tomorrow-night-eighties .hljs-template-variable,.hljs-tomorrow-night-eighties .hljs-tag,.hljs-tomorrow-night-eighties .hljs-name,.hljs-tomorrow-night-eighties .hljs-selector-id,.hljs-tomorrow-night-eighties .hljs-selector-class,.hljs-tomorrow-night-eighties .hljs-regexp,.hljs-tomorrow-night-eighties .hljs-deletion{color:#f2777a}.hljs-tomorrow-night-eighties .hljs-number,.hljs-tomorrow-night-eighties .hljs-built_in,.hljs-tomorrow-night-eighties .hljs-builtin-name,.hljs-tomorrow-night-eighties .hljs-literal,.hljs-tomorrow-night-eighties .hljs-type,.hljs-tomorrow-night-eighties .hljs-params,.hljs-tomorrow-night-eighties .hljs-meta,.hljs-tomorrow-night-eighties .hljs-link{color:#f99157}.hljs-tomorrow-night-eighties .hljs-attribute{color:#ffcc66}.hljs-tomorrow-night-eighties .hljs-string,.hljs-tomorrow-night-eighties .hljs-symbol,.hljs-tomorrow-night-eighties .hljs-bullet,.hljs-tomorrow-night-eighties .hljs-addition{color:#99cc99}.hljs-tomorrow-night-eighties .hljs-title,.hljs-tomorrow-night-eighties .hljs-section{color:#6699cc}.hljs-tomorrow-night-eighties .hljs-keyword,.hljs-tomorrow-night-eighties .hljs-selector-tag{color:#cc99cc}.hljs-tomorrow-night-eighties .hljs{display:block;overflow-x:auto;background:#2d2d2d;color:#cccccc;padding:.5em}.hljs-tomorrow-night-eighties .hljs-emphasis{font-style:italic}.hljs-tomorrow-night-eighties .hljs-strong{font-weight:bold}","tomorrow-night":".hljs-tomorrow-night .hljs-comment,.hljs-tomorrow-night .hljs-quote{color:#969896}.hljs-tomorrow-night .hljs-variable,.hljs-tomorrow-night .hljs-template-variable,.hljs-tomorrow-night .hljs-tag,.hljs-tomorrow-night .hljs-name,.hljs-tomorrow-night .hljs-selector-id,.hljs-tomorrow-night .hljs-selector-class,.hljs-tomorrow-night .hljs-regexp,.hljs-tomorrow-night .hljs-deletion{color:#cc6666}.hljs-tomorrow-night .hljs-number,.hljs-tomorrow-night .hljs-built_in,.hljs-tomorrow-night .hljs-builtin-name,.hljs-tomorrow-night .hljs-literal,.hljs-tomorrow-night .hljs-type,.hljs-tomorrow-night .hljs-params,.hljs-tomorrow-night .hljs-meta,.hljs-tomorrow-night .hljs-link{color:#de935f}.hljs-tomorrow-night .hljs-attribute{color:#f0c674}.hljs-tomorrow-night .hljs-string,.hljs-tomorrow-night .hljs-symbol,.hljs-tomorrow-night .hljs-bullet,.hljs-tomorrow-night .hljs-addition{color:#b5bd68}.hljs-tomorrow-night .hljs-title,.hljs-tomorrow-night .hljs-section{color:#81a2be}.hljs-tomorrow-night .hljs-keyword,.hljs-tomorrow-night .hljs-selector-tag{color:#b294bb}.hljs-tomorrow-night .hljs{display:block;overflow-x:auto;background:#1d1f21;color:#c5c8c6;padding:.5em}.hljs-tomorrow-night .hljs-emphasis{font-style:italic}.hljs-tomorrow-night .hljs-strong{font-weight:bold}","tomorrow":".hljs-tomorrow .hljs-comment,.hljs-tomorrow .hljs-quote{color:#8e908c}.hljs-tomorrow .hljs-variable,.hljs-tomorrow .hljs-template-variable,.hljs-tomorrow .hljs-tag,.hljs-tomorrow .hljs-name,.hljs-tomorrow .hljs-selector-id,.hljs-tomorrow .hljs-selector-class,.hljs-tomorrow .hljs-regexp,.hljs-tomorrow .hljs-deletion{color:#c82829}.hljs-tomorrow .hljs-number,.hljs-tomorrow .hljs-built_in,.hljs-tomorrow .hljs-builtin-name,.hljs-tomorrow .hljs-literal,.hljs-tomorrow .hljs-type,.hljs-tomorrow .hljs-params,.hljs-tomorrow .hljs-meta,.hljs-tomorrow .hljs-link{color:#f5871f}.hljs-tomorrow .hljs-attribute{color:#eab700}.hljs-tomorrow .hljs-string,.hljs-tomorrow .hljs-symbol,.hljs-tomorrow .hljs-bullet,.hljs-tomorrow .hljs-addition{color:#718c00}.hljs-tomorrow .hljs-title,.hljs-tomorrow .hljs-section{color:#4271ae}.hljs-tomorrow .hljs-keyword,.hljs-tomorrow .hljs-selector-tag{color:#8959a8}.hljs-tomorrow .hljs{display:block;overflow-x:auto;background:white;color:#4d4d4c;padding:.5em}.hljs-tomorrow .hljs-emphasis{font-style:italic}.hljs-tomorrow .hljs-strong{font-weight:bold}","vs":".hljs-vs .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-vs .hljs-comment,.hljs-vs .hljs-quote,.hljs-vs .hljs-variable{color:#008000}.hljs-vs .hljs-keyword,.hljs-vs .hljs-selector-tag,.hljs-vs .hljs-built_in,.hljs-vs .hljs-name,.hljs-vs .hljs-tag{color:#00f}.hljs-vs .hljs-string,.hljs-vs .hljs-title,.hljs-vs .hljs-section,.hljs-vs .hljs-attribute,.hljs-vs .hljs-literal,.hljs-vs .hljs-template-tag,.hljs-vs .hljs-template-variable,.hljs-vs .hljs-type,.hljs-vs .hljs-addition{color:#a31515}.hljs-vs .hljs-deletion,.hljs-vs .hljs-selector-attr,.hljs-vs .hljs-selector-pseudo,.hljs-vs .hljs-meta{color:#2b91af}.hljs-vs .hljs-doctag{color:#808080}.hljs-vs .hljs-attr{color:#f00}.hljs-vs .hljs-symbol,.hljs-vs .hljs-bullet,.hljs-vs .hljs-link{color:#00b0e8}.hljs-vs .hljs-emphasis{font-style:italic}.hljs-vs .hljs-strong{font-weight:bold}","vs2015":".hljs-vs2015 .hljs{display:block;overflow-x:auto;padding:.5em;background:#1E1E1E;color:#DCDCDC}.hljs-vs2015 .hljs-keyword,.hljs-vs2015 .hljs-literal,.hljs-vs2015 .hljs-symbol,.hljs-vs2015 .hljs-name{color:#569CD6}.hljs-vs2015 .hljs-link{color:#569CD6;text-decoration:underline}.hljs-vs2015 .hljs-built_in,.hljs-vs2015 .hljs-type{color:#4EC9B0}.hljs-vs2015 .hljs-number,.hljs-vs2015 .hljs-class{color:#B8D7A3}.hljs-vs2015 .hljs-string,.hljs-vs2015 .hljs-meta-string{color:#D69D85}.hljs-vs2015 .hljs-regexp,.hljs-vs2015 .hljs-template-tag{color:#9A5334}.hljs-vs2015 .hljs-subst,.hljs-vs2015 .hljs-function,.hljs-vs2015 .hljs-title,.hljs-vs2015 .hljs-params,.hljs-vs2015 .hljs-formula{color:#DCDCDC}.hljs-vs2015 .hljs-comment,.hljs-vs2015 .hljs-quote{color:#57A64A;font-style:italic}.hljs-vs2015 .hljs-doctag{color:#608B4E}.hljs-vs2015 .hljs-meta,.hljs-vs2015 .hljs-meta-keyword,.hljs-vs2015 .hljs-tag{color:#9B9B9B}.hljs-vs2015 .hljs-variable,.hljs-vs2015 .hljs-template-variable{color:#BD63C5}.hljs-vs2015 .hljs-attr,.hljs-vs2015 .hljs-attribute,.hljs-vs2015 .hljs-builtin-name{color:#9CDCFE}.hljs-vs2015 .hljs-section{color:gold}.hljs-vs2015 .hljs-emphasis{font-style:italic}.hljs-vs2015 .hljs-strong{font-weight:bold}.hljs-vs2015 .hljs-bullet,.hljs-vs2015 .hljs-selector-tag,.hljs-vs2015 .hljs-selector-id,.hljs-vs2015 .hljs-selector-class,.hljs-vs2015 .hljs-selector-attr,.hljs-vs2015 .hljs-selector-pseudo{color:#D7BA7D}.hljs-vs2015 .hljs-addition{background-color:#144212;display:inline-block;width:100%}.hljs-vs2015 .hljs-deletion{background-color:#600;display:inline-block;width:100%}","xcode":".hljs-xcode .hljs{display:block;overflow-x:auto;padding:.5em;background:#fff;color:black}.hljs-xcode .xml .hljs-meta{color:#c0c0c0}.hljs-xcode .hljs-comment,.hljs-xcode .hljs-quote{color:#007400}.hljs-xcode .hljs-tag,.hljs-xcode .hljs-attribute,.hljs-xcode .hljs-keyword,.hljs-xcode .hljs-selector-tag,.hljs-xcode .hljs-literal,.hljs-xcode .hljs-name{color:#aa0d91}.hljs-xcode .hljs-variable,.hljs-xcode .hljs-template-variable{color:#3F6E74}.hljs-xcode .hljs-code,.hljs-xcode .hljs-string,.hljs-xcode .hljs-meta-string{color:#c41a16}.hljs-xcode .hljs-regexp,.hljs-xcode .hljs-link{color:#0E0EFF}.hljs-xcode .hljs-title,.hljs-xcode .hljs-symbol,.hljs-xcode .hljs-bullet,.hljs-xcode .hljs-number{color:#1c00cf}.hljs-xcode .hljs-section,.hljs-xcode .hljs-meta{color:#643820}.hljs-xcode .hljs-class .hljs-title,.hljs-xcode .hljs-type,.hljs-xcode .hljs-built_in,.hljs-xcode .hljs-builtin-name,.hljs-xcode .hljs-params{color:#5c2699}.hljs-xcode .hljs-attr{color:#836C28}.hljs-xcode .hljs-subst{color:#000}.hljs-xcode .hljs-formula{background-color:#eee;font-style:italic}.hljs-xcode .hljs-addition{background-color:#baeeba}.hljs-xcode .hljs-deletion{background-color:#ffc8bd}.hljs-xcode .hljs-selector-id,.hljs-xcode .hljs-selector-class{color:#9b703f}.hljs-xcode .hljs-doctag,.hljs-xcode .hljs-strong{font-weight:bold}.hljs-xcode .hljs-emphasis{font-style:italic}","xt256":".hljs-xt256 .hljs{display:block;overflow-x:auto;color:#eaeaea;background:#000;padding:.5em}.hljs-xt256 .hljs-subst{color:#eaeaea}.hljs-xt256 .hljs-emphasis{font-style:italic}.hljs-xt256 .hljs-strong{font-weight:bold}.hljs-xt256 .hljs-builtin-name,.hljs-xt256 .hljs-type{color:#eaeaea}.hljs-xt256 .hljs-params{color:#da0000}.hljs-xt256 .hljs-literal,.hljs-xt256 .hljs-number,.hljs-xt256 .hljs-name{color:#ff0000;font-weight:bolder}.hljs-xt256 .hljs-comment{color:#969896}.hljs-xt256 .hljs-selector-id,.hljs-xt256 .hljs-quote{color:#00ffff}.hljs-xt256 .hljs-template-variable,.hljs-xt256 .hljs-variable,.hljs-xt256 .hljs-title{color:#00ffff;font-weight:bold}.hljs-xt256 .hljs-selector-class,.hljs-xt256 .hljs-keyword,.hljs-xt256 .hljs-symbol{color:#fff000}.hljs-xt256 .hljs-string,.hljs-xt256 .hljs-bullet{color:#00ff00}.hljs-xt256 .hljs-tag,.hljs-xt256 .hljs-section{color:#000fff}.hljs-xt256 .hljs-selector-tag{color:#000fff;font-weight:bold}.hljs-xt256 .hljs-attribute,.hljs-xt256 .hljs-built_in,.hljs-xt256 .hljs-regexp,.hljs-xt256 .hljs-link{color:#ff00ff}.hljs-xt256 .hljs-meta{color:#fff;font-weight:bolder}","zenburn":".hljs-zenburn .hljs{display:block;overflow-x:auto;padding:.5em;background:#3f3f3f;color:#dcdcdc}.hljs-zenburn .hljs-keyword,.hljs-zenburn .hljs-selector-tag,.hljs-zenburn .hljs-tag{color:#e3ceab}.hljs-zenburn .hljs-template-tag{color:#dcdcdc}.hljs-zenburn .hljs-number{color:#8cd0d3}.hljs-zenburn .hljs-variable,.hljs-zenburn .hljs-template-variable,.hljs-zenburn .hljs-attribute{color:#efdcbc}.hljs-zenburn .hljs-literal{color:#efefaf}.hljs-zenburn .hljs-subst{color:#8f8f8f}.hljs-zenburn .hljs-title,.hljs-zenburn .hljs-name,.hljs-zenburn .hljs-selector-id,.hljs-zenburn .hljs-selector-class,.hljs-zenburn .hljs-section,.hljs-zenburn .hljs-type{color:#efef8f}.hljs-zenburn .hljs-symbol,.hljs-zenburn .hljs-bullet,.hljs-zenburn .hljs-link{color:#dca3a3}.hljs-zenburn .hljs-deletion,.hljs-zenburn .hljs-string,.hljs-zenburn .hljs-built_in,.hljs-zenburn .hljs-builtin-name{color:#cc9393}.hljs-zenburn .hljs-addition,.hljs-zenburn .hljs-comment,.hljs-zenburn .hljs-quote,.hljs-zenburn .hljs-meta{color:#7f9f7f}.hljs-zenburn .hljs-emphasis{font-style:italic}.hljs-zenburn .hljs-strong{font-weight:bold}"},
+  styles: {"a11y-dark":".hljs-a11y-dark .hljs-comment,.hljs-a11y-dark .hljs-quote{color:#d4d0ab}.hljs-a11y-dark .hljs-variable,.hljs-a11y-dark .hljs-template-variable,.hljs-a11y-dark .hljs-tag,.hljs-a11y-dark .hljs-name,.hljs-a11y-dark .hljs-selector-id,.hljs-a11y-dark .hljs-selector-class,.hljs-a11y-dark .hljs-regexp,.hljs-a11y-dark .hljs-deletion{color:#ffa07a}.hljs-a11y-dark .hljs-number,.hljs-a11y-dark .hljs-built_in,.hljs-a11y-dark .hljs-builtin-name,.hljs-a11y-dark .hljs-literal,.hljs-a11y-dark .hljs-type,.hljs-a11y-dark .hljs-params,.hljs-a11y-dark .hljs-meta,.hljs-a11y-dark .hljs-link{color:#f5ab35}.hljs-a11y-dark .hljs-attribute{color:#ffd700}.hljs-a11y-dark .hljs-string,.hljs-a11y-dark .hljs-symbol,.hljs-a11y-dark .hljs-bullet,.hljs-a11y-dark .hljs-addition{color:#abe338}.hljs-a11y-dark .hljs-title,.hljs-a11y-dark .hljs-section{color:#00e0e0}.hljs-a11y-dark .hljs-keyword,.hljs-a11y-dark .hljs-selector-tag{color:#dcc6e0}.hljs-a11y-dark .hljs{display:block;overflow-x:auto;background:#2b2b2b;color:#f8f8f2;padding:.5em}.hljs-a11y-dark .hljs-emphasis{font-style:italic}.hljs-a11y-dark .hljs-strong{font-weight:bold}@media screen and (-ms-high-contrast:active){.hljs-a11y-dark .hljs-addition,.hljs-a11y-dark .hljs-attribute,.hljs-a11y-dark .hljs-built_in,.hljs-a11y-dark .hljs-builtin-name,.hljs-a11y-dark .hljs-bullet,.hljs-a11y-dark .hljs-comment,.hljs-a11y-dark .hljs-link,.hljs-a11y-dark .hljs-literal,.hljs-a11y-dark .hljs-meta,.hljs-a11y-dark .hljs-number,.hljs-a11y-dark .hljs-params,.hljs-a11y-dark .hljs-string,.hljs-a11y-dark .hljs-symbol,.hljs-a11y-dark .hljs-type,.hljs-a11y-dark .hljs-quote{color:highlight}.hljs-a11y-dark .hljs-keyword,.hljs-a11y-dark .hljs-selector-tag{font-weight:bold}}","a11y-light":".hljs-a11y-light .hljs-comment,.hljs-a11y-light .hljs-quote{color:#696969}.hljs-a11y-light .hljs-variable,.hljs-a11y-light .hljs-template-variable,.hljs-a11y-light .hljs-tag,.hljs-a11y-light .hljs-name,.hljs-a11y-light .hljs-selector-id,.hljs-a11y-light .hljs-selector-class,.hljs-a11y-light .hljs-regexp,.hljs-a11y-light .hljs-deletion{color:#d91e18}.hljs-a11y-light .hljs-number,.hljs-a11y-light .hljs-built_in,.hljs-a11y-light .hljs-builtin-name,.hljs-a11y-light .hljs-literal,.hljs-a11y-light .hljs-type,.hljs-a11y-light .hljs-params,.hljs-a11y-light .hljs-meta,.hljs-a11y-light .hljs-link{color:#aa5d00}.hljs-a11y-light .hljs-attribute{color:#aa5d00}.hljs-a11y-light .hljs-string,.hljs-a11y-light .hljs-symbol,.hljs-a11y-light .hljs-bullet,.hljs-a11y-light .hljs-addition{color:#008000}.hljs-a11y-light .hljs-title,.hljs-a11y-light .hljs-section{color:#007faa}.hljs-a11y-light .hljs-keyword,.hljs-a11y-light .hljs-selector-tag{color:#7928a1}.hljs-a11y-light .hljs{display:block;overflow-x:auto;background:#fefefe;color:#545454;padding:.5em}.hljs-a11y-light .hljs-emphasis{font-style:italic}.hljs-a11y-light .hljs-strong{font-weight:bold}@media screen and (-ms-high-contrast:active){.hljs-a11y-light .hljs-addition,.hljs-a11y-light .hljs-attribute,.hljs-a11y-light .hljs-built_in,.hljs-a11y-light .hljs-builtin-name,.hljs-a11y-light .hljs-bullet,.hljs-a11y-light .hljs-comment,.hljs-a11y-light .hljs-link,.hljs-a11y-light .hljs-literal,.hljs-a11y-light .hljs-meta,.hljs-a11y-light .hljs-number,.hljs-a11y-light .hljs-params,.hljs-a11y-light .hljs-string,.hljs-a11y-light .hljs-symbol,.hljs-a11y-light .hljs-type,.hljs-a11y-light .hljs-quote{color:highlight}.hljs-a11y-light .hljs-keyword,.hljs-a11y-light .hljs-selector-tag{font-weight:bold}}","agate":".hljs-agate{/*! * Agate by Taufik Nurrohman <https://github.com/taufik-nurrohman> * --------------------------------------------------------------- * * #ade5fc * #a2fca2 * #c6b4f0 * #d36363 * #fcc28c * #fc9b9b * #ffa * #fff * #333 * #62c8f3 * #888 * */}.hljs-agate .hljs{display:block;overflow-x:auto;padding:.5em;background:#333;color:white}.hljs-agate .hljs-name,.hljs-agate .hljs-strong{font-weight:bold}.hljs-agate .hljs-code,.hljs-agate .hljs-emphasis{font-style:italic}.hljs-agate .hljs-tag{color:#62c8f3}.hljs-agate .hljs-variable,.hljs-agate .hljs-template-variable,.hljs-agate .hljs-selector-id,.hljs-agate .hljs-selector-class{color:#ade5fc}.hljs-agate .hljs-string,.hljs-agate .hljs-bullet{color:#a2fca2}.hljs-agate .hljs-type,.hljs-agate .hljs-title,.hljs-agate .hljs-section,.hljs-agate .hljs-attribute,.hljs-agate .hljs-quote,.hljs-agate .hljs-built_in,.hljs-agate .hljs-builtin-name{color:#ffa}.hljs-agate .hljs-number,.hljs-agate .hljs-symbol,.hljs-agate .hljs-bullet{color:#d36363}.hljs-agate .hljs-keyword,.hljs-agate .hljs-selector-tag,.hljs-agate .hljs-literal{color:#fcc28c}.hljs-agate .hljs-comment,.hljs-agate .hljs-deletion,.hljs-agate .hljs-code{color:#888}.hljs-agate .hljs-regexp,.hljs-agate .hljs-link{color:#c6b4f0}.hljs-agate .hljs-meta{color:#fc9b9b}.hljs-agate .hljs-deletion{background-color:#fc9b9b;color:#333}.hljs-agate .hljs-addition{background-color:#a2fca2;color:#333}.hljs-agate .hljs a{color:inherit}.hljs-agate .hljs a:focus,.hljs-agate .hljs a:hover{color:inherit;text-decoration:underline}","an-old-hope":".hljs-an-old-hope .hljs-comment,.hljs-an-old-hope .hljs-quote{color:#B6B18B}.hljs-an-old-hope .hljs-variable,.hljs-an-old-hope .hljs-template-variable,.hljs-an-old-hope .hljs-tag,.hljs-an-old-hope .hljs-name,.hljs-an-old-hope .hljs-selector-id,.hljs-an-old-hope .hljs-selector-class,.hljs-an-old-hope .hljs-regexp,.hljs-an-old-hope .hljs-deletion{color:#EB3C54}.hljs-an-old-hope .hljs-number,.hljs-an-old-hope .hljs-built_in,.hljs-an-old-hope .hljs-builtin-name,.hljs-an-old-hope .hljs-literal,.hljs-an-old-hope .hljs-type,.hljs-an-old-hope .hljs-params,.hljs-an-old-hope .hljs-meta,.hljs-an-old-hope .hljs-link{color:#E7CE56}.hljs-an-old-hope .hljs-attribute{color:#EE7C2B}.hljs-an-old-hope .hljs-string,.hljs-an-old-hope .hljs-symbol,.hljs-an-old-hope .hljs-bullet,.hljs-an-old-hope .hljs-addition{color:#4FB4D7}.hljs-an-old-hope .hljs-title,.hljs-an-old-hope .hljs-section{color:#78BB65}.hljs-an-old-hope .hljs-keyword,.hljs-an-old-hope .hljs-selector-tag{color:#B45EA4}.hljs-an-old-hope .hljs{display:block;overflow-x:auto;background:#1C1D21;color:#c0c5ce;padding:.5em}.hljs-an-old-hope .hljs-emphasis{font-style:italic}.hljs-an-old-hope .hljs-strong{font-weight:bold}","androidstudio":".hljs-androidstudio .hljs{color:#a9b7c6;background:#282b2e;display:block;overflow-x:auto;padding:.5em}.hljs-androidstudio .hljs-number,.hljs-androidstudio .hljs-literal,.hljs-androidstudio .hljs-symbol,.hljs-androidstudio .hljs-bullet{color:#6897BB}.hljs-androidstudio .hljs-keyword,.hljs-androidstudio .hljs-selector-tag,.hljs-androidstudio .hljs-deletion{color:#cc7832}.hljs-androidstudio .hljs-variable,.hljs-androidstudio .hljs-template-variable,.hljs-androidstudio .hljs-link{color:#629755}.hljs-androidstudio .hljs-comment,.hljs-androidstudio .hljs-quote{color:#808080}.hljs-androidstudio .hljs-meta{color:#bbb529}.hljs-androidstudio .hljs-string,.hljs-androidstudio .hljs-attribute,.hljs-androidstudio .hljs-addition{color:#6A8759}.hljs-androidstudio .hljs-section,.hljs-androidstudio .hljs-title,.hljs-androidstudio .hljs-type{color:#ffc66d}.hljs-androidstudio .hljs-name,.hljs-androidstudio .hljs-selector-id,.hljs-androidstudio .hljs-selector-class{color:#e8bf6a}.hljs-androidstudio .hljs-emphasis{font-style:italic}.hljs-androidstudio .hljs-strong{font-weight:bold}","arduino-light":".hljs-arduino-light .hljs{display:block;overflow-x:auto;padding:.5em;background:#FFFFFF}.hljs-arduino-light .hljs,.hljs-arduino-light .hljs-subst{color:#434f54}.hljs-arduino-light .hljs-keyword,.hljs-arduino-light .hljs-attribute,.hljs-arduino-light .hljs-selector-tag,.hljs-arduino-light .hljs-doctag,.hljs-arduino-light .hljs-name{color:#00979D}.hljs-arduino-light .hljs-built_in,.hljs-arduino-light .hljs-literal,.hljs-arduino-light .hljs-bullet,.hljs-arduino-light .hljs-code,.hljs-arduino-light .hljs-addition{color:#D35400}.hljs-arduino-light .hljs-regexp,.hljs-arduino-light .hljs-symbol,.hljs-arduino-light .hljs-variable,.hljs-arduino-light .hljs-template-variable,.hljs-arduino-light .hljs-link,.hljs-arduino-light .hljs-selector-attr,.hljs-arduino-light .hljs-selector-pseudo{color:#00979D}.hljs-arduino-light .hljs-type,.hljs-arduino-light .hljs-string,.hljs-arduino-light .hljs-selector-id,.hljs-arduino-light .hljs-selector-class,.hljs-arduino-light .hljs-quote,.hljs-arduino-light .hljs-template-tag,.hljs-arduino-light .hljs-deletion{color:#005C5F}.hljs-arduino-light .hljs-title,.hljs-arduino-light .hljs-section{color:#880000;font-weight:bold}.hljs-arduino-light .hljs-comment{color:rgba(149,165,166,0.8)}.hljs-arduino-light .hljs-meta-keyword{color:#728E00}.hljs-arduino-light .hljs-meta{color:#434f54}.hljs-arduino-light .hljs-emphasis{font-style:italic}.hljs-arduino-light .hljs-strong{font-weight:bold}.hljs-arduino-light .hljs-function{color:#728E00}.hljs-arduino-light .hljs-number{color:#8A7B52}","arta":".hljs-arta .hljs{display:block;overflow-x:auto;padding:.5em;background:#222}.hljs-arta .hljs,.hljs-arta .hljs-subst{color:#aaa}.hljs-arta .hljs-section{color:#fff}.hljs-arta .hljs-comment,.hljs-arta .hljs-quote,.hljs-arta .hljs-meta{color:#444}.hljs-arta .hljs-string,.hljs-arta .hljs-symbol,.hljs-arta .hljs-bullet,.hljs-arta .hljs-regexp{color:#ffcc33}.hljs-arta .hljs-number,.hljs-arta .hljs-addition{color:#00cc66}.hljs-arta .hljs-built_in,.hljs-arta .hljs-builtin-name,.hljs-arta .hljs-literal,.hljs-arta .hljs-type,.hljs-arta .hljs-template-variable,.hljs-arta .hljs-attribute,.hljs-arta .hljs-link{color:#32aaee}.hljs-arta .hljs-keyword,.hljs-arta .hljs-selector-tag,.hljs-arta .hljs-name,.hljs-arta .hljs-selector-id,.hljs-arta .hljs-selector-class{color:#6644aa}.hljs-arta .hljs-title,.hljs-arta .hljs-variable,.hljs-arta .hljs-deletion,.hljs-arta .hljs-template-tag{color:#bb1166}.hljs-arta .hljs-section,.hljs-arta .hljs-doctag,.hljs-arta .hljs-strong{font-weight:bold}.hljs-arta .hljs-emphasis{font-style:italic}","ascetic":".hljs-ascetic .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-ascetic .hljs-string,.hljs-ascetic .hljs-variable,.hljs-ascetic .hljs-template-variable,.hljs-ascetic .hljs-symbol,.hljs-ascetic .hljs-bullet,.hljs-ascetic .hljs-section,.hljs-ascetic .hljs-addition,.hljs-ascetic .hljs-attribute,.hljs-ascetic .hljs-link{color:#888}.hljs-ascetic .hljs-comment,.hljs-ascetic .hljs-quote,.hljs-ascetic .hljs-meta,.hljs-ascetic .hljs-deletion{color:#ccc}.hljs-ascetic .hljs-keyword,.hljs-ascetic .hljs-selector-tag,.hljs-ascetic .hljs-section,.hljs-ascetic .hljs-name,.hljs-ascetic .hljs-type,.hljs-ascetic .hljs-strong{font-weight:bold}.hljs-ascetic .hljs-emphasis{font-style:italic}","atelier-cave-dark":".hljs-atelier-cave-dark .hljs-comment,.hljs-atelier-cave-dark .hljs-quote{color:#7e7887}.hljs-atelier-cave-dark .hljs-variable,.hljs-atelier-cave-dark .hljs-template-variable,.hljs-atelier-cave-dark .hljs-attribute,.hljs-atelier-cave-dark .hljs-regexp,.hljs-atelier-cave-dark .hljs-link,.hljs-atelier-cave-dark .hljs-tag,.hljs-atelier-cave-dark .hljs-name,.hljs-atelier-cave-dark .hljs-selector-id,.hljs-atelier-cave-dark .hljs-selector-class{color:#be4678}.hljs-atelier-cave-dark .hljs-number,.hljs-atelier-cave-dark .hljs-meta,.hljs-atelier-cave-dark .hljs-built_in,.hljs-atelier-cave-dark .hljs-builtin-name,.hljs-atelier-cave-dark .hljs-literal,.hljs-atelier-cave-dark .hljs-type,.hljs-atelier-cave-dark .hljs-params{color:#aa573c}.hljs-atelier-cave-dark .hljs-string,.hljs-atelier-cave-dark .hljs-symbol,.hljs-atelier-cave-dark .hljs-bullet{color:#2a9292}.hljs-atelier-cave-dark .hljs-title,.hljs-atelier-cave-dark .hljs-section{color:#576ddb}.hljs-atelier-cave-dark .hljs-keyword,.hljs-atelier-cave-dark .hljs-selector-tag{color:#955ae7}.hljs-atelier-cave-dark .hljs-deletion,.hljs-atelier-cave-dark .hljs-addition{color:#19171c;display:inline-block;width:100%}.hljs-atelier-cave-dark .hljs-deletion{background-color:#be4678}.hljs-atelier-cave-dark .hljs-addition{background-color:#2a9292}.hljs-atelier-cave-dark .hljs{display:block;overflow-x:auto;background:#19171c;color:#8b8792;padding:.5em}.hljs-atelier-cave-dark .hljs-emphasis{font-style:italic}.hljs-atelier-cave-dark .hljs-strong{font-weight:bold}","atelier-cave-light":".hljs-atelier-cave-light .hljs-comment,.hljs-atelier-cave-light .hljs-quote{color:#655f6d}.hljs-atelier-cave-light .hljs-variable,.hljs-atelier-cave-light .hljs-template-variable,.hljs-atelier-cave-light .hljs-attribute,.hljs-atelier-cave-light .hljs-tag,.hljs-atelier-cave-light .hljs-name,.hljs-atelier-cave-light .hljs-regexp,.hljs-atelier-cave-light .hljs-link,.hljs-atelier-cave-light .hljs-name,.hljs-atelier-cave-light .hljs-name,.hljs-atelier-cave-light .hljs-selector-id,.hljs-atelier-cave-light .hljs-selector-class{color:#be4678}.hljs-atelier-cave-light .hljs-number,.hljs-atelier-cave-light .hljs-meta,.hljs-atelier-cave-light .hljs-built_in,.hljs-atelier-cave-light .hljs-builtin-name,.hljs-atelier-cave-light .hljs-literal,.hljs-atelier-cave-light .hljs-type,.hljs-atelier-cave-light .hljs-params{color:#aa573c}.hljs-atelier-cave-light .hljs-string,.hljs-atelier-cave-light .hljs-symbol,.hljs-atelier-cave-light .hljs-bullet{color:#2a9292}.hljs-atelier-cave-light .hljs-title,.hljs-atelier-cave-light .hljs-section{color:#576ddb}.hljs-atelier-cave-light .hljs-keyword,.hljs-atelier-cave-light .hljs-selector-tag{color:#955ae7}.hljs-atelier-cave-light .hljs-deletion,.hljs-atelier-cave-light .hljs-addition{color:#19171c;display:inline-block;width:100%}.hljs-atelier-cave-light .hljs-deletion{background-color:#be4678}.hljs-atelier-cave-light .hljs-addition{background-color:#2a9292}.hljs-atelier-cave-light .hljs{display:block;overflow-x:auto;background:#efecf4;color:#585260;padding:.5em}.hljs-atelier-cave-light .hljs-emphasis{font-style:italic}.hljs-atelier-cave-light .hljs-strong{font-weight:bold}","atelier-dune-dark":".hljs-atelier-dune-dark .hljs-comment,.hljs-atelier-dune-dark .hljs-quote{color:#999580}.hljs-atelier-dune-dark .hljs-variable,.hljs-atelier-dune-dark .hljs-template-variable,.hljs-atelier-dune-dark .hljs-attribute,.hljs-atelier-dune-dark .hljs-tag,.hljs-atelier-dune-dark .hljs-name,.hljs-atelier-dune-dark .hljs-regexp,.hljs-atelier-dune-dark .hljs-link,.hljs-atelier-dune-dark .hljs-name,.hljs-atelier-dune-dark .hljs-selector-id,.hljs-atelier-dune-dark .hljs-selector-class{color:#d73737}.hljs-atelier-dune-dark .hljs-number,.hljs-atelier-dune-dark .hljs-meta,.hljs-atelier-dune-dark .hljs-built_in,.hljs-atelier-dune-dark .hljs-builtin-name,.hljs-atelier-dune-dark .hljs-literal,.hljs-atelier-dune-dark .hljs-type,.hljs-atelier-dune-dark .hljs-params{color:#b65611}.hljs-atelier-dune-dark .hljs-string,.hljs-atelier-dune-dark .hljs-symbol,.hljs-atelier-dune-dark .hljs-bullet{color:#60ac39}.hljs-atelier-dune-dark .hljs-title,.hljs-atelier-dune-dark .hljs-section{color:#6684e1}.hljs-atelier-dune-dark .hljs-keyword,.hljs-atelier-dune-dark .hljs-selector-tag{color:#b854d4}.hljs-atelier-dune-dark .hljs{display:block;overflow-x:auto;background:#20201d;color:#a6a28c;padding:.5em}.hljs-atelier-dune-dark .hljs-emphasis{font-style:italic}.hljs-atelier-dune-dark .hljs-strong{font-weight:bold}","atelier-dune-light":".hljs-atelier-dune-light .hljs-comment,.hljs-atelier-dune-light .hljs-quote{color:#7d7a68}.hljs-atelier-dune-light .hljs-variable,.hljs-atelier-dune-light .hljs-template-variable,.hljs-atelier-dune-light .hljs-attribute,.hljs-atelier-dune-light .hljs-tag,.hljs-atelier-dune-light .hljs-name,.hljs-atelier-dune-light .hljs-regexp,.hljs-atelier-dune-light .hljs-link,.hljs-atelier-dune-light .hljs-name,.hljs-atelier-dune-light .hljs-selector-id,.hljs-atelier-dune-light .hljs-selector-class{color:#d73737}.hljs-atelier-dune-light .hljs-number,.hljs-atelier-dune-light .hljs-meta,.hljs-atelier-dune-light .hljs-built_in,.hljs-atelier-dune-light .hljs-builtin-name,.hljs-atelier-dune-light .hljs-literal,.hljs-atelier-dune-light .hljs-type,.hljs-atelier-dune-light .hljs-params{color:#b65611}.hljs-atelier-dune-light .hljs-string,.hljs-atelier-dune-light .hljs-symbol,.hljs-atelier-dune-light .hljs-bullet{color:#60ac39}.hljs-atelier-dune-light .hljs-title,.hljs-atelier-dune-light .hljs-section{color:#6684e1}.hljs-atelier-dune-light .hljs-keyword,.hljs-atelier-dune-light .hljs-selector-tag{color:#b854d4}.hljs-atelier-dune-light .hljs{display:block;overflow-x:auto;background:#fefbec;color:#6e6b5e;padding:.5em}.hljs-atelier-dune-light .hljs-emphasis{font-style:italic}.hljs-atelier-dune-light .hljs-strong{font-weight:bold}","atelier-estuary-dark":".hljs-atelier-estuary-dark .hljs-comment,.hljs-atelier-estuary-dark .hljs-quote{color:#878573}.hljs-atelier-estuary-dark .hljs-variable,.hljs-atelier-estuary-dark .hljs-template-variable,.hljs-atelier-estuary-dark .hljs-attribute,.hljs-atelier-estuary-dark .hljs-tag,.hljs-atelier-estuary-dark .hljs-name,.hljs-atelier-estuary-dark .hljs-regexp,.hljs-atelier-estuary-dark .hljs-link,.hljs-atelier-estuary-dark .hljs-name,.hljs-atelier-estuary-dark .hljs-selector-id,.hljs-atelier-estuary-dark .hljs-selector-class{color:#ba6236}.hljs-atelier-estuary-dark .hljs-number,.hljs-atelier-estuary-dark .hljs-meta,.hljs-atelier-estuary-dark .hljs-built_in,.hljs-atelier-estuary-dark .hljs-builtin-name,.hljs-atelier-estuary-dark .hljs-literal,.hljs-atelier-estuary-dark .hljs-type,.hljs-atelier-estuary-dark .hljs-params{color:#ae7313}.hljs-atelier-estuary-dark .hljs-string,.hljs-atelier-estuary-dark .hljs-symbol,.hljs-atelier-estuary-dark .hljs-bullet{color:#7d9726}.hljs-atelier-estuary-dark .hljs-title,.hljs-atelier-estuary-dark .hljs-section{color:#36a166}.hljs-atelier-estuary-dark .hljs-keyword,.hljs-atelier-estuary-dark .hljs-selector-tag{color:#5f9182}.hljs-atelier-estuary-dark .hljs-deletion,.hljs-atelier-estuary-dark .hljs-addition{color:#22221b;display:inline-block;width:100%}.hljs-atelier-estuary-dark .hljs-deletion{background-color:#ba6236}.hljs-atelier-estuary-dark .hljs-addition{background-color:#7d9726}.hljs-atelier-estuary-dark .hljs{display:block;overflow-x:auto;background:#22221b;color:#929181;padding:.5em}.hljs-atelier-estuary-dark .hljs-emphasis{font-style:italic}.hljs-atelier-estuary-dark .hljs-strong{font-weight:bold}","atelier-estuary-light":".hljs-atelier-estuary-light .hljs-comment,.hljs-atelier-estuary-light .hljs-quote{color:#6c6b5a}.hljs-atelier-estuary-light .hljs-variable,.hljs-atelier-estuary-light .hljs-template-variable,.hljs-atelier-estuary-light .hljs-attribute,.hljs-atelier-estuary-light .hljs-tag,.hljs-atelier-estuary-light .hljs-name,.hljs-atelier-estuary-light .hljs-regexp,.hljs-atelier-estuary-light .hljs-link,.hljs-atelier-estuary-light .hljs-name,.hljs-atelier-estuary-light .hljs-selector-id,.hljs-atelier-estuary-light .hljs-selector-class{color:#ba6236}.hljs-atelier-estuary-light .hljs-number,.hljs-atelier-estuary-light .hljs-meta,.hljs-atelier-estuary-light .hljs-built_in,.hljs-atelier-estuary-light .hljs-builtin-name,.hljs-atelier-estuary-light .hljs-literal,.hljs-atelier-estuary-light .hljs-type,.hljs-atelier-estuary-light .hljs-params{color:#ae7313}.hljs-atelier-estuary-light .hljs-string,.hljs-atelier-estuary-light .hljs-symbol,.hljs-atelier-estuary-light .hljs-bullet{color:#7d9726}.hljs-atelier-estuary-light .hljs-title,.hljs-atelier-estuary-light .hljs-section{color:#36a166}.hljs-atelier-estuary-light .hljs-keyword,.hljs-atelier-estuary-light .hljs-selector-tag{color:#5f9182}.hljs-atelier-estuary-light .hljs-deletion,.hljs-atelier-estuary-light .hljs-addition{color:#22221b;display:inline-block;width:100%}.hljs-atelier-estuary-light .hljs-deletion{background-color:#ba6236}.hljs-atelier-estuary-light .hljs-addition{background-color:#7d9726}.hljs-atelier-estuary-light .hljs{display:block;overflow-x:auto;background:#f4f3ec;color:#5f5e4e;padding:.5em}.hljs-atelier-estuary-light .hljs-emphasis{font-style:italic}.hljs-atelier-estuary-light .hljs-strong{font-weight:bold}","atelier-forest-dark":".hljs-atelier-forest-dark .hljs-comment,.hljs-atelier-forest-dark .hljs-quote{color:#9c9491}.hljs-atelier-forest-dark .hljs-variable,.hljs-atelier-forest-dark .hljs-template-variable,.hljs-atelier-forest-dark .hljs-attribute,.hljs-atelier-forest-dark .hljs-tag,.hljs-atelier-forest-dark .hljs-name,.hljs-atelier-forest-dark .hljs-regexp,.hljs-atelier-forest-dark .hljs-link,.hljs-atelier-forest-dark .hljs-name,.hljs-atelier-forest-dark .hljs-selector-id,.hljs-atelier-forest-dark .hljs-selector-class{color:#f22c40}.hljs-atelier-forest-dark .hljs-number,.hljs-atelier-forest-dark .hljs-meta,.hljs-atelier-forest-dark .hljs-built_in,.hljs-atelier-forest-dark .hljs-builtin-name,.hljs-atelier-forest-dark .hljs-literal,.hljs-atelier-forest-dark .hljs-type,.hljs-atelier-forest-dark .hljs-params{color:#df5320}.hljs-atelier-forest-dark .hljs-string,.hljs-atelier-forest-dark .hljs-symbol,.hljs-atelier-forest-dark .hljs-bullet{color:#7b9726}.hljs-atelier-forest-dark .hljs-title,.hljs-atelier-forest-dark .hljs-section{color:#407ee7}.hljs-atelier-forest-dark .hljs-keyword,.hljs-atelier-forest-dark .hljs-selector-tag{color:#6666ea}.hljs-atelier-forest-dark .hljs{display:block;overflow-x:auto;background:#1b1918;color:#a8a19f;padding:.5em}.hljs-atelier-forest-dark .hljs-emphasis{font-style:italic}.hljs-atelier-forest-dark .hljs-strong{font-weight:bold}","atelier-forest-light":".hljs-atelier-forest-light .hljs-comment,.hljs-atelier-forest-light .hljs-quote{color:#766e6b}.hljs-atelier-forest-light .hljs-variable,.hljs-atelier-forest-light .hljs-template-variable,.hljs-atelier-forest-light .hljs-attribute,.hljs-atelier-forest-light .hljs-tag,.hljs-atelier-forest-light .hljs-name,.hljs-atelier-forest-light .hljs-regexp,.hljs-atelier-forest-light .hljs-link,.hljs-atelier-forest-light .hljs-name,.hljs-atelier-forest-light .hljs-selector-id,.hljs-atelier-forest-light .hljs-selector-class{color:#f22c40}.hljs-atelier-forest-light .hljs-number,.hljs-atelier-forest-light .hljs-meta,.hljs-atelier-forest-light .hljs-built_in,.hljs-atelier-forest-light .hljs-builtin-name,.hljs-atelier-forest-light .hljs-literal,.hljs-atelier-forest-light .hljs-type,.hljs-atelier-forest-light .hljs-params{color:#df5320}.hljs-atelier-forest-light .hljs-string,.hljs-atelier-forest-light .hljs-symbol,.hljs-atelier-forest-light .hljs-bullet{color:#7b9726}.hljs-atelier-forest-light .hljs-title,.hljs-atelier-forest-light .hljs-section{color:#407ee7}.hljs-atelier-forest-light .hljs-keyword,.hljs-atelier-forest-light .hljs-selector-tag{color:#6666ea}.hljs-atelier-forest-light .hljs{display:block;overflow-x:auto;background:#f1efee;color:#68615e;padding:.5em}.hljs-atelier-forest-light .hljs-emphasis{font-style:italic}.hljs-atelier-forest-light .hljs-strong{font-weight:bold}","atelier-heath-dark":".hljs-atelier-heath-dark .hljs-comment,.hljs-atelier-heath-dark .hljs-quote{color:#9e8f9e}.hljs-atelier-heath-dark .hljs-variable,.hljs-atelier-heath-dark .hljs-template-variable,.hljs-atelier-heath-dark .hljs-attribute,.hljs-atelier-heath-dark .hljs-tag,.hljs-atelier-heath-dark .hljs-name,.hljs-atelier-heath-dark .hljs-regexp,.hljs-atelier-heath-dark .hljs-link,.hljs-atelier-heath-dark .hljs-name,.hljs-atelier-heath-dark .hljs-selector-id,.hljs-atelier-heath-dark .hljs-selector-class{color:#ca402b}.hljs-atelier-heath-dark .hljs-number,.hljs-atelier-heath-dark .hljs-meta,.hljs-atelier-heath-dark .hljs-built_in,.hljs-atelier-heath-dark .hljs-builtin-name,.hljs-atelier-heath-dark .hljs-literal,.hljs-atelier-heath-dark .hljs-type,.hljs-atelier-heath-dark .hljs-params{color:#a65926}.hljs-atelier-heath-dark .hljs-string,.hljs-atelier-heath-dark .hljs-symbol,.hljs-atelier-heath-dark .hljs-bullet{color:#918b3b}.hljs-atelier-heath-dark .hljs-title,.hljs-atelier-heath-dark .hljs-section{color:#516aec}.hljs-atelier-heath-dark .hljs-keyword,.hljs-atelier-heath-dark .hljs-selector-tag{color:#7b59c0}.hljs-atelier-heath-dark .hljs{display:block;overflow-x:auto;background:#1b181b;color:#ab9bab;padding:.5em}.hljs-atelier-heath-dark .hljs-emphasis{font-style:italic}.hljs-atelier-heath-dark .hljs-strong{font-weight:bold}","atelier-heath-light":".hljs-atelier-heath-light .hljs-comment,.hljs-atelier-heath-light .hljs-quote{color:#776977}.hljs-atelier-heath-light .hljs-variable,.hljs-atelier-heath-light .hljs-template-variable,.hljs-atelier-heath-light .hljs-attribute,.hljs-atelier-heath-light .hljs-tag,.hljs-atelier-heath-light .hljs-name,.hljs-atelier-heath-light .hljs-regexp,.hljs-atelier-heath-light .hljs-link,.hljs-atelier-heath-light .hljs-name,.hljs-atelier-heath-light .hljs-selector-id,.hljs-atelier-heath-light .hljs-selector-class{color:#ca402b}.hljs-atelier-heath-light .hljs-number,.hljs-atelier-heath-light .hljs-meta,.hljs-atelier-heath-light .hljs-built_in,.hljs-atelier-heath-light .hljs-builtin-name,.hljs-atelier-heath-light .hljs-literal,.hljs-atelier-heath-light .hljs-type,.hljs-atelier-heath-light .hljs-params{color:#a65926}.hljs-atelier-heath-light .hljs-string,.hljs-atelier-heath-light .hljs-symbol,.hljs-atelier-heath-light .hljs-bullet{color:#918b3b}.hljs-atelier-heath-light .hljs-title,.hljs-atelier-heath-light .hljs-section{color:#516aec}.hljs-atelier-heath-light .hljs-keyword,.hljs-atelier-heath-light .hljs-selector-tag{color:#7b59c0}.hljs-atelier-heath-light .hljs{display:block;overflow-x:auto;background:#f7f3f7;color:#695d69;padding:.5em}.hljs-atelier-heath-light .hljs-emphasis{font-style:italic}.hljs-atelier-heath-light .hljs-strong{font-weight:bold}","atelier-lakeside-dark":".hljs-atelier-lakeside-dark .hljs-comment,.hljs-atelier-lakeside-dark .hljs-quote{color:#7195a8}.hljs-atelier-lakeside-dark .hljs-variable,.hljs-atelier-lakeside-dark .hljs-template-variable,.hljs-atelier-lakeside-dark .hljs-attribute,.hljs-atelier-lakeside-dark .hljs-tag,.hljs-atelier-lakeside-dark .hljs-name,.hljs-atelier-lakeside-dark .hljs-regexp,.hljs-atelier-lakeside-dark .hljs-link,.hljs-atelier-lakeside-dark .hljs-name,.hljs-atelier-lakeside-dark .hljs-selector-id,.hljs-atelier-lakeside-dark .hljs-selector-class{color:#d22d72}.hljs-atelier-lakeside-dark .hljs-number,.hljs-atelier-lakeside-dark .hljs-meta,.hljs-atelier-lakeside-dark .hljs-built_in,.hljs-atelier-lakeside-dark .hljs-builtin-name,.hljs-atelier-lakeside-dark .hljs-literal,.hljs-atelier-lakeside-dark .hljs-type,.hljs-atelier-lakeside-dark .hljs-params{color:#935c25}.hljs-atelier-lakeside-dark .hljs-string,.hljs-atelier-lakeside-dark .hljs-symbol,.hljs-atelier-lakeside-dark .hljs-bullet{color:#568c3b}.hljs-atelier-lakeside-dark .hljs-title,.hljs-atelier-lakeside-dark .hljs-section{color:#257fad}.hljs-atelier-lakeside-dark .hljs-keyword,.hljs-atelier-lakeside-dark .hljs-selector-tag{color:#6b6bb8}.hljs-atelier-lakeside-dark .hljs{display:block;overflow-x:auto;background:#161b1d;color:#7ea2b4;padding:.5em}.hljs-atelier-lakeside-dark .hljs-emphasis{font-style:italic}.hljs-atelier-lakeside-dark .hljs-strong{font-weight:bold}","atelier-lakeside-light":".hljs-atelier-lakeside-light .hljs-comment,.hljs-atelier-lakeside-light .hljs-quote{color:#5a7b8c}.hljs-atelier-lakeside-light .hljs-variable,.hljs-atelier-lakeside-light .hljs-template-variable,.hljs-atelier-lakeside-light .hljs-attribute,.hljs-atelier-lakeside-light .hljs-tag,.hljs-atelier-lakeside-light .hljs-name,.hljs-atelier-lakeside-light .hljs-regexp,.hljs-atelier-lakeside-light .hljs-link,.hljs-atelier-lakeside-light .hljs-name,.hljs-atelier-lakeside-light .hljs-selector-id,.hljs-atelier-lakeside-light .hljs-selector-class{color:#d22d72}.hljs-atelier-lakeside-light .hljs-number,.hljs-atelier-lakeside-light .hljs-meta,.hljs-atelier-lakeside-light .hljs-built_in,.hljs-atelier-lakeside-light .hljs-builtin-name,.hljs-atelier-lakeside-light .hljs-literal,.hljs-atelier-lakeside-light .hljs-type,.hljs-atelier-lakeside-light .hljs-params{color:#935c25}.hljs-atelier-lakeside-light .hljs-string,.hljs-atelier-lakeside-light .hljs-symbol,.hljs-atelier-lakeside-light .hljs-bullet{color:#568c3b}.hljs-atelier-lakeside-light .hljs-title,.hljs-atelier-lakeside-light .hljs-section{color:#257fad}.hljs-atelier-lakeside-light .hljs-keyword,.hljs-atelier-lakeside-light .hljs-selector-tag{color:#6b6bb8}.hljs-atelier-lakeside-light .hljs{display:block;overflow-x:auto;background:#ebf8ff;color:#516d7b;padding:.5em}.hljs-atelier-lakeside-light .hljs-emphasis{font-style:italic}.hljs-atelier-lakeside-light .hljs-strong{font-weight:bold}","atelier-plateau-dark":".hljs-atelier-plateau-dark .hljs-comment,.hljs-atelier-plateau-dark .hljs-quote{color:#7e7777}.hljs-atelier-plateau-dark .hljs-variable,.hljs-atelier-plateau-dark .hljs-template-variable,.hljs-atelier-plateau-dark .hljs-attribute,.hljs-atelier-plateau-dark .hljs-tag,.hljs-atelier-plateau-dark .hljs-name,.hljs-atelier-plateau-dark .hljs-regexp,.hljs-atelier-plateau-dark .hljs-link,.hljs-atelier-plateau-dark .hljs-name,.hljs-atelier-plateau-dark .hljs-selector-id,.hljs-atelier-plateau-dark .hljs-selector-class{color:#ca4949}.hljs-atelier-plateau-dark .hljs-number,.hljs-atelier-plateau-dark .hljs-meta,.hljs-atelier-plateau-dark .hljs-built_in,.hljs-atelier-plateau-dark .hljs-builtin-name,.hljs-atelier-plateau-dark .hljs-literal,.hljs-atelier-plateau-dark .hljs-type,.hljs-atelier-plateau-dark .hljs-params{color:#b45a3c}.hljs-atelier-plateau-dark .hljs-string,.hljs-atelier-plateau-dark .hljs-symbol,.hljs-atelier-plateau-dark .hljs-bullet{color:#4b8b8b}.hljs-atelier-plateau-dark .hljs-title,.hljs-atelier-plateau-dark .hljs-section{color:#7272ca}.hljs-atelier-plateau-dark .hljs-keyword,.hljs-atelier-plateau-dark .hljs-selector-tag{color:#8464c4}.hljs-atelier-plateau-dark .hljs-deletion,.hljs-atelier-plateau-dark .hljs-addition{color:#1b1818;display:inline-block;width:100%}.hljs-atelier-plateau-dark .hljs-deletion{background-color:#ca4949}.hljs-atelier-plateau-dark .hljs-addition{background-color:#4b8b8b}.hljs-atelier-plateau-dark .hljs{display:block;overflow-x:auto;background:#1b1818;color:#8a8585;padding:.5em}.hljs-atelier-plateau-dark .hljs-emphasis{font-style:italic}.hljs-atelier-plateau-dark .hljs-strong{font-weight:bold}","atelier-plateau-light":".hljs-atelier-plateau-light .hljs-comment,.hljs-atelier-plateau-light .hljs-quote{color:#655d5d}.hljs-atelier-plateau-light .hljs-variable,.hljs-atelier-plateau-light .hljs-template-variable,.hljs-atelier-plateau-light .hljs-attribute,.hljs-atelier-plateau-light .hljs-tag,.hljs-atelier-plateau-light .hljs-name,.hljs-atelier-plateau-light .hljs-regexp,.hljs-atelier-plateau-light .hljs-link,.hljs-atelier-plateau-light .hljs-name,.hljs-atelier-plateau-light .hljs-selector-id,.hljs-atelier-plateau-light .hljs-selector-class{color:#ca4949}.hljs-atelier-plateau-light .hljs-number,.hljs-atelier-plateau-light .hljs-meta,.hljs-atelier-plateau-light .hljs-built_in,.hljs-atelier-plateau-light .hljs-builtin-name,.hljs-atelier-plateau-light .hljs-literal,.hljs-atelier-plateau-light .hljs-type,.hljs-atelier-plateau-light .hljs-params{color:#b45a3c}.hljs-atelier-plateau-light .hljs-string,.hljs-atelier-plateau-light .hljs-symbol,.hljs-atelier-plateau-light .hljs-bullet{color:#4b8b8b}.hljs-atelier-plateau-light .hljs-title,.hljs-atelier-plateau-light .hljs-section{color:#7272ca}.hljs-atelier-plateau-light .hljs-keyword,.hljs-atelier-plateau-light .hljs-selector-tag{color:#8464c4}.hljs-atelier-plateau-light .hljs-deletion,.hljs-atelier-plateau-light .hljs-addition{color:#1b1818;display:inline-block;width:100%}.hljs-atelier-plateau-light .hljs-deletion{background-color:#ca4949}.hljs-atelier-plateau-light .hljs-addition{background-color:#4b8b8b}.hljs-atelier-plateau-light .hljs{display:block;overflow-x:auto;background:#f4ecec;color:#585050;padding:.5em}.hljs-atelier-plateau-light .hljs-emphasis{font-style:italic}.hljs-atelier-plateau-light .hljs-strong{font-weight:bold}","atelier-savanna-dark":".hljs-atelier-savanna-dark .hljs-comment,.hljs-atelier-savanna-dark .hljs-quote{color:#78877d}.hljs-atelier-savanna-dark .hljs-variable,.hljs-atelier-savanna-dark .hljs-template-variable,.hljs-atelier-savanna-dark .hljs-attribute,.hljs-atelier-savanna-dark .hljs-tag,.hljs-atelier-savanna-dark .hljs-name,.hljs-atelier-savanna-dark .hljs-regexp,.hljs-atelier-savanna-dark .hljs-link,.hljs-atelier-savanna-dark .hljs-name,.hljs-atelier-savanna-dark .hljs-selector-id,.hljs-atelier-savanna-dark .hljs-selector-class{color:#b16139}.hljs-atelier-savanna-dark .hljs-number,.hljs-atelier-savanna-dark .hljs-meta,.hljs-atelier-savanna-dark .hljs-built_in,.hljs-atelier-savanna-dark .hljs-builtin-name,.hljs-atelier-savanna-dark .hljs-literal,.hljs-atelier-savanna-dark .hljs-type,.hljs-atelier-savanna-dark .hljs-params{color:#9f713c}.hljs-atelier-savanna-dark .hljs-string,.hljs-atelier-savanna-dark .hljs-symbol,.hljs-atelier-savanna-dark .hljs-bullet{color:#489963}.hljs-atelier-savanna-dark .hljs-title,.hljs-atelier-savanna-dark .hljs-section{color:#478c90}.hljs-atelier-savanna-dark .hljs-keyword,.hljs-atelier-savanna-dark .hljs-selector-tag{color:#55859b}.hljs-atelier-savanna-dark .hljs-deletion,.hljs-atelier-savanna-dark .hljs-addition{color:#171c19;display:inline-block;width:100%}.hljs-atelier-savanna-dark .hljs-deletion{background-color:#b16139}.hljs-atelier-savanna-dark .hljs-addition{background-color:#489963}.hljs-atelier-savanna-dark .hljs{display:block;overflow-x:auto;background:#171c19;color:#87928a;padding:.5em}.hljs-atelier-savanna-dark .hljs-emphasis{font-style:italic}.hljs-atelier-savanna-dark .hljs-strong{font-weight:bold}","atelier-savanna-light":".hljs-atelier-savanna-light .hljs-comment,.hljs-atelier-savanna-light .hljs-quote{color:#5f6d64}.hljs-atelier-savanna-light .hljs-variable,.hljs-atelier-savanna-light .hljs-template-variable,.hljs-atelier-savanna-light .hljs-attribute,.hljs-atelier-savanna-light .hljs-tag,.hljs-atelier-savanna-light .hljs-name,.hljs-atelier-savanna-light .hljs-regexp,.hljs-atelier-savanna-light .hljs-link,.hljs-atelier-savanna-light .hljs-name,.hljs-atelier-savanna-light .hljs-selector-id,.hljs-atelier-savanna-light .hljs-selector-class{color:#b16139}.hljs-atelier-savanna-light .hljs-number,.hljs-atelier-savanna-light .hljs-meta,.hljs-atelier-savanna-light .hljs-built_in,.hljs-atelier-savanna-light .hljs-builtin-name,.hljs-atelier-savanna-light .hljs-literal,.hljs-atelier-savanna-light .hljs-type,.hljs-atelier-savanna-light .hljs-params{color:#9f713c}.hljs-atelier-savanna-light .hljs-string,.hljs-atelier-savanna-light .hljs-symbol,.hljs-atelier-savanna-light .hljs-bullet{color:#489963}.hljs-atelier-savanna-light .hljs-title,.hljs-atelier-savanna-light .hljs-section{color:#478c90}.hljs-atelier-savanna-light .hljs-keyword,.hljs-atelier-savanna-light .hljs-selector-tag{color:#55859b}.hljs-atelier-savanna-light .hljs-deletion,.hljs-atelier-savanna-light .hljs-addition{color:#171c19;display:inline-block;width:100%}.hljs-atelier-savanna-light .hljs-deletion{background-color:#b16139}.hljs-atelier-savanna-light .hljs-addition{background-color:#489963}.hljs-atelier-savanna-light .hljs{display:block;overflow-x:auto;background:#ecf4ee;color:#526057;padding:.5em}.hljs-atelier-savanna-light .hljs-emphasis{font-style:italic}.hljs-atelier-savanna-light .hljs-strong{font-weight:bold}","atelier-seaside-dark":".hljs-atelier-seaside-dark .hljs-comment,.hljs-atelier-seaside-dark .hljs-quote{color:#809980}.hljs-atelier-seaside-dark .hljs-variable,.hljs-atelier-seaside-dark .hljs-template-variable,.hljs-atelier-seaside-dark .hljs-attribute,.hljs-atelier-seaside-dark .hljs-tag,.hljs-atelier-seaside-dark .hljs-name,.hljs-atelier-seaside-dark .hljs-regexp,.hljs-atelier-seaside-dark .hljs-link,.hljs-atelier-seaside-dark .hljs-name,.hljs-atelier-seaside-dark .hljs-selector-id,.hljs-atelier-seaside-dark .hljs-selector-class{color:#e6193c}.hljs-atelier-seaside-dark .hljs-number,.hljs-atelier-seaside-dark .hljs-meta,.hljs-atelier-seaside-dark .hljs-built_in,.hljs-atelier-seaside-dark .hljs-builtin-name,.hljs-atelier-seaside-dark .hljs-literal,.hljs-atelier-seaside-dark .hljs-type,.hljs-atelier-seaside-dark .hljs-params{color:#87711d}.hljs-atelier-seaside-dark .hljs-string,.hljs-atelier-seaside-dark .hljs-symbol,.hljs-atelier-seaside-dark .hljs-bullet{color:#29a329}.hljs-atelier-seaside-dark .hljs-title,.hljs-atelier-seaside-dark .hljs-section{color:#3d62f5}.hljs-atelier-seaside-dark .hljs-keyword,.hljs-atelier-seaside-dark .hljs-selector-tag{color:#ad2bee}.hljs-atelier-seaside-dark .hljs{display:block;overflow-x:auto;background:#131513;color:#8ca68c;padding:.5em}.hljs-atelier-seaside-dark .hljs-emphasis{font-style:italic}.hljs-atelier-seaside-dark .hljs-strong{font-weight:bold}","atelier-seaside-light":".hljs-atelier-seaside-light .hljs-comment,.hljs-atelier-seaside-light .hljs-quote{color:#687d68}.hljs-atelier-seaside-light .hljs-variable,.hljs-atelier-seaside-light .hljs-template-variable,.hljs-atelier-seaside-light .hljs-attribute,.hljs-atelier-seaside-light .hljs-tag,.hljs-atelier-seaside-light .hljs-name,.hljs-atelier-seaside-light .hljs-regexp,.hljs-atelier-seaside-light .hljs-link,.hljs-atelier-seaside-light .hljs-name,.hljs-atelier-seaside-light .hljs-selector-id,.hljs-atelier-seaside-light .hljs-selector-class{color:#e6193c}.hljs-atelier-seaside-light .hljs-number,.hljs-atelier-seaside-light .hljs-meta,.hljs-atelier-seaside-light .hljs-built_in,.hljs-atelier-seaside-light .hljs-builtin-name,.hljs-atelier-seaside-light .hljs-literal,.hljs-atelier-seaside-light .hljs-type,.hljs-atelier-seaside-light .hljs-params{color:#87711d}.hljs-atelier-seaside-light .hljs-string,.hljs-atelier-seaside-light .hljs-symbol,.hljs-atelier-seaside-light .hljs-bullet{color:#29a329}.hljs-atelier-seaside-light .hljs-title,.hljs-atelier-seaside-light .hljs-section{color:#3d62f5}.hljs-atelier-seaside-light .hljs-keyword,.hljs-atelier-seaside-light .hljs-selector-tag{color:#ad2bee}.hljs-atelier-seaside-light .hljs{display:block;overflow-x:auto;background:#f4fbf4;color:#5e6e5e;padding:.5em}.hljs-atelier-seaside-light .hljs-emphasis{font-style:italic}.hljs-atelier-seaside-light .hljs-strong{font-weight:bold}","atelier-sulphurpool-dark":".hljs-atelier-sulphurpool-dark .hljs-comment,.hljs-atelier-sulphurpool-dark .hljs-quote{color:#898ea4}.hljs-atelier-sulphurpool-dark .hljs-variable,.hljs-atelier-sulphurpool-dark .hljs-template-variable,.hljs-atelier-sulphurpool-dark .hljs-attribute,.hljs-atelier-sulphurpool-dark .hljs-tag,.hljs-atelier-sulphurpool-dark .hljs-name,.hljs-atelier-sulphurpool-dark .hljs-regexp,.hljs-atelier-sulphurpool-dark .hljs-link,.hljs-atelier-sulphurpool-dark .hljs-name,.hljs-atelier-sulphurpool-dark .hljs-selector-id,.hljs-atelier-sulphurpool-dark .hljs-selector-class{color:#c94922}.hljs-atelier-sulphurpool-dark .hljs-number,.hljs-atelier-sulphurpool-dark .hljs-meta,.hljs-atelier-sulphurpool-dark .hljs-built_in,.hljs-atelier-sulphurpool-dark .hljs-builtin-name,.hljs-atelier-sulphurpool-dark .hljs-literal,.hljs-atelier-sulphurpool-dark .hljs-type,.hljs-atelier-sulphurpool-dark .hljs-params{color:#c76b29}.hljs-atelier-sulphurpool-dark .hljs-string,.hljs-atelier-sulphurpool-dark .hljs-symbol,.hljs-atelier-sulphurpool-dark .hljs-bullet{color:#ac9739}.hljs-atelier-sulphurpool-dark .hljs-title,.hljs-atelier-sulphurpool-dark .hljs-section{color:#3d8fd1}.hljs-atelier-sulphurpool-dark .hljs-keyword,.hljs-atelier-sulphurpool-dark .hljs-selector-tag{color:#6679cc}.hljs-atelier-sulphurpool-dark .hljs{display:block;overflow-x:auto;background:#202746;color:#979db4;padding:.5em}.hljs-atelier-sulphurpool-dark .hljs-emphasis{font-style:italic}.hljs-atelier-sulphurpool-dark .hljs-strong{font-weight:bold}","atelier-sulphurpool-light":".hljs-atelier-sulphurpool-light .hljs-comment,.hljs-atelier-sulphurpool-light .hljs-quote{color:#6b7394}.hljs-atelier-sulphurpool-light .hljs-variable,.hljs-atelier-sulphurpool-light .hljs-template-variable,.hljs-atelier-sulphurpool-light .hljs-attribute,.hljs-atelier-sulphurpool-light .hljs-tag,.hljs-atelier-sulphurpool-light .hljs-name,.hljs-atelier-sulphurpool-light .hljs-regexp,.hljs-atelier-sulphurpool-light .hljs-link,.hljs-atelier-sulphurpool-light .hljs-name,.hljs-atelier-sulphurpool-light .hljs-selector-id,.hljs-atelier-sulphurpool-light .hljs-selector-class{color:#c94922}.hljs-atelier-sulphurpool-light .hljs-number,.hljs-atelier-sulphurpool-light .hljs-meta,.hljs-atelier-sulphurpool-light .hljs-built_in,.hljs-atelier-sulphurpool-light .hljs-builtin-name,.hljs-atelier-sulphurpool-light .hljs-literal,.hljs-atelier-sulphurpool-light .hljs-type,.hljs-atelier-sulphurpool-light .hljs-params{color:#c76b29}.hljs-atelier-sulphurpool-light .hljs-string,.hljs-atelier-sulphurpool-light .hljs-symbol,.hljs-atelier-sulphurpool-light .hljs-bullet{color:#ac9739}.hljs-atelier-sulphurpool-light .hljs-title,.hljs-atelier-sulphurpool-light .hljs-section{color:#3d8fd1}.hljs-atelier-sulphurpool-light .hljs-keyword,.hljs-atelier-sulphurpool-light .hljs-selector-tag{color:#6679cc}.hljs-atelier-sulphurpool-light .hljs{display:block;overflow-x:auto;background:#f5f7ff;color:#5e6687;padding:.5em}.hljs-atelier-sulphurpool-light .hljs-emphasis{font-style:italic}.hljs-atelier-sulphurpool-light .hljs-strong{font-weight:bold}","atom-one-dark-reasonable":".hljs-atom-one-dark-reasonable .hljs{display:block;overflow-x:auto;padding:.5em;color:#abb2bf;background:#282c34}.hljs-atom-one-dark-reasonable .hljs-keyword,.hljs-atom-one-dark-reasonable .hljs-operator{color:#F92672}.hljs-atom-one-dark-reasonable .hljs-pattern-match{color:#F92672}.hljs-atom-one-dark-reasonable .hljs-pattern-match .hljs-constructor{color:#61aeee}.hljs-atom-one-dark-reasonable .hljs-function{color:#61aeee}.hljs-atom-one-dark-reasonable .hljs-function .hljs-params{color:#A6E22E}.hljs-atom-one-dark-reasonable .hljs-function .hljs-params .hljs-typing{color:#FD971F}.hljs-atom-one-dark-reasonable .hljs-module-access .hljs-module{color:#7e57c2}.hljs-atom-one-dark-reasonable .hljs-constructor{color:#e2b93d}.hljs-atom-one-dark-reasonable .hljs-constructor .hljs-string{color:#9CCC65}.hljs-atom-one-dark-reasonable .hljs-comment,.hljs-atom-one-dark-reasonable .hljs-quote{color:#b18eb1;font-style:italic}.hljs-atom-one-dark-reasonable .hljs-doctag,.hljs-atom-one-dark-reasonable .hljs-formula{color:#c678dd}.hljs-atom-one-dark-reasonable .hljs-section,.hljs-atom-one-dark-reasonable .hljs-name,.hljs-atom-one-dark-reasonable .hljs-selector-tag,.hljs-atom-one-dark-reasonable .hljs-deletion,.hljs-atom-one-dark-reasonable .hljs-subst{color:#e06c75}.hljs-atom-one-dark-reasonable .hljs-literal{color:#56b6c2}.hljs-atom-one-dark-reasonable .hljs-string,.hljs-atom-one-dark-reasonable .hljs-regexp,.hljs-atom-one-dark-reasonable .hljs-addition,.hljs-atom-one-dark-reasonable .hljs-attribute,.hljs-atom-one-dark-reasonable .hljs-meta-string{color:#98c379}.hljs-atom-one-dark-reasonable .hljs-built_in,.hljs-atom-one-dark-reasonable .hljs-class .hljs-title{color:#e6c07b}.hljs-atom-one-dark-reasonable .hljs-attr,.hljs-atom-one-dark-reasonable .hljs-variable,.hljs-atom-one-dark-reasonable .hljs-template-variable,.hljs-atom-one-dark-reasonable .hljs-type,.hljs-atom-one-dark-reasonable .hljs-selector-class,.hljs-atom-one-dark-reasonable .hljs-selector-attr,.hljs-atom-one-dark-reasonable .hljs-selector-pseudo,.hljs-atom-one-dark-reasonable .hljs-number{color:#d19a66}.hljs-atom-one-dark-reasonable .hljs-symbol,.hljs-atom-one-dark-reasonable .hljs-bullet,.hljs-atom-one-dark-reasonable .hljs-link,.hljs-atom-one-dark-reasonable .hljs-meta,.hljs-atom-one-dark-reasonable .hljs-selector-id,.hljs-atom-one-dark-reasonable .hljs-title{color:#61aeee}.hljs-atom-one-dark-reasonable .hljs-emphasis{font-style:italic}.hljs-atom-one-dark-reasonable .hljs-strong{font-weight:bold}.hljs-atom-one-dark-reasonable .hljs-link{text-decoration:underline}","atom-one-dark":".hljs-atom-one-dark .hljs{display:block;overflow-x:auto;padding:.5em;color:#abb2bf;background:#282c34}.hljs-atom-one-dark .hljs-comment,.hljs-atom-one-dark .hljs-quote{color:#5c6370;font-style:italic}.hljs-atom-one-dark .hljs-doctag,.hljs-atom-one-dark .hljs-keyword,.hljs-atom-one-dark .hljs-formula{color:#c678dd}.hljs-atom-one-dark .hljs-section,.hljs-atom-one-dark .hljs-name,.hljs-atom-one-dark .hljs-selector-tag,.hljs-atom-one-dark .hljs-deletion,.hljs-atom-one-dark .hljs-subst{color:#e06c75}.hljs-atom-one-dark .hljs-literal{color:#56b6c2}.hljs-atom-one-dark .hljs-string,.hljs-atom-one-dark .hljs-regexp,.hljs-atom-one-dark .hljs-addition,.hljs-atom-one-dark .hljs-attribute,.hljs-atom-one-dark .hljs-meta-string{color:#98c379}.hljs-atom-one-dark .hljs-built_in,.hljs-atom-one-dark .hljs-class .hljs-title{color:#e6c07b}.hljs-atom-one-dark .hljs-attr,.hljs-atom-one-dark .hljs-variable,.hljs-atom-one-dark .hljs-template-variable,.hljs-atom-one-dark .hljs-type,.hljs-atom-one-dark .hljs-selector-class,.hljs-atom-one-dark .hljs-selector-attr,.hljs-atom-one-dark .hljs-selector-pseudo,.hljs-atom-one-dark .hljs-number{color:#d19a66}.hljs-atom-one-dark .hljs-symbol,.hljs-atom-one-dark .hljs-bullet,.hljs-atom-one-dark .hljs-link,.hljs-atom-one-dark .hljs-meta,.hljs-atom-one-dark .hljs-selector-id,.hljs-atom-one-dark .hljs-title{color:#61aeee}.hljs-atom-one-dark .hljs-emphasis{font-style:italic}.hljs-atom-one-dark .hljs-strong{font-weight:bold}.hljs-atom-one-dark .hljs-link{text-decoration:underline}","atom-one-light":".hljs-atom-one-light .hljs{display:block;overflow-x:auto;padding:.5em;color:#383a42;background:#fafafa}.hljs-atom-one-light .hljs-comment,.hljs-atom-one-light .hljs-quote{color:#a0a1a7;font-style:italic}.hljs-atom-one-light .hljs-doctag,.hljs-atom-one-light .hljs-keyword,.hljs-atom-one-light .hljs-formula{color:#a626a4}.hljs-atom-one-light .hljs-section,.hljs-atom-one-light .hljs-name,.hljs-atom-one-light .hljs-selector-tag,.hljs-atom-one-light .hljs-deletion,.hljs-atom-one-light .hljs-subst{color:#e45649}.hljs-atom-one-light .hljs-literal{color:#0184bb}.hljs-atom-one-light .hljs-string,.hljs-atom-one-light .hljs-regexp,.hljs-atom-one-light .hljs-addition,.hljs-atom-one-light .hljs-attribute,.hljs-atom-one-light .hljs-meta-string{color:#50a14f}.hljs-atom-one-light .hljs-built_in,.hljs-atom-one-light .hljs-class .hljs-title{color:#c18401}.hljs-atom-one-light .hljs-attr,.hljs-atom-one-light .hljs-variable,.hljs-atom-one-light .hljs-template-variable,.hljs-atom-one-light .hljs-type,.hljs-atom-one-light .hljs-selector-class,.hljs-atom-one-light .hljs-selector-attr,.hljs-atom-one-light .hljs-selector-pseudo,.hljs-atom-one-light .hljs-number{color:#986801}.hljs-atom-one-light .hljs-symbol,.hljs-atom-one-light .hljs-bullet,.hljs-atom-one-light .hljs-link,.hljs-atom-one-light .hljs-meta,.hljs-atom-one-light .hljs-selector-id,.hljs-atom-one-light .hljs-title{color:#4078f2}.hljs-atom-one-light .hljs-emphasis{font-style:italic}.hljs-atom-one-light .hljs-strong{font-weight:bold}.hljs-atom-one-light .hljs-link{text-decoration:underline}","brown-paper":".hljs-brown-paper .hljs{display:block;overflow-x:auto;padding:.5em;background:#b7a68e url(./brown-papersq.png)}.hljs-brown-paper .hljs-keyword,.hljs-brown-paper .hljs-selector-tag,.hljs-brown-paper .hljs-literal{color:#005599;font-weight:bold}.hljs-brown-paper .hljs,.hljs-brown-paper .hljs-subst{color:#363c69}.hljs-brown-paper .hljs-string,.hljs-brown-paper .hljs-title,.hljs-brown-paper .hljs-section,.hljs-brown-paper .hljs-type,.hljs-brown-paper .hljs-attribute,.hljs-brown-paper .hljs-symbol,.hljs-brown-paper .hljs-bullet,.hljs-brown-paper .hljs-built_in,.hljs-brown-paper .hljs-addition,.hljs-brown-paper .hljs-variable,.hljs-brown-paper .hljs-template-tag,.hljs-brown-paper .hljs-template-variable,.hljs-brown-paper .hljs-link,.hljs-brown-paper .hljs-name{color:#2c009f}.hljs-brown-paper .hljs-comment,.hljs-brown-paper .hljs-quote,.hljs-brown-paper .hljs-meta,.hljs-brown-paper .hljs-deletion{color:#802022}.hljs-brown-paper .hljs-keyword,.hljs-brown-paper .hljs-selector-tag,.hljs-brown-paper .hljs-literal,.hljs-brown-paper .hljs-doctag,.hljs-brown-paper .hljs-title,.hljs-brown-paper .hljs-section,.hljs-brown-paper .hljs-type,.hljs-brown-paper .hljs-name,.hljs-brown-paper .hljs-strong{font-weight:bold}.hljs-brown-paper .hljs-emphasis{font-style:italic}","codepen-embed":".hljs-codepen-embed .hljs{display:block;overflow-x:auto;padding:.5em;background:#222;color:#fff}.hljs-codepen-embed .hljs-comment,.hljs-codepen-embed .hljs-quote{color:#777}.hljs-codepen-embed .hljs-variable,.hljs-codepen-embed .hljs-template-variable,.hljs-codepen-embed .hljs-tag,.hljs-codepen-embed .hljs-regexp,.hljs-codepen-embed .hljs-meta,.hljs-codepen-embed .hljs-number,.hljs-codepen-embed .hljs-built_in,.hljs-codepen-embed .hljs-builtin-name,.hljs-codepen-embed .hljs-literal,.hljs-codepen-embed .hljs-params,.hljs-codepen-embed .hljs-symbol,.hljs-codepen-embed .hljs-bullet,.hljs-codepen-embed .hljs-link,.hljs-codepen-embed .hljs-deletion{color:#ab875d}.hljs-codepen-embed .hljs-section,.hljs-codepen-embed .hljs-title,.hljs-codepen-embed .hljs-name,.hljs-codepen-embed .hljs-selector-id,.hljs-codepen-embed .hljs-selector-class,.hljs-codepen-embed .hljs-type,.hljs-codepen-embed .hljs-attribute{color:#9b869b}.hljs-codepen-embed .hljs-string,.hljs-codepen-embed .hljs-keyword,.hljs-codepen-embed .hljs-selector-tag,.hljs-codepen-embed .hljs-addition{color:#8f9c6c}.hljs-codepen-embed .hljs-emphasis{font-style:italic}.hljs-codepen-embed .hljs-strong{font-weight:bold}","color-brewer":".hljs-color-brewer .hljs{display:block;overflow-x:auto;padding:.5em;background:#fff}.hljs-color-brewer .hljs,.hljs-color-brewer .hljs-subst{color:#000}.hljs-color-brewer .hljs-string,.hljs-color-brewer .hljs-meta,.hljs-color-brewer .hljs-symbol,.hljs-color-brewer .hljs-template-tag,.hljs-color-brewer .hljs-template-variable,.hljs-color-brewer .hljs-addition{color:#756bb1}.hljs-color-brewer .hljs-comment,.hljs-color-brewer .hljs-quote{color:#636363}.hljs-color-brewer .hljs-number,.hljs-color-brewer .hljs-regexp,.hljs-color-brewer .hljs-literal,.hljs-color-brewer .hljs-bullet,.hljs-color-brewer .hljs-link{color:#31a354}.hljs-color-brewer .hljs-deletion,.hljs-color-brewer .hljs-variable{color:#88f}.hljs-color-brewer .hljs-keyword,.hljs-color-brewer .hljs-selector-tag,.hljs-color-brewer .hljs-title,.hljs-color-brewer .hljs-section,.hljs-color-brewer .hljs-built_in,.hljs-color-brewer .hljs-doctag,.hljs-color-brewer .hljs-type,.hljs-color-brewer .hljs-tag,.hljs-color-brewer .hljs-name,.hljs-color-brewer .hljs-selector-id,.hljs-color-brewer .hljs-selector-class,.hljs-color-brewer .hljs-strong{color:#3182bd}.hljs-color-brewer .hljs-emphasis{font-style:italic}.hljs-color-brewer .hljs-attribute{color:#e6550d}","darcula":".hljs-darcula .hljs{display:block;overflow-x:auto;padding:.5em;background:#2b2b2b;color:#bababa}.hljs-darcula .hljs-strong,.hljs-darcula .hljs-emphasis{color:#a8a8a2}.hljs-darcula .hljs-bullet,.hljs-darcula .hljs-quote,.hljs-darcula .hljs-link,.hljs-darcula .hljs-number,.hljs-darcula .hljs-regexp,.hljs-darcula .hljs-literal{color:#6896ba}.hljs-darcula .hljs-code,.hljs-darcula .hljs-selector-class{color:#a6e22e}.hljs-darcula .hljs-emphasis{font-style:italic}.hljs-darcula .hljs-keyword,.hljs-darcula .hljs-selector-tag,.hljs-darcula .hljs-section,.hljs-darcula .hljs-attribute,.hljs-darcula .hljs-name,.hljs-darcula .hljs-variable{color:#cb7832}.hljs-darcula .hljs-params{color:#b9b9b9}.hljs-darcula .hljs-string{color:#6a8759}.hljs-darcula .hljs-subst,.hljs-darcula .hljs-type,.hljs-darcula .hljs-built_in,.hljs-darcula .hljs-builtin-name,.hljs-darcula .hljs-symbol,.hljs-darcula .hljs-selector-id,.hljs-darcula .hljs-selector-attr,.hljs-darcula .hljs-selector-pseudo,.hljs-darcula .hljs-template-tag,.hljs-darcula .hljs-template-variable,.hljs-darcula .hljs-addition{color:#e0c46c}.hljs-darcula .hljs-comment,.hljs-darcula .hljs-deletion,.hljs-darcula .hljs-meta{color:#7f7f7f}","dark":".hljs-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#444}.hljs-dark .hljs-keyword,.hljs-dark .hljs-selector-tag,.hljs-dark .hljs-literal,.hljs-dark .hljs-section,.hljs-dark .hljs-link{color:white}.hljs-dark .hljs,.hljs-dark .hljs-subst{color:#ddd}.hljs-dark .hljs-string,.hljs-dark .hljs-title,.hljs-dark .hljs-name,.hljs-dark .hljs-type,.hljs-dark .hljs-attribute,.hljs-dark .hljs-symbol,.hljs-dark .hljs-bullet,.hljs-dark .hljs-built_in,.hljs-dark .hljs-addition,.hljs-dark .hljs-variable,.hljs-dark .hljs-template-tag,.hljs-dark .hljs-template-variable{color:#d88}.hljs-dark .hljs-comment,.hljs-dark .hljs-quote,.hljs-dark .hljs-deletion,.hljs-dark .hljs-meta{color:#777}.hljs-dark .hljs-keyword,.hljs-dark .hljs-selector-tag,.hljs-dark .hljs-literal,.hljs-dark .hljs-title,.hljs-dark .hljs-section,.hljs-dark .hljs-doctag,.hljs-dark .hljs-type,.hljs-dark .hljs-name,.hljs-dark .hljs-strong{font-weight:bold}.hljs-dark .hljs-emphasis{font-style:italic}","darkula":".hljs-darkula{@import url('darcula.css');}","default":".hljs-default .hljs{display:block;overflow-x:auto;padding:.5em;background:#F0F0F0}.hljs-default .hljs,.hljs-default .hljs-subst{color:#444}.hljs-default .hljs-comment{color:#888888}.hljs-default .hljs-keyword,.hljs-default .hljs-attribute,.hljs-default .hljs-selector-tag,.hljs-default .hljs-meta-keyword,.hljs-default .hljs-doctag,.hljs-default .hljs-name{font-weight:bold}.hljs-default .hljs-type,.hljs-default .hljs-string,.hljs-default .hljs-number,.hljs-default .hljs-selector-id,.hljs-default .hljs-selector-class,.hljs-default .hljs-quote,.hljs-default .hljs-template-tag,.hljs-default .hljs-deletion{color:#880000}.hljs-default .hljs-title,.hljs-default .hljs-section{color:#880000;font-weight:bold}.hljs-default .hljs-regexp,.hljs-default .hljs-symbol,.hljs-default .hljs-variable,.hljs-default .hljs-template-variable,.hljs-default .hljs-link,.hljs-default .hljs-selector-attr,.hljs-default .hljs-selector-pseudo{color:#BC6060}.hljs-default .hljs-literal{color:#78A960}.hljs-default .hljs-built_in,.hljs-default .hljs-bullet,.hljs-default .hljs-code,.hljs-default .hljs-addition{color:#397300}.hljs-default .hljs-meta{color:#1f7199}.hljs-default .hljs-meta-string{color:#4d99bf}.hljs-default .hljs-emphasis{font-style:italic}.hljs-default .hljs-strong{font-weight:bold}","docco":".hljs-docco .hljs{display:block;overflow-x:auto;padding:.5em;color:#000;background:#f8f8ff}.hljs-docco .hljs-comment,.hljs-docco .hljs-quote{color:#408080;font-style:italic}.hljs-docco .hljs-keyword,.hljs-docco .hljs-selector-tag,.hljs-docco .hljs-literal,.hljs-docco .hljs-subst{color:#954121}.hljs-docco .hljs-number{color:#40a070}.hljs-docco .hljs-string,.hljs-docco .hljs-doctag{color:#219161}.hljs-docco .hljs-selector-id,.hljs-docco .hljs-selector-class,.hljs-docco .hljs-section,.hljs-docco .hljs-type{color:#19469d}.hljs-docco .hljs-params{color:#00f}.hljs-docco .hljs-title{color:#458;font-weight:bold}.hljs-docco .hljs-tag,.hljs-docco .hljs-name,.hljs-docco .hljs-attribute{color:#000080;font-weight:normal}.hljs-docco .hljs-variable,.hljs-docco .hljs-template-variable{color:#008080}.hljs-docco .hljs-regexp,.hljs-docco .hljs-link{color:#b68}.hljs-docco .hljs-symbol,.hljs-docco .hljs-bullet{color:#990073}.hljs-docco .hljs-built_in,.hljs-docco .hljs-builtin-name{color:#0086b3}.hljs-docco .hljs-meta{color:#999;font-weight:bold}.hljs-docco .hljs-deletion{background:#fdd}.hljs-docco .hljs-addition{background:#dfd}.hljs-docco .hljs-emphasis{font-style:italic}.hljs-docco .hljs-strong{font-weight:bold}","dracula":".hljs-dracula .hljs{display:block;overflow-x:auto;padding:.5em;background:#282a36}.hljs-dracula .hljs-keyword,.hljs-dracula .hljs-selector-tag,.hljs-dracula .hljs-literal,.hljs-dracula .hljs-section,.hljs-dracula .hljs-link{color:#8be9fd}.hljs-dracula .hljs-function .hljs-keyword{color:#ff79c6}.hljs-dracula .hljs,.hljs-dracula .hljs-subst{color:#f8f8f2}.hljs-dracula .hljs-string,.hljs-dracula .hljs-title,.hljs-dracula .hljs-name,.hljs-dracula .hljs-type,.hljs-dracula .hljs-attribute,.hljs-dracula .hljs-symbol,.hljs-dracula .hljs-bullet,.hljs-dracula .hljs-addition,.hljs-dracula .hljs-variable,.hljs-dracula .hljs-template-tag,.hljs-dracula .hljs-template-variable{color:#f1fa8c}.hljs-dracula .hljs-comment,.hljs-dracula .hljs-quote,.hljs-dracula .hljs-deletion,.hljs-dracula .hljs-meta{color:#6272a4}.hljs-dracula .hljs-keyword,.hljs-dracula .hljs-selector-tag,.hljs-dracula .hljs-literal,.hljs-dracula .hljs-title,.hljs-dracula .hljs-section,.hljs-dracula .hljs-doctag,.hljs-dracula .hljs-type,.hljs-dracula .hljs-name,.hljs-dracula .hljs-strong{font-weight:bold}.hljs-dracula .hljs-emphasis{font-style:italic}","far":".hljs-far .hljs{display:block;overflow-x:auto;padding:.5em;background:#000080}.hljs-far .hljs,.hljs-far .hljs-subst{color:#0ff}.hljs-far .hljs-string,.hljs-far .hljs-attribute,.hljs-far .hljs-symbol,.hljs-far .hljs-bullet,.hljs-far .hljs-built_in,.hljs-far .hljs-builtin-name,.hljs-far .hljs-template-tag,.hljs-far .hljs-template-variable,.hljs-far .hljs-addition{color:#ff0}.hljs-far .hljs-keyword,.hljs-far .hljs-selector-tag,.hljs-far .hljs-section,.hljs-far .hljs-type,.hljs-far .hljs-name,.hljs-far .hljs-selector-id,.hljs-far .hljs-selector-class,.hljs-far .hljs-variable{color:#fff}.hljs-far .hljs-comment,.hljs-far .hljs-quote,.hljs-far .hljs-doctag,.hljs-far .hljs-deletion{color:#888}.hljs-far .hljs-number,.hljs-far .hljs-regexp,.hljs-far .hljs-literal,.hljs-far .hljs-link{color:#0f0}.hljs-far .hljs-meta{color:#008080}.hljs-far .hljs-keyword,.hljs-far .hljs-selector-tag,.hljs-far .hljs-title,.hljs-far .hljs-section,.hljs-far .hljs-name,.hljs-far .hljs-strong{font-weight:bold}.hljs-far .hljs-emphasis{font-style:italic}","foundation":".hljs-foundation .hljs{display:block;overflow-x:auto;padding:.5em;background:#eee;color:black}.hljs-foundation .hljs-link,.hljs-foundation .hljs-emphasis,.hljs-foundation .hljs-attribute,.hljs-foundation .hljs-addition{color:#070}.hljs-foundation .hljs-emphasis{font-style:italic}.hljs-foundation .hljs-strong,.hljs-foundation .hljs-string,.hljs-foundation .hljs-deletion{color:#d14}.hljs-foundation .hljs-strong{font-weight:bold}.hljs-foundation .hljs-quote,.hljs-foundation .hljs-comment{color:#998;font-style:italic}.hljs-foundation .hljs-section,.hljs-foundation .hljs-title{color:#900}.hljs-foundation .hljs-class .hljs-title,.hljs-foundation .hljs-type{color:#458}.hljs-foundation .hljs-variable,.hljs-foundation .hljs-template-variable{color:#336699}.hljs-foundation .hljs-bullet{color:#997700}.hljs-foundation .hljs-meta{color:#3344bb}.hljs-foundation .hljs-code,.hljs-foundation .hljs-number,.hljs-foundation .hljs-literal,.hljs-foundation .hljs-keyword,.hljs-foundation .hljs-selector-tag{color:#099}.hljs-foundation .hljs-regexp{background-color:#fff0ff;color:#880088}.hljs-foundation .hljs-symbol{color:#990073}.hljs-foundation .hljs-tag,.hljs-foundation .hljs-name,.hljs-foundation .hljs-selector-id,.hljs-foundation .hljs-selector-class{color:#007700}","github-gist":".hljs-github-gist .hljs{display:block;background:white;padding:.5em;color:#333333;overflow-x:auto}.hljs-github-gist .hljs-comment,.hljs-github-gist .hljs-meta{color:#969896}.hljs-github-gist .hljs-variable,.hljs-github-gist .hljs-template-variable,.hljs-github-gist .hljs-strong,.hljs-github-gist .hljs-emphasis,.hljs-github-gist .hljs-quote{color:#df5000}.hljs-github-gist .hljs-keyword,.hljs-github-gist .hljs-selector-tag,.hljs-github-gist .hljs-type{color:#d73a49}.hljs-github-gist .hljs-literal,.hljs-github-gist .hljs-symbol,.hljs-github-gist .hljs-bullet,.hljs-github-gist .hljs-attribute{color:#0086b3}.hljs-github-gist .hljs-section,.hljs-github-gist .hljs-name{color:#63a35c}.hljs-github-gist .hljs-tag{color:#333333}.hljs-github-gist .hljs-title,.hljs-github-gist .hljs-attr,.hljs-github-gist .hljs-selector-id,.hljs-github-gist .hljs-selector-class,.hljs-github-gist .hljs-selector-attr,.hljs-github-gist .hljs-selector-pseudo{color:#6f42c1}.hljs-github-gist .hljs-addition{color:#55a532;background-color:#eaffea}.hljs-github-gist .hljs-deletion{color:#bd2c00;background-color:#ffecec}.hljs-github-gist .hljs-link{text-decoration:underline}.hljs-github-gist .hljs-number{color:#005cc5}.hljs-github-gist .hljs-string{color:#032f62}","github":".hljs-github .hljs{display:block;overflow-x:auto;padding:.5em;color:#333;background:#f8f8f8}.hljs-github .hljs-comment,.hljs-github .hljs-quote{color:#998;font-style:italic}.hljs-github .hljs-keyword,.hljs-github .hljs-selector-tag,.hljs-github .hljs-subst{color:#333;font-weight:bold}.hljs-github .hljs-number,.hljs-github .hljs-literal,.hljs-github .hljs-variable,.hljs-github .hljs-template-variable,.hljs-github .hljs-tag .hljs-attr{color:#008080}.hljs-github .hljs-string,.hljs-github .hljs-doctag{color:#d14}.hljs-github .hljs-title,.hljs-github .hljs-section,.hljs-github .hljs-selector-id{color:#900;font-weight:bold}.hljs-github .hljs-subst{font-weight:normal}.hljs-github .hljs-type,.hljs-github .hljs-class .hljs-title{color:#458;font-weight:bold}.hljs-github .hljs-tag,.hljs-github .hljs-name,.hljs-github .hljs-attribute{color:#000080;font-weight:normal}.hljs-github .hljs-regexp,.hljs-github .hljs-link{color:#009926}.hljs-github .hljs-symbol,.hljs-github .hljs-bullet{color:#990073}.hljs-github .hljs-built_in,.hljs-github .hljs-builtin-name{color:#0086b3}.hljs-github .hljs-meta{color:#999;font-weight:bold}.hljs-github .hljs-deletion{background:#fdd}.hljs-github .hljs-addition{background:#dfd}.hljs-github .hljs-emphasis{font-style:italic}.hljs-github .hljs-strong{font-weight:bold}","gml":".hljs-gml .hljs{display:block;overflow-x:auto;padding:.5em;background:#222222;color:#C0C0C0}.hljs-gml .hljs-keyword{color:#FFB871;font-weight:bold}.hljs-gml .hljs-built_in{color:#FFB871}.hljs-gml .hljs-literal{color:#FF8080}.hljs-gml .hljs-symbol{color:#58E55A}.hljs-gml .hljs-comment{color:#5B995B}.hljs-gml .hljs-string{color:#FFFF00}.hljs-gml .hljs-number{color:#FF8080}.hljs-gml .hljs-attribute,.hljs-gml .hljs-selector-tag,.hljs-gml .hljs-doctag,.hljs-gml .hljs-name,.hljs-gml .hljs-bullet,.hljs-gml .hljs-code,.hljs-gml .hljs-addition,.hljs-gml .hljs-regexp,.hljs-gml .hljs-variable,.hljs-gml .hljs-template-variable,.hljs-gml .hljs-link,.hljs-gml .hljs-selector-attr,.hljs-gml .hljs-selector-pseudo,.hljs-gml .hljs-type,.hljs-gml .hljs-selector-id,.hljs-gml .hljs-selector-class,.hljs-gml .hljs-quote,.hljs-gml .hljs-template-tag,.hljs-gml .hljs-deletion,.hljs-gml .hljs-title,.hljs-gml .hljs-section,.hljs-gml .hljs-function,.hljs-gml .hljs-meta-keyword,.hljs-gml .hljs-meta,.hljs-gml .hljs-subst{color:#C0C0C0}.hljs-gml .hljs-emphasis{font-style:italic}.hljs-gml .hljs-strong{font-weight:bold}","googlecode":".hljs-googlecode .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-googlecode .hljs-comment,.hljs-googlecode .hljs-quote{color:#800}.hljs-googlecode .hljs-keyword,.hljs-googlecode .hljs-selector-tag,.hljs-googlecode .hljs-section,.hljs-googlecode .hljs-title,.hljs-googlecode .hljs-name{color:#008}.hljs-googlecode .hljs-variable,.hljs-googlecode .hljs-template-variable{color:#660}.hljs-googlecode .hljs-string,.hljs-googlecode .hljs-selector-attr,.hljs-googlecode .hljs-selector-pseudo,.hljs-googlecode .hljs-regexp{color:#080}.hljs-googlecode .hljs-literal,.hljs-googlecode .hljs-symbol,.hljs-googlecode .hljs-bullet,.hljs-googlecode .hljs-meta,.hljs-googlecode .hljs-number,.hljs-googlecode .hljs-link{color:#066}.hljs-googlecode .hljs-title,.hljs-googlecode .hljs-doctag,.hljs-googlecode .hljs-type,.hljs-googlecode .hljs-attr,.hljs-googlecode .hljs-built_in,.hljs-googlecode .hljs-builtin-name,.hljs-googlecode .hljs-params{color:#606}.hljs-googlecode .hljs-attribute,.hljs-googlecode .hljs-subst{color:#000}.hljs-googlecode .hljs-formula{background-color:#eee;font-style:italic}.hljs-googlecode .hljs-selector-id,.hljs-googlecode .hljs-selector-class{color:#9B703F}.hljs-googlecode .hljs-addition{background-color:#baeeba}.hljs-googlecode .hljs-deletion{background-color:#ffc8bd}.hljs-googlecode .hljs-doctag,.hljs-googlecode .hljs-strong{font-weight:bold}.hljs-googlecode .hljs-emphasis{font-style:italic}","gradient-dark":".hljs-gradient-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#501f7a;background:linear-gradient(166deg, #501f7a 0%, #2820b3 80%);color:#e7e4eb}.hljs-gradient-dark .hljs-subtr{color:#e7e4eb}.hljs-gradient-dark .hljs-doctag,.hljs-gradient-dark .hljs-meta,.hljs-gradient-dark .hljs-comment,.hljs-gradient-dark .hljs-quote{color:#af8dd9}.hljs-gradient-dark .hljs-selector-tag,.hljs-gradient-dark .hljs-selector-id,.hljs-gradient-dark .hljs-template-tag,.hljs-gradient-dark .hljs-regexp,.hljs-gradient-dark .hljs-attr,.hljs-gradient-dark .hljs-tag{color:#AEFBFF}.hljs-gradient-dark .hljs-params,.hljs-gradient-dark .hljs-selector-class,.hljs-gradient-dark .hljs-bullet{color:#F19FFF}.hljs-gradient-dark .hljs-keyword,.hljs-gradient-dark .hljs-section,.hljs-gradient-dark .hljs-meta-keyword,.hljs-gradient-dark .hljs-symbol,.hljs-gradient-dark .hljs-type{color:#17fc95}.hljs-gradient-dark .hljs-addition,.hljs-gradient-dark .hljs-number,.hljs-gradient-dark .hljs-link{color:#C5FE00}.hljs-gradient-dark .hljs-string{color:#38c0ff}.hljs-gradient-dark .hljs-attribute,.hljs-gradient-dark .hljs-addition{color:#E7FF9F}.hljs-gradient-dark .hljs-variable,.hljs-gradient-dark .hljs-template-variable{color:#E447FF}.hljs-gradient-dark .hljs-builtin-name,.hljs-gradient-dark .hljs-built_in,.hljs-gradient-dark .hljs-formula,.hljs-gradient-dark .hljs-name,.hljs-gradient-dark .hljs-title,.hljs-gradient-dark .hljs-class,.hljs-gradient-dark .hljs-function{color:#FFC800}.hljs-gradient-dark .hljs-selector-pseudo,.hljs-gradient-dark .hljs-deletion,.hljs-gradient-dark .hljs-literal{color:#FF9E44}.hljs-gradient-dark .hljs-emphasis,.hljs-gradient-dark .hljs-quote{font-style:italic}.hljs-gradient-dark .hljs-params,.hljs-gradient-dark .hljs-selector-class,.hljs-gradient-dark .hljs-strong,.hljs-gradient-dark .hljs-selector-tag,.hljs-gradient-dark .hljs-selector-id,.hljs-gradient-dark .hljs-template-tag,.hljs-gradient-dark .hljs-section,.hljs-gradient-dark .hljs-keyword{font-weight:bold}","grayscale":".hljs-grayscale .hljs{display:block;overflow-x:auto;padding:.5em;color:#333;background:#fff}.hljs-grayscale .hljs-comment,.hljs-grayscale .hljs-quote{color:#777;font-style:italic}.hljs-grayscale .hljs-keyword,.hljs-grayscale .hljs-selector-tag,.hljs-grayscale .hljs-subst{color:#333;font-weight:bold}.hljs-grayscale .hljs-number,.hljs-grayscale .hljs-literal{color:#777}.hljs-grayscale .hljs-string,.hljs-grayscale .hljs-doctag,.hljs-grayscale .hljs-formula{color:#333;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJ0lEQVQIW2O8e/fufwYGBgZBQUEQxcCIIfDu3Tuwivfv30NUoAsAALHpFMMLqZlPAAAAAElFTkSuQmCC) repeat}.hljs-grayscale .hljs-title,.hljs-grayscale .hljs-section,.hljs-grayscale .hljs-selector-id{color:#000;font-weight:bold}.hljs-grayscale .hljs-subst{font-weight:normal}.hljs-grayscale .hljs-class .hljs-title,.hljs-grayscale .hljs-type,.hljs-grayscale .hljs-name{color:#333;font-weight:bold}.hljs-grayscale .hljs-tag{color:#333}.hljs-grayscale .hljs-regexp{color:#333;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAAPUlEQVQYV2NkQAN37979r6yszIgujiIAU4RNMVwhuiQ6H6wQl3XI4oy4FMHcCJPHcDS6J2A2EqUQpJhohQDexSef15DBCwAAAABJRU5ErkJggg==) repeat}.hljs-grayscale .hljs-symbol,.hljs-grayscale .hljs-bullet,.hljs-grayscale .hljs-link{color:#000;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAKElEQVQIW2NkQAO7d+/+z4gsBhJwdXVlhAvCBECKwIIwAbhKZBUwBQA6hBpm5efZsgAAAABJRU5ErkJggg==) repeat}.hljs-grayscale .hljs-built_in,.hljs-grayscale .hljs-builtin-name{color:#000;text-decoration:underline}.hljs-grayscale .hljs-meta{color:#999;font-weight:bold}.hljs-grayscale .hljs-deletion{color:#fff;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAYAAABS3WWCAAAAE0lEQVQIW2MMDQ39zzhz5kwIAQAyxweWgUHd1AAAAABJRU5ErkJggg==) repeat}.hljs-grayscale .hljs-addition{color:#000;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAALUlEQVQYV2N89+7dfwYk8P79ewZBQUFkIQZGOiu6e/cuiptQHAPl0NtNxAQBAM97Oejj3Dg7AAAAAElFTkSuQmCC) repeat}.hljs-grayscale .hljs-emphasis{font-style:italic}.hljs-grayscale .hljs-strong{font-weight:bold}","gruvbox-dark":".hljs-gruvbox-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#282828}.hljs-gruvbox-dark .hljs,.hljs-gruvbox-dark .hljs-subst{color:#ebdbb2}.hljs-gruvbox-dark .hljs-deletion,.hljs-gruvbox-dark .hljs-formula,.hljs-gruvbox-dark .hljs-keyword,.hljs-gruvbox-dark .hljs-link,.hljs-gruvbox-dark .hljs-selector-tag{color:#fb4934}.hljs-gruvbox-dark .hljs-built_in,.hljs-gruvbox-dark .hljs-emphasis,.hljs-gruvbox-dark .hljs-name,.hljs-gruvbox-dark .hljs-quote,.hljs-gruvbox-dark .hljs-strong,.hljs-gruvbox-dark .hljs-title,.hljs-gruvbox-dark .hljs-variable{color:#83a598}.hljs-gruvbox-dark .hljs-attr,.hljs-gruvbox-dark .hljs-params,.hljs-gruvbox-dark .hljs-template-tag,.hljs-gruvbox-dark .hljs-type{color:#fabd2f}.hljs-gruvbox-dark .hljs-builtin-name,.hljs-gruvbox-dark .hljs-doctag,.hljs-gruvbox-dark .hljs-literal,.hljs-gruvbox-dark .hljs-number{color:#8f3f71}.hljs-gruvbox-dark .hljs-code,.hljs-gruvbox-dark .hljs-meta,.hljs-gruvbox-dark .hljs-regexp,.hljs-gruvbox-dark .hljs-selector-id,.hljs-gruvbox-dark .hljs-template-variable{color:#fe8019}.hljs-gruvbox-dark .hljs-addition,.hljs-gruvbox-dark .hljs-meta-string,.hljs-gruvbox-dark .hljs-section,.hljs-gruvbox-dark .hljs-selector-attr,.hljs-gruvbox-dark .hljs-selector-class,.hljs-gruvbox-dark .hljs-string,.hljs-gruvbox-dark .hljs-symbol{color:#b8bb26}.hljs-gruvbox-dark .hljs-attribute,.hljs-gruvbox-dark .hljs-bullet,.hljs-gruvbox-dark .hljs-class,.hljs-gruvbox-dark .hljs-function,.hljs-gruvbox-dark .hljs-function .hljs-keyword,.hljs-gruvbox-dark .hljs-meta-keyword,.hljs-gruvbox-dark .hljs-selector-pseudo,.hljs-gruvbox-dark .hljs-tag{color:#8ec07c}.hljs-gruvbox-dark .hljs-comment{color:#928374}.hljs-gruvbox-dark .hljs-link_label,.hljs-gruvbox-dark .hljs-literal,.hljs-gruvbox-dark .hljs-number{color:#d3869b}.hljs-gruvbox-dark .hljs-comment,.hljs-gruvbox-dark .hljs-emphasis{font-style:italic}.hljs-gruvbox-dark .hljs-section,.hljs-gruvbox-dark .hljs-strong,.hljs-gruvbox-dark .hljs-tag{font-weight:bold}","gruvbox-light":".hljs-gruvbox-light .hljs{display:block;overflow-x:auto;padding:.5em;background:#fbf1c7}.hljs-gruvbox-light .hljs,.hljs-gruvbox-light .hljs-subst{color:#3c3836}.hljs-gruvbox-light .hljs-deletion,.hljs-gruvbox-light .hljs-formula,.hljs-gruvbox-light .hljs-keyword,.hljs-gruvbox-light .hljs-link,.hljs-gruvbox-light .hljs-selector-tag{color:#9d0006}.hljs-gruvbox-light .hljs-built_in,.hljs-gruvbox-light .hljs-emphasis,.hljs-gruvbox-light .hljs-name,.hljs-gruvbox-light .hljs-quote,.hljs-gruvbox-light .hljs-strong,.hljs-gruvbox-light .hljs-title,.hljs-gruvbox-light .hljs-variable{color:#076678}.hljs-gruvbox-light .hljs-attr,.hljs-gruvbox-light .hljs-params,.hljs-gruvbox-light .hljs-template-tag,.hljs-gruvbox-light .hljs-type{color:#b57614}.hljs-gruvbox-light .hljs-builtin-name,.hljs-gruvbox-light .hljs-doctag,.hljs-gruvbox-light .hljs-literal,.hljs-gruvbox-light .hljs-number{color:#8f3f71}.hljs-gruvbox-light .hljs-code,.hljs-gruvbox-light .hljs-meta,.hljs-gruvbox-light .hljs-regexp,.hljs-gruvbox-light .hljs-selector-id,.hljs-gruvbox-light .hljs-template-variable{color:#af3a03}.hljs-gruvbox-light .hljs-addition,.hljs-gruvbox-light .hljs-meta-string,.hljs-gruvbox-light .hljs-section,.hljs-gruvbox-light .hljs-selector-attr,.hljs-gruvbox-light .hljs-selector-class,.hljs-gruvbox-light .hljs-string,.hljs-gruvbox-light .hljs-symbol{color:#79740e}.hljs-gruvbox-light .hljs-attribute,.hljs-gruvbox-light .hljs-bullet,.hljs-gruvbox-light .hljs-class,.hljs-gruvbox-light .hljs-function,.hljs-gruvbox-light .hljs-function .hljs-keyword,.hljs-gruvbox-light .hljs-meta-keyword,.hljs-gruvbox-light .hljs-selector-pseudo,.hljs-gruvbox-light .hljs-tag{color:#427b58}.hljs-gruvbox-light .hljs-comment{color:#928374}.hljs-gruvbox-light .hljs-link_label,.hljs-gruvbox-light .hljs-literal,.hljs-gruvbox-light .hljs-number{color:#8f3f71}.hljs-gruvbox-light .hljs-comment,.hljs-gruvbox-light .hljs-emphasis{font-style:italic}.hljs-gruvbox-light .hljs-section,.hljs-gruvbox-light .hljs-strong,.hljs-gruvbox-light .hljs-tag{font-weight:bold}","hopscotch":".hljs-hopscotch .hljs-comment,.hljs-hopscotch .hljs-quote{color:#989498}.hljs-hopscotch .hljs-variable,.hljs-hopscotch .hljs-template-variable,.hljs-hopscotch .hljs-attribute,.hljs-hopscotch .hljs-tag,.hljs-hopscotch .hljs-name,.hljs-hopscotch .hljs-selector-id,.hljs-hopscotch .hljs-selector-class,.hljs-hopscotch .hljs-regexp,.hljs-hopscotch .hljs-link,.hljs-hopscotch .hljs-deletion{color:#dd464c}.hljs-hopscotch .hljs-number,.hljs-hopscotch .hljs-built_in,.hljs-hopscotch .hljs-builtin-name,.hljs-hopscotch .hljs-literal,.hljs-hopscotch .hljs-type,.hljs-hopscotch .hljs-params{color:#fd8b19}.hljs-hopscotch .hljs-class .hljs-title{color:#fdcc59}.hljs-hopscotch .hljs-string,.hljs-hopscotch .hljs-symbol,.hljs-hopscotch .hljs-bullet,.hljs-hopscotch .hljs-addition{color:#8fc13e}.hljs-hopscotch .hljs-meta{color:#149b93}.hljs-hopscotch .hljs-function,.hljs-hopscotch .hljs-section,.hljs-hopscotch .hljs-title{color:#1290bf}.hljs-hopscotch .hljs-keyword,.hljs-hopscotch .hljs-selector-tag{color:#c85e7c}.hljs-hopscotch .hljs{display:block;overflow-x:auto;background:#322931;color:#b9b5b8;padding:.5em}.hljs-hopscotch .hljs-emphasis{font-style:italic}.hljs-hopscotch .hljs-strong{font-weight:bold}","hybrid":".hljs-hybrid .hljs{display:block;overflow-x:auto;padding:.5em;background:#1d1f21}.hljs-hybrid .hljs::selection,.hljs-hybrid .hljs span::selection{background:#373b41}.hljs-hybrid .hljs::-moz-selection,.hljs-hybrid .hljs span::-moz-selection{background:#373b41}.hljs-hybrid .hljs{color:#c5c8c6}.hljs-hybrid .hljs-title,.hljs-hybrid .hljs-name{color:#f0c674}.hljs-hybrid .hljs-comment,.hljs-hybrid .hljs-meta,.hljs-hybrid .hljs-meta .hljs-keyword{color:#707880}.hljs-hybrid .hljs-number,.hljs-hybrid .hljs-symbol,.hljs-hybrid .hljs-literal,.hljs-hybrid .hljs-deletion,.hljs-hybrid .hljs-link{color:#cc6666}.hljs-hybrid .hljs-string,.hljs-hybrid .hljs-doctag,.hljs-hybrid .hljs-addition,.hljs-hybrid .hljs-regexp,.hljs-hybrid .hljs-selector-attr,.hljs-hybrid .hljs-selector-pseudo{color:#b5bd68}.hljs-hybrid .hljs-attribute,.hljs-hybrid .hljs-code,.hljs-hybrid .hljs-selector-id{color:#b294bb}.hljs-hybrid .hljs-keyword,.hljs-hybrid .hljs-selector-tag,.hljs-hybrid .hljs-bullet,.hljs-hybrid .hljs-tag{color:#81a2be}.hljs-hybrid .hljs-subst,.hljs-hybrid .hljs-variable,.hljs-hybrid .hljs-template-tag,.hljs-hybrid .hljs-template-variable{color:#8abeb7}.hljs-hybrid .hljs-type,.hljs-hybrid .hljs-built_in,.hljs-hybrid .hljs-builtin-name,.hljs-hybrid .hljs-quote,.hljs-hybrid .hljs-section,.hljs-hybrid .hljs-selector-class{color:#de935f}.hljs-hybrid .hljs-emphasis{font-style:italic}.hljs-hybrid .hljs-strong{font-weight:bold}","idea":".hljs-idea .hljs{display:block;overflow-x:auto;padding:.5em;color:#000;background:#fff}.hljs-idea .hljs-subst,.hljs-idea .hljs-title{font-weight:normal;color:#000}.hljs-idea .hljs-comment,.hljs-idea .hljs-quote{color:#808080;font-style:italic}.hljs-idea .hljs-meta{color:#808000}.hljs-idea .hljs-tag{background:#efefef}.hljs-idea .hljs-section,.hljs-idea .hljs-name,.hljs-idea .hljs-literal,.hljs-idea .hljs-keyword,.hljs-idea .hljs-selector-tag,.hljs-idea .hljs-type,.hljs-idea .hljs-selector-id,.hljs-idea .hljs-selector-class{font-weight:bold;color:#000080}.hljs-idea .hljs-attribute,.hljs-idea .hljs-number,.hljs-idea .hljs-regexp,.hljs-idea .hljs-link{font-weight:bold;color:#0000ff}.hljs-idea .hljs-number,.hljs-idea .hljs-regexp,.hljs-idea .hljs-link{font-weight:normal}.hljs-idea .hljs-string{color:#008000;font-weight:bold}.hljs-idea .hljs-symbol,.hljs-idea .hljs-bullet,.hljs-idea .hljs-formula{color:#000;background:#d0eded;font-style:italic}.hljs-idea .hljs-doctag{text-decoration:underline}.hljs-idea .hljs-variable,.hljs-idea .hljs-template-variable{color:#660e7a}.hljs-idea .hljs-addition{background:#baeeba}.hljs-idea .hljs-deletion{background:#ffc8bd}.hljs-idea .hljs-emphasis{font-style:italic}.hljs-idea .hljs-strong{font-weight:bold}","ir-black":".hljs-ir-black .hljs{display:block;overflow-x:auto;padding:.5em;background:#000;color:#f8f8f8}.hljs-ir-black .hljs-comment,.hljs-ir-black .hljs-quote,.hljs-ir-black .hljs-meta{color:#7c7c7c}.hljs-ir-black .hljs-keyword,.hljs-ir-black .hljs-selector-tag,.hljs-ir-black .hljs-tag,.hljs-ir-black .hljs-name{color:#96cbfe}.hljs-ir-black .hljs-attribute,.hljs-ir-black .hljs-selector-id{color:#ffffb6}.hljs-ir-black .hljs-string,.hljs-ir-black .hljs-selector-attr,.hljs-ir-black .hljs-selector-pseudo,.hljs-ir-black .hljs-addition{color:#a8ff60}.hljs-ir-black .hljs-subst{color:#daefa3}.hljs-ir-black .hljs-regexp,.hljs-ir-black .hljs-link{color:#e9c062}.hljs-ir-black .hljs-title,.hljs-ir-black .hljs-section,.hljs-ir-black .hljs-type,.hljs-ir-black .hljs-doctag{color:#ffffb6}.hljs-ir-black .hljs-symbol,.hljs-ir-black .hljs-bullet,.hljs-ir-black .hljs-variable,.hljs-ir-black .hljs-template-variable,.hljs-ir-black .hljs-literal{color:#c6c5fe}.hljs-ir-black .hljs-number,.hljs-ir-black .hljs-deletion{color:#ff73fd}.hljs-ir-black .hljs-emphasis{font-style:italic}.hljs-ir-black .hljs-strong{font-weight:bold}","isbl-editor-dark":".hljs-isbl-editor-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#404040;color:#f0f0f0}.hljs-isbl-editor-dark .hljs,.hljs-isbl-editor-dark .hljs-subst{color:#f0f0f0}.hljs-isbl-editor-dark .hljs-comment{color:#b5b5b5;font-style:italic}.hljs-isbl-editor-dark .hljs-keyword,.hljs-isbl-editor-dark .hljs-attribute,.hljs-isbl-editor-dark .hljs-selector-tag,.hljs-isbl-editor-dark .hljs-meta-keyword,.hljs-isbl-editor-dark .hljs-doctag,.hljs-isbl-editor-dark .hljs-name{color:#f0f0f0;font-weight:bold}.hljs-isbl-editor-dark .hljs-string{color:#97bf0d}.hljs-isbl-editor-dark .hljs-type,.hljs-isbl-editor-dark .hljs-number,.hljs-isbl-editor-dark .hljs-selector-id,.hljs-isbl-editor-dark .hljs-selector-class,.hljs-isbl-editor-dark .hljs-quote,.hljs-isbl-editor-dark .hljs-template-tag,.hljs-isbl-editor-dark .hljs-deletion{color:#f0f0f0}.hljs-isbl-editor-dark .hljs-title,.hljs-isbl-editor-dark .hljs-section{color:#df471e}.hljs-isbl-editor-dark .hljs-title>.hljs-built_in{color:#81bce9;font-weight:normal}.hljs-isbl-editor-dark .hljs-regexp,.hljs-isbl-editor-dark .hljs-symbol,.hljs-isbl-editor-dark .hljs-variable,.hljs-isbl-editor-dark .hljs-template-variable,.hljs-isbl-editor-dark .hljs-link,.hljs-isbl-editor-dark .hljs-selector-attr,.hljs-isbl-editor-dark .hljs-selector-pseudo{color:#e2c696}.hljs-isbl-editor-dark .hljs-built_in,.hljs-isbl-editor-dark .hljs-literal{color:#97bf0d;font-weight:bold}.hljs-isbl-editor-dark .hljs-bullet,.hljs-isbl-editor-dark .hljs-code,.hljs-isbl-editor-dark .hljs-addition{color:#397300}.hljs-isbl-editor-dark .hljs-class{color:#ce9d4d;font-weight:bold}.hljs-isbl-editor-dark .hljs-meta{color:#1f7199}.hljs-isbl-editor-dark .hljs-meta-string{color:#4d99bf}.hljs-isbl-editor-dark .hljs-emphasis{font-style:italic}.hljs-isbl-editor-dark .hljs-strong{font-weight:bold}","isbl-editor-light":".hljs-isbl-editor-light .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-isbl-editor-light .hljs-subst{color:black}.hljs-isbl-editor-light .hljs-comment{color:#555555;font-style:italic}.hljs-isbl-editor-light .hljs-keyword,.hljs-isbl-editor-light .hljs-attribute,.hljs-isbl-editor-light .hljs-selector-tag,.hljs-isbl-editor-light .hljs-meta-keyword,.hljs-isbl-editor-light .hljs-doctag,.hljs-isbl-editor-light .hljs-name{color:#000000;font-weight:bold}.hljs-isbl-editor-light .hljs-string{color:#000080}.hljs-isbl-editor-light .hljs-type,.hljs-isbl-editor-light .hljs-number,.hljs-isbl-editor-light .hljs-selector-id,.hljs-isbl-editor-light .hljs-selector-class,.hljs-isbl-editor-light .hljs-quote,.hljs-isbl-editor-light .hljs-template-tag,.hljs-isbl-editor-light .hljs-deletion{color:#000000}.hljs-isbl-editor-light .hljs-title,.hljs-isbl-editor-light .hljs-section{color:#fb2c00}.hljs-isbl-editor-light .hljs-title>.hljs-built_in{color:#008080;font-weight:normal}.hljs-isbl-editor-light .hljs-regexp,.hljs-isbl-editor-light .hljs-symbol,.hljs-isbl-editor-light .hljs-variable,.hljs-isbl-editor-light .hljs-template-variable,.hljs-isbl-editor-light .hljs-link,.hljs-isbl-editor-light .hljs-selector-attr,.hljs-isbl-editor-light .hljs-selector-pseudo{color:#5e1700}.hljs-isbl-editor-light .hljs-built_in,.hljs-isbl-editor-light .hljs-literal{color:#000080;font-weight:bold}.hljs-isbl-editor-light .hljs-bullet,.hljs-isbl-editor-light .hljs-code,.hljs-isbl-editor-light .hljs-addition{color:#397300}.hljs-isbl-editor-light .hljs-class{color:#6f1C00;font-weight:bold}.hljs-isbl-editor-light .hljs-meta{color:#1f7199}.hljs-isbl-editor-light .hljs-meta-string{color:#4d99bf}.hljs-isbl-editor-light .hljs-emphasis{font-style:italic}.hljs-isbl-editor-light .hljs-strong{font-weight:bold}","kimbie.dark":".hljs-kimbie.dark .hljs-comment,.hljs-kimbie.dark .hljs-quote{color:#d6baad}.hljs-kimbie.dark .hljs-variable,.hljs-kimbie.dark .hljs-template-variable,.hljs-kimbie.dark .hljs-tag,.hljs-kimbie.dark .hljs-name,.hljs-kimbie.dark .hljs-selector-id,.hljs-kimbie.dark .hljs-selector-class,.hljs-kimbie.dark .hljs-regexp,.hljs-kimbie.dark .hljs-meta{color:#dc3958}.hljs-kimbie.dark .hljs-number,.hljs-kimbie.dark .hljs-built_in,.hljs-kimbie.dark .hljs-builtin-name,.hljs-kimbie.dark .hljs-literal,.hljs-kimbie.dark .hljs-type,.hljs-kimbie.dark .hljs-params,.hljs-kimbie.dark .hljs-deletion,.hljs-kimbie.dark .hljs-link{color:#f79a32}.hljs-kimbie.dark .hljs-title,.hljs-kimbie.dark .hljs-section,.hljs-kimbie.dark .hljs-attribute{color:#f06431}.hljs-kimbie.dark .hljs-string,.hljs-kimbie.dark .hljs-symbol,.hljs-kimbie.dark .hljs-bullet,.hljs-kimbie.dark .hljs-addition{color:#889b4a}.hljs-kimbie.dark .hljs-keyword,.hljs-kimbie.dark .hljs-selector-tag,.hljs-kimbie.dark .hljs-function{color:#98676a}.hljs-kimbie.dark .hljs{display:block;overflow-x:auto;background:#221a0f;color:#d3af86;padding:.5em}.hljs-kimbie.dark .hljs-emphasis{font-style:italic}.hljs-kimbie.dark .hljs-strong{font-weight:bold}","kimbie.light":".hljs-kimbie.light .hljs-comment,.hljs-kimbie.light .hljs-quote{color:#a57a4c}.hljs-kimbie.light .hljs-variable,.hljs-kimbie.light .hljs-template-variable,.hljs-kimbie.light .hljs-tag,.hljs-kimbie.light .hljs-name,.hljs-kimbie.light .hljs-selector-id,.hljs-kimbie.light .hljs-selector-class,.hljs-kimbie.light .hljs-regexp,.hljs-kimbie.light .hljs-meta{color:#dc3958}.hljs-kimbie.light .hljs-number,.hljs-kimbie.light .hljs-built_in,.hljs-kimbie.light .hljs-builtin-name,.hljs-kimbie.light .hljs-literal,.hljs-kimbie.light .hljs-type,.hljs-kimbie.light .hljs-params,.hljs-kimbie.light .hljs-deletion,.hljs-kimbie.light .hljs-link{color:#f79a32}.hljs-kimbie.light .hljs-title,.hljs-kimbie.light .hljs-section,.hljs-kimbie.light .hljs-attribute{color:#f06431}.hljs-kimbie.light .hljs-string,.hljs-kimbie.light .hljs-symbol,.hljs-kimbie.light .hljs-bullet,.hljs-kimbie.light .hljs-addition{color:#889b4a}.hljs-kimbie.light .hljs-keyword,.hljs-kimbie.light .hljs-selector-tag,.hljs-kimbie.light .hljs-function{color:#98676a}.hljs-kimbie.light .hljs{display:block;overflow-x:auto;background:#fbebd4;color:#84613d;padding:.5em}.hljs-kimbie.light .hljs-emphasis{font-style:italic}.hljs-kimbie.light .hljs-strong{font-weight:bold}","lightfair":".hljs-lightfair .hljs{display:block;overflow-x:auto;padding:.5em}.hljs-lightfair .hljs-name{color:#01a3a3}.hljs-lightfair .hljs-tag,.hljs-lightfair .hljs-meta{color:#778899}.hljs-lightfair .hljs,.hljs-lightfair .hljs-subst{color:#444}.hljs-lightfair .hljs-comment{color:#888888}.hljs-lightfair .hljs-keyword,.hljs-lightfair .hljs-attribute,.hljs-lightfair .hljs-selector-tag,.hljs-lightfair .hljs-meta-keyword,.hljs-lightfair .hljs-doctag,.hljs-lightfair .hljs-name{font-weight:bold}.hljs-lightfair .hljs-type,.hljs-lightfair .hljs-string,.hljs-lightfair .hljs-number,.hljs-lightfair .hljs-selector-id,.hljs-lightfair .hljs-selector-class,.hljs-lightfair .hljs-quote,.hljs-lightfair .hljs-template-tag,.hljs-lightfair .hljs-deletion{color:#4286f4}.hljs-lightfair .hljs-title,.hljs-lightfair .hljs-section{color:#4286f4;font-weight:bold}.hljs-lightfair .hljs-regexp,.hljs-lightfair .hljs-symbol,.hljs-lightfair .hljs-variable,.hljs-lightfair .hljs-template-variable,.hljs-lightfair .hljs-link,.hljs-lightfair .hljs-selector-attr,.hljs-lightfair .hljs-selector-pseudo{color:#BC6060}.hljs-lightfair .hljs-literal{color:#62bcbc}.hljs-lightfair .hljs-built_in,.hljs-lightfair .hljs-bullet,.hljs-lightfair .hljs-code,.hljs-lightfair .hljs-addition{color:#25c6c6}.hljs-lightfair .hljs-meta-string{color:#4d99bf}.hljs-lightfair .hljs-emphasis{font-style:italic}.hljs-lightfair .hljs-strong{font-weight:bold}","magula":".hljs-magula .hljs{display:block;overflow-x:auto;padding:.5em;background-color:#f4f4f4;color:black}.hljs-magula .hljs-subst{color:black}.hljs-magula .hljs-string,.hljs-magula .hljs-title,.hljs-magula .hljs-symbol,.hljs-magula .hljs-bullet,.hljs-magula .hljs-attribute,.hljs-magula .hljs-addition,.hljs-magula .hljs-variable,.hljs-magula .hljs-template-tag,.hljs-magula .hljs-template-variable{color:#050}.hljs-magula .hljs-comment,.hljs-magula .hljs-quote{color:#777}.hljs-magula .hljs-number,.hljs-magula .hljs-regexp,.hljs-magula .hljs-literal,.hljs-magula .hljs-type,.hljs-magula .hljs-link{color:#800}.hljs-magula .hljs-deletion,.hljs-magula .hljs-meta{color:#00e}.hljs-magula .hljs-keyword,.hljs-magula .hljs-selector-tag,.hljs-magula .hljs-doctag,.hljs-magula .hljs-title,.hljs-magula .hljs-section,.hljs-magula .hljs-built_in,.hljs-magula .hljs-tag,.hljs-magula .hljs-name{font-weight:bold;color:navy}.hljs-magula .hljs-emphasis{font-style:italic}.hljs-magula .hljs-strong{font-weight:bold}","mono-blue":".hljs-mono-blue .hljs{display:block;overflow-x:auto;padding:.5em;background:#eaeef3;color:#00193a}.hljs-mono-blue .hljs-keyword,.hljs-mono-blue .hljs-selector-tag,.hljs-mono-blue .hljs-title,.hljs-mono-blue .hljs-section,.hljs-mono-blue .hljs-doctag,.hljs-mono-blue .hljs-name,.hljs-mono-blue .hljs-strong{font-weight:bold}.hljs-mono-blue .hljs-comment{color:#738191}.hljs-mono-blue .hljs-string,.hljs-mono-blue .hljs-title,.hljs-mono-blue .hljs-section,.hljs-mono-blue .hljs-built_in,.hljs-mono-blue .hljs-literal,.hljs-mono-blue .hljs-type,.hljs-mono-blue .hljs-addition,.hljs-mono-blue .hljs-tag,.hljs-mono-blue .hljs-quote,.hljs-mono-blue .hljs-name,.hljs-mono-blue .hljs-selector-id,.hljs-mono-blue .hljs-selector-class{color:#0048ab}.hljs-mono-blue .hljs-meta,.hljs-mono-blue .hljs-subst,.hljs-mono-blue .hljs-symbol,.hljs-mono-blue .hljs-regexp,.hljs-mono-blue .hljs-attribute,.hljs-mono-blue .hljs-deletion,.hljs-mono-blue .hljs-variable,.hljs-mono-blue .hljs-template-variable,.hljs-mono-blue .hljs-link,.hljs-mono-blue .hljs-bullet{color:#4c81c9}.hljs-mono-blue .hljs-emphasis{font-style:italic}","monokai-sublime":".hljs-monokai-sublime .hljs{display:block;overflow-x:auto;padding:.5em;background:#23241f}.hljs-monokai-sublime .hljs,.hljs-monokai-sublime .hljs-tag,.hljs-monokai-sublime .hljs-subst{color:#f8f8f2}.hljs-monokai-sublime .hljs-strong,.hljs-monokai-sublime .hljs-emphasis{color:#a8a8a2}.hljs-monokai-sublime .hljs-bullet,.hljs-monokai-sublime .hljs-quote,.hljs-monokai-sublime .hljs-number,.hljs-monokai-sublime .hljs-regexp,.hljs-monokai-sublime .hljs-literal,.hljs-monokai-sublime .hljs-link{color:#ae81ff}.hljs-monokai-sublime .hljs-code,.hljs-monokai-sublime .hljs-title,.hljs-monokai-sublime .hljs-section,.hljs-monokai-sublime .hljs-selector-class{color:#a6e22e}.hljs-monokai-sublime .hljs-strong{font-weight:bold}.hljs-monokai-sublime .hljs-emphasis{font-style:italic}.hljs-monokai-sublime .hljs-keyword,.hljs-monokai-sublime .hljs-selector-tag,.hljs-monokai-sublime .hljs-name,.hljs-monokai-sublime .hljs-attr{color:#f92672}.hljs-monokai-sublime .hljs-symbol,.hljs-monokai-sublime .hljs-attribute{color:#66d9ef}.hljs-monokai-sublime .hljs-params,.hljs-monokai-sublime .hljs-class .hljs-title{color:#f8f8f2}.hljs-monokai-sublime .hljs-string,.hljs-monokai-sublime .hljs-type,.hljs-monokai-sublime .hljs-built_in,.hljs-monokai-sublime .hljs-builtin-name,.hljs-monokai-sublime .hljs-selector-id,.hljs-monokai-sublime .hljs-selector-attr,.hljs-monokai-sublime .hljs-selector-pseudo,.hljs-monokai-sublime .hljs-addition,.hljs-monokai-sublime .hljs-variable,.hljs-monokai-sublime .hljs-template-variable{color:#e6db74}.hljs-monokai-sublime .hljs-comment,.hljs-monokai-sublime .hljs-deletion,.hljs-monokai-sublime .hljs-meta{color:#75715e}","monokai":".hljs-monokai .hljs{display:block;overflow-x:auto;padding:.5em;background:#272822;color:#ddd}.hljs-monokai .hljs-tag,.hljs-monokai .hljs-keyword,.hljs-monokai .hljs-selector-tag,.hljs-monokai .hljs-literal,.hljs-monokai .hljs-strong,.hljs-monokai .hljs-name{color:#f92672}.hljs-monokai .hljs-code{color:#66d9ef}.hljs-monokai .hljs-class .hljs-title{color:white}.hljs-monokai .hljs-attribute,.hljs-monokai .hljs-symbol,.hljs-monokai .hljs-regexp,.hljs-monokai .hljs-link{color:#bf79db}.hljs-monokai .hljs-string,.hljs-monokai .hljs-bullet,.hljs-monokai .hljs-subst,.hljs-monokai .hljs-title,.hljs-monokai .hljs-section,.hljs-monokai .hljs-emphasis,.hljs-monokai .hljs-type,.hljs-monokai .hljs-built_in,.hljs-monokai .hljs-builtin-name,.hljs-monokai .hljs-selector-attr,.hljs-monokai .hljs-selector-pseudo,.hljs-monokai .hljs-addition,.hljs-monokai .hljs-variable,.hljs-monokai .hljs-template-tag,.hljs-monokai .hljs-template-variable{color:#a6e22e}.hljs-monokai .hljs-comment,.hljs-monokai .hljs-quote,.hljs-monokai .hljs-deletion,.hljs-monokai .hljs-meta{color:#75715e}.hljs-monokai .hljs-keyword,.hljs-monokai .hljs-selector-tag,.hljs-monokai .hljs-literal,.hljs-monokai .hljs-doctag,.hljs-monokai .hljs-title,.hljs-monokai .hljs-section,.hljs-monokai .hljs-type,.hljs-monokai .hljs-selector-id{font-weight:bold}","night-owl":".hljs-night-owl .hljs{display:block;overflow-x:auto;padding:.5em;background:#011627;color:#d6deeb}.hljs-night-owl .hljs-keyword{color:#c792ea;font-style:italic}.hljs-night-owl .hljs-built_in{color:#addb67;font-style:italic}.hljs-night-owl .hljs-type{color:#82aaff}.hljs-night-owl .hljs-literal{color:#ff5874}.hljs-night-owl .hljs-number{color:#F78C6C}.hljs-night-owl .hljs-regexp{color:#5ca7e4}.hljs-night-owl .hljs-string{color:#ecc48d}.hljs-night-owl .hljs-subst{color:#d3423e}.hljs-night-owl .hljs-symbol{color:#82aaff}.hljs-night-owl .hljs-class{color:#ffcb8b}.hljs-night-owl .hljs-function{color:#82AAFF}.hljs-night-owl .hljs-title{color:#DCDCAA;font-style:italic}.hljs-night-owl .hljs-params{color:#7fdbca}.hljs-night-owl .hljs-comment{color:#637777;font-style:italic}.hljs-night-owl .hljs-doctag{color:#7fdbca}.hljs-night-owl .hljs-meta{color:#82aaff}.hljs-night-owl .hljs-meta-keyword{color:#82aaff}.hljs-night-owl .hljs-meta-string{color:#ecc48d}.hljs-night-owl .hljs-section{color:#82b1ff}.hljs-night-owl .hljs-tag,.hljs-night-owl .hljs-name,.hljs-night-owl .hljs-builtin-name{color:#7fdbca}.hljs-night-owl .hljs-attr{color:#7fdbca}.hljs-night-owl .hljs-attribute{color:#80cbc4}.hljs-night-owl .hljs-variable{color:#addb67}.hljs-night-owl .hljs-bullet{color:#d9f5dd}.hljs-night-owl .hljs-code{color:#80CBC4}.hljs-night-owl .hljs-emphasis{color:#c792ea;font-style:italic}.hljs-night-owl .hljs-strong{color:#addb67;font-weight:bold}.hljs-night-owl .hljs-formula{color:#c792ea}.hljs-night-owl .hljs-link{color:#ff869a}.hljs-night-owl .hljs-quote{color:#697098;font-style:italic}.hljs-night-owl .hljs-selector-tag{color:#ff6363}.hljs-night-owl .hljs-selector-id{color:#fad430}.hljs-night-owl .hljs-selector-class{color:#addb67;font-style:italic}.hljs-night-owl .hljs-selector-attr,.hljs-night-owl .hljs-selector-pseudo{color:#c792ea;font-style:italic}.hljs-night-owl .hljs-template-tag{color:#c792ea}.hljs-night-owl .hljs-template-variable{color:#addb67}.hljs-night-owl .hljs-addition{color:#addb67ff;font-style:italic}.hljs-night-owl .hljs-deletion{color:#EF535090;font-style:italic}","nord":".hljs-nord .hljs{display:block;overflow-x:auto;padding:.5em;background:#2E3440}.hljs-nord .hljs,.hljs-nord .hljs-subst{color:#D8DEE9}.hljs-nord .hljs-selector-tag{color:#81A1C1}.hljs-nord .hljs-selector-id{color:#8FBCBB;font-weight:bold}.hljs-nord .hljs-selector-class{color:#8FBCBB}.hljs-nord .hljs-selector-attr{color:#8FBCBB}.hljs-nord .hljs-selector-pseudo{color:#88C0D0}.hljs-nord .hljs-addition{background-color:rgba(163,190,140,0.5)}.hljs-nord .hljs-deletion{background-color:rgba(191,97,106,0.5)}.hljs-nord .hljs-built_in,.hljs-nord .hljs-type{color:#8FBCBB}.hljs-nord .hljs-class{color:#8FBCBB}.hljs-nord .hljs-function{color:#88C0D0}.hljs-nord .hljs-function>.hljs-title{color:#88C0D0}.hljs-nord .hljs-keyword,.hljs-nord .hljs-literal,.hljs-nord .hljs-symbol{color:#81A1C1}.hljs-nord .hljs-number{color:#B48EAD}.hljs-nord .hljs-regexp{color:#EBCB8B}.hljs-nord .hljs-string{color:#A3BE8C}.hljs-nord .hljs-title{color:#8FBCBB}.hljs-nord .hljs-params{color:#D8DEE9}.hljs-nord .hljs-bullet{color:#81A1C1}.hljs-nord .hljs-code{color:#8FBCBB}.hljs-nord .hljs-emphasis{font-style:italic}.hljs-nord .hljs-formula{color:#8FBCBB}.hljs-nord .hljs-strong{font-weight:bold}.hljs-nord .hljs-link:hover{text-decoration:underline}.hljs-nord .hljs-quote{color:#4C566A}.hljs-nord .hljs-comment{color:#4C566A}.hljs-nord .hljs-doctag{color:#8FBCBB}.hljs-nord .hljs-meta,.hljs-nord .hljs-meta-keyword{color:#5E81AC}.hljs-nord .hljs-meta-string{color:#A3BE8C}.hljs-nord .hljs-attr{color:#8FBCBB}.hljs-nord .hljs-attribute{color:#D8DEE9}.hljs-nord .hljs-builtin-name{color:#81A1C1}.hljs-nord .hljs-name{color:#81A1C1}.hljs-nord .hljs-section{color:#88C0D0}.hljs-nord .hljs-tag{color:#81A1C1}.hljs-nord .hljs-variable{color:#D8DEE9}.hljs-nord .hljs-template-variable{color:#D8DEE9}.hljs-nord .hljs-template-tag{color:#5E81AC}.hljs-nord .abnf .hljs-attribute{color:#88C0D0}.hljs-nord .abnf .hljs-symbol{color:#EBCB8B}.hljs-nord .apache .hljs-attribute{color:#88C0D0}.hljs-nord .apache .hljs-section{color:#81A1C1}.hljs-nord .arduino .hljs-built_in{color:#88C0D0}.hljs-nord .aspectj .hljs-meta{color:#D08770}.hljs-nord .aspectj>.hljs-title{color:#88C0D0}.hljs-nord .bnf .hljs-attribute{color:#8FBCBB}.hljs-nord .clojure .hljs-name{color:#88C0D0}.hljs-nord .clojure .hljs-symbol{color:#EBCB8B}.hljs-nord .coq .hljs-built_in{color:#88C0D0}.hljs-nord .cpp .hljs-meta-string{color:#8FBCBB}.hljs-nord .css .hljs-built_in{color:#88C0D0}.hljs-nord .css .hljs-keyword{color:#D08770}.hljs-nord .diff .hljs-meta{color:#8FBCBB}.hljs-nord .ebnf .hljs-attribute{color:#8FBCBB}.hljs-nord .glsl .hljs-built_in{color:#88C0D0}.hljs-nord .groovy .hljs-meta:not(:first-child){color:#D08770}.hljs-nord .haxe .hljs-meta{color:#D08770}.hljs-nord .java .hljs-meta{color:#D08770}.hljs-nord .ldif .hljs-attribute{color:#8FBCBB}.hljs-nord .lisp .hljs-name{color:#88C0D0}.hljs-nord .lua .hljs-built_in{color:#88C0D0}.hljs-nord .moonscript .hljs-built_in{color:#88C0D0}.hljs-nord .nginx .hljs-attribute{color:#88C0D0}.hljs-nord .nginx .hljs-section{color:#5E81AC}.hljs-nord .pf .hljs-built_in{color:#88C0D0}.hljs-nord .processing .hljs-built_in{color:#88C0D0}.hljs-nord .scss .hljs-keyword{color:#81A1C1}.hljs-nord .stylus .hljs-keyword{color:#81A1C1}.hljs-nord .swift .hljs-meta{color:#D08770}.hljs-nord .vim .hljs-built_in{color:#88C0D0;font-style:italic}.hljs-nord .yaml .hljs-meta{color:#D08770}","obsidian":".hljs-obsidian .hljs{display:block;overflow-x:auto;padding:.5em;background:#282b2e}.hljs-obsidian .hljs-keyword,.hljs-obsidian .hljs-selector-tag,.hljs-obsidian .hljs-literal,.hljs-obsidian .hljs-selector-id{color:#93c763}.hljs-obsidian .hljs-number{color:#ffcd22}.hljs-obsidian .hljs{color:#e0e2e4}.hljs-obsidian .hljs-attribute{color:#668bb0}.hljs-obsidian .hljs-code,.hljs-obsidian .hljs-class .hljs-title,.hljs-obsidian .hljs-section{color:white}.hljs-obsidian .hljs-regexp,.hljs-obsidian .hljs-link{color:#d39745}.hljs-obsidian .hljs-meta{color:#557182}.hljs-obsidian .hljs-tag,.hljs-obsidian .hljs-name,.hljs-obsidian .hljs-bullet,.hljs-obsidian .hljs-subst,.hljs-obsidian .hljs-emphasis,.hljs-obsidian .hljs-type,.hljs-obsidian .hljs-built_in,.hljs-obsidian .hljs-selector-attr,.hljs-obsidian .hljs-selector-pseudo,.hljs-obsidian .hljs-addition,.hljs-obsidian .hljs-variable,.hljs-obsidian .hljs-template-tag,.hljs-obsidian .hljs-template-variable{color:#8cbbad}.hljs-obsidian .hljs-string,.hljs-obsidian .hljs-symbol{color:#ec7600}.hljs-obsidian .hljs-comment,.hljs-obsidian .hljs-quote,.hljs-obsidian .hljs-deletion{color:#818e96}.hljs-obsidian .hljs-selector-class{color:#A082BD}.hljs-obsidian .hljs-keyword,.hljs-obsidian .hljs-selector-tag,.hljs-obsidian .hljs-literal,.hljs-obsidian .hljs-doctag,.hljs-obsidian .hljs-title,.hljs-obsidian .hljs-section,.hljs-obsidian .hljs-type,.hljs-obsidian .hljs-name,.hljs-obsidian .hljs-strong{font-weight:bold}","ocean":".hljs-ocean .hljs-comment,.hljs-ocean .hljs-quote{color:#65737e}.hljs-ocean .hljs-variable,.hljs-ocean .hljs-template-variable,.hljs-ocean .hljs-tag,.hljs-ocean .hljs-name,.hljs-ocean .hljs-selector-id,.hljs-ocean .hljs-selector-class,.hljs-ocean .hljs-regexp,.hljs-ocean .hljs-deletion{color:#bf616a}.hljs-ocean .hljs-number,.hljs-ocean .hljs-built_in,.hljs-ocean .hljs-builtin-name,.hljs-ocean .hljs-literal,.hljs-ocean .hljs-type,.hljs-ocean .hljs-params,.hljs-ocean .hljs-meta,.hljs-ocean .hljs-link{color:#d08770}.hljs-ocean .hljs-attribute{color:#ebcb8b}.hljs-ocean .hljs-string,.hljs-ocean .hljs-symbol,.hljs-ocean .hljs-bullet,.hljs-ocean .hljs-addition{color:#a3be8c}.hljs-ocean .hljs-title,.hljs-ocean .hljs-section{color:#8fa1b3}.hljs-ocean .hljs-keyword,.hljs-ocean .hljs-selector-tag{color:#b48ead}.hljs-ocean .hljs{display:block;overflow-x:auto;background:#2b303b;color:#c0c5ce;padding:.5em}.hljs-ocean .hljs-emphasis{font-style:italic}.hljs-ocean .hljs-strong{font-weight:bold}","paraiso-dark":".hljs-paraiso-dark .hljs-comment,.hljs-paraiso-dark .hljs-quote{color:#8d8687}.hljs-paraiso-dark .hljs-variable,.hljs-paraiso-dark .hljs-template-variable,.hljs-paraiso-dark .hljs-tag,.hljs-paraiso-dark .hljs-name,.hljs-paraiso-dark .hljs-selector-id,.hljs-paraiso-dark .hljs-selector-class,.hljs-paraiso-dark .hljs-regexp,.hljs-paraiso-dark .hljs-link,.hljs-paraiso-dark .hljs-meta{color:#ef6155}.hljs-paraiso-dark .hljs-number,.hljs-paraiso-dark .hljs-built_in,.hljs-paraiso-dark .hljs-builtin-name,.hljs-paraiso-dark .hljs-literal,.hljs-paraiso-dark .hljs-type,.hljs-paraiso-dark .hljs-params,.hljs-paraiso-dark .hljs-deletion{color:#f99b15}.hljs-paraiso-dark .hljs-title,.hljs-paraiso-dark .hljs-section,.hljs-paraiso-dark .hljs-attribute{color:#fec418}.hljs-paraiso-dark .hljs-string,.hljs-paraiso-dark .hljs-symbol,.hljs-paraiso-dark .hljs-bullet,.hljs-paraiso-dark .hljs-addition{color:#48b685}.hljs-paraiso-dark .hljs-keyword,.hljs-paraiso-dark .hljs-selector-tag{color:#815ba4}.hljs-paraiso-dark .hljs{display:block;overflow-x:auto;background:#2f1e2e;color:#a39e9b;padding:.5em}.hljs-paraiso-dark .hljs-emphasis{font-style:italic}.hljs-paraiso-dark .hljs-strong{font-weight:bold}","paraiso-light":".hljs-paraiso-light .hljs-comment,.hljs-paraiso-light .hljs-quote{color:#776e71}.hljs-paraiso-light .hljs-variable,.hljs-paraiso-light .hljs-template-variable,.hljs-paraiso-light .hljs-tag,.hljs-paraiso-light .hljs-name,.hljs-paraiso-light .hljs-selector-id,.hljs-paraiso-light .hljs-selector-class,.hljs-paraiso-light .hljs-regexp,.hljs-paraiso-light .hljs-link,.hljs-paraiso-light .hljs-meta{color:#ef6155}.hljs-paraiso-light .hljs-number,.hljs-paraiso-light .hljs-built_in,.hljs-paraiso-light .hljs-builtin-name,.hljs-paraiso-light .hljs-literal,.hljs-paraiso-light .hljs-type,.hljs-paraiso-light .hljs-params,.hljs-paraiso-light .hljs-deletion{color:#f99b15}.hljs-paraiso-light .hljs-title,.hljs-paraiso-light .hljs-section,.hljs-paraiso-light .hljs-attribute{color:#fec418}.hljs-paraiso-light .hljs-string,.hljs-paraiso-light .hljs-symbol,.hljs-paraiso-light .hljs-bullet,.hljs-paraiso-light .hljs-addition{color:#48b685}.hljs-paraiso-light .hljs-keyword,.hljs-paraiso-light .hljs-selector-tag{color:#815ba4}.hljs-paraiso-light .hljs{display:block;overflow-x:auto;background:#e7e9db;color:#4f424c;padding:.5em}.hljs-paraiso-light .hljs-emphasis{font-style:italic}.hljs-paraiso-light .hljs-strong{font-weight:bold}","purebasic":".hljs-purebasic .hljs{display:block;overflow-x:auto;padding:.5em;background:#FFFFDF}.hljs-purebasic .hljs,.hljs-purebasic .hljs-type,.hljs-purebasic .hljs-function,.hljs-purebasic .hljs-name,.hljs-purebasic .hljs-number,.hljs-purebasic .hljs-attr,.hljs-purebasic .hljs-params,.hljs-purebasic .hljs-subst{color:#000000}.hljs-purebasic .hljs-comment,.hljs-purebasic .hljs-regexp,.hljs-purebasic .hljs-section,.hljs-purebasic .hljs-selector-pseudo,.hljs-purebasic .hljs-addition{color:#00AAAA}.hljs-purebasic .hljs-title,.hljs-purebasic .hljs-tag,.hljs-purebasic .hljs-variable,.hljs-purebasic .hljs-code{color:#006666}.hljs-purebasic .hljs-keyword,.hljs-purebasic .hljs-class,.hljs-purebasic .hljs-meta-keyword,.hljs-purebasic .hljs-selector-class,.hljs-purebasic .hljs-built_in,.hljs-purebasic .hljs-builtin-name{color:#006666;font-weight:bold}.hljs-purebasic .hljs-string,.hljs-purebasic .hljs-selector-attr{color:#0080FF}.hljs-purebasic .hljs-symbol,.hljs-purebasic .hljs-link,.hljs-purebasic .hljs-deletion,.hljs-purebasic .hljs-attribute{color:#924B72}.hljs-purebasic .hljs-meta,.hljs-purebasic .hljs-literal,.hljs-purebasic .hljs-selector-id{color:#924B72;font-weight:bold}.hljs-purebasic .hljs-strong,.hljs-purebasic .hljs-name{font-weight:bold}.hljs-purebasic .hljs-emphasis{font-style:italic}","qtcreator_dark":".hljs-qtcreator_dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#000000}.hljs-qtcreator_dark .hljs,.hljs-qtcreator_dark .hljs-subst,.hljs-qtcreator_dark .hljs-tag,.hljs-qtcreator_dark .hljs-title{color:#aaaaaa}.hljs-qtcreator_dark .hljs-strong,.hljs-qtcreator_dark .hljs-emphasis{color:#a8a8a2}.hljs-qtcreator_dark .hljs-bullet,.hljs-qtcreator_dark .hljs-quote,.hljs-qtcreator_dark .hljs-number,.hljs-qtcreator_dark .hljs-regexp,.hljs-qtcreator_dark .hljs-literal{color:#ff55ff}.hljs-qtcreator_dark .hljs-code .hljs-selector-class{color:#aaaaff}.hljs-qtcreator_dark .hljs-emphasis,.hljs-qtcreator_dark .hljs-stronge,.hljs-qtcreator_dark .hljs-type{font-style:italic}.hljs-qtcreator_dark .hljs-keyword,.hljs-qtcreator_dark .hljs-selector-tag,.hljs-qtcreator_dark .hljs-function,.hljs-qtcreator_dark .hljs-section,.hljs-qtcreator_dark .hljs-symbol,.hljs-qtcreator_dark .hljs-name{color:#ffff55}.hljs-qtcreator_dark .hljs-attribute{color:#ff5555}.hljs-qtcreator_dark .hljs-variable,.hljs-qtcreator_dark .hljs-params,.hljs-qtcreator_dark .hljs-class .hljs-title{color:#8888ff}.hljs-qtcreator_dark .hljs-string,.hljs-qtcreator_dark .hljs-selector-id,.hljs-qtcreator_dark .hljs-selector-attr,.hljs-qtcreator_dark .hljs-selector-pseudo,.hljs-qtcreator_dark .hljs-type,.hljs-qtcreator_dark .hljs-built_in,.hljs-qtcreator_dark .hljs-builtin-name,.hljs-qtcreator_dark .hljs-template-tag,.hljs-qtcreator_dark .hljs-template-variable,.hljs-qtcreator_dark .hljs-addition,.hljs-qtcreator_dark .hljs-link{color:#ff55ff}.hljs-qtcreator_dark .hljs-comment,.hljs-qtcreator_dark .hljs-meta,.hljs-qtcreator_dark .hljs-deletion{color:#55ffff}","qtcreator_light":".hljs-qtcreator_light .hljs{display:block;overflow-x:auto;padding:.5em;background:#ffffff}.hljs-qtcreator_light .hljs,.hljs-qtcreator_light .hljs-subst,.hljs-qtcreator_light .hljs-tag,.hljs-qtcreator_light .hljs-title{color:#000000}.hljs-qtcreator_light .hljs-strong,.hljs-qtcreator_light .hljs-emphasis{color:#000000}.hljs-qtcreator_light .hljs-bullet,.hljs-qtcreator_light .hljs-quote,.hljs-qtcreator_light .hljs-number,.hljs-qtcreator_light .hljs-regexp,.hljs-qtcreator_light .hljs-literal{color:#000080}.hljs-qtcreator_light .hljs-code .hljs-selector-class{color:#800080}.hljs-qtcreator_light .hljs-emphasis,.hljs-qtcreator_light .hljs-stronge,.hljs-qtcreator_light .hljs-type{font-style:italic}.hljs-qtcreator_light .hljs-keyword,.hljs-qtcreator_light .hljs-selector-tag,.hljs-qtcreator_light .hljs-function,.hljs-qtcreator_light .hljs-section,.hljs-qtcreator_light .hljs-symbol,.hljs-qtcreator_light .hljs-name{color:#808000}.hljs-qtcreator_light .hljs-attribute{color:#800000}.hljs-qtcreator_light .hljs-variable,.hljs-qtcreator_light .hljs-params,.hljs-qtcreator_light .hljs-class .hljs-title{color:#0055AF}.hljs-qtcreator_light .hljs-string,.hljs-qtcreator_light .hljs-selector-id,.hljs-qtcreator_light .hljs-selector-attr,.hljs-qtcreator_light .hljs-selector-pseudo,.hljs-qtcreator_light .hljs-type,.hljs-qtcreator_light .hljs-built_in,.hljs-qtcreator_light .hljs-builtin-name,.hljs-qtcreator_light .hljs-template-tag,.hljs-qtcreator_light .hljs-template-variable,.hljs-qtcreator_light .hljs-addition,.hljs-qtcreator_light .hljs-link{color:#008000}.hljs-qtcreator_light .hljs-comment,.hljs-qtcreator_light .hljs-meta,.hljs-qtcreator_light .hljs-deletion{color:#008000}","railscasts":".hljs-railscasts .hljs{display:block;overflow-x:auto;padding:.5em;background:#232323;color:#e6e1dc}.hljs-railscasts .hljs-comment,.hljs-railscasts .hljs-quote{color:#bc9458;font-style:italic}.hljs-railscasts .hljs-keyword,.hljs-railscasts .hljs-selector-tag{color:#c26230}.hljs-railscasts .hljs-string,.hljs-railscasts .hljs-number,.hljs-railscasts .hljs-regexp,.hljs-railscasts .hljs-variable,.hljs-railscasts .hljs-template-variable{color:#a5c261}.hljs-railscasts .hljs-subst{color:#519f50}.hljs-railscasts .hljs-tag,.hljs-railscasts .hljs-name{color:#e8bf6a}.hljs-railscasts .hljs-type{color:#da4939}.hljs-railscasts .hljs-symbol,.hljs-railscasts .hljs-bullet,.hljs-railscasts .hljs-built_in,.hljs-railscasts .hljs-builtin-name,.hljs-railscasts .hljs-attr,.hljs-railscasts .hljs-link{color:#6d9cbe}.hljs-railscasts .hljs-params{color:#d0d0ff}.hljs-railscasts .hljs-attribute{color:#cda869}.hljs-railscasts .hljs-meta{color:#9b859d}.hljs-railscasts .hljs-title,.hljs-railscasts .hljs-section{color:#ffc66d}.hljs-railscasts .hljs-addition{background-color:#144212;color:#e6e1dc;display:inline-block;width:100%}.hljs-railscasts .hljs-deletion{background-color:#600;color:#e6e1dc;display:inline-block;width:100%}.hljs-railscasts .hljs-selector-class{color:#9b703f}.hljs-railscasts .hljs-selector-id{color:#8b98ab}.hljs-railscasts .hljs-emphasis{font-style:italic}.hljs-railscasts .hljs-strong{font-weight:bold}.hljs-railscasts .hljs-link{text-decoration:underline}","rainbow":".hljs-rainbow .hljs{display:block;overflow-x:auto;padding:.5em;background:#474949;color:#d1d9e1}.hljs-rainbow .hljs-comment,.hljs-rainbow .hljs-quote{color:#969896;font-style:italic}.hljs-rainbow .hljs-keyword,.hljs-rainbow .hljs-selector-tag,.hljs-rainbow .hljs-literal,.hljs-rainbow .hljs-type,.hljs-rainbow .hljs-addition{color:#cc99cc}.hljs-rainbow .hljs-number,.hljs-rainbow .hljs-selector-attr,.hljs-rainbow .hljs-selector-pseudo{color:#f99157}.hljs-rainbow .hljs-string,.hljs-rainbow .hljs-doctag,.hljs-rainbow .hljs-regexp{color:#8abeb7}.hljs-rainbow .hljs-title,.hljs-rainbow .hljs-name,.hljs-rainbow .hljs-section,.hljs-rainbow .hljs-built_in{color:#b5bd68}.hljs-rainbow .hljs-variable,.hljs-rainbow .hljs-template-variable,.hljs-rainbow .hljs-selector-id,.hljs-rainbow .hljs-class .hljs-title{color:#ffcc66}.hljs-rainbow .hljs-section,.hljs-rainbow .hljs-name,.hljs-rainbow .hljs-strong{font-weight:bold}.hljs-rainbow .hljs-symbol,.hljs-rainbow .hljs-bullet,.hljs-rainbow .hljs-subst,.hljs-rainbow .hljs-meta,.hljs-rainbow .hljs-link{color:#f99157}.hljs-rainbow .hljs-deletion{color:#dc322f}.hljs-rainbow .hljs-formula{background:#eee8d5}.hljs-rainbow .hljs-attr,.hljs-rainbow .hljs-attribute{color:#81a2be}.hljs-rainbow .hljs-emphasis{font-style:italic}","routeros":".hljs-routeros .hljs{display:block;overflow-x:auto;padding:.5em;background:#F0F0F0}.hljs-routeros .hljs,.hljs-routeros .hljs-subst{color:#444}.hljs-routeros .hljs-comment{color:#888888}.hljs-routeros .hljs-keyword,.hljs-routeros .hljs-selector-tag,.hljs-routeros .hljs-meta-keyword,.hljs-routeros .hljs-doctag,.hljs-routeros .hljs-name{font-weight:bold}.hljs-routeros .hljs-attribute{color:#0E9A00}.hljs-routeros .hljs-function{color:#99069A}.hljs-routeros .hljs-builtin-name{color:#99069A}.hljs-routeros .hljs-type,.hljs-routeros .hljs-string,.hljs-routeros .hljs-number,.hljs-routeros .hljs-selector-id,.hljs-routeros .hljs-selector-class,.hljs-routeros .hljs-quote,.hljs-routeros .hljs-template-tag,.hljs-routeros .hljs-deletion{color:#880000}.hljs-routeros .hljs-title,.hljs-routeros .hljs-section{color:#880000;font-weight:bold}.hljs-routeros .hljs-regexp,.hljs-routeros .hljs-symbol,.hljs-routeros .hljs-variable,.hljs-routeros .hljs-template-variable,.hljs-routeros .hljs-link,.hljs-routeros .hljs-selector-attr,.hljs-routeros .hljs-selector-pseudo{color:#BC6060}.hljs-routeros .hljs-literal{color:#78A960}.hljs-routeros .hljs-built_in,.hljs-routeros .hljs-bullet,.hljs-routeros .hljs-code,.hljs-routeros .hljs-addition{color:#0C9A9A}.hljs-routeros .hljs-meta{color:#1f7199}.hljs-routeros .hljs-meta-string{color:#4d99bf}.hljs-routeros .hljs-emphasis{font-style:italic}.hljs-routeros .hljs-strong{font-weight:bold}","school-book":".hljs-school-book .hljs{display:block;overflow-x:auto;padding:15px .5em .5em 30px;font-size:11px;line-height:16px;background:#f6f6ae url(./school-book.png);border-top:solid 2px #d2e8b9;border-bottom:solid 1px #d2e8b9}.hljs-school-book .hljs-keyword,.hljs-school-book .hljs-selector-tag,.hljs-school-book .hljs-literal{color:#005599;font-weight:bold}.hljs-school-book .hljs,.hljs-school-book .hljs-subst{color:#3e5915}.hljs-school-book .hljs-string,.hljs-school-book .hljs-title,.hljs-school-book .hljs-section,.hljs-school-book .hljs-type,.hljs-school-book .hljs-symbol,.hljs-school-book .hljs-bullet,.hljs-school-book .hljs-attribute,.hljs-school-book .hljs-built_in,.hljs-school-book .hljs-builtin-name,.hljs-school-book .hljs-addition,.hljs-school-book .hljs-variable,.hljs-school-book .hljs-template-tag,.hljs-school-book .hljs-template-variable,.hljs-school-book .hljs-link{color:#2c009f}.hljs-school-book .hljs-comment,.hljs-school-book .hljs-quote,.hljs-school-book .hljs-deletion,.hljs-school-book .hljs-meta{color:#e60415}.hljs-school-book .hljs-keyword,.hljs-school-book .hljs-selector-tag,.hljs-school-book .hljs-literal,.hljs-school-book .hljs-doctag,.hljs-school-book .hljs-title,.hljs-school-book .hljs-section,.hljs-school-book .hljs-type,.hljs-school-book .hljs-name,.hljs-school-book .hljs-selector-id,.hljs-school-book .hljs-strong{font-weight:bold}.hljs-school-book .hljs-emphasis{font-style:italic}","shades-of-purple":".hljs-shades-of-purple .hljs{display:block;overflow-x:auto;padding:.5em;background:#2d2b57;font-weight:normal}.hljs-shades-of-purple .hljs-title{color:#fad000;font-weight:normal}.hljs-shades-of-purple .hljs-name{color:#a1feff}.hljs-shades-of-purple .hljs-tag{color:#ffffff}.hljs-shades-of-purple .hljs-attr{color:#f8d000;font-style:italic}.hljs-shades-of-purple .hljs-built_in,.hljs-shades-of-purple .hljs-selector-tag,.hljs-shades-of-purple .hljs-section{color:#fb9e00}.hljs-shades-of-purple .hljs-keyword{color:#fb9e00}.hljs-shades-of-purple .hljs,.hljs-shades-of-purple .hljs-subst{color:#e3dfff}.hljs-shades-of-purple .hljs-string,.hljs-shades-of-purple .hljs-attribute,.hljs-shades-of-purple .hljs-symbol,.hljs-shades-of-purple .hljs-bullet,.hljs-shades-of-purple .hljs-addition,.hljs-shades-of-purple .hljs-code,.hljs-shades-of-purple .hljs-regexp,.hljs-shades-of-purple .hljs-selector-class,.hljs-shades-of-purple .hljs-selector-attr,.hljs-shades-of-purple .hljs-selector-pseudo,.hljs-shades-of-purple .hljs-template-tag,.hljs-shades-of-purple .hljs-quote,.hljs-shades-of-purple .hljs-deletion{color:#4cd213}.hljs-shades-of-purple .hljs-meta,.hljs-shades-of-purple .hljs-meta-string{color:#fb9e00}.hljs-shades-of-purple .hljs-comment{color:#ac65ff}.hljs-shades-of-purple .hljs-keyword,.hljs-shades-of-purple .hljs-selector-tag,.hljs-shades-of-purple .hljs-literal,.hljs-shades-of-purple .hljs-name,.hljs-shades-of-purple .hljs-strong{font-weight:normal}.hljs-shades-of-purple .hljs-literal,.hljs-shades-of-purple .hljs-number{color:#fa658d}.hljs-shades-of-purple .hljs-emphasis{font-style:italic}.hljs-shades-of-purple .hljs-strong{font-weight:bold}","solarized-dark":".hljs-solarized-dark .hljs{display:block;overflow-x:auto;padding:.5em;background:#002b36;color:#839496}.hljs-solarized-dark .hljs-comment,.hljs-solarized-dark .hljs-quote{color:#586e75}.hljs-solarized-dark .hljs-keyword,.hljs-solarized-dark .hljs-selector-tag,.hljs-solarized-dark .hljs-addition{color:#859900}.hljs-solarized-dark .hljs-number,.hljs-solarized-dark .hljs-string,.hljs-solarized-dark .hljs-meta .hljs-meta-string,.hljs-solarized-dark .hljs-literal,.hljs-solarized-dark .hljs-doctag,.hljs-solarized-dark .hljs-regexp{color:#2aa198}.hljs-solarized-dark .hljs-title,.hljs-solarized-dark .hljs-section,.hljs-solarized-dark .hljs-name,.hljs-solarized-dark .hljs-selector-id,.hljs-solarized-dark .hljs-selector-class{color:#268bd2}.hljs-solarized-dark .hljs-attribute,.hljs-solarized-dark .hljs-attr,.hljs-solarized-dark .hljs-variable,.hljs-solarized-dark .hljs-template-variable,.hljs-solarized-dark .hljs-class .hljs-title,.hljs-solarized-dark .hljs-type{color:#b58900}.hljs-solarized-dark .hljs-symbol,.hljs-solarized-dark .hljs-bullet,.hljs-solarized-dark .hljs-subst,.hljs-solarized-dark .hljs-meta,.hljs-solarized-dark .hljs-meta .hljs-keyword,.hljs-solarized-dark .hljs-selector-attr,.hljs-solarized-dark .hljs-selector-pseudo,.hljs-solarized-dark .hljs-link{color:#cb4b16}.hljs-solarized-dark .hljs-built_in,.hljs-solarized-dark .hljs-deletion{color:#dc322f}.hljs-solarized-dark .hljs-formula{background:#073642}.hljs-solarized-dark .hljs-emphasis{font-style:italic}.hljs-solarized-dark .hljs-strong{font-weight:bold}","solarized-light":".hljs-solarized-light .hljs{display:block;overflow-x:auto;padding:.5em;background:#fdf6e3;color:#657b83}.hljs-solarized-light .hljs-comment,.hljs-solarized-light .hljs-quote{color:#93a1a1}.hljs-solarized-light .hljs-keyword,.hljs-solarized-light .hljs-selector-tag,.hljs-solarized-light .hljs-addition{color:#859900}.hljs-solarized-light .hljs-number,.hljs-solarized-light .hljs-string,.hljs-solarized-light .hljs-meta .hljs-meta-string,.hljs-solarized-light .hljs-literal,.hljs-solarized-light .hljs-doctag,.hljs-solarized-light .hljs-regexp{color:#2aa198}.hljs-solarized-light .hljs-title,.hljs-solarized-light .hljs-section,.hljs-solarized-light .hljs-name,.hljs-solarized-light .hljs-selector-id,.hljs-solarized-light .hljs-selector-class{color:#268bd2}.hljs-solarized-light .hljs-attribute,.hljs-solarized-light .hljs-attr,.hljs-solarized-light .hljs-variable,.hljs-solarized-light .hljs-template-variable,.hljs-solarized-light .hljs-class .hljs-title,.hljs-solarized-light .hljs-type{color:#b58900}.hljs-solarized-light .hljs-symbol,.hljs-solarized-light .hljs-bullet,.hljs-solarized-light .hljs-subst,.hljs-solarized-light .hljs-meta,.hljs-solarized-light .hljs-meta .hljs-keyword,.hljs-solarized-light .hljs-selector-attr,.hljs-solarized-light .hljs-selector-pseudo,.hljs-solarized-light .hljs-link{color:#cb4b16}.hljs-solarized-light .hljs-built_in,.hljs-solarized-light .hljs-deletion{color:#dc322f}.hljs-solarized-light .hljs-formula{background:#eee8d5}.hljs-solarized-light .hljs-emphasis{font-style:italic}.hljs-solarized-light .hljs-strong{font-weight:bold}","sunburst":".hljs-sunburst .hljs{display:block;overflow-x:auto;padding:.5em;background:#000;color:#f8f8f8}.hljs-sunburst .hljs-comment,.hljs-sunburst .hljs-quote{color:#aeaeae;font-style:italic}.hljs-sunburst .hljs-keyword,.hljs-sunburst .hljs-selector-tag,.hljs-sunburst .hljs-type{color:#e28964}.hljs-sunburst .hljs-string{color:#65b042}.hljs-sunburst .hljs-subst{color:#daefa3}.hljs-sunburst .hljs-regexp,.hljs-sunburst .hljs-link{color:#e9c062}.hljs-sunburst .hljs-title,.hljs-sunburst .hljs-section,.hljs-sunburst .hljs-tag,.hljs-sunburst .hljs-name{color:#89bdff}.hljs-sunburst .hljs-class .hljs-title,.hljs-sunburst .hljs-doctag{text-decoration:underline}.hljs-sunburst .hljs-symbol,.hljs-sunburst .hljs-bullet,.hljs-sunburst .hljs-number{color:#3387cc}.hljs-sunburst .hljs-params,.hljs-sunburst .hljs-variable,.hljs-sunburst .hljs-template-variable{color:#3e87e3}.hljs-sunburst .hljs-attribute{color:#cda869}.hljs-sunburst .hljs-meta{color:#8996a8}.hljs-sunburst .hljs-formula{background-color:#0e2231;color:#f8f8f8;font-style:italic}.hljs-sunburst .hljs-addition{background-color:#253b22;color:#f8f8f8}.hljs-sunburst .hljs-deletion{background-color:#420e09;color:#f8f8f8}.hljs-sunburst .hljs-selector-class{color:#9b703f}.hljs-sunburst .hljs-selector-id{color:#8b98ab}.hljs-sunburst .hljs-emphasis{font-style:italic}.hljs-sunburst .hljs-strong{font-weight:bold}","tomorrow-night-blue":".hljs-tomorrow-night-blue .hljs-comment,.hljs-tomorrow-night-blue .hljs-quote{color:#7285b7}.hljs-tomorrow-night-blue .hljs-variable,.hljs-tomorrow-night-blue .hljs-template-variable,.hljs-tomorrow-night-blue .hljs-tag,.hljs-tomorrow-night-blue .hljs-name,.hljs-tomorrow-night-blue .hljs-selector-id,.hljs-tomorrow-night-blue .hljs-selector-class,.hljs-tomorrow-night-blue .hljs-regexp,.hljs-tomorrow-night-blue .hljs-deletion{color:#ff9da4}.hljs-tomorrow-night-blue .hljs-number,.hljs-tomorrow-night-blue .hljs-built_in,.hljs-tomorrow-night-blue .hljs-builtin-name,.hljs-tomorrow-night-blue .hljs-literal,.hljs-tomorrow-night-blue .hljs-type,.hljs-tomorrow-night-blue .hljs-params,.hljs-tomorrow-night-blue .hljs-meta,.hljs-tomorrow-night-blue .hljs-link{color:#ffc58f}.hljs-tomorrow-night-blue .hljs-attribute{color:#ffeead}.hljs-tomorrow-night-blue .hljs-string,.hljs-tomorrow-night-blue .hljs-symbol,.hljs-tomorrow-night-blue .hljs-bullet,.hljs-tomorrow-night-blue .hljs-addition{color:#d1f1a9}.hljs-tomorrow-night-blue .hljs-title,.hljs-tomorrow-night-blue .hljs-section{color:#bbdaff}.hljs-tomorrow-night-blue .hljs-keyword,.hljs-tomorrow-night-blue .hljs-selector-tag{color:#ebbbff}.hljs-tomorrow-night-blue .hljs{display:block;overflow-x:auto;background:#002451;color:white;padding:.5em}.hljs-tomorrow-night-blue .hljs-emphasis{font-style:italic}.hljs-tomorrow-night-blue .hljs-strong{font-weight:bold}","tomorrow-night-bright":".hljs-tomorrow-night-bright .hljs-comment,.hljs-tomorrow-night-bright .hljs-quote{color:#969896}.hljs-tomorrow-night-bright .hljs-variable,.hljs-tomorrow-night-bright .hljs-template-variable,.hljs-tomorrow-night-bright .hljs-tag,.hljs-tomorrow-night-bright .hljs-name,.hljs-tomorrow-night-bright .hljs-selector-id,.hljs-tomorrow-night-bright .hljs-selector-class,.hljs-tomorrow-night-bright .hljs-regexp,.hljs-tomorrow-night-bright .hljs-deletion{color:#d54e53}.hljs-tomorrow-night-bright .hljs-number,.hljs-tomorrow-night-bright .hljs-built_in,.hljs-tomorrow-night-bright .hljs-builtin-name,.hljs-tomorrow-night-bright .hljs-literal,.hljs-tomorrow-night-bright .hljs-type,.hljs-tomorrow-night-bright .hljs-params,.hljs-tomorrow-night-bright .hljs-meta,.hljs-tomorrow-night-bright .hljs-link{color:#e78c45}.hljs-tomorrow-night-bright .hljs-attribute{color:#e7c547}.hljs-tomorrow-night-bright .hljs-string,.hljs-tomorrow-night-bright .hljs-symbol,.hljs-tomorrow-night-bright .hljs-bullet,.hljs-tomorrow-night-bright .hljs-addition{color:#b9ca4a}.hljs-tomorrow-night-bright .hljs-title,.hljs-tomorrow-night-bright .hljs-section{color:#7aa6da}.hljs-tomorrow-night-bright .hljs-keyword,.hljs-tomorrow-night-bright .hljs-selector-tag{color:#c397d8}.hljs-tomorrow-night-bright .hljs{display:block;overflow-x:auto;background:black;color:#eaeaea;padding:.5em}.hljs-tomorrow-night-bright .hljs-emphasis{font-style:italic}.hljs-tomorrow-night-bright .hljs-strong{font-weight:bold}","tomorrow-night-eighties":".hljs-tomorrow-night-eighties .hljs-comment,.hljs-tomorrow-night-eighties .hljs-quote{color:#999999}.hljs-tomorrow-night-eighties .hljs-variable,.hljs-tomorrow-night-eighties .hljs-template-variable,.hljs-tomorrow-night-eighties .hljs-tag,.hljs-tomorrow-night-eighties .hljs-name,.hljs-tomorrow-night-eighties .hljs-selector-id,.hljs-tomorrow-night-eighties .hljs-selector-class,.hljs-tomorrow-night-eighties .hljs-regexp,.hljs-tomorrow-night-eighties .hljs-deletion{color:#f2777a}.hljs-tomorrow-night-eighties .hljs-number,.hljs-tomorrow-night-eighties .hljs-built_in,.hljs-tomorrow-night-eighties .hljs-builtin-name,.hljs-tomorrow-night-eighties .hljs-literal,.hljs-tomorrow-night-eighties .hljs-type,.hljs-tomorrow-night-eighties .hljs-params,.hljs-tomorrow-night-eighties .hljs-meta,.hljs-tomorrow-night-eighties .hljs-link{color:#f99157}.hljs-tomorrow-night-eighties .hljs-attribute{color:#ffcc66}.hljs-tomorrow-night-eighties .hljs-string,.hljs-tomorrow-night-eighties .hljs-symbol,.hljs-tomorrow-night-eighties .hljs-bullet,.hljs-tomorrow-night-eighties .hljs-addition{color:#99cc99}.hljs-tomorrow-night-eighties .hljs-title,.hljs-tomorrow-night-eighties .hljs-section{color:#6699cc}.hljs-tomorrow-night-eighties .hljs-keyword,.hljs-tomorrow-night-eighties .hljs-selector-tag{color:#cc99cc}.hljs-tomorrow-night-eighties .hljs{display:block;overflow-x:auto;background:#2d2d2d;color:#cccccc;padding:.5em}.hljs-tomorrow-night-eighties .hljs-emphasis{font-style:italic}.hljs-tomorrow-night-eighties .hljs-strong{font-weight:bold}","tomorrow-night":".hljs-tomorrow-night .hljs-comment,.hljs-tomorrow-night .hljs-quote{color:#969896}.hljs-tomorrow-night .hljs-variable,.hljs-tomorrow-night .hljs-template-variable,.hljs-tomorrow-night .hljs-tag,.hljs-tomorrow-night .hljs-name,.hljs-tomorrow-night .hljs-selector-id,.hljs-tomorrow-night .hljs-selector-class,.hljs-tomorrow-night .hljs-regexp,.hljs-tomorrow-night .hljs-deletion{color:#cc6666}.hljs-tomorrow-night .hljs-number,.hljs-tomorrow-night .hljs-built_in,.hljs-tomorrow-night .hljs-builtin-name,.hljs-tomorrow-night .hljs-literal,.hljs-tomorrow-night .hljs-type,.hljs-tomorrow-night .hljs-params,.hljs-tomorrow-night .hljs-meta,.hljs-tomorrow-night .hljs-link{color:#de935f}.hljs-tomorrow-night .hljs-attribute{color:#f0c674}.hljs-tomorrow-night .hljs-string,.hljs-tomorrow-night .hljs-symbol,.hljs-tomorrow-night .hljs-bullet,.hljs-tomorrow-night .hljs-addition{color:#b5bd68}.hljs-tomorrow-night .hljs-title,.hljs-tomorrow-night .hljs-section{color:#81a2be}.hljs-tomorrow-night .hljs-keyword,.hljs-tomorrow-night .hljs-selector-tag{color:#b294bb}.hljs-tomorrow-night .hljs{display:block;overflow-x:auto;background:#1d1f21;color:#c5c8c6;padding:.5em}.hljs-tomorrow-night .hljs-emphasis{font-style:italic}.hljs-tomorrow-night .hljs-strong{font-weight:bold}","tomorrow":".hljs-tomorrow .hljs-comment,.hljs-tomorrow .hljs-quote{color:#8e908c}.hljs-tomorrow .hljs-variable,.hljs-tomorrow .hljs-template-variable,.hljs-tomorrow .hljs-tag,.hljs-tomorrow .hljs-name,.hljs-tomorrow .hljs-selector-id,.hljs-tomorrow .hljs-selector-class,.hljs-tomorrow .hljs-regexp,.hljs-tomorrow .hljs-deletion{color:#c82829}.hljs-tomorrow .hljs-number,.hljs-tomorrow .hljs-built_in,.hljs-tomorrow .hljs-builtin-name,.hljs-tomorrow .hljs-literal,.hljs-tomorrow .hljs-type,.hljs-tomorrow .hljs-params,.hljs-tomorrow .hljs-meta,.hljs-tomorrow .hljs-link{color:#f5871f}.hljs-tomorrow .hljs-attribute{color:#eab700}.hljs-tomorrow .hljs-string,.hljs-tomorrow .hljs-symbol,.hljs-tomorrow .hljs-bullet,.hljs-tomorrow .hljs-addition{color:#718c00}.hljs-tomorrow .hljs-title,.hljs-tomorrow .hljs-section{color:#4271ae}.hljs-tomorrow .hljs-keyword,.hljs-tomorrow .hljs-selector-tag{color:#8959a8}.hljs-tomorrow .hljs{display:block;overflow-x:auto;background:white;color:#4d4d4c;padding:.5em}.hljs-tomorrow .hljs-emphasis{font-style:italic}.hljs-tomorrow .hljs-strong{font-weight:bold}","vs":".hljs-vs .hljs{display:block;overflow-x:auto;padding:.5em;background:white;color:black}.hljs-vs .hljs-comment,.hljs-vs .hljs-quote,.hljs-vs .hljs-variable{color:#008000}.hljs-vs .hljs-keyword,.hljs-vs .hljs-selector-tag,.hljs-vs .hljs-built_in,.hljs-vs .hljs-name,.hljs-vs .hljs-tag{color:#00f}.hljs-vs .hljs-string,.hljs-vs .hljs-title,.hljs-vs .hljs-section,.hljs-vs .hljs-attribute,.hljs-vs .hljs-literal,.hljs-vs .hljs-template-tag,.hljs-vs .hljs-template-variable,.hljs-vs .hljs-type,.hljs-vs .hljs-addition{color:#a31515}.hljs-vs .hljs-deletion,.hljs-vs .hljs-selector-attr,.hljs-vs .hljs-selector-pseudo,.hljs-vs .hljs-meta{color:#2b91af}.hljs-vs .hljs-doctag{color:#808080}.hljs-vs .hljs-attr{color:#f00}.hljs-vs .hljs-symbol,.hljs-vs .hljs-bullet,.hljs-vs .hljs-link{color:#00b0e8}.hljs-vs .hljs-emphasis{font-style:italic}.hljs-vs .hljs-strong{font-weight:bold}","vs2015":".hljs-vs2015 .hljs{display:block;overflow-x:auto;padding:.5em;background:#1E1E1E;color:#DCDCDC}.hljs-vs2015 .hljs-keyword,.hljs-vs2015 .hljs-literal,.hljs-vs2015 .hljs-symbol,.hljs-vs2015 .hljs-name{color:#569CD6}.hljs-vs2015 .hljs-link{color:#569CD6;text-decoration:underline}.hljs-vs2015 .hljs-built_in,.hljs-vs2015 .hljs-type{color:#4EC9B0}.hljs-vs2015 .hljs-number,.hljs-vs2015 .hljs-class{color:#B8D7A3}.hljs-vs2015 .hljs-string,.hljs-vs2015 .hljs-meta-string{color:#D69D85}.hljs-vs2015 .hljs-regexp,.hljs-vs2015 .hljs-template-tag{color:#9A5334}.hljs-vs2015 .hljs-subst,.hljs-vs2015 .hljs-function,.hljs-vs2015 .hljs-title,.hljs-vs2015 .hljs-params,.hljs-vs2015 .hljs-formula{color:#DCDCDC}.hljs-vs2015 .hljs-comment,.hljs-vs2015 .hljs-quote{color:#57A64A;font-style:italic}.hljs-vs2015 .hljs-doctag{color:#608B4E}.hljs-vs2015 .hljs-meta,.hljs-vs2015 .hljs-meta-keyword,.hljs-vs2015 .hljs-tag{color:#9B9B9B}.hljs-vs2015 .hljs-variable,.hljs-vs2015 .hljs-template-variable{color:#BD63C5}.hljs-vs2015 .hljs-attr,.hljs-vs2015 .hljs-attribute,.hljs-vs2015 .hljs-builtin-name{color:#9CDCFE}.hljs-vs2015 .hljs-section{color:gold}.hljs-vs2015 .hljs-emphasis{font-style:italic}.hljs-vs2015 .hljs-strong{font-weight:bold}.hljs-vs2015 .hljs-bullet,.hljs-vs2015 .hljs-selector-tag,.hljs-vs2015 .hljs-selector-id,.hljs-vs2015 .hljs-selector-class,.hljs-vs2015 .hljs-selector-attr,.hljs-vs2015 .hljs-selector-pseudo{color:#D7BA7D}.hljs-vs2015 .hljs-addition{background-color:#144212;display:inline-block;width:100%}.hljs-vs2015 .hljs-deletion{background-color:#600;display:inline-block;width:100%}","xcode":".hljs-xcode .hljs{display:block;overflow-x:auto;padding:.5em;background:#fff;color:black}.hljs-xcode .xml .hljs-meta{color:#c0c0c0}.hljs-xcode .hljs-comment,.hljs-xcode .hljs-quote{color:#007400}.hljs-xcode .hljs-tag,.hljs-xcode .hljs-attribute,.hljs-xcode .hljs-keyword,.hljs-xcode .hljs-selector-tag,.hljs-xcode .hljs-literal,.hljs-xcode .hljs-name{color:#aa0d91}.hljs-xcode .hljs-variable,.hljs-xcode .hljs-template-variable{color:#3F6E74}.hljs-xcode .hljs-code,.hljs-xcode .hljs-string,.hljs-xcode .hljs-meta-string{color:#c41a16}.hljs-xcode .hljs-regexp,.hljs-xcode .hljs-link{color:#0E0EFF}.hljs-xcode .hljs-title,.hljs-xcode .hljs-symbol,.hljs-xcode .hljs-bullet,.hljs-xcode .hljs-number{color:#1c00cf}.hljs-xcode .hljs-section,.hljs-xcode .hljs-meta{color:#643820}.hljs-xcode .hljs-class .hljs-title,.hljs-xcode .hljs-type,.hljs-xcode .hljs-built_in,.hljs-xcode .hljs-builtin-name,.hljs-xcode .hljs-params{color:#5c2699}.hljs-xcode .hljs-attr{color:#836C28}.hljs-xcode .hljs-subst{color:#000}.hljs-xcode .hljs-formula{background-color:#eee;font-style:italic}.hljs-xcode .hljs-addition{background-color:#baeeba}.hljs-xcode .hljs-deletion{background-color:#ffc8bd}.hljs-xcode .hljs-selector-id,.hljs-xcode .hljs-selector-class{color:#9b703f}.hljs-xcode .hljs-doctag,.hljs-xcode .hljs-strong{font-weight:bold}.hljs-xcode .hljs-emphasis{font-style:italic}","xt256":".hljs-xt256 .hljs{display:block;overflow-x:auto;color:#eaeaea;background:#000;padding:.5em}.hljs-xt256 .hljs-subst{color:#eaeaea}.hljs-xt256 .hljs-emphasis{font-style:italic}.hljs-xt256 .hljs-strong{font-weight:bold}.hljs-xt256 .hljs-builtin-name,.hljs-xt256 .hljs-type{color:#eaeaea}.hljs-xt256 .hljs-params{color:#da0000}.hljs-xt256 .hljs-literal,.hljs-xt256 .hljs-number,.hljs-xt256 .hljs-name{color:#ff0000;font-weight:bolder}.hljs-xt256 .hljs-comment{color:#969896}.hljs-xt256 .hljs-selector-id,.hljs-xt256 .hljs-quote{color:#00ffff}.hljs-xt256 .hljs-template-variable,.hljs-xt256 .hljs-variable,.hljs-xt256 .hljs-title{color:#00ffff;font-weight:bold}.hljs-xt256 .hljs-selector-class,.hljs-xt256 .hljs-keyword,.hljs-xt256 .hljs-symbol{color:#fff000}.hljs-xt256 .hljs-string,.hljs-xt256 .hljs-bullet{color:#00ff00}.hljs-xt256 .hljs-tag,.hljs-xt256 .hljs-section{color:#000fff}.hljs-xt256 .hljs-selector-tag{color:#000fff;font-weight:bold}.hljs-xt256 .hljs-attribute,.hljs-xt256 .hljs-built_in,.hljs-xt256 .hljs-regexp,.hljs-xt256 .hljs-link{color:#ff00ff}.hljs-xt256 .hljs-meta{color:#fff;font-weight:bolder}","zenburn":".hljs-zenburn .hljs{display:block;overflow-x:auto;padding:.5em;background:#3f3f3f;color:#dcdcdc}.hljs-zenburn .hljs-keyword,.hljs-zenburn .hljs-selector-tag,.hljs-zenburn .hljs-tag{color:#e3ceab}.hljs-zenburn .hljs-template-tag{color:#dcdcdc}.hljs-zenburn .hljs-number{color:#8cd0d3}.hljs-zenburn .hljs-variable,.hljs-zenburn .hljs-template-variable,.hljs-zenburn .hljs-attribute{color:#efdcbc}.hljs-zenburn .hljs-literal{color:#efefaf}.hljs-zenburn .hljs-subst{color:#8f8f8f}.hljs-zenburn .hljs-title,.hljs-zenburn .hljs-name,.hljs-zenburn .hljs-selector-id,.hljs-zenburn .hljs-selector-class,.hljs-zenburn .hljs-section,.hljs-zenburn .hljs-type{color:#efef8f}.hljs-zenburn .hljs-symbol,.hljs-zenburn .hljs-bullet,.hljs-zenburn .hljs-link{color:#dca3a3}.hljs-zenburn .hljs-deletion,.hljs-zenburn .hljs-string,.hljs-zenburn .hljs-built_in,.hljs-zenburn .hljs-builtin-name{color:#cc9393}.hljs-zenburn .hljs-addition,.hljs-zenburn .hljs-comment,.hljs-zenburn .hljs-quote,.hljs-zenburn .hljs-meta{color:#7f9f7f}.hljs-zenburn .hljs-emphasis{font-style:italic}.hljs-zenburn .hljs-strong{font-weight:bold}"},
   engine: hljs
 };

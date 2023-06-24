@@ -26,7 +26,7 @@ target.highlighter = function () {
   pushd('vendor');
   exec('git clone https://github.com/highlightjs/highlight.js.git');
   pushd('highlight.js');
-  exec('git checkout tags/9.15.10');
+  exec('git checkout tags/9.18.1');
   popd();
   popd();
 
