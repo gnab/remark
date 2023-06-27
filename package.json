@@ -1,6 +1,6 @@
 {
   "name": "remark",
-  "version": "1.0.0",
+  "version": "0.16.0",
   "description": "Simple, in-browser, markdown-driven slideshow tool",
   "keywords": [
     "Markdown",
