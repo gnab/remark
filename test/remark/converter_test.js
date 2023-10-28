@@ -22,10 +22,11 @@ describe('Converter', function () {
   });
 
   it('should convert reference-style link', function () {
-    var content = ['[link][id]'],
-        links = { id: { href: 'url', title: 'title'} };
+    var content = [
+      '[link][id]\n\n',
+      '[id]: url "title"'];
 
-    converter.convertMarkdown(content, links).should.equal(
+    converter.convertMarkdown(content).should.equal(
       '<p><a href="url" title="title">link</a></p>');
   });
 });

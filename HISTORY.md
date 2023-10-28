@@ -1,3 +1,5 @@
+### 0.16
+* General overhaul
 
 ### 0.15
 * #374: Improve some descriptions

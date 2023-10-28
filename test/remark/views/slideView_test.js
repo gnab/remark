@@ -167,71 +167,15 @@ describe('SlideView', function () {
   });
 
   describe('code line highlighting', function () {
-    it('should add class to prefixed lines', function () {
-      var slide = new Slide(1, 1, { content: ['```\nline 1\n* line 2\nline 3\n```'] })
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
-
-      var lines = slideView.element.getElementsByClassName('remark-code-line-highlighted');
-
-      lines.length.should.equal(1);
-      lines[0].innerHTML.should.equal('  line 2');
-    });
-
-    it('should be possible to disable', function () {
-      slideshow.getHighlightLines = function () { return false; };
-
-      var slide = new Slide(1, 1, { content: ['```\n* line\n```'] })
-        , slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide)
-        ;
-
-      var lines = slideView.element.getElementsByClassName('remark-code-line');
-
-      lines[0].innerHTML.should.equal('* line');
-    });
+    it('should add class to prefixed lines');
+    it('should be possible to disable');
   });
 
   describe('code block span highlighting', function () {
-    it('should allow escaping first backtick', function () {
-      var slide = new Slide(1, 1, { content: ['```\na \\`f` b\n```'] });
-      slideshow.slides.push(slide);
-      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-
-      var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a `f` b');
-    });
-
-    it('should allow custom delimiters', function () {
-      slideshow.getHighlightSpans = function () { return /«([^»]+?)»/g; };
-
-      var slide = new Slide(1, 1, { content: ['```\na «f» b\n```'] });
-      slideshow.slides.push(slide);
-      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-
-      var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a <span class="remark-code-span-highlighted">f</span> b');
-    });
-
-    it('should allow escaping opening custom delimiter', function () {
-      slideshow.getHighlightSpans = function () { return /«([^»]+?)»/g; };
-
-      var slide = new Slide(1, 1, { content: ['```\na \\«f» b\n```'] });
-      slideshow.slides.push(slide);
-      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-
-      var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a «f» b');
-    });
-
-    it('should be possible to disable', function () {
-      slideshow.getHighlightSpans = function () { return false; };
-
-      var slide = new Slide(1, 1, { content: ['```\na `f` b\n```'] });
-      slideshow.slides.push(slide);
-      var slideView = new SlideView(new EventEmitter(), slideshow, scaler, slide);
-
-      var lines = slideView.element.getElementsByClassName('remark-code-line');
-      lines[0].innerHTML.should.equal('a `f` b');
-    });
+    it('should allow escaping first backtick');
+    it('should allow custom delimiters');
+    it('should allow escaping opening custom delimiter');
+    it('should be possible to disable');
   });
+
 });

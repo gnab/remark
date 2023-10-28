@@ -1,4 +1,13 @@
+dist: focal
+os: linux
 language: node_js
 node_js:
-  - "8"
-  - "10"
+  - 20
+  - 18
+  - 16
+  - 14
+before_install:
+  - npm i -g npm@latest
+script:
+  - npm ci
+  - node make all
